@@ -27,8 +27,9 @@ from typing import Any
 
 import torch
 
+from .ablations import build_variant, validity_defect
 from .data import Splits, make_splits
-from .model import ModelConfig, QuantumMemoryModel, build_model
+from .model import QuantumMemoryModel
 from .records import run_metadata, save_json
 from .tasks import HMMTask, make_task
 from .train import TrainConfig, evaluate, strengths, train
@@ -72,7 +73,8 @@ def build_splits(task: HMMTask, data: dict[str, Any]) -> Splits:
 
 
 def build_run_model(spec: RunSpec) -> QuantumMemoryModel:
-    return build_model(ModelConfig.from_dict({**spec.model, "seed": spec.seed}))
+    """Architecture A, or the ablation named by ``spec.model["variant"]`` (``qmem.ablations``)."""
+    return build_variant({**spec.model, "seed": spec.seed})
 
 
 def run_one(spec: RunSpec) -> dict[str, Any]:
@@ -107,9 +109,7 @@ def run_one(spec: RunSpec) -> dict[str, Any]:
         record["test"] = evaluate(model, splits.test, task)
         record["train_metrics"] = evaluate(model, splits.train, task)
         record["strength_final"] = strengths(model)
-        record["instrument_completeness_defect"] = float(
-            model.instrument().completeness_defect().detach()
-        )
+        record["instrument_completeness_defect"] = validity_defect(model)
         record["diagnostics"] = dict(model.diagnostics)
         record["state_dict"] = {k: v.detach().clone() for k, v in model.state_dict().items()}
     except Exception as exc:  # recorded, not hidden: a crashed run is a result
@@ -167,7 +167,7 @@ def run_many(
 def load_model(record: dict[str, Any]) -> QuantumMemoryModel:
     """Rebuild a trained model from a record (needs ``state_dict``)."""
     cfg = record["meta"]["config"]
-    model = build_model(ModelConfig.from_dict({**cfg["model"], "seed": record["seed"]}))
+    model = build_variant({**cfg["model"], "seed": record["seed"]})
     model.load_state_dict(record["state_dict"])
     return model
 
