@@ -2,6 +2,8 @@
 
 This project lands work straight on `main`. There are no pull requests. These rules override the playbook's steps 4 and 5 and its rule against pushing to the base branch or closing the issue.
 
+A `Closes #<number>` line in a commit pushed to `main` does **not** close the issue here. You must close each issue yourself once its work has landed (see Landing a change).
+
 ## Start
 
 Once you have read the issue, post a short start comment with `github.issue.comment`, for example "Working on this. The change will land on `main` and close this issue." For an issue that asks for research, options or an answer, say findings will follow instead.
@@ -16,10 +18,18 @@ Once you have read the issue, post a short start comment with `github.issue.comm
 1. Commit on the issue's branch as you work, with clear messages.
 2. When the work is done, run what the project's rules say must pass (typecheck, tests, build) and make it pass.
 3. `git fetch origin` and rebase onto `origin/main`. Resolve any conflicts and run the checks again.
-4. Make sure the last commit's message ends with a line `Closes #<number>`, amending it if needed. When an issue takes several pushes, leave that line off every push but the last, so the issue stays open until the work is finished.
-5. Post the report on the issue with `github.issue.comment` (see below). Post it before you push, because the push closes the issue.
-6. Push to main: `git push origin HEAD:main`. If the push is refused because `main` moved, fetch, rebase, run the checks and push again. Never force-push `main`.
-7. End with `finished` once the issue has closed. If you pushed without `Closes #<number>` (more to do), end with `done` or `help` as fits.
+4. Post the report on the issue with `github.issue.comment` (see below).
+5. Push to main: `git push origin HEAD:main`. If the push is refused because `main` moved, fetch, rebase, run the checks and push again. Never force-push `main`.
+6. Close the issue yourself; a `Closes #<number>` line in the commit does nothing here. The toolbelt has no close operation, so close it through the GitHub API with Open Conduit's repository token, which git's credential helper hands out:
+
+   ```sh
+   TOKEN=$(printf 'protocol=https\nhost=github.com\n\n' | git credential fill | sed -n 's/^password=//p')
+   curl -sf -X PATCH -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" \
+     https://api.github.com/repos/<owner>/<repo>/issues/<number> -d '{"state":"closed","state_reason":"completed"}'
+   ```
+
+   Then check with `github.issue.view` that it shows `closed`. If the call is refused, say so on the issue and end with `help`; don't fall back to a personal `gh` login. When an issue takes several pushes, close it only after the last one.
+7. End with `finished` once the issue has closed. If you pushed with more still to do, leave the issue open and end with `done` or `help` as fits.
 
 ## The report
 
@@ -32,7 +42,7 @@ Keep it brief; the commits have the detail:
 
 ## Feedback after closing
 
-If the owner comments or reopens the issue after it closed, treat it as new work: make the change, land it the same way (with `Closes #<number>` again if the issue was reopened), and reply on the issue with the commit.
+If the owner comments or reopens the issue after it closed, treat it as new work: make the change, land it the same way (closing the issue again yourself if it was reopened), and reply on the issue with the commit.
 
 ## Other agents
 
