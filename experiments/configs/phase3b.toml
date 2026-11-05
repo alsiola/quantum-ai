@@ -1,0 +1,145 @@
+# Phase 3b (issue #7): quantum ablations of architecture A on the Phase 2 tasks.
+# Run: uv run python experiments/phase3b.py --config experiments/configs/phase3b.toml
+#
+# Every run = one [tasks.*] entry x one [[variants]] entry x one model seed. [model] and
+# [train] are the Phase 2 recipe (issue #5, joint_depth = 2) and are shared by every
+# variant; a variant's `model` table overrides them, and `by_n_output."<n>"` overrides
+# them again for that alphabet (used to match D's parameter count to A's). Data splits
+# come from [data].seed only, so every variant sees the same sequences as Phase 2.
+
+[experiment]
+name = "phase3b"
+workers = 7
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+success_gap = 0.01          # a run succeeds if test NLL - oracle NLL < this (nats/symbol)
+summary_dir = "results/summaries/phase3b"
+
+[data]
+n_train = 512
+n_val = 256
+n_test = 512
+length = 32
+seed = 0
+
+[model]
+n_memory = 2
+n_env = 0
+memory_depth = 2
+joint_depth = 2
+strength = 0.7853981633974483  # pi/4 at init
+strength_trainable = true
+rotations = ["ry", "rz"]
+entangler = "cnot"
+pattern = "linear"
+initial = "zero"
+init_scale = 1.0
+
+[train]
+optimizer = "adam"
+lr = 0.05
+schedule = "constant"
+steps = 1500
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 30
+min_delta = 1e-4
+restore_best = true
+clip_grad_norm = 0.0
+
+# -- tasks: the Phase 2 tasks, 2 memory qubits -------------------------------------------
+[tasks.iid_binary]
+spec = { kind = "iid", probs = [0.8, 0.2] }
+n_output = 1
+
+[tasks.iid_quaternary]
+spec = { kind = "iid", probs = [0.4, 0.3, 0.2, 0.1] }
+n_output = 2
+
+[tasks.markov1_binary]
+spec = { kind = "markov", order = 1, probs = [[0.9, 0.1], [0.3, 0.7]] }
+n_output = 1
+
+[tasks.markov1_quaternary]
+spec = { kind = "markov", order = 1, probs = [
+  [0.7, 0.1, 0.1, 0.1],
+  [0.1, 0.1, 0.7, 0.1],
+  [0.2, 0.2, 0.2, 0.4],
+  [0.5, 0.0, 0.0, 0.5],
+] }
+n_output = 2
+
+[tasks.markov2_binary]
+# rows: context (y_{t-2}, y_{t-1}) = 00, 01, 10, 11; p(1) = 0.1, 0.8, 0.4, 0.9
+spec = { kind = "markov", order = 2, probs = [[0.9, 0.1], [0.2, 0.8], [0.6, 0.4], [0.1, 0.9]] }
+n_output = 1
+
+[tasks.even]
+spec = { kind = "even", p = 0.5 }
+n_output = 1
+
+[tasks.golden_mean]
+spec = { kind = "golden_mean", p = 0.5 }
+n_output = 1
+
+# -- variants (qmem.ablations) -------------------------------------------------------------
+# `bound` names the best NLL the variant can reach in principle: "oracle" (the source),
+# or "block<k>" (the source's own predictor restarted every k tokens; block1 = i.i.d.).
+
+[[variants]]
+name = "A"
+bound = "oracle"
+model = { variant = "A" }
+
+[[variants]]
+name = "B (control)"
+bound = "block1"
+model = { variant = "B" }
+
+[[variants]]
+name = "C"
+bound = "block1"
+model = { variant = "C", reset_every = 1 }
+
+[[variants]]
+name = "C_2"
+bound = "block2"
+model = { variant = "C", reset_every = 2 }
+
+[[variants]]
+name = "C_4"
+bound = "block4"
+model = { variant = "C", reset_every = 4 }
+
+# D matched to A: the readout is A's coupling + joint layers (no memory-only layers, since
+# V_y precedes every readout), and V_y is one hardware-efficient layer per token. Binary:
+# 1 + 12 + 2 x 4 = 21 parameters (A: 8 + 1 + 12 = 21). Four symbols: joint_depth 1 for the
+# readout, 2 + 8 + 4 x 4 = 26 (A: 8 + 2 + 16 = 26).
+[[variants]]
+name = "D"
+bound = "oracle"
+model = { variant = "D", memory_depth = 0, update_depth = 1 }
+by_n_output = { "1" = { joint_depth = 2 }, "2" = { joint_depth = 1 } }
+
+# D with A's full circuit as readout and 2-layer V_y: more parameters than A (37 / 58),
+# so a D that loses to A is not just short of parameters.
+[[variants]]
+name = "D+ (larger)"
+bound = "oracle"
+model = { variant = "D", update_depth = 2 }
+
+# Hybrid control: A plus a classical controller on the measurement basis, fed by the
+# last 2 outcomes. Report separately: never evidence for backaction.
+[[variants]]
+name = "hybrid (classical feedback, k=2)"
+bound = "oracle"
+model = { variant = "hybrid", feedback_lags = 2 }
+
+[analysis]
+n_samples = 2000
+sample_seed = 12345
+source_sample_seed = 23456
+reference_sample_seed = 34567
+intervention_lags = [1, 2, 3, 4, 8]
+intervention_prefix_len = 24
+intervention_seed = 7
