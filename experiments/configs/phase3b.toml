@@ -128,6 +128,23 @@ name = "D+ (larger)"
 bound = "oracle"
 model = { variant = "D", update_depth = 2 }
 
+# Dissipative D: V_y acts on the memory plus one fresh ancilla that is traced out, so the
+# update is a token-controlled channel that can erase (a unitary V_y cannot forget; added
+# after the first full run showed unitary D failing on every task with memory). The
+# update is one layer on 3 qubits (6 parameters per token). Binary: 1 + 12 + 2 x 6 = 25
+# (A: 21); four symbols: 2 + 8 + 4 x 6 = 34 (A: 26).
+[[variants]]
+name = "D_diss"
+bound = "oracle"
+model = { variant = "D", memory_depth = 0, update_depth = 1, update_env = 1 }
+by_n_output = { "1" = { joint_depth = 2 }, "2" = { joint_depth = 1 } }
+
+# Dissipative D with A's full circuit as readout and 2-layer updates (45 / 74 parameters).
+[[variants]]
+name = "D_diss+ (larger)"
+bound = "oracle"
+model = { variant = "D", update_depth = 2, update_env = 1 }
+
 # Hybrid control: A plus a classical controller on the measurement basis, fed by the
 # last 2 outcomes. Report separately: never evidence for backaction.
 [[variants]]

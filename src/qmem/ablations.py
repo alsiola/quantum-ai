@@ -44,6 +44,7 @@ from torch import nn
 
 from .circuits import Block, ControlledRotationBlock, FixedUnitaryBlock, HardwareEfficientBlock
 from .gates import ry, rz
+from .instrument import kraus_from_unitary
 from .linalg import REAL_DTYPE, eye, trace
 from .model import Memory, ModelConfig, QuantumMemoryModel, build_model
 
@@ -215,50 +216,64 @@ class ResetMemoryModel(HookedMemoryModel):
 
 # -- D: separate update and readout ------------------------------------------------
 class SeparateUpdateReadoutModel(HookedMemoryModel):
-    """D: readout POVM with discarded post-measurement state, then a token-controlled unitary.
+    """D: readout POVM with discarded post-measurement state, then a token-controlled update.
 
     ``p(y | rho) = Tr(M_y rho)``, with ``M_y`` the effects of the readout
-    instrument built from ``blocks`` (as in A). The memory then becomes
-    ``V_y rho V_y^dagger`` with ``V_y`` the unitary of ``update_blocks[y]``
-    acting on the memory qubits only. The readout's own backaction is never
-    applied: prediction and memory update are separate operations.
+    instrument built from ``blocks`` (as in A). The memory is then updated by a
+    separately parameterised map controlled by the observed token. The readout's
+    own backaction is never applied, so prediction and memory update are
+    separate operations.
+
+    * ``update_env = 0``: ``rho -> V_y rho V_y^dagger`` with ``V_y`` the unitary of
+      ``update_blocks[y]`` on the memory qubits (reversible: it cannot forget).
+    * ``update_env = m > 0``: ``update_blocks[y]`` acts on the memory plus ``m``
+      fresh ancillas in ``|0>`` that are then traced out. This gives a CPTP update
+      ``rho -> sum_e L_{y,e} rho L_{y,e}^dagger`` that can dissipate (and so erase).
     """
 
-    def __init__(self, *args: Any, update_blocks: list[Block], **kwargs: Any):
+    def __init__(self, *args: Any, update_blocks: list[Block], update_env: int = 0, **kwargs: Any):
         super().__init__(*args, **kwargs)
         if len(update_blocks) != self.n_symbols:
             raise ValueError("need one update block per token")
         for b in update_blocks:
-            if b.n_qubits != self.n_memory:
-                raise ValueError("update blocks act on the memory qubits only")
+            if b.n_qubits != self.n_memory + update_env:
+                raise ValueError("update blocks act on the memory plus update_env ancillas")
+        self.update_env = update_env
         self.update_blocks = nn.ModuleList(update_blocks)
 
     def update_unitaries(self) -> torch.Tensor:
-        """``V_y`` for every token, shape ``(Y, d, d)``."""
+        """Unitary of each ``update_blocks[y]``, ``(Y, D, D)``; ``D`` includes the ancillas."""
         return torch.stack([b.unitary() for b in self.update_blocks])
+
+    def update_kraus(self) -> torch.Tensor:
+        """Kraus operators of the token-controlled update channels, ``(Y, 2^update_env, d, d)``."""
+        u = self.update_unitaries()
+        return torch.stack(
+            [kraus_from_unitary(u[y], self.n_memory, 0, self.update_env)[0] for y in range(len(u))]
+        )
 
     def effects(self) -> torch.Tensor:
         return self.instrument().effects()
 
     def _context(self):
-        return self.effects(), self.update_unitaries()
+        return self.effects(), self.update_kraus()
 
     def _probs(self, ctx, state):
         effects, _ = ctx
         return torch.einsum("yij,...ji->...y", effects, state.rho).real
 
     def _advance(self, ctx, state, y, t):
-        _, v = ctx
+        _, upd = ctx
         p = self._probs(ctx, state).gather(-1, y[:, None]).squeeze(-1)
-        vy = v[y]
-        return State(vy @ state.rho @ vy.conj().transpose(-1, -2)), p
+        k = upd[y]
+        return State(torch.einsum("beij,bjk,belk->bil", k, state.rho, k.conj())), p
 
     def validity_defect(self) -> float:
-        effects, v = (x.detach() for x in self._context())
+        effects, k = (x.detach() for x in self._context())
         d = self.memory_dim
         povm = (effects.sum(0) - eye(d)).abs().max()
-        unit = (v.conj().transpose(-1, -2) @ v - eye(d)).abs().max()
-        return float(max(povm, unit))
+        tp = (torch.einsum("yeji,yejk->yik", k.conj(), k) - eye(d)).abs().max()
+        return float(max(povm, tp))
 
 
 # -- Hybrid: classical feedback on the measurement basis -----------------------------
@@ -322,6 +337,7 @@ class VariantConfig:
     variant: str = "A"
     reset_every: int = 1  # C
     update_depth: int = 1  # D: hardware-efficient layers per token unitary V_y
+    update_env: int = 0  # D: ancillas traced out after each update (0: unitary update)
     feedback_lags: int = 2  # hybrid
 
     def to_dict(self) -> dict[str, Any]:
@@ -362,11 +378,11 @@ def build_variant(d: dict[str, Any]) -> QuantumMemoryModel:
     if v.variant == "hybrid":
         return ClassicalFeedbackModel(*args, feedback_lags=v.feedback_lags, **kw)
     gen = torch.Generator().manual_seed(update_seed(cfg.seed))
-    memory = list(range(cfg.n_memory))
+    n_upd = cfg.n_memory + v.update_env
     update_blocks: list[Block] = [
         HardwareEfficientBlock(
-            memory,
-            cfg.n_memory,
+            list(range(n_upd)),
+            n_upd,
             v.update_depth,
             rotations=cfg.rotations,
             entangler=cfg.entangler,
@@ -376,7 +392,9 @@ def build_variant(d: dict[str, Any]) -> QuantumMemoryModel:
         )
         for _ in range(2**cfg.n_output)
     ]
-    return SeparateUpdateReadoutModel(*args, update_blocks=update_blocks, **kw)
+    return SeparateUpdateReadoutModel(
+        *args, update_blocks=update_blocks, update_env=v.update_env, **kw
+    )
 
 
 def validity_defect(model: QuantumMemoryModel) -> float:
@@ -445,7 +463,9 @@ def resource_counts(model: QuantumMemoryModel) -> dict[str, Any]:
         out["memory_resets_per_token"] = model.n_memory / model.reset_every
     if isinstance(model, SeparateUpdateReadoutModel):
         upd = block_gates(model.update_blocks[0])
-        r = gate_resources(upd, list(range(model.n_memory)))
+        r = gate_resources(upd, list(range(model.n_memory + model.update_env)))
+        out["qubits"] = max(model.n_qubits, model.n_memory + model.update_env)
+        out["ancilla_resets_per_token"] = n_anc + model.update_env
         out["update_unitary"] = r
         out["classically_controlled_gates_per_token"] = len(upd)
         out["readout"] = gate_resources(gates, list(range(model.n_qubits)))

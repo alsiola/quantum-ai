@@ -43,9 +43,10 @@ for name, base in (("bin", BIN), ("bin_env", BIN_ENV), ("quad", QUAD)):
         ("C", {"reset_every": 1}),
         ("C", {"reset_every": 2}),
         ("D", {"memory_depth": 0, "update_depth": 1}),
+        ("D", {"memory_depth": 0, "update_depth": 1, "update_env": 1}),
         ("hybrid", {"feedback_lags": 2}),
     ):
-        tag = f"{variant}{extra.get('reset_every', '')}-{name}"
+        tag = f"{variant}{extra.get('reset_every', '')}{'diss' * extra.get('update_env', 0)}-{name}"
         CASES.append((tag, {**base, **extra, "variant": variant}))
 
 
@@ -86,10 +87,15 @@ def _brute_prob(model, seq):
         effects = [
             sum(k[y, e].conj().T @ k[y, e] for e in range(k.shape[1])) for y in range(k.shape[0])
         ]
+        de = 2**model.update_env
+        env0 = torch.zeros(de, de, dtype=rho.dtype)
+        env0[0, 0] = 1
         for y in seq:
             prob *= float(trace(effects[y] @ rho).real)
             v = model.update_blocks[y].unitary()
-            rho = v @ rho @ v.conj().T
+            big = v @ torch.kron(rho, env0) @ v.conj().T  # memory ⊗ update ancillas
+            d = rho.shape[0]
+            rho = big.reshape(d, de, d, de).diagonal(dim1=1, dim2=3).sum(-1)  # trace out env
         return prob
     if isinstance(model, OutcomeAveragedModel):
         for y in seq:
@@ -277,6 +283,41 @@ def test_d_memory_stays_pure_and_identity_update_is_iid():
     with torch.no_grad():
         pred = iid.predictive_probs(seqs)
     assert torch.allclose(pred, pred[:1, :1].expand_as(pred), atol=ATOL)
+
+
+def test_dissipative_d_update_can_erase():
+    """A hand-built D update that writes the last token into memory qubit 0 and forgets.
+
+    ``V_y`` = SWAP(memory qubit 0, fresh ancilla) then X^y on qubit 0: the old
+    value goes to the ancilla, which is traced out. The prediction then depends
+    on the last token only (exactly), which no unitary update on the memory alone
+    can achieve for generic readouts.
+    """
+    from qmem.circuits import FixedUnitaryBlock
+    from qmem.gates import X
+
+    swap = torch.tensor(
+        [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], dtype=torch.complex128
+    )
+    blocks = []
+    for y in range(2):
+        u = embed(swap, [0, 2], 3)
+        if y:
+            u = embed(X, [0], 3) @ u
+        blocks.append(FixedUnitaryBlock(u, [0, 1, 2], 3))
+    base = build_variant({**BIN, "seed": 3})
+    d = SeparateUpdateReadoutModel(
+        2, 1, list(base.circuit.blocks), update_blocks=blocks, update_env=1
+    )
+    assert validity_defect(d) < 1e-12
+    seqs = all_sequences(2, 5)
+    with torch.no_grad():
+        pred = d.predictive_probs(seqs)[:, -1]
+    last = seqs[:, -1]
+    for y in range(2):
+        rows = pred[last == y]
+        assert torch.allclose(rows, rows[:1].expand_as(rows), atol=1e-12)
+    assert not torch.allclose(pred[last == 0][0], pred[last == 1][0])
 
 
 def test_d_readout_does_not_update_memory():
