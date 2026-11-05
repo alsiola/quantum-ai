@@ -424,7 +424,7 @@ def write_summary(
         "",
         f"Summary written at commit `{meta['git_commit']}` (dirty: {meta['git_dirty']}), "
         f"{meta['timestamp_utc']}; each run's own commit is in its record. Training: "
-        f"{len(commits)} run(s) at commit(s) {', '.join(f'`{c[:7]}`' for c in commits)}; "
+        f"runs trained at commit(s) {', '.join(f'`{c[:7]}`' for c in commits)}; "
         f"the per-run wall times sum to {run_seconds / 60:.0f} min "
         f"(~{run_seconds / 60 / cfg['experiment']['workers']:.0f} min with "
         f"{cfg['experiment']['workers']} workers); this invocation took {wall / 60:.1f} min.",
