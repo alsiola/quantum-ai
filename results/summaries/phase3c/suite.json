@@ -618,12 +618,12 @@
         "steps": 1500
       }
     },
-    "git_commit": "65508eb401d16c847261c4486c0ed9a477376292",
-    "git_dirty": true,
+    "git_commit": "e7bec250fbf5d61aa7979998cd7d0ae7eeb72a8b",
+    "git_dirty": false,
     "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
     "python": "3.13.6",
     "seed": null,
-    "timestamp_utc": "2026-11-05T05:12:27+00:00",
+    "timestamp_utc": "2026-11-05T05:14:09+00:00",
     "torch": "2.15.0"
   },
   "noise": [
@@ -1379,7 +1379,7 @@
         "name": "perturbed_coin",
         "p": 0.3
       },
-      "seconds": 0.004419125150889158,
+      "seconds": 0.003584957681596279,
       "spec": {
         "kind": "perturbed_coin",
         "p": 0.3
@@ -1416,7 +1416,7 @@
         "p": 0.5,
         "q": 0.5
       },
-      "seconds": 0.003465333953499794,
+      "seconds": 0.0030654161237180233,
       "spec": {
         "kind": "ghafari",
         "p": 0.5,
@@ -1454,7 +1454,7 @@
         "p": 0.3,
         "q": 0.8
       },
-      "seconds": 0.003271999768912792,
+      "seconds": 0.0033097919076681137,
       "spec": {
         "kind": "ghafari",
         "p": 0.3,
@@ -1540,7 +1540,7 @@
         "period": 3,
         "v": 0.4
       },
-      "seconds": 0.01857329113408923,
+      "seconds": 0.028687208890914917,
       "spec": {
         "gamma": 0.5,
         "kind": "pmd_renewal",
@@ -1627,7 +1627,7 @@
         "period": 4,
         "v": 0.4
       },
-      "seconds": 0.02488404093310237,
+      "seconds": 0.036096541211009026,
       "spec": {
         "gamma": 0.5,
         "kind": "pmd_renewal",
@@ -1715,7 +1715,7 @@
         "period": 5,
         "v": 0.4
       },
-      "seconds": 0.038916874676942825,
+      "seconds": 0.03468604199588299,
       "spec": {
         "gamma": 0.5,
         "kind": "pmd_renewal",
@@ -1803,7 +1803,7 @@
         "period": 6,
         "v": 0.4
       },
-      "seconds": 0.06493008323013783,
+      "seconds": 0.059421499725431204,
       "spec": {
         "gamma": 0.5,
         "kind": "pmd_renewal",
@@ -1891,7 +1891,7 @@
         "period": 7,
         "v": 0.4
       },
-      "seconds": 0.06576075032353401,
+      "seconds": 0.06638579163700342,
       "spec": {
         "gamma": 0.5,
         "kind": "pmd_renewal",
@@ -1979,7 +1979,7 @@
         "period": 8,
         "v": 0.4
       },
-      "seconds": 0.06393858278170228,
+      "seconds": 0.1023298753425479,
       "spec": {
         "gamma": 0.5,
         "kind": "pmd_renewal",
@@ -2116,7 +2116,7 @@
         "p": 0.7,
         "q": 0.8
       },
-      "seconds": 0.011109374929219484,
+      "seconds": 0.011240041814744473,
       "spec": {
         "kind": "upset_gambler",
         "p": 0.7,
@@ -2154,7 +2154,7 @@
         "n": 3,
         "name": "uniform_renewal_N3"
       },
-      "seconds": 0.0033412501215934753,
+      "seconds": 0.0032512922771275043,
       "spec": {
         "kind": "uniform_renewal",
         "n": 3
@@ -2193,7 +2193,7 @@
         "n": 5,
         "name": "uniform_renewal_N5"
       },
-      "seconds": 0.0038555003702640533,
+      "seconds": 0.00380516704171896,
       "spec": {
         "kind": "uniform_renewal",
         "n": 5
@@ -2233,7 +2233,7 @@
         "p": 0.505,
         "r": 4
       },
-      "seconds": 0.004031000193208456,
+      "seconds": 0.003914333879947662,
       "spec": {
         "k": 3,
         "kind": "rk_golden_mean",
@@ -2276,7 +2276,7 @@
         "p": 0.9,
         "r": 2
       },
-      "seconds": 0.003467999864369631,
+      "seconds": 0.0035287076607346535,
       "spec": {
         "k": 3,
         "kind": "rk_golden_mean",
@@ -2360,7 +2360,7 @@
         "name": "nemo",
         "p": 0.666
       },
-      "seconds": 0.02290395786985755,
+      "seconds": 0.006875667255371809,
       "spec": {
         "kind": "nemo",
         "p": 0.666
@@ -2428,7 +2428,7 @@
         "p": 0.1,
         "q": 0.9
       },
-      "seconds": 0.006340791005641222,
+      "seconds": 0.00582141662016511,
       "spec": {
         "kind": "nemo",
         "loop_symbol": 1,
@@ -2454,7 +2454,7 @@
         "kind": "probability_clock",
         "name": "probability_clock"
       },
-      "seconds": 0.047059832606464624,
+      "seconds": 0.039298917166888714,
       "spec": {
         "kind": "probability_clock"
       }
@@ -2477,7 +2477,7 @@
         "kind": "stern_gerlach",
         "name": "stern_gerlach"
       },
-      "seconds": 0.00702774990350008,
+      "seconds": 0.026131167076528072,
       "spec": {
         "kind": "stern_gerlach"
       }
@@ -2510,7 +2510,7 @@
         "kind": "srinivasan_hmm",
         "name": "srinivasan_hmm6"
       },
-      "seconds": 7.062978083267808,
+      "seconds": 7.229099958203733,
       "spec": {
         "kind": "srinivasan_hmm"
       }
@@ -2545,7 +2545,7 @@
         "name": "recall_tau1",
         "tau": 1
       },
-      "seconds": 0.0033997083082795143,
+      "seconds": 0.0035672923550009727,
       "spec": {
         "kind": "delayed_recall",
         "tau": 1
@@ -2581,7 +2581,7 @@
         "name": "recall_tau2",
         "tau": 2
       },
-      "seconds": 0.0034064999781548977,
+      "seconds": 0.0076716248877346516,
       "spec": {
         "kind": "delayed_recall",
         "tau": 2
@@ -2617,7 +2617,7 @@
         "name": "recall_tau4",
         "tau": 4
       },
-      "seconds": 0.006609749980270863,
+      "seconds": 0.0040266248397529125,
       "spec": {
         "kind": "delayed_recall",
         "tau": 4
@@ -2653,7 +2653,7 @@
         "name": "recall_tau8",
         "tau": 8
       },
-      "seconds": 0.017178792040795088,
+      "seconds": 0.005210874602198601,
       "spec": {
         "kind": "delayed_recall",
         "tau": 8
@@ -2689,7 +2689,7 @@
         "name": "recall_tau16",
         "tau": 16
       },
-      "seconds": 0.025291542056947947,
+      "seconds": 0.008362750057131052,
       "spec": {
         "kind": "delayed_recall",
         "tau": 16
@@ -2727,7 +2727,7 @@
         "name": "parity_k2",
         "noise": 0.1
       },
-      "seconds": 0.00375987496227026,
+      "seconds": 0.003421957604587078,
       "spec": {
         "k": 2,
         "kind": "parity",
@@ -2767,7 +2767,7 @@
         "name": "parity_k3",
         "noise": 0.1
       },
-      "seconds": 0.004782499745488167,
+      "seconds": 0.0047605000436306,
       "spec": {
         "k": 3,
         "kind": "parity",
@@ -2808,7 +2808,7 @@
         "name": "parity_k4",
         "noise": 0.1
       },
-      "seconds": 0.00891912542283535,
+      "seconds": 0.05025374982506037,
       "spec": {
         "k": 4,
         "kind": "parity",
@@ -2846,7 +2846,7 @@
         "name": "mixed_timescales",
         "switch_prob": 0.02
       },
-      "seconds": 0.004072916228324175,
+      "seconds": 0.004281457979232073,
       "spec": {
         "fast_stay": 0.9,
         "kind": "mixed_timescales",
@@ -2884,7 +2884,7 @@
         "name": "mixed_timescales_hidden",
         "switch_prob": 0.02
       },
-      "seconds": 4.542520040646195,
+      "seconds": 4.419728042092174,
       "spec": {
         "fast_stay": 0.9,
         "kind": "mixed_timescales",
