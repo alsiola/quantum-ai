@@ -21,8 +21,10 @@ from typing import Any
 import torch
 
 from .complexity import memory_profile, pmd_qubit_instrument, quantum_overlaps
+from .states import von_neumann_entropy
 from .tasks import (
     QuantumSourceTask,
+    channel_fixed_point,
     ghafari_process,
     nemo_process,
     perturbed_coin,
@@ -355,3 +357,77 @@ def recall_metrics(model: Any, task: Any, sequences: torch.Tensor) -> dict[str, 
         ),
         "memoryless_recall_nll_nats": LN2,
     }
+
+
+# -- one row of the suite catalogue ---------------------------------------------------
+def entropy_rate_monte_carlo(
+    task: Any, n: int = 200, length: int = 3000, burn_in: int = 1000, seed: int = 0
+) -> dict[str, float]:
+    """``-log p(y_t | y_<t)`` averaged over ``t > burn_in`` of long sampled sequences.
+
+    For sources without a closed-form rate (non-unifilar HMMs); converges by
+    Shannon-McMillan-Breiman. The SE is over the ``n`` sequences.
+    """
+    lp = -task.log_probs(task.sample(n, length, seed))[:, burn_in:]
+    per = lp.mean(1)
+    return {
+        "nats": float(per.mean()),
+        "se": float(per.std() / math.sqrt(n)),
+        "n": n,
+        "length": length,
+        "burn_in": burn_in,
+        "seed": seed,
+    }
+
+
+def describe_benchmark(task: Any, length: int, mc_seed: int = 0) -> dict[str, Any]:
+    """Exact optimum, entropy rate and memory figures of one benchmark task (JSON-ready).
+
+    Every figure is exact except ``entropy_rate_mc`` (only for sources whose
+    rate has no closed form; then ``entropy_rate_nats`` is ``None``).
+    """
+    emitted = int((task_emission_mass(task) > 0).sum())
+    row: dict[str, Any] = {
+        "name": task.name,
+        "params": task.params,
+        "n_symbols": task.n_symbols,
+        "n_symbols_emitted": emitted,
+        "length": length,
+    }
+    if isinstance(task, QuantumSourceTask):
+        row["generator"] = f"HQMM, quantum dim {task.dim}"
+        row["generator_quantum_dim"] = task.dim
+    else:
+        row["generator"] = f"HMM, {task.n_states} states"
+        row["generator_states"] = task.n_states
+    try:
+        row["optimal_nll_nats"] = task.optimal_nll(length)
+    except RuntimeError as exc:
+        row["optimal_nll_nats"] = None
+        row["optimal_nll_note"] = str(exc)
+    exact_rate = isinstance(task, QuantumSourceTask) or task.is_unifilar()
+    if exact_rate:
+        row["entropy_rate_nats"] = task.entropy_rate()
+    else:
+        row["entropy_rate_nats"] = None
+        row["entropy_rate_upper_bound_nats"] = task.entropy_rate()
+        row["entropy_rate_mc"] = entropy_rate_monte_carlo(task, seed=mc_seed)
+    row["memory"] = memory_profile(task)
+    if task.params.get("kind") == "pmd_renewal":
+        p = task.params
+        err = _pmd_qubit_reproduces(int(p["period"]), float(p["gamma"]), float(p["v"]))
+        inst, _ = pmd_qubit_instrument(int(p["period"]), float(p["gamma"]), float(p["v"]))
+        row["memory"]["qubit_model"] = {
+            "source": "Wu2023 Supplement S1",
+            "quantum_dim": 2,
+            "max_predictive_error": err,
+            "stationary_entropy_bits": float(von_neumann_entropy(channel_fixed_point(inst))),
+        }
+    return row
+
+
+def task_emission_mass(task: Any) -> torch.Tensor:
+    """Total probability weight each symbol can carry (zero for padding symbols)."""
+    if isinstance(task, QuantumSourceTask):
+        return task.instrument.kraus.abs().flatten(1).sum(1)
+    return task.labelled.sum(dim=(1, 2))

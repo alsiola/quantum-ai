@@ -375,7 +375,7 @@ def ghafari_process(
 
 
 def renewal_task(
-    hazards: Sequence[float], periodic: bool = False, name: str = "renewal", **params: Any
+    hazards: Sequence[float], periodic: bool = False, name: str = "renewal"
 ) -> HMMTask:
     """Discrete renewal process: emit 1 (a tick) or 0; state = 0s since the last tick.
 
@@ -397,7 +397,8 @@ def renewal_task(
         if hk < 1:
             edges.append((k, 0, (k + 1) % n, 1 - hk))
     lab = _unifilar(2, n, edges)
-    return HMMTask(lab, name=name, params={"kind": "renewal", "hazards": h, **params})
+    params = {"kind": "renewal", "hazards": h, "periodic": periodic}
+    return HMMTask(lab, name=name, params=params)
 
 
 def pmd_survival(n: int, gamma: float, v: float, period: int) -> float:
@@ -419,14 +420,9 @@ def pmd_renewal(
     if any(surv[k + 1] >= surv[k] for k in range(period)):
         raise ValueError("Phi(n) must decrease strictly (Wu et al. footnote 2)")
     hazards = [1 - surv[k + 1] / surv[k] for k in range(period)]
-    return renewal_task(
-        hazards,
-        periodic=True,
-        name=name or f"pmd_N{period}",
-        period=period,
-        gamma=gamma,
-        v=v,
-    )
+    task = renewal_task(hazards, periodic=True, name=name or f"pmd_N{period}")
+    task.params = {"kind": "pmd_renewal", "period": period, "gamma": gamma, "v": v}
+    return task
 
 
 def uniform_renewal(n: int = 3, name: str | None = None) -> HMMTask:
@@ -434,7 +430,9 @@ def uniform_renewal(n: int = 3, name: str | None = None) -> HMMTask:
     1s is uniform on ``0..N-1``. Hazard after ``k`` zeros: ``1 / (N - k)``; ``N`` states.
     """
     hazards = [1 / (n - k) for k in range(n)]
-    return renewal_task(hazards, name=name or f"uniform_renewal_N{n}", n=n)
+    task = renewal_task(hazards, name=name or f"uniform_renewal_N{n}")
+    task.params = {"kind": "uniform_renewal", "n": n}
+    return task
 
 
 def upset_gambler(p: float = 0.7, q: float = 0.8, name: str = "upset_gambler") -> HMMTask:
