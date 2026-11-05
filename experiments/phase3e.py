@@ -322,6 +322,8 @@ def summarise(analyses: list[dict[str, Any]], cfg: dict[str, Any]) -> list[dict[
         s["g_mean"] = _ms([x["strength_final"][0] for x in ok])[0]
         s["gap_mean"], s["gap_se"] = _ms([x["test_gap_nats"] for x in ok])
         s["horizon_mean"], s["horizon_se"] = _ms([float(x["horizon"]) for x in ok])
+        max_lag = cfg["analysis"]["max_lag"]
+        s["n_retaining"] = sum(x["horizon"] > max_lag for x in ok)
         best = min(ok, key=lambda x: x["best_val_nll"])
         s["best_val_seed"] = best["seed"]
         s["best_val_acc"] = best["recall"][acc_key]
@@ -438,12 +440,13 @@ def tables_markdown(
             "acc / NLL: recall-position value accuracy and NLL (marked task: given that a"
             " cue-type symbol comes; clock task: the recall symbol), mean ± SE over seeds;"
             " `val-best`: the seed with the lowest validation NLL. Horizon: first lag with"
-            f" cue Holevo < {cfg['analysis']['holevo_threshold_bits']} bits. Gaps in nats per"
-            " position (model - source): type / distractor value / non-recall.",
+            f" cue Holevo < {cfg['analysis']['holevo_threshold_bits']} bits; `retain`: seeds"
+            f" whose cue Holevo stays above it up to lag {cfg['analysis']['max_lag']}. Gaps in"
+            " nats per position (model - source): type / distractor value / non-recall.",
             "",
             "| n | eps | tau | strength | eta (mean [min, max]) | acc | val-best acc | NLL | "
-            "horizon | gap type / dis. value / non-recall | purified (gen) | median t |",
-            "|---|---|---|---|---|---|---|---|---|---|---|---|",
+            "horizon | retain | gap type / dis. value / non-recall | purified (gen) | median t |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
         ]
         for g in gs:
             if "acc_mean" not in g:
@@ -465,7 +468,8 @@ def tables_markdown(
                 f"{fmt(g['eta_mean'], 2)} [{fmt(g['eta_min'], 2)}, {fmt(g['eta_max'], 2)}] | "
                 f"{fmt(g['acc_mean'])} ± {fmt(g['acc_se'])} | {fmt(g['best_val_acc'])} | "
                 f"{fmt(g['recall_nll_mean'])} ± {fmt(g['recall_nll_se'])} | "
-                f"{fmt(g['horizon_mean'], 1)} ± {fmt(g['horizon_se'], 1)} | {gaps} | "
+                f"{fmt(g['horizon_mean'], 1)} ± {fmt(g['horizon_se'], 1)} | "
+                f"{g['n_retaining']}/{g['n_analysed']} | {gaps} | "
                 f"{fmt(g['purified_generated'], 2)} | "
                 f"{fmt(g['purification_median_generated'], 1)} |"
             )
@@ -626,6 +630,7 @@ def make_plots(summary_dir: Path, groups: list[dict[str, Any]]) -> None:
     ax.axhline(0.95, color="grey", lw=0.8)
     ax.axhline(0.5, color="grey", lw=0.8, ls="--")
     ax.set_xscale("symlog", linthresh=1)
+    ax.set_xlim(left=-0.2)
     ax.set_xlabel("realised delay (distractors, bin left edge)")
     ax.set_ylabel("recall value accuracy")
     ax.set_title("Accuracy by realised delay, n = 2, τ = 16")
