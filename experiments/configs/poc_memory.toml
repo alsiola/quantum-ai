@@ -1,0 +1,28 @@
+# Phase 1b proof of concept: memory across measurements + a few gradient steps.
+# Run: uv run python experiments/poc_memory.py experiments/configs/poc_memory.toml
+
+[model]
+n_memory = 2
+n_output = 1
+n_env = 0
+memory_depth = 2
+joint_depth = 0
+strength = 0.7853981633974483  # pi/4: a weak measurement
+strength_trainable = true
+rotations = ["ry", "rz"]
+entangler = "cnot"
+pattern = "linear"
+initial = "zero"
+init_scale = 1.0
+seed = 0
+
+[data]
+# Sticky binary Markov chain: repeat the previous symbol with probability p_stay.
+p_stay = 0.9
+n_train = 256
+length = 12
+seed = 100
+
+[train]
+steps = 40
+lr = 0.05
