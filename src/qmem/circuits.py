@@ -126,7 +126,8 @@ class ControlledRotationBlock(Block):
     on the control qubit. ``g = 0`` gives no information and no backaction;
     ``g = pi/2`` is a projective (CNOT) measurement of the control in the Z basis.
 
-    ``strength`` holds one ``g`` per pair. If ``trainable`` it is an
+    ``strength`` holds one ``g`` per pair, or a single ``g`` used by every pair
+    if ``shared`` (the global measurement strength). If ``trainable`` it is an
     ``nn.Parameter``, otherwise a buffer (so sweeps can set it exactly).
     """
 
@@ -136,11 +137,14 @@ class ControlledRotationBlock(Block):
         n_qubits: int,
         strength: float | Sequence[float] = math.pi / 2,
         trainable: bool = False,
+        shared: bool = False,
     ):
         pairs = [tuple(p) for p in pairs]
         super().__init__(sorted({q for p in pairs for q in p}), n_qubits)
         self.pairs = pairs
-        g = torch.as_tensor(strength, dtype=REAL_DTYPE).expand(len(pairs)).clone()
+        self.shared = shared
+        n_g = 1 if shared else len(pairs)
+        g = torch.as_tensor(strength, dtype=REAL_DTYPE).expand(n_g).clone()
         if trainable:
             self.strength = nn.Parameter(g)
         else:
@@ -153,7 +157,8 @@ class ControlledRotationBlock(Block):
     def unitary(self) -> torch.Tensor:
         u = eye(2**self.n_qubits)
         for k, (c, t) in enumerate(self.pairs):
-            u = embed(controlled(ry(2 * self.strength[k])), (c, t), self.n_qubits) @ u
+            g = self.strength[0 if self.shared else k]
+            u = embed(controlled(ry(2 * g)), (c, t), self.n_qubits) @ u
         return u
 
 
@@ -184,3 +189,60 @@ class Circuit(nn.Module):
         for b in self.blocks:
             u = b.unitary() @ u
         return u
+
+
+class OutcomeConditionedBlock(Block):
+    """Feed-forward: a trainable unitary ``W_y`` on the memory, chosen by the readout ``y``.
+
+    The block is ``sum_y W_y ⊗ |y><y|_A ⊗ I_E``, a set of memory gates
+    multi-controlled by the output ancillas. It is diagonal in the ancillas'
+    computational basis, so it commutes with their measurement: applying it
+    just before the readout is the same as measuring and then applying the
+    classically controlled ``W_y`` (feed-forward). Placed after the coupling
+    ``C(g)`` it turns the Kraus operators into ``K_{y,e} -> W_y K_{y,e}``, which
+    leaves every effect ``E_y = sum_e K^dagger K`` unchanged
+    (``W_y^dagger W_y = I``); see ``docs/architecture.md`` section 2.
+
+    Each ``W_y`` is a ``HardwareEfficientBlock`` of ``depth`` layers on the
+    memory qubits (their own parameters ``ws[y].theta``). ``memory`` and
+    ``outputs`` must be contiguous and ordered ``memory, outputs`` (the default
+    layout).
+    """
+
+    def __init__(
+        self,
+        memory: Sequence[int],
+        outputs: Sequence[int],
+        n_qubits: int,
+        depth: int,
+        rotations: Sequence[str] = ("ry", "rz"),
+        entangler: str = "cnot",
+        pattern: str = "linear",
+        init_scale: float = 1.0,
+        generator: torch.Generator | None = None,
+    ):
+        memory, outputs = list(memory), list(outputs)
+        super().__init__(memory + outputs, n_qubits)
+        if memory + outputs != list(range(memory[0], memory[0] + len(memory) + len(outputs))):
+            raise ValueError("memory and output qubits must be contiguous, memory first")
+        self.memory, self.outputs = tuple(memory), tuple(outputs)
+        n_m, n_y = len(memory), len(outputs)
+        self.ws = nn.ModuleList(
+            HardwareEfficientBlock(
+                list(range(n_m)), n_m, depth, rotations, entangler, pattern, init_scale, generator
+            )
+            for _ in range(2**n_y)
+        )
+        projectors = torch.zeros(2**n_y, 2**n_y, 2**n_y, dtype=eye(1).dtype)
+        for y in range(2**n_y):
+            projectors[y, y, y] = 1.0
+        self.register_buffer("projectors", projectors, persistent=False)
+
+    def outcome_unitaries(self) -> torch.Tensor:
+        """``W_y`` for every outcome, shape ``(n_outcomes, d_memory, d_memory)``."""
+        return torch.stack([w.unitary() for w in self.ws])
+
+    def unitary(self) -> torch.Tensor:
+        ws = self.outcome_unitaries()
+        op = sum(torch.kron(ws[y], self.projectors[y]) for y in range(len(self.ws)))
+        return embed(op, self.qubits, self.n_qubits)

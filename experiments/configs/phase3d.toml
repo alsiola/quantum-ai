@@ -1,0 +1,63 @@
+# Phase 3d (issue #9): a strength-faithful instrument layout and operational
+# information-gain / disturbance metrics.
+# Run: uv run python experiments/phase3d.py --config experiments/configs/phase3d.toml
+#
+# Every run = one [tasks.*] entry (from the Phase 2 config, same data splits) x one
+# [[layouts]] entry x one model seed. [model] and [train] are the Phase 2 recipe;
+# each layout overrides [model]. Every trained model is then scored with
+# qmem.metrics.operational_summary (information gain, disturbance, Banaszek trade-off).
+
+[experiment]
+name = "phase3d"
+workers = 7
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+success_gap = 0.01
+summary_dir = "results/summaries/phase3d"
+tasks_from = "experiments/configs/phase2.toml"   # [data] and [tasks.*] come from here
+n_memory = 2                                       # memory qubits for every task
+
+[model]
+n_memory = 2
+n_env = 0
+memory_depth = 2
+joint_depth = 2
+strength = 0.7853981633974483  # pi/4
+strength_trainable = true
+rotations = ["ry", "rz"]
+entangler = "cnot"
+pattern = "linear"
+initial = "zero"
+init_scale = 1.0
+
+[train]
+optimizer = "adam"
+lr = 0.05
+schedule = "constant"
+steps = 1500
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 30
+min_delta = 1e-4
+restore_best = true
+clip_grad_norm = 0.0
+
+# -- layouts ---------------------------------------------------------------------------
+# "joint_depth=2" is the Phase 2 recipe (rerun: its parameters were not kept).
+# The feed-forward layouts are K_y = W_y D_y(g) V: joint_depth = 0 and two HEA layers
+# per W_y, with one g shared by every output coupling (the global strength).
+[[layouts]]
+name = "joint_depth=2"
+model = {}
+
+[[layouts]]
+name = "feed-forward, g trainable"
+model = { joint_depth = 0, feedforward_depth = 2, strength_shared = true }
+
+[[layouts]]
+name = "feed-forward, g = pi/4 fixed"
+model = { joint_depth = 0, feedforward_depth = 2, strength_shared = true, strength_trainable = false }
+
+[[layouts]]
+name = "feed-forward, g = pi/2 fixed"
+model = { joint_depth = 0, feedforward_depth = 2, strength_shared = true, strength_trainable = false, strength = 1.5707963267948966 }

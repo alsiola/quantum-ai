@@ -6,6 +6,7 @@ from .circuits import (
     ControlledRotationBlock,
     FixedUnitaryBlock,
     HardwareEfficientBlock,
+    OutcomeConditionedBlock,
     entangling_pairs,
 )
 from .instrument import Instrument, kraus_from_unitary
@@ -23,6 +24,7 @@ __all__ = [
     "Instrument",
     "Memory",
     "ModelConfig",
+    "OutcomeConditionedBlock",
     "QuantumMemoryModel",
     "build_model",
     "entangling_pairs",

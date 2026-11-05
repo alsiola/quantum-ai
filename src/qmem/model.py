@@ -39,7 +39,13 @@ from typing import Any
 import torch
 from torch import nn
 
-from .circuits import Block, Circuit, ControlledRotationBlock, HardwareEfficientBlock
+from .circuits import (
+    Block,
+    Circuit,
+    ControlledRotationBlock,
+    HardwareEfficientBlock,
+    OutcomeConditionedBlock,
+)
 from .instrument import Instrument
 from .linalg import trace
 from .states import initial_state
@@ -241,7 +247,7 @@ class QuantumMemoryModel(nn.Module):
 
 @dataclass
 class ModelConfig:
-    """Default layout: memory HEA -> controlled-RY(2g) couplings -> optional joint HEA.
+    """Default layout: memory HEA -> controlled-RY(2g) couplings -> [feed-forward] -> [joint HEA].
 
     * ``memory_depth`` hardware-efficient layers on the memory qubits only.
     * Coupling: output ancilla ``k`` is controlled by memory qubit
@@ -250,6 +256,13 @@ class ModelConfig:
     * ``joint_depth`` hardware-efficient layers on every qubit, applied after
       the coupling. With ``joint_depth > 0`` the readout is a general circuit
       and ``strength`` no longer bounds how much is learnt per step.
+    * ``feedforward_depth`` (default 0, off): an ``OutcomeConditionedBlock``
+      right after the coupling, i.e. ``K_y = W_y D_y(g) V`` with a trainable
+      memory unitary ``W_y`` (``feedforward_depth`` layers) per outcome. It
+      leaves the effects, and so the information ``g`` allows, unchanged. The
+      strength-faithful layout is ``feedforward_depth > 0, joint_depth = 0``.
+    * ``strength_shared``: one ``g`` for every output coupling (the global
+      measurement strength) instead of one per coupling.
     """
 
     n_memory: int = 2
@@ -259,6 +272,8 @@ class ModelConfig:
     joint_depth: int = 0
     strength: float = math.pi / 4
     strength_trainable: bool = False
+    strength_shared: bool = False
+    feedforward_depth: int = 0
     env_strength: float = 0.0
     rotations: tuple[str, ...] = ("ry", "rz")
     entangler: str = "cnot"
@@ -304,10 +319,16 @@ def build_model(config: ModelConfig) -> QuantumMemoryModel:
     if c.memory_depth > 0:
         blocks.append(HardwareEfficientBlock(memory, n, c.memory_depth, **hea))
     out_pairs = [(memory[k % c.n_memory], q) for k, q in enumerate(outputs)]
-    blocks.append(ControlledRotationBlock(out_pairs, n, c.strength, c.strength_trainable))
+    blocks.append(
+        ControlledRotationBlock(
+            out_pairs, n, c.strength, c.strength_trainable, shared=c.strength_shared
+        )
+    )
     if envs:
         env_pairs = [(memory[(c.n_output + j) % c.n_memory], q) for j, q in enumerate(envs)]
         blocks.append(ControlledRotationBlock(env_pairs, n, c.env_strength, trainable=False))
+    if c.feedforward_depth > 0:
+        blocks.append(OutcomeConditionedBlock(memory, outputs, n, c.feedforward_depth, **hea))
     if c.joint_depth > 0:
         blocks.append(HardwareEfficientBlock(list(range(n)), n, c.joint_depth, **hea))
     return QuantumMemoryModel(
