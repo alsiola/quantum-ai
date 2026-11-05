@@ -5,6 +5,7 @@ description = "Measurement-induced memory: a differentiable density-matrix simul
 readme = "README.md"
 requires-python = ">=3.12,<3.15"
 dependencies = [
+    "matplotlib==3.11.2",
     "numpy==2.5.4",
     "torch==2.15.0",
 ]
