@@ -36,7 +36,8 @@ from typing import Any
 
 import torch
 
-from .linalg import REAL_DTYPE
+from .instrument import Instrument
+from .linalg import DTYPE, REAL_DTYPE, trace
 
 _ROUND = 11  # decimals used to merge identical belief states
 
@@ -172,13 +173,25 @@ class HMMTask:
         repeat; there use the oracle NLL on the test set (``log_probs``), which
         is exact per sequence.
         """
+        out = []
+        for h in self._iter_step_entropies(max_beliefs):
+            out.append(h)
+            if len(out) == length:
+                break
+        return torch.tensor(out, dtype=REAL_DTYPE)
+
+    def _iter_step_entropies(self, max_beliefs: int):
+        """Yield ``H(Y_t | Y_<t)`` for ``t = 1, 2, ...``; raise once beliefs exceed the cap.
+
+        The successor beliefs of step ``t`` are enumerated before ``H_t`` is
+        yielded, so a yielded value always comes from a complete enumeration.
+        """
         emit = self.labelled.sum(-1).T  # (S, Y)
         beliefs = self.initial[None].clone()  # (K, S)
         mass = torch.ones(1, dtype=REAL_DTYPE)
-        out = []
-        for _ in range(length):
+        while True:
             q = beliefs @ emit  # (K, Y)
-            out.append(float((mass * _entropy_nats(q)).sum()))
+            h = float((mass * _entropy_nats(q)).sum())
             # successors: (K, Y, S)
             nxt = torch.einsum("ki,yij->kyj", beliefs, self.labelled)
             m = mass[:, None] * q
@@ -198,9 +211,9 @@ class HMMTask:
                     masses[idx] += w
             if len(rows) > max_beliefs:
                 raise RuntimeError(f"{len(rows)} belief states; reduce length")
+            yield h
             beliefs = torch.tensor(rows, dtype=REAL_DTYPE)
             mass = torch.tensor(masses, dtype=REAL_DTYPE)
-        return torch.tensor(out, dtype=REAL_DTYPE)
 
     def optimal_nll(self, length: int) -> float:
         """``H(Y_1..Y_length) / length`` in nats: the best expected per-symbol NLL."""
@@ -222,12 +235,17 @@ class HMMTask:
             pi = stationary_distribution(self.transition)
             emit = self.labelled.sum(-1)  # (Y, S)
             return float((pi * _entropy_nats(emit.T)).sum())
-        for t in range(fallback_length, 0, -1):
-            try:
-                return float(self.step_entropies(t, max_beliefs=20_000)[-1])
-            except RuntimeError:
-                continue
-        raise RuntimeError("could not bound the entropy rate")
+        last = None
+        try:
+            for t, h in enumerate(self._iter_step_entropies(max_beliefs=20_000), start=1):
+                last = h
+                if t == fallback_length:
+                    break
+        except RuntimeError:
+            pass
+        if last is None:
+            raise RuntimeError("could not bound the entropy rate")
+        return float(last)
 
 
 # -- constructors ----------------------------------------------------------------
@@ -292,23 +310,558 @@ def hmm_task(
     return HMMTask(lab, init, name=name, params=params)
 
 
-TASK_KINDS: dict[str, Callable[..., HMMTask]] = {
+# -- Phase 3 benchmark sources (issue #8; see docs/benchmarks.md) -------------------
+def _unifilar(
+    n_symbols: int, n_states: int, edges: Sequence[tuple[int, int, int, float]]
+) -> torch.Tensor:
+    """Labelled matrices from edges ``(from, symbol, to, probability)``."""
+    lab = torch.zeros(n_symbols, n_states, n_states, dtype=REAL_DTYPE)
+    for i, y, j, p in edges:
+        lab[y, i, j] += p
+    return lab
+
+
+def pad_alphabet(labelled: torch.Tensor, n_symbols: int | None) -> torch.Tensor:
+    """Append never-emitted symbols so the alphabet has ``n_symbols`` letters.
+
+    The model's alphabet is ``2**n_output``; a 3- or 6-symbol source is padded
+    to 4 or 8 symbols that have probability 0 (the model must learn that too).
+    """
+    if n_symbols is None or n_symbols == labelled.shape[0]:
+        return labelled
+    if n_symbols < labelled.shape[0]:
+        raise ValueError(f"cannot pad {labelled.shape[0]} symbols down to {n_symbols}")
+    extra = torch.zeros(n_symbols - labelled.shape[0], *labelled.shape[1:], dtype=REAL_DTYPE)
+    return torch.cat([labelled, extra])
+
+
+def perturbed_coin(p: float = 0.3, name: str = "perturbed_coin") -> HMMTask:
+    """Gu et al. 2012: a coin flipped with probability ``p`` each step, then observed.
+
+    States = the coin face; from face ``j`` emit ``1 - j`` and move there with
+    probability ``p``, else emit ``j`` and stay. Markov order 1; ``C_mu = 1``
+    bit for ``p != 1/2``; ``C_q = H((1 + 2 sqrt(p(1-p)))/2)`` bits.
+    """
+    if not 0 < p < 1:
+        raise ValueError("p must lie in (0, 1)")
+    edges = [(0, 0, 0, 1 - p), (0, 1, 1, p), (1, 1, 1, 1 - p), (1, 0, 0, p)]
+    return HMMTask(_unifilar(2, 2, edges), name=name, params={"kind": "perturbed_coin", "p": p})
+
+
+def ghafari_process(
+    p: float = 0.5, q: float = 0.5, n_symbols: int | None = 4, name: str = "ghafari"
+) -> HMMTask:
+    """Ghafari et al. 2019 / Yang et al. 2021 "asymmetric" 3-causal-state process.
+
+    A perturbed coin with flip probabilities ``p`` (0 -> 1) and ``q`` (1 -> 0),
+    post-processed so that every 0 that precedes a 1 is written 2. Causal
+    states ``S_i`` = last output ``i`` (Ghafari Fig. 1b, Yang Fig. 3a):
+    ``S0 -0|1-p-> S0``, ``S0 -2|p-> S2``, ``S1 -1|1-q-> S1``,
+    ``S1 -0|q(1-p)-> S0``, ``S1 -2|pq-> S2``, ``S2 -1|1-> S1``.
+    Three classical states; the quantum causal states fit in one qubit.
+    Symbols 0, 1, 2 (padded to ``n_symbols``; default 4 for a 2-output-qubit model).
+    """
+    edges = [
+        (0, 0, 0, 1 - p),
+        (0, 2, 2, p),
+        (1, 1, 1, 1 - q),
+        (1, 0, 0, q * (1 - p)),
+        (1, 2, 2, p * q),
+        (2, 1, 1, 1.0),
+    ]
+    lab = pad_alphabet(_unifilar(3, 3, edges), n_symbols)
+    params = {"kind": "ghafari", "p": p, "q": q, "n_symbols": n_symbols}
+    return HMMTask(lab, name=name, params=params)
+
+
+def renewal_task(
+    hazards: Sequence[float], periodic: bool = False, name: str = "renewal", **params: Any
+) -> HMMTask:
+    """Discrete renewal process: emit 1 (a tick) or 0; state = 0s since the last tick.
+
+    ``hazards[n] = P(tick | n zeros since the last tick)``. With
+    ``periodic=False`` the last hazard must be 1 (the counter is bounded);
+    with ``periodic=True`` the counter is taken mod ``len(hazards)`` (valid when
+    the hazard is periodic, as for PMD processes).
+    """
+    h = [float(x) for x in hazards]
+    n = len(h)
+    if not periodic and h[-1] != 1.0:
+        raise ValueError("the last hazard must be 1 unless periodic=True")
+    edges = []
+    for k, hk in enumerate(h):
+        if not 0 <= hk <= 1:
+            raise ValueError(f"hazard {hk} is not a probability")
+        if hk > 0:
+            edges.append((k, 1, 0, hk))
+        if hk < 1:
+            edges.append((k, 0, (k + 1) % n, 1 - hk))
+    lab = _unifilar(2, n, edges)
+    return HMMTask(lab, name=name, params={"kind": "renewal", "hazards": h, **params})
+
+
+def pmd_survival(n: int, gamma: float, v: float, period: int) -> float:
+    """Wu et al. 2023 Eq. 1: ``Phi(n) = Gamma^n (1 - V sin^2(n pi / N))``."""
+    return gamma**n * (1 - v * math.sin(n * math.pi / period) ** 2)
+
+
+def pmd_renewal(
+    period: int = 4, gamma: float = 0.5, v: float = 0.4, name: str | None = None
+) -> HMMTask:
+    """Periodically modulated decay renewal process (Wu et al. 2023).
+
+    ``Phi(n)`` is the probability that consecutive 1s are separated by at
+    least ``n`` 0s; ``P(0 | n zeros since the last 1) = Phi(n+1) / Phi(n)``
+    (Wu Methods Eq. 4). The hazard is ``period``-periodic, so the counter mod
+    ``period`` is the causal state: ``period`` classical states, one qubit.
+    """
+    surv = [pmd_survival(k, gamma, v, period) for k in range(period + 1)]
+    if any(surv[k + 1] >= surv[k] for k in range(period)):
+        raise ValueError("Phi(n) must decrease strictly (Wu et al. footnote 2)")
+    hazards = [1 - surv[k + 1] / surv[k] for k in range(period)]
+    return renewal_task(
+        hazards,
+        periodic=True,
+        name=name or f"pmd_N{period}",
+        period=period,
+        gamma=gamma,
+        v=v,
+    )
+
+
+def uniform_renewal(n: int = 3, name: str | None = None) -> HMMTask:
+    """Yang et al. 2021 / Wang et al. 2026: the number of 0s between consecutive
+    1s is uniform on ``0..N-1``. Hazard after ``k`` zeros: ``1 / (N - k)``; ``N`` states.
+    """
+    hazards = [1 / (n - k) for k in range(n)]
+    return renewal_task(hazards, name=name or f"uniform_renewal_N{n}", n=n)
+
+
+def upset_gambler(p: float = 0.7, q: float = 0.8, name: str = "upset_gambler") -> HMMTask:
+    """Binder, Thompson & Gu 2018: two causal states A, B (infinite Markov order).
+
+    ``P(0, B | A) = p``, ``P(1, A | A) = 1 - p``, ``P(0, A | B) = q``,
+    ``P(1, A | B) = 1 - q``, with ``0 < p < q < 1``.
+    """
+    edges = [(0, 0, 1, p), (0, 1, 0, 1 - p), (1, 0, 0, q), (1, 1, 0, 1 - q)]
+    params = {"kind": "upset_gambler", "p": p, "q": q}
+    return HMMTask(_unifilar(2, 2, edges), name=name, params=params)
+
+
+def rk_golden_mean(
+    r: int = 4,
+    k: int = 3,
+    p: float = 0.5,
+    loop_symbol: int = 0,
+    name: str | None = None,
+) -> HMMTask:
+    """R-k golden mean process as drawn in Mahoney et al. 2016, Fig. 2 (R=4, k=3).
+
+    State A emits ``loop_symbol`` and stays (probability ``p``) or emits the
+    other symbol ``b`` (``1 - p``) and enters a deterministic chain that emits
+    ``r`` copies of ``b`` in total, then ``k`` copies of ``loop_symbol``, and
+    returns to A. ``r + k`` states. (Ho et al. 2020 Fig. 3a's "3-2" machine
+    is ``r=2, k=3, loop_symbol=1``; see docs/benchmarks.md.)
+    """
+    if r < 1 or k < 1:
+        raise ValueError("r and k must be >= 1")
+    a, b = loop_symbol, 1 - loop_symbol
+    n = r + k
+    edges = [(0, a, 0, p), (0, b, 1 % n, 1 - p)]
+    for s in range(1, n):
+        sym = b if s < r else a
+        edges.append((s, sym, (s + 1) % n, 1.0))
+    params = {"kind": "rk_golden_mean", "r": r, "k": k, "p": p, "loop_symbol": loop_symbol}
+    return HMMTask(_unifilar(2, n, edges), name=name or f"golden_mean_{r}_{k}", params=params)
+
+
+def nemo_process(
+    p: float = 0.666, q: float = 0.5, loop_symbol: int = 0, name: str = "nemo"
+) -> HMMTask:
+    """Nemo process (Mahoney et al. 2016 Fig. 3; Ho et al. 2020 Fig. 4a).
+
+    ``A -a|p-> A``, ``A -b|1-p-> B``, ``B -b|1-> C``, ``C -a|1-q-> A``,
+    ``C -b|q-> A`` with ``a = loop_symbol``. Mahoney: ``a = 0, q = 1/2``;
+    Ho: ``a = 1`` (then ``C -0|1-q-> A``, ``C -1|q-> A``). Infinite Markov
+    and cryptic order.
+    """
+    a, b = loop_symbol, 1 - loop_symbol
+    edges = [(0, a, 0, p), (0, b, 1, 1 - p), (1, b, 2, 1.0), (2, b, 0, 1 - q), (2, a, 0, q)]
+    params = {"kind": "nemo", "p": p, "q": q, "loop_symbol": loop_symbol}
+    return HMMTask(_unifilar(2, 3, edges), name=name, params=params)
+
+
+# Srinivasan, Gordon & Boots 2018, Sec. 5.4, Eq. 26: a hand-written 6-state,
+# 6-symbol HMM, column-stochastic: A[i, j] = P(next = i | j), C[y, j] = P(y | j).
+SRINIVASAN_HMM_A = [
+    [0.8, 0.01, 0, 0.1, 0.3, 0],
+    [0.02, 0.02, 0.1, 0.15, 0.05, 0],
+    [0.08, 0.03, 0.1, 0.4, 0.05, 0.5],
+    [0.05, 0.04, 0.5, 0.35, 0, 0.5],
+    [0.03, 0.5, 0.03, 0, 0.6, 0],
+    [0.02, 0.4, 0.27, 0, 0, 0],
+]
+SRINIVASAN_HMM_C = [
+    [0.2, 0, 0.05, 0.95, 0.01, 0.05],
+    [0.7, 0.1, 0.05, 0.01, 0.05, 0.05],
+    [0.05, 0.8, 0.1, 0.02, 0.05, 0.04],
+    [0.04, 0.04, 0.02, 0, 0.84, 0.11],
+    [0.01, 0.03, 0.7, 0.01, 0.02, 0.2],
+    [0, 0.03, 0.08, 0.01, 0.03, 0.55],
+]
+
+
+def srinivasan_hmm(n_symbols: int | None = 8, name: str = "srinivasan_hmm6") -> HMMTask:
+    """The 6-state / 6-symbol HMM of Srinivasan et al. 2018 Eq. 26 (Moore form).
+
+    In state ``j`` emit ``y ~ C[:, j]``, then move to ``i ~ A[:, j]``, so
+    ``L[y, j, i] = C[y, j] A[i, j]``. Started from the stationary distribution
+    (the paper gives none). Non-unifilar. Padded to ``n_symbols`` (default 8).
+    """
+    a = torch.tensor(SRINIVASAN_HMM_A, dtype=REAL_DTYPE)
+    c = torch.tensor(SRINIVASAN_HMM_C, dtype=REAL_DTYPE)
+    lab = torch.einsum("yj,ij->yji", c, a)
+    params = {"kind": "srinivasan_hmm", "n_symbols": n_symbols}
+    return HMMTask(pad_alphabet(lab, n_symbols), name=name, params=params)
+
+
+# -- retention probes (issue #2, section 7) -----------------------------------------
+def delayed_recall(tau: int = 4, name: str | None = None) -> HMMTask:
+    """Delayed recall at delay ``tau``: trials of ``tau + 2`` binary symbols.
+
+    Each trial is a uniform cue bit ``c``, ``tau`` i.i.d. uniform distractor
+    bits, then the recall symbol, which equals ``c``. Trials repeat
+    back to back; every sequence starts at a trial boundary. State =
+    (phase, cue), index ``2 * phase + cue``. The optimal predictor is certain
+    at the recall position (NLL 0, accuracy 1) and at chance elsewhere, so the
+    per-symbol optimum is ``ln 2`` times the fraction of non-recall positions.
+    Memory need: one bit held for ``tau + 1`` steps, plus the trial phase
+    (``tau + 2`` values) that a time-homogeneous model must also track.
+    """
+    if tau < 0:
+        raise ValueError("tau must be >= 0")
+    period = tau + 2
+    n = 2 * period
+    edges = []
+    for c in (0, 1):
+        for y in (0, 1):  # cue: the state's own cue bit is irrelevant at phase 0
+            edges.append((2 * 0 + c, y, 2 * 1 + y, 0.5))
+        for ph in range(1, period - 1):
+            for y in (0, 1):
+                edges.append((2 * ph + c, y, 2 * (ph + 1) + c, 0.5))
+        edges.append((2 * (period - 1) + c, c, 0, 1.0))
+    init = torch.zeros(n, dtype=REAL_DTYPE)
+    init[0] = 1.0
+    params = {"kind": "delayed_recall", "tau": tau}
+    return HMMTask(_unifilar(2, n, edges), init, name=name or f"recall_tau{tau}", params=params)
+
+
+def recall_positions(tau: int, length: int) -> torch.Tensor:
+    """0-based positions of the recall symbols in a ``delayed_recall(tau)`` sequence."""
+    return torch.arange(tau + 1, length, tau + 2)
+
+
+def parity_task(k: int = 3, noise: float = 0.1, name: str | None = None) -> HMMTask:
+    """Noisy parity of the last ``k`` symbols: ``y_t = y_{t-k} xor ... xor y_{t-1} xor e_t``.
+
+    ``e_t ~ Bernoulli(noise)``. An order-``k`` Markov chain whose next symbol
+    depends on all ``k`` previous symbols jointly (no proper subset helps:
+    without one of them the prediction is at chance), so the information is
+    spread over the window. ``2^k`` causal states, ``C_mu = k`` bits.
+    """
+    if k < 1 or not 0 < noise < 0.5:
+        raise ValueError("need k >= 1 and 0 < noise < 0.5")
+    rows = []
+    for c in range(2**k):
+        par = bin(c).count("1") % 2
+        rows.append([1 - noise, noise] if par == 0 else [noise, 1 - noise])
+    task = markov_task(k, rows, name=name or f"parity_k{k}")
+    task.params = {"kind": "parity", "k": k, "noise": noise}
+    return task
+
+
+def mixed_timescales(
+    switch_prob: float = 0.02,
+    fast_stay: float = 0.9,
+    marked: bool = True,
+    name: str | None = None,
+) -> HMMTask:
+    """A slow regime bit ``r`` and a fast Markov bit ``b``.
+
+    Each step the regime flips with probability ``switch_prob`` (slow
+    timescale ``~1/switch_prob``); then the data bit follows the regime's fast
+    Markov rule: in regime 0 it repeats the previous bit with probability
+    ``fast_stay``, in regime 1 it alternates with probability ``fast_stay``.
+
+    ``marked=True`` (default): the symbol is ``2 * flipped + b`` (4 symbols),
+    so a switch is visible when it happens but the regime itself must be
+    remembered for as long as it lasts (the parity of all switch marks so far).
+    The source is unifilar, the regime starts at 0, and the optimum is exact.
+    ``marked=False``: the symbol is ``b`` only; the regime is hidden, the
+    source is non-unifilar and only the per-sequence oracle is exact.
+
+    State index ``2 * r + b``; ``b`` starts uniform.
+    """
+    s, f = switch_prob, fast_stay
+    n_sym = 4 if marked else 2
+    edges = []
+    for r in (0, 1):
+        for b in (0, 1):
+            for flip, ps in ((0, 1 - s), (1, s)):
+                r2 = r ^ flip
+                for b2 in (0, 1):
+                    same = b2 == b
+                    pb = (f if same else 1 - f) if r2 == 0 else (1 - f if same else f)
+                    y = 2 * flip + b2 if marked else b2
+                    edges.append((2 * r + b, y, 2 * r2 + b2, ps * pb))
+    init = torch.tensor([0.5, 0.5, 0.0, 0.0], dtype=REAL_DTYPE)
+    params = {"kind": "mixed_timescales", "switch_prob": s, "fast_stay": f, "marked": marked}
+    tag = "" if marked else "_hidden"
+    return HMMTask(
+        _unifilar(n_sym, 4, edges),
+        init,
+        name=name or f"mixed_s{s:g}_f{f:g}{tag}",
+        params=params,
+    )
+
+
+# -- sources generated by a quantum instrument (HQMMs) -----------------------------
+class QuantumSourceTask:
+    """A source generated by a quantum instrument: an HQMM with Kraus operators.
+
+    Same interface as ``HMMTask`` (``sample``, ``predictive``, ``log_probs``,
+    ``step_entropies``, ``optimal_nll``, ``entropy_rate``, ``describe``). The
+    exact Bayes-optimal predictor is the instrument itself run forward on the
+    observed symbols: ``p(y | rho) = Tr(M_y rho)``, then ``rho <- K_y rho K_y^+ / p``.
+
+    Args:
+        instrument: a ``qmem.Instrument`` with ``n_outcomes`` symbols.
+        initial: ``(d, d)`` density matrix; default the channel's fixed point,
+            so the source is stationary.
+    """
+
+    def __init__(
+        self,
+        instrument: Instrument,
+        initial: torch.Tensor | None = None,
+        name: str = "hqmm",
+        params: dict[str, Any] | None = None,
+    ):
+        defect = float(instrument.completeness_defect())
+        if defect > 1e-10:
+            raise ValueError(f"instrument is not trace preserving (defect {defect:.2e})")
+        self.instrument = instrument
+        rho = channel_fixed_point(instrument) if initial is None else initial.to(DTYPE)
+        self.initial = rho
+        self.name = name
+        self.params = dict(params or {})
+        self._rate: float | None = None
+
+    @property
+    def n_symbols(self) -> int:
+        return self.instrument.n_outcomes
+
+    @property
+    def dim(self) -> int:
+        return self.instrument.dim
+
+    def describe(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "n_symbols": self.n_symbols,
+            "quantum_dim": self.dim,
+            "params": self.params,
+            "entropy_rate_nats": self.entropy_rate(),
+        }
+
+    def is_unifilar(self) -> bool:
+        return False
+
+    def sample(self, n: int, length: int, seed: int) -> torch.Tensor:
+        gen = torch.Generator().manual_seed(seed)
+        rho = self.initial.expand(n, -1, -1)
+        out = torch.empty(n, length, dtype=torch.long)
+        for t in range(length):
+            p = self.instrument.probabilities(rho).clamp(min=0)  # rounding: -1e-17
+            y = torch.multinomial(p, 1, generator=gen).squeeze(-1)
+            unnorm = self.instrument.branch(rho, y)
+            rho = unnorm / trace(unnorm).real[:, None, None]
+            out[:, t] = y
+        return out
+
+    def _check(self, sequences: torch.Tensor) -> torch.Tensor:
+        seq = torch.as_tensor(sequences, dtype=torch.long)
+        if seq.dim() == 1:
+            seq = seq[None]
+        if seq.numel() and (seq.min() < 0 or seq.max() >= self.n_symbols):
+            raise ValueError(f"tokens must lie in [0, {self.n_symbols})")
+        return seq
+
+    def predictive(self, sequences: torch.Tensor) -> torch.Tensor:
+        """Optimal ``p(. | y_<t)`` for ``t = 1..T+1``, shape ``(B, T+1, Y)``."""
+        seq = self._check(sequences)
+        rho = self.initial.expand(seq.shape[0], -1, -1)
+        out = [self.instrument.probabilities(rho)]
+        for t in range(seq.shape[1]):
+            unnorm = self.instrument.branch(rho, seq[:, t])
+            rho = unnorm / trace(unnorm).real[:, None, None]
+            out.append(self.instrument.probabilities(rho))
+        return torch.stack(out, dim=1)
+
+    def log_probs(self, sequences: torch.Tensor) -> torch.Tensor:
+        seq = self._check(sequences)
+        p = self.predictive(seq)[:, :-1].gather(-1, seq[..., None]).squeeze(-1)
+        return torch.log(p).nan_to_num(nan=-math.inf, neginf=-math.inf)
+
+    def _successors(
+        self, beliefs: torch.Tensor, mass: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, float]:
+        """One step of the belief enumeration: ``(next beliefs, their mass, H(Y | beliefs))``.
+
+        Identical normalised conditional states (to ``1e-11``) are merged.
+        """
+        inst = self.instrument
+        q = inst.probabilities(beliefs).clamp(min=0)  # (K, Y); rounding can give -1e-17
+        h = float((mass * _entropy_nats(q)).sum())
+        br = inst.branches(beliefs)  # (K, Y, d, d)
+        m = mass[:, None] * q
+        keep = m > 0
+        br, m = br[keep], m[keep]
+        br = br / trace(br).real[:, None, None]
+        flat = torch.cat([br.real.flatten(1), br.imag.flatten(1)], dim=1)
+        key = torch.round(flat * 10**_ROUND)
+        uniq, inv = torch.unique(key, dim=0, return_inverse=True)
+        first = torch.full((len(uniq),), len(inv), dtype=torch.long)
+        first.scatter_reduce_(0, inv, torch.arange(len(inv)), reduce="amin")
+        merged = torch.zeros(len(uniq), dtype=REAL_DTYPE).index_add_(0, inv, m)
+        return br[first], merged, h
+
+    def step_entropies(self, length: int, max_beliefs: int = 200_000) -> torch.Tensor:
+        """Exact ``H(Y_t | Y_<t)`` by enumerating distinct conditional states."""
+        beliefs, mass = self.initial[None].clone(), torch.ones(1, dtype=REAL_DTYPE)
+        out = []
+        for _ in range(length):
+            beliefs, mass, h = self._successors(beliefs, mass)
+            out.append(h)
+            if len(mass) > max_beliefs:
+                raise RuntimeError(f"{len(mass)} belief states; reduce length")
+        return torch.tensor(out, dtype=REAL_DTYPE)
+
+    def optimal_nll(self, length: int) -> float:
+        return float(self.step_entropies(length).mean())
+
+    def entropy_rate(self, max_length: int = 4000, tol: float = 1e-13) -> float:
+        """``lim H(Y_t | Y_<t)``: step entropies until successive values agree to ``tol``.
+
+        Raises if they have not converged by ``max_length`` (or the belief
+        enumeration exceeds 200k states). The result is cached.
+        """
+        if self._rate is not None:
+            return self._rate
+        beliefs, mass = self.initial[None].clone(), torch.ones(1, dtype=REAL_DTYPE)
+        prev = math.nan
+        for _ in range(max_length):
+            beliefs, mass, h = self._successors(beliefs, mass)
+            if abs(h - prev) < tol:
+                self._rate = h
+                return h
+            prev = h
+            if len(mass) > 200_000:
+                break
+        raise RuntimeError("step entropies did not converge; no exact entropy rate")
+
+
+def channel_fixed_point(instrument: Instrument) -> torch.Tensor:
+    """Stationary state of the outcome-averaged channel (eigenvalue-1 eigenvector).
+
+    Assumes the fixed point is unique (raises otherwise).
+    """
+    d = instrument.dim
+    k = instrument.kraus.reshape(-1, d, d)
+    # vec(K rho K^+) = (K ⊗ conj K) vec(rho) for row-major vec
+    sup = torch.einsum("aij,akl->ikjl", k, k.conj()).reshape(d * d, d * d)
+    ev, vecs = torch.linalg.eig(sup)
+    one = (ev - 1).abs() < 1e-9
+    if int(one.sum()) != 1:
+        raise ValueError(f"channel has {int(one.sum())} fixed points; pass initial explicitly")
+    rho = vecs[:, one.nonzero()[0, 0]].reshape(d, d)
+    rho = rho / torch.diagonal(rho).sum()
+    return ((rho + rho.conj().T) / 2).to(DTYPE)
+
+
+def probability_clock(name: str = "probability_clock") -> QuantumSourceTask:
+    """Srinivasan, Gordon & Boots 2018 Eq. 16: a 2-state, 2-symbol HQMM.
+
+    ``K_1 = R(0.6) diag(0.6, 1)``, ``K_2 = diag(0.8, 0)`` (paper's symbols 1, 2
+    are our 0, 1). Started from the channel's fixed point (the paper gives no
+    initial state; it discards a burn-in of 1000 steps).
+    """
+    c, s = math.cos(0.6), math.sin(0.6)
+    k = torch.zeros(2, 1, 2, 2, dtype=DTYPE)
+    k[0, 0] = torch.tensor([[0.6 * c, -s], [0.6 * s, c]], dtype=DTYPE)
+    k[1, 0] = torch.tensor([[0.8, 0.0], [0.0, 0.0]], dtype=DTYPE)
+    return QuantumSourceTask(Instrument(k), name=name, params={"kind": "probability_clock"})
+
+
+def stern_gerlach(n_symbols: int | None = 8, name: str = "stern_gerlach") -> QuantumSourceTask:
+    """Srinivasan, Gordon & Boots 2018 Eqs. 23-25: a spin-1/2 measured along a
+    uniformly random axis each step; 6 symbols (+z, -z, +x, -x, +y, -y = 0..5).
+
+    Started from the fixed point ``I/2``. Padded to ``n_symbols`` (default 8)
+    with zero Kraus operators.
+    """
+    a = 1 / math.sqrt(3)
+    b = 1 / (2 * math.sqrt(3))
+    j = 1j
+    mats = [
+        [[a, 0], [0, 0]],
+        [[0, 0], [0, a]],
+        [[b, b], [b, b]],
+        [[b, -b], [-b, b]],
+        [[b, -j * b], [j * b, b]],
+        [[b, j * b], [-j * b, b]],
+    ]
+    total = len(mats) if n_symbols is None else n_symbols
+    k = torch.zeros(total, 1, 2, 2, dtype=DTYPE)
+    for y, m in enumerate(mats):
+        k[y, 0] = torch.tensor(m, dtype=DTYPE)
+    params = {"kind": "stern_gerlach", "n_symbols": n_symbols}
+    return QuantumSourceTask(Instrument(k), name=name, params=params)
+
+
+Source = HMMTask | QuantumSourceTask
+
+TASK_KINDS: dict[str, Callable[..., Source]] = {
     "iid": iid_task,
     "markov": markov_task,
     "even": even_process,
     "golden_mean": golden_mean_process,
     "hmm": hmm_task,
+    "perturbed_coin": perturbed_coin,
+    "ghafari": ghafari_process,
+    "renewal": renewal_task,
+    "pmd_renewal": pmd_renewal,
+    "uniform_renewal": uniform_renewal,
+    "upset_gambler": upset_gambler,
+    "rk_golden_mean": rk_golden_mean,
+    "nemo": nemo_process,
+    "srinivasan_hmm": srinivasan_hmm,
+    "delayed_recall": delayed_recall,
+    "parity": parity_task,
+    "mixed_timescales": mixed_timescales,
+    "probability_clock": probability_clock,
+    "stern_gerlach": stern_gerlach,
 }
 
 
-def register_task(kind: str, constructor: Callable[..., HMMTask]) -> None:
+def register_task(kind: str, constructor: Callable[..., Source]) -> None:
     """Add a task kind (Phase 3: delayed recall, parity, ...)."""
     if kind in TASK_KINDS:
         raise ValueError(f"task kind {kind!r} already registered")
     TASK_KINDS[kind] = constructor
 
 
-def make_task(spec: dict[str, Any]) -> HMMTask:
+def make_task(spec: dict[str, Any]) -> Source:
     """Build a task from a config table: ``{"kind": ..., "name"?: ..., **params}``."""
     spec = dict(spec)
     kind = spec.pop("kind")

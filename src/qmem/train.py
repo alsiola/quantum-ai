@@ -228,7 +228,13 @@ def _accuracy(pred: torch.Tensor, seq: torch.Tensor) -> float:
 def evaluate(
     model: QuantumMemoryModel, sequences: torch.Tensor, task: HMMTask | None = None
 ) -> dict[str, Any]:
-    """Test metrics for ``model`` on ``sequences`` (per symbol; SE over sequences)."""
+    """Test metrics for ``model`` on ``sequences`` (per symbol; SE over sequences).
+
+    ``task`` may be any source with the ``HMMTask`` interface (including
+    ``QuantumSourceTask``). If its exact optimum cannot be enumerated at this
+    length, ``optimal_nll_nats`` is NaN with a note; the paired gap to the
+    oracle is always exact.
+    """
     seq = torch.as_tensor(sequences, dtype=torch.long)
     n, length = seq.shape
     before = dict(model.diagnostics)
@@ -246,7 +252,16 @@ def evaluate(
     if task is not None:
         oracle_seq = -task.log_probs(seq).mean(-1)
         diff = per_seq - oracle_seq
-        optimum = task.optimal_nll(length)
+        try:
+            optimum = task.optimal_nll(length)
+        except RuntimeError as exc:  # non-unifilar source: belief enumeration too large
+            optimum = math.nan
+            out["optimal_nll_note"] = f"exact optimum unavailable at length {length}: {exc}"
+        try:
+            rate = task.entropy_rate()
+        except RuntimeError as exc:
+            rate = math.nan
+            out["entropy_rate_note"] = str(exc)
         out.update(
             {
                 "oracle_nll_nats": float(oracle_seq.mean()),
@@ -256,7 +271,7 @@ def evaluate(
                 "optimal_nll_nats": optimum,
                 "optimal_nll_bits": optimum / LN2,
                 "gap_to_optimum_nats": float(per_seq.mean()) - optimum,
-                "entropy_rate_nats": task.entropy_rate(),
+                "entropy_rate_nats": rate,
                 "oracle_accuracy": _accuracy(task.predictive(seq)[:, :-1], seq),
             }
         )
