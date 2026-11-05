@@ -300,3 +300,97 @@ def memory_report_for_model(
                 inst, model.n_memory, None, n_reference, n=b, length=t, seed=purification_seed
             ),
         }
+
+
+# -- retention of a labelled event (issue #10) --------------------------------------
+@torch.no_grad()
+def label_retention(
+    instrument: Instrument,
+    rho0: torch.Tensor,
+    sequences: torch.Tensor,
+    label: torch.Tensor,
+    lag: torch.Tensor,
+    max_lag: int,
+) -> dict[int, dict[str, float]]:
+    """Holevo information (bits) between a binary label and the memory, per lag.
+
+    ``label`` and ``lag`` are ``(B, T)``: at position ``i`` (0-based) with
+    ``lag[b, i] = k >= 1``, the memory that predicts ``y_i`` (it has seen
+    ``y_0..y_{i-1}``) is pooled into lag ``k`` with label ``label[b, i]`` (``-1``:
+    skip). For ``marked_recall`` use ``marked_recall_events``: the label is the
+    trial's cue, ``k`` the steps since it, and only positions up to the recall
+    count, so this is the cue information still in the memory ``k`` steps later.
+    Also reports the trace distance between the two label-averaged memories.
+    """
+    states = memory_states(instrument, rho0, sequences)[:, :-1]
+    out: dict[int, dict[str, float]] = {}
+    for k in range(1, max_lag + 1):
+        sel = (lag == k) & (label >= 0)
+        n = int(sel.sum())
+        lab = label[sel]
+        if n == 0 or lab.min() == lab.max():
+            continue
+        rho = states[sel]
+        means = torch.stack([rho[lab == x].mean(0) for x in (0, 1)])
+        w = torch.tensor([float((lab == x).sum()) for x in (0, 1)], dtype=REAL_DTYPE) / n
+        ev = torch.linalg.eigvalsh(means[0] - means[1])
+        out[k] = {
+            "holevo_bits": holevo_bits(w, means),
+            "trace_distance": float(0.5 * ev.abs().sum()),
+            "n": n,
+        }
+    return out
+
+
+@torch.no_grad()
+def stored_bit_alignment(
+    instrument: Instrument,
+    rho0: torch.Tensor,
+    sequences: torch.Tensor,
+    label: torch.Tensor,
+    lag: torch.Tensor,
+    symbols: list[int],
+) -> dict[str, Any]:
+    """How the effects of ``symbols`` (e.g. the distractors) treat a stored binary label.
+
+    ``Delta = rho_bar_0 - rho_bar_1`` is the difference of the memories averaged over
+    every position with ``lag >= 1`` and label 0 or 1 (``label_retention``'s
+    convention). For each symbol ``y``:
+
+    * ``commutator``: ``||[E_y, Delta]||_F / (2 ||E_y||_op ||Delta||_F)`` in ``[0, 1]``;
+      0 means the readout commutes with the stored bit (it neither disturbs it
+      nor needs to, a protected subspace in the sense of issue #10).
+    * ``prob_bias``: ``Tr(E_y Delta) = p(y | label 0) - p(y | label 1)``; the source's
+      distractors have 0 here, so a nonzero value is a distractor misprediction
+      that reveals the stored bit.
+    * ``contraction``: trace distance between the two average memories after
+      outcome ``y`` (each renormalised), divided by the distance before. 1 means the
+      outcome keeps the label fully distinguishable; below 1, it erases part of it.
+    """
+    states = memory_states(instrument, rho0, sequences)[:, :-1]
+    sel = (lag >= 1) & (label >= 0)
+    rho, lab = states[sel], label[sel]
+    r0, r1 = rho[lab == 0].mean(0), rho[lab == 1].mean(0)
+    delta = r0 - r1
+
+    def tdist(a: torch.Tensor, b: torch.Tensor) -> float:
+        return float(0.5 * torch.linalg.eigvalsh(a - b).abs().sum())
+
+    before = tdist(r0, r1)
+    effects = instrument.effects()
+    rows = {}
+    for y in symbols:
+        e = effects[y]
+        comm = e @ delta - delta @ e
+        denom = 2 * float(torch.linalg.matrix_norm(e, ord=2)) * float(torch.linalg.norm(delta))
+        b0, b1 = instrument.branch(r0, y), instrument.branch(r1, y)
+        p0, p1 = float(trace(b0).real), float(trace(b1).real)
+        after = tdist(b0 / p0, b1 / p1) if p0 > 0 and p1 > 0 else math.nan
+        rows[y] = {
+            "commutator": float(torch.linalg.norm(comm)) / denom if denom > 0 else math.nan,
+            "prob_bias": float(torch.einsum("ij,ji->", e, delta).real),
+            "contraction": after / before if before > 0 else math.nan,
+            "p_label0": p0,
+            "p_label1": p1,
+        }
+    return {"trace_distance": before, "n_states": int(sel.sum()), "symbols": rows}

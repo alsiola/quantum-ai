@@ -568,6 +568,144 @@ def recall_positions(tau: int, length: int) -> torch.Tensor:
     return torch.arange(tau + 1, length, tau + 2)
 
 
+# -- marked delayed recall (issue #10) ------------------------------------------------
+DISTRACTOR_A, DISTRACTOR_B, CUE0, CUE1 = 0, 1, 2, 3
+
+
+def marked_recall(
+    tau: float = 4,
+    eps: float = 0.0,
+    timing: str = "geometric",
+    name: str | None = None,
+) -> HMMTask:
+    """Delayed recall with the phase marked in a 4-symbol alphabet (issue #10).
+
+    Symbols: ``0`` = distractor-a, ``1`` = distractor-b, ``2`` = cue-0, ``3`` = cue-1.
+    On two output ancillas the first bit is the *type* (0 distractor, 1 cue-type)
+    and the second the *value*. In architecture A an outcome bit 1 projects the
+    memory qubit it reads, so the frequent symbols (distractors) are the ones
+    whose type bit is 0 (docs/phase3e-retention.md).
+    Cue-type symbols alternate in role: the 1st, 3rd, ... are *cues* (uniform
+    values), the 2nd, 4th, ... are *recalls*, equal to the preceding cue with
+    probability ``1 - eps``. Every sequence starts before a cue.
+
+    ``timing = "geometric"`` (default): every symbol is cue-type with probability
+    ``q = 1 / (tau + 1)`` and a distractor (``a`` or ``b``, uniform) otherwise,
+    independently of everything else. The symbol *types* are i.i.d., so the
+    distractors carry no information about the cue or the phase, and the number of
+    distractors between a cue and its recall is geometric with mean ``tau``
+    (``P(D = k) = q (1 - q)^k``). Causal states: ``S`` (next cue-type symbol is a
+    fresh cue), ``W0``, ``W1`` (holding the cue). Three for every ``tau``: one cue
+    bit plus one phase bit, no clock.
+
+    ``timing = "fixed"``: a cue, exactly ``tau`` distractors, the recall, then the
+    next cue at once (``tau`` must be an integer). The marking does not remove the
+    clock: the source must count the distractors to know when the recall comes, so
+    it has ``2 tau + 3`` causal states, as ``delayed_recall``.
+
+    States: ``0`` = ``S``; geometric: ``1 + c`` = ``W_c``; fixed: ``1 + 2 k + c`` =
+    cue ``c`` with ``k`` distractors seen (``k = 0..tau``).
+    """
+    if not 0 <= eps <= 0.5:
+        raise ValueError("eps must lie in [0, 1/2]")
+    cue = (CUE0, CUE1)
+    edges: list[tuple[int, int, int, float]] = []
+    if timing == "geometric":
+        if tau < 0:
+            raise ValueError("tau must be >= 0")
+        q = 1.0 / (tau + 1.0)
+        n_states = 3
+        for s in range(3):
+            for d in (DISTRACTOR_A, DISTRACTOR_B):
+                if q < 1:
+                    edges.append((s, d, s, (1 - q) / 2))
+        for c in (0, 1):
+            edges.append((0, cue[c], 1 + c, q / 2))
+            edges.append((1 + c, cue[c], 0, q * (1 - eps)))
+            if eps > 0:
+                edges.append((1 + c, cue[1 - c], 0, q * eps))
+    elif timing == "fixed":
+        if tau < 0 or int(tau) != tau:
+            raise ValueError("fixed timing needs an integer tau >= 0")
+        tau = int(tau)
+        n_states = 1 + 2 * (tau + 1)
+        for c in (0, 1):
+            edges.append((0, cue[c], 1 + c, 0.5))
+            for k in range(tau):
+                for d in (DISTRACTOR_A, DISTRACTOR_B):
+                    edges.append((1 + 2 * k + c, d, 1 + 2 * (k + 1) + c, 0.5))
+            last = 1 + 2 * tau + c
+            edges.append((last, cue[c], 0, 1 - eps))
+            if eps > 0:
+                edges.append((last, cue[1 - c], 0, eps))
+    else:
+        raise ValueError("timing must be 'geometric' or 'fixed'")
+    init = torch.zeros(n_states, dtype=REAL_DTYPE)
+    init[0] = 1.0
+    params = {"kind": "marked_recall", "tau": tau, "eps": eps, "timing": timing}
+    default = f"marked_{timing[:3]}_tau{tau:g}" + (f"_eps{eps:g}" if eps else "")
+    return HMMTask(_unifilar(4, n_states, edges), init, name=name or default, params=params)
+
+
+def marked_recall_events(sequences: torch.Tensor) -> dict[str, torch.Tensor]:
+    """Cues, recalls and delays in ``marked_recall`` sequences (either timing).
+
+    Returns boolean masks ``cue``, ``recall`` and ``distractor`` of shape ``(B, T)``,
+    ``cue_value`` (the value of the trial's cue at every position from the cue up to
+    and including its recall, ``-1`` elsewhere), ``lag`` (steps since the cue at the
+    same positions: 1 = the step right after the cue, ``-1`` elsewhere) and
+    ``delay`` (at recall positions: distractors since the cue, ``-1`` elsewhere).
+    """
+    seq = torch.as_tensor(sequences, dtype=torch.long)
+    if seq.dim() == 1:
+        seq = seq[None]
+    cue_type = (seq == CUE0) | (seq == CUE1)
+    count = torch.cumsum(cue_type.long(), dim=1)  # cue-type symbols up to and incl. t
+    cue = cue_type & (count % 2 == 1)
+    recall = cue_type & (count % 2 == 0)
+    value = (seq == CUE1).long()
+    b, t = seq.shape
+    cue_value = torch.full((b, t), -1, dtype=torch.long)
+    lag = torch.full((b, t), -1, dtype=torch.long)
+    delay = torch.full((b, t), -1, dtype=torch.long)
+    cur_val = torch.full((b,), -1, dtype=torch.long)
+    cur_pos = torch.full((b,), -1, dtype=torch.long)
+    for i in range(t):
+        is_cue, is_rec = cue[:, i], recall[:, i]
+        waiting = cur_val >= 0
+        cue_value[:, i] = torch.where(waiting, cur_val, cue_value[:, i])
+        lag[:, i] = torch.where(waiting, i - cur_pos, lag[:, i])
+        delay[:, i] = torch.where(is_rec, i - cur_pos - 1, delay[:, i])
+        cur_val = torch.where(is_cue, value[:, i], torch.where(is_rec, -1, cur_val))
+        cur_pos = torch.where(is_cue, torch.full_like(cur_pos, i), cur_pos)
+    return {
+        "cue": cue,
+        "recall": recall,
+        "distractor": ~cue_type,
+        "cue_value": cue_value,
+        "lag": lag,
+        "delay": delay,
+    }
+
+
+def delayed_recall_events(tau: int, sequences: torch.Tensor) -> dict[str, torch.Tensor]:
+    """``cue_value`` and ``lag`` for ``delayed_recall(tau)``, as ``marked_recall_events``.
+
+    Positions ``k (tau + 2) + j`` with ``j = 1..tau+1`` carry the trial's cue and lag
+    ``j`` (the recall is lag ``tau + 1``); the rest are ``-1``.
+    """
+    seq = torch.as_tensor(sequences, dtype=torch.long)
+    if seq.dim() == 1:
+        seq = seq[None]
+    b, t = seq.shape
+    pos = torch.arange(t)
+    phase = pos % (tau + 2)
+    start = pos - phase
+    lag = torch.where(phase >= 1, phase, torch.full_like(phase, -1)).expand(b, t)
+    cue_value = torch.where(phase >= 1, seq[:, start], torch.full_like(seq, -1))
+    return {"cue_value": cue_value, "lag": lag.clone()}
+
+
 def parity_task(k: int = 3, noise: float = 0.0, name: str | None = None) -> HMMTask:
     """Noisy parity of the last ``k`` symbols: ``y_t = y_{t-k} xor ... xor y_{t-1} xor e_t``.
 
@@ -871,6 +1009,7 @@ TASK_KINDS: dict[str, Callable[..., Source]] = {
     "nemo": nemo_process,
     "srinivasan_hmm": srinivasan_hmm,
     "delayed_recall": delayed_recall,
+    "marked_recall": marked_recall,
     "parity": parity_task,
     "mixed_timescales": mixed_timescales,
     "probability_clock": probability_clock,

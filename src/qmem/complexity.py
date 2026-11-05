@@ -234,6 +234,24 @@ def qmachine_instrument(task: HMMTask) -> tuple[Instrument, torch.Tensor]:
     return Instrument(kraus), rho.to(DTYPE)
 
 
+def qmachine_state(task: HMMTask, state: int) -> torch.Tensor:
+    """Density matrix, in ``qmachine_instrument``'s basis, of the original ``state``'s causal state.
+
+    Use it as the initial memory to start the q-machine where the source starts
+    (e.g. ``task.initial`` concentrated on one state) instead of at stationarity.
+    """
+    em = epsilon_machine(task)
+    g = quantum_overlaps(task)["gram"]
+    w, v = torch.linalg.eigh((g + g.T) / 2)
+    keep = w > 1e-9 * w.max()
+    s = torch.sqrt(w[keep])[:, None] * v[:, keep].T
+    block = next((i for i, b in enumerate(em["blocks"]) if state in b), None)
+    if block is None:
+        raise ValueError(f"state {state} is not recurrent, so it has no causal state here")
+    col = s[:, block].to(DTYPE)
+    return torch.outer(col, col.conj())
+
+
 def pmd_qubit_instrument(period: int, gamma: float, v: float) -> tuple[Instrument, torch.Tensor]:
     """Wu et al. 2023 (Supplement S1, m = 1): a 1-qubit exact model of a PMD process.
 

@@ -21,14 +21,19 @@ from typing import Any
 import torch
 
 from .complexity import epsilon_machine, memory_profile, pmd_qubit_instrument, quantum_overlaps
-from .metrics import strength_lower_bound
+from .instrument import Instrument
+from .metrics import operational_strength, strength_lower_bound
+from .model import ModelConfig, build_model
 from .states import von_neumann_entropy
 from .tasks import (
+    CUE0,
+    CUE1,
     HMMTask,
     QuantumSourceTask,
     channel_fixed_point,
     delayed_recall,
     ghafari_process,
+    marked_recall_events,
     mixed_timescales,
     nemo_process,
     parity_task,
@@ -365,6 +370,99 @@ def recall_metrics(model: Any, task: Any, sequences: torch.Tensor) -> dict[str, 
     }
 
 
+def _type_value(pred: torch.Tensor, seq: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    """``-log p(type)`` and ``-log p(value | type)`` of the observed symbols (``marked_recall``)."""
+    p_cue = pred[..., CUE0] + pred[..., CUE1]
+    is_cue = seq >= CUE0
+    p_type = torch.where(is_cue, p_cue, 1 - p_cue)
+    p_sym = pred.gather(-1, seq[..., None]).squeeze(-1)
+    return -torch.log(p_type), -torch.log(p_sym / p_type)
+
+
+@torch.no_grad()
+def marked_recall_metrics(
+    model: Any, task: Any, sequences: torch.Tensor, delay_bins: list[int] | None = None
+) -> dict[str, Any]:
+    """Scores of a model on a ``marked_recall`` task (issue #10), against the exact source.
+
+    Each position's loss splits as ``-log p(y) = -log p(type) - log p(value | type)``
+    (type: distractor or cue-type; value: a/b or 0/1). At the recall positions the
+    *value* NLL and accuracy (cue-1 against cue-0) measure the memory and leave out
+    when the recall comes: optimum ``H(eps)`` and ``1 - eps``; with no memory of the
+    cue, ``ln 2`` and 0.5. The paired gaps (model - source, nats per position) are
+    reported for the type (all positions) and for the value at distractor, cue and
+    recall positions. With geometric timing the type is i.i.d. and independent of
+    the history, so each of these averages is an expected KL and is ``>= 0``; a model
+    that protects its memory by mispredicting distractors shows it in the type or
+    distractor-value gap. ``by_delay``: value accuracy and NLL per realised delay
+    (distractors between cue and recall), binned at the left edges ``delay_bins``.
+    """
+    seq = torch.as_tensor(sequences, dtype=torch.long)
+    ev = marked_recall_events(seq)
+    pred = model.predictive_probs(seq)[:, :-1]
+    src = task.predictive(seq)[:, :-1]
+    m_type, m_val = _type_value(pred, seq)
+    s_type, s_val = _type_value(src, seq)
+    rec, dis, cue = ev["recall"], ev["distractor"], ev["cue"]
+    truth = seq == CUE1
+
+    def acc(p: torch.Tensor) -> torch.Tensor:
+        return ((p[..., CUE1] > p[..., CUE0]) == truth).double()
+
+    m_acc, s_acc = acc(pred), acc(src)
+    n_rec = int(rec.sum())
+    v_nll = m_val[rec]
+    gap_val = m_val - s_val
+    out: dict[str, Any] = {
+        "tau": task.params["tau"],
+        "eps": task.params.get("eps", 0.0),
+        "n_recalls": n_rec,
+        "recall_value_nll_nats": float(v_nll.mean()),
+        "recall_value_nll_se": float(v_nll.std() / math.sqrt(n_rec)),
+        "recall_accuracy": float(m_acc[rec].mean()),
+        "recall_accuracy_se": float(m_acc[rec].std() / math.sqrt(n_rec)),
+        "recall_nll_nats": float((m_type + m_val)[rec].mean()),
+        "source_recall_value_nll_nats": float(s_val[rec].mean()),
+        "source_recall_accuracy": float(s_acc[rec].mean()),
+        "source_recall_nll_nats": float((s_type + s_val)[rec].mean()),
+        "memoryless_recall_value_nll_nats": LN2,
+        "gap_all_nats": float((m_type + m_val - s_type - s_val).mean()),
+        "gap_type_nats": float((m_type - s_type).mean()),
+        "gap_value_distractor_nats": float(gap_val[dis].mean()),
+        "gap_value_cue_nats": float(gap_val[cue].mean()),
+        "gap_value_recall_nats": float(gap_val[rec].mean()),
+        "fraction_recall": n_rec / seq.numel(),
+        "fraction_distractor": float(dis.double().mean()),
+        "fraction_cue": float(cue.double().mean()),
+    }
+    out["gap_non_recall_nats"] = (
+        out["gap_all_nats"] - out["fraction_recall"] * out["gap_value_recall_nats"]
+    ) / (1 - out["fraction_recall"])
+    bins = delay_bins or [0, 1, 2, 4, 8, 16, 32, 64]
+    delays = ev["delay"][rec]
+    rows = []
+    for i, lo in enumerate(bins):
+        hi = bins[i + 1] if i + 1 < len(bins) else None
+        m = delays >= lo if hi is None else (delays >= lo) & (delays < hi)
+        n = int(m.sum())
+        if n == 0:
+            continue
+        a, nll = m_acc[rec][m], v_nll[m]
+        rows.append(
+            {
+                "delay_lo": lo,
+                "delay_hi": hi,
+                "n": n,
+                "mean_delay": float(delays[m].double().mean()),
+                "accuracy": float(a.mean()),
+                "accuracy_se": float(a.std() / math.sqrt(n)) if n > 1 else math.nan,
+                "value_nll_nats": float(nll.mean()),
+            }
+        )
+    out["by_delay"] = rows
+    return out
+
+
 # -- one row of the suite catalogue ---------------------------------------------------
 def entropy_rate_monte_carlo(
     task: Any, n: int = 200, length: int = 3000, burn_in: int = 1000, seed: int = 0
@@ -498,3 +596,73 @@ def noise_profile(
 def stationary_or_initial(task: HMMTask) -> torch.Tensor:
     """States with weight in the stationary distribution or at the start."""
     return stationary_distribution(task.transition) + task.initial
+
+
+# -- the feed-forward layout's own strength window (issue #10) -------------------------
+def feedforward_readout(n_memory: int, n_output: int, g: float) -> Instrument:
+    """The bare coupling ``D_y(g)`` of architecture A (shared ``g``, ``V = W_y = I``).
+
+    ``V`` and ``W_y`` don't change the spectra of the effects or ``eta``, so every
+    feed-forward instrument with strength ``g`` has these effect eigenvalues.
+    """
+    cfg = ModelConfig(
+        n_memory=n_memory, n_output=n_output, memory_depth=0, strength=g, strength_shared=True
+    )
+    return build_model(cfg).instrument()
+
+
+def feedforward_eta(n_memory: int, n_output: int, g: float) -> float:
+    """Operational strength ``eta`` of the feed-forward layout at shared strength ``g``."""
+    with torch.no_grad():
+        return float(operational_strength(feedforward_readout(n_memory, n_output, g)))
+
+
+def feedforward_g_for_eta(n_memory: int, n_output: int, eta: float, tol: float = 1e-12) -> float:
+    """The ``g`` in ``[0, pi/2]`` with ``feedforward_eta(g) = eta`` (bisection; monotone)."""
+    if not 0 <= eta <= 1:
+        raise ValueError("eta must lie in [0, 1]")
+    lo, hi = 0.0, math.pi / 2
+    while hi - lo > tol:
+        mid = (lo + hi) / 2
+        if feedforward_eta(n_memory, n_output, mid) < eta:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
+
+
+def feedforward_strength_floor(
+    task: HMMTask, n_memory: int, n_output: int, tol: float = 1e-10
+) -> dict[str, Any]:
+    """Least shared ``g`` at which architecture A passes the per-outcome spectral test.
+
+    An exact model needs ``lambda_min(E_y) <= p(y|h) <= lambda_max(E_y)`` for every
+    outcome and history. In the feed-forward layout the spectra depend on ``g``
+    alone, and both conditions get easier as ``g`` grows, so the least admissible
+    ``g`` is found by bisection. The extreme ``p(y|h)`` are taken over the causal
+    states (exact for a unifilar source, as in ``strength_floor``). Necessary, not
+    sufficient: passing it does not mean the dynamics can be matched.
+    """
+    em = epsilon_machine(task)
+    rows = em["labelled"].sum(-1).T  # (n_causal_states, Y)
+    top, bottom = rows.max(0).values, rows.min(0).values
+
+    def ok(g: float) -> bool:
+        ev = torch.linalg.eigvalsh(feedforward_readout(n_memory, n_output, g).effects())
+        return bool((ev[:, -1] >= top - 1e-12).all() and (ev[:, 0] <= bottom + 1e-12).all())
+
+    if not ok(math.pi / 2):
+        return {"g_floor": None, "eta_floor": None, "admissible": False}
+    lo, hi = 0.0, math.pi / 2
+    if ok(0.0):
+        hi = 0.0
+    while hi - lo > tol:
+        mid = (lo + hi) / 2
+        lo, hi = (lo, mid) if ok(mid) else (mid, hi)
+    return {
+        "g_floor": hi,
+        "eta_floor": feedforward_eta(n_memory, n_output, hi),
+        "admissible": True,
+        "max_prob_per_outcome": top.tolist(),
+        "min_prob_per_outcome": bottom.tolist(),
+    }

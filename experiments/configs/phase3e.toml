@@ -1,0 +1,125 @@
+# Phase 3e (issue #10): retention under repeated measurement in architecture A.
+# Run: uv run python experiments/phase3e.py --config experiments/configs/phase3e.toml
+#
+# Every run = one [[arms]] entry x one tau x one strength setting x one model seed.
+# Strength settings: "eta=<x>" fixes the shared g so that the operational strength of
+# the feed-forward layout is x (qmem.benchmarks.feedforward_g_for_eta, per n_memory and
+# alphabet); "trained" starts at g = pi/4 and trains g. [model] and [train] are the
+# Phase 3d feed-forward recipe; an arm may override them.
+
+[experiment]
+name = "phase3e"
+workers = 7
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+summary_dir = "results/summaries/phase3e"
+
+[data]
+n_train = 512
+n_val = 256
+n_test = 512
+length = 128                # tau = 32 still gives ~2 recalls per sequence
+seed = 0
+
+[model]                     # architecture A, feed-forward layout, shared strength
+n_memory = 2
+n_output = 2
+n_env = 0
+memory_depth = 2
+joint_depth = 0
+feedforward_depth = 2
+strength = 0.7853981633974483   # pi/4: the start of the trained-strength runs
+strength_trainable = false
+strength_shared = true
+rotations = ["ry", "rz"]
+entangler = "cnot"
+pattern = "linear"
+initial = "zero"
+init_scale = 1.0
+
+[train]                     # Phase 2 / 3d recipe
+optimizer = "adam"
+lr = 0.05
+schedule = "constant"
+steps = 1500
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 30
+min_delta = 1e-4
+restore_best = true
+clip_grad_norm = 0.0
+
+[analysis]
+max_lag = 40                # cue retention (Holevo) up to this lag
+delay_bins = [0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48]
+holevo_threshold_bits = 0.1 # retention horizon: first lag with cue Holevo below this
+n_reference = 1
+purification_seed = 4321
+purification_threshold_bits = 0.01
+
+# -- arms ----------------------------------------------------------------------------
+# The marked task is qmem.tasks.marked_recall (geometric timing: 3 causal states for
+# every tau). "clock" is #8's delayed_recall (binary alphabet, fixed delay, 2 tau + 3
+# causal states) at matched n, eps, data, recipe and eta.
+
+[[arms]]
+name = "grid"               # strength x delay, 2 memory qubits
+task = { kind = "marked_recall", eps = 0.05 }
+taus = [1, 2, 4, 8, 16, 32]
+etas = [0.45, 0.6, 0.75, 0.9, 0.97, 1.0]
+trained = true
+
+[[arms]]
+name = "eps"                # the other noise levels, trained strength only
+task = { kind = "marked_recall" }
+eps = [0.0, 0.1]
+taus = [1, 2, 4, 8, 16, 32]
+etas = []
+trained = true
+
+[[arms]]
+name = "clock"              # #8's implicit-clock recall at matched settings
+task = { kind = "delayed_recall", eps = 0.05 }
+model = { n_output = 1 }
+taus = [1, 2, 4, 8, 16, 32]
+etas = [0.97, 1.0]          # its eta floor is 0.95 at eps = 0.05
+trained = true
+
+[[arms]]
+name = "n1"
+task = { kind = "marked_recall", eps = 0.05 }
+model = { n_memory = 1 }
+taus = [1, 4, 16]
+etas = [0.6, 0.9, 1.0]
+trained = true
+
+[[arms]]
+name = "n3"
+task = { kind = "marked_recall", eps = 0.05 }
+model = { n_memory = 3 }
+taus = [2, 8, 32]
+etas = [0.6, 0.9, 1.0]
+trained = true
+
+# Capacity check: a general circuit (memory HEA -> couplings -> 4 joint HEA layers on
+# every qubit; trainable unshared g), not strength-faithful, at the same n.
+[[arms]]
+name = "general"
+task = { kind = "marked_recall", eps = 0.05 }
+model = { joint_depth = 4, feedforward_depth = 0, strength_shared = false, strength_trainable = true }
+taus = [4, 16]
+n_memory = [1, 2]
+etas = []
+trained = true
+
+# Falsification of "weak helps": tuned learning rate, 3x the steps, 4x the data, at
+# eta just above the floor, the best interior eta of the grid, and projective.
+[[arms]]
+name = "falsify"
+task = { kind = "marked_recall", eps = 0.05 }
+data = { n_train = 2048 }
+train = { steps = 4500, patience = 60 }
+taus = [4, 16]
+etas = [0.6, 0.75, 1.0]
+lrs = [0.02, 0.05, 0.1]
+trained = true
