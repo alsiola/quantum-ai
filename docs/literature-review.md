@@ -33,6 +33,7 @@ Claims are attributed with keys such as `[Franceschetto2026]`, which resolve in 
    - An instrument {K_y} that both emits a symbol and updates a quantum memory is a *hidden quantum Markov model* (HQMM) [Monras2011]. Equivalently it is a quantum stochastic simulator in computational mechanics [Gu2012; Binder2018; Liu2019].
    - Our exact circuit form (persistent memory ⊗ fresh ancilla → unitary U → measure the ancilla, so K_y = ⟨y|U|0⟩) is the standard "unitary quantum causal model" of that literature [Binder2018; Liu2019].
    - It also appears as the Stinespring circuit for QHMMs with mid-circuit measurement [Markov2022].
+   - It is the non-adaptive baseline of [Stefanski2025], trained on real limit-order-book sequences. Their "long-memory" extension adds a *classical* controller that conditions the measurement basis on past outcomes.
    - In tensor-network language it is a sequentially generated MPS / finitely correlated state [Schon2005; Fannes1992]. With mixed states or several Kraus operators per symbol it is a locally purified state [Glasser2019].
 2. **Training it by likelihood is established.**
    - Kraus operators have been fitted by maximum likelihood with Givens-rotation search [Srinivasan2018], Stiefel-manifold gradient descent [Adhikary2020] and Newton–Schulz retraction [Ning2026].
@@ -64,7 +65,7 @@ Claims are attributed with keys such as `[Franceschetto2026]`, which resolve in 
 
 ### 2.1 The four seed references
 
-All four exist, and their titles, venues and DOIs match the brief. Three were read in full. The fourth (ICAIF 2025) was available only as an abstract: the ACM site blocks automated access, and no preprint was found.
+All four exist, and their titles, venues and DOIs match the brief. All four were read in full. The ACM site blocks automated access, so the project owner supplied the ICAIF 2025 PDF.
 
 #### 2.1.1 Harnessing Quantum Backaction for Time-Series Processing [Franceschetto2026] [FT]
 
@@ -130,23 +131,66 @@ All four exist, and their titles, venues and DOIs match the brief. Three were re
 
 **Relevance.** This is a direct competitor on the "smaller quantum memory than classical" claim, and a source of the co-emission divergence rate (CDR) metric.
 
-#### 2.1.4 Adaptive Quantum Channels as Long-Memory Generative Models [Stefanski2025] [Abs]
+#### 2.1.4 Adaptive Quantum Channels as Long-Memory Generative Models [Stefanski2025] [FT]
 
-**Citation.** C. Stefanski, V. Markov, D. Novak, V. Rastunkov (IBM). *Proc. 6th ACM International Conference on AI in Finance (ICAIF '25)*, pp. 492–500, 14 November 2025. doi:10.1145/3768292.3770440. The citation matches the brief: verified on Crossref, Semantic Scholar, OpenAlex and the IBM Research publication page.
+**Citation.** C. Stefanski, V. Markov, D. Novak (Wells Fargo) and V. Rastunkov (IBM Quantum). *Proc. 6th ACM International Conference on AI in Finance (ICAIF '25)*, pp. 492–500, 2025. doi:10.1145/3768292.3770440.
+- The citation matches the brief, verified on Crossref, Semantic Scholar, OpenAlex and the IBM Research publication page.
+- The paper is open access (CC BY-NC-ND). The ACM site blocks automated access, so the project owner supplied the PDF, which was read in full.
+- There is no arXiv version.
+- Some web-search summaries wrongly attribute the paper to other authors and to *Phil. Trans. R. Soc. A*. That attribution comes from a "related" sidebar.
 
-The paper is open access (CC BY-NC-ND), but **only the abstract and the Crossref reference list could be read**. The ACM pages block automated access with a Cloudflare check, and no arXiv version exists. Some web-search summaries wrongly attribute the paper to different authors and to *Phil. Trans. R. Soc. A*; that came from a "related" sidebar.
+**Base model (their §4).** This is the instrument model of issue 2 §2, implemented as a circuit:
+- An n-qubit system register and an m-qubit ancilla.
+- A fixed trained unitary U (layers of RX/RY/RZ, circular CNOTs and controlled phases), and a trained initial-state unitary U₀.
+- Each ancilla qubit is measured *projectively* in a trainable rotated basis (θᵢ, φᵢ).
+- The outcome bitstring is the emitted symbol. The ancilla is reset, and the system state becomes K_e ρ K_e†/P(e), with K_e = (I ⊗ ⟨e|) U (I ⊗ |e₀⟩).
+- The authors present this as the existing "quantum channels as generative models" of [Markov2022] and [Markov2024], generalised by the trainable measurement basis.
+- *(Our analysis)* A fixed rotated-basis measurement is equivalent to a local unitary on the ancilla followed by a computational-basis measurement. In the non-adaptive case it can therefore be absorbed into U.
 
-**From the abstract.**
-- It proposes "a history-dependent extension of completely positive trace-preserving (CPTP) maps", where "at each step, these channels apply measurement bases conditioned on the history of the observation process".
-- The measurement basis "directly influences the latent state", which makes the dynamics non-Markovian, with "entanglement in time".
-- An adaptive mechanism learns short- and long-term dependencies.
-- It is trained as a generative model of limit-order-book mid-price movements and reproduces marginal and joint distributions and volatility regimes.
+**Adaptive extension (their §5).** A **classical** controller sets per-step corrections to the measurement-basis angles:
+- The corrections are Δθᵗ, Δφᵗ = b + W·Hᵗ, plus optional second-order terms W̃·χᵗ (products of adjacent past outcomes, an "agreement detector").
+- The inputs are the last k outcomes, re-encoded as ±1.
+- The resulting Kraus operators depend explicitly on the classical history.
+- The authors call these "long-memory" models because history enters through this classical channel, *in addition to* the quantum state.
 
-**Not verified:** the loss, whether measurements are weak or projective, any quantitative result, and any hardware run.
+**Analysis.** k-step "space–time density matrices" built from Choi operators, after [Milekhin2025] [Meta]. Two temporal-entanglement witnesses: p-imagitivity, and order-2 Tsallis entropy.
 
-**Related work by the same group.** [Markov2022] (arXiv:2212.03796) [FT-t] gives the Stinespring/mid-circuit-measurement implementation of QHMMs that this work presumably builds on. It trains with evolutionary structure search and derivative-free optimisers, and checks sequence probabilities on ibmq_montreal.
+**Training.**
+- The loss is a mean-squared error between empirical and model sequence probabilities, weighted by empirical probability, over all sequences up to length ℓ = 7: L = Σ P̂(o)(P̂(o) − P(o|P))².
+- It is **not** a likelihood.
+- The optimiser is described only as "classical optimization methods". The CCS concepts list evolutionary algorithms.
 
-**Relevance.** This is potentially the closest prior work to "a trained, outcome-conditioned quantum generative sequence model with long memory". The difference, as far as the abstract shows, is the mechanism. Here a *classical* adaptive controller chooses the measurement basis from the history. Our proposal has a fixed learned instrument whose backaction alone carries the memory. Our ablation D, and any novelty claim, must be checked against the full text.
+**Data and tasks.**
+- AAPL Level-1 limit-order-book data at 1-second resolution. Trained on February 2025; evaluated on 3 March 2025.
+- Three tasks:
+
+  | Task | System qubits | Ancilla qubits | Controller lags |
+  |---|---|---|---|
+  | Binary mid-price direction | 3 | 1 | 6 |
+  | Four volatility regimes | 4 | 2 | 6 |
+  | Joint direction × regime | 5 | 3 | — |
+
+**Results.** All results are reported as figures only. The authors report:
+- the learned sequence distributions match the empirical ones (lengths 1–4, and 1–2 for larger alphabets);
+- error falls as the controller's history length grows, and lag 0 (non-adaptive) is the worst;
+- nonlinear controllers beat linear ones at every lag;
+- the temporal-entanglement measures grow with lag.
+
+**Limitations.**
+- There are **no classical baselines**: no HMM, n-gram or RNN.
+- Results are not reported across seeds, and there is no held-out likelihood.
+- The only ablation is lag 0 versus lag > 0.
+- There is no measurement-strength parameter; all measurements are projective.
+- Simulation only. Hardware deployment is listed as future work.
+
+**Relevance.**
+- The paper's *non-adaptive baseline* (lag 0) is essentially our architecture A, already applied to real financial sequences, though trained with an MSE loss rather than NLL. It is further prior art for the model class (§3).
+- Its *adaptive* model breaks our design rule of never substituting a classical hidden state for the quantum memory. Its gain over lag 0 is exactly the kind of result issue 2 §15 warns about. It shows that adding classical memory helps. It does not show that quantum backaction is a useful memory.
+- For us, it is best treated as a hybrid **classical-feedback baseline**, comparable to [Kobayashi2024] and [Murauer2025] in QRC. It is not a competitor to the backaction-only hypothesis.
+
+**Related work by the same group.**
+- [Markov2022] [FT-t] (arXiv:2212.03796) gives the Stinespring/mid-circuit-measurement QHMM circuit. It trains with evolutionary structure search and derivative-free optimisers, and checks sequence probabilities on ibmq_montreal.
+- [Markov2024] [Meta] (ICAIF '24) applies non-adaptive channels to mid-price movements.
 
 ### 2.2 Hidden quantum Markov models and their learning
 
@@ -328,7 +372,7 @@ The paper is open access (CC BY-NC-ND), but **only the abstract and the Crossref
   - What the literature does support is a **representational** separation: a non-negative MPS (an HMM) may need many more states than a complex Born machine or LPS of the same bond dimension [Glasser2019; Gao2022].
   - A complex MPS / uMPS of bond dimension 2ⁿ is therefore the strongest "same model class, classical" baseline. It is essentially our model with the physical-circuit constraint removed.
 - **Separations.** Gao et al. [Gao2022] [Abs] prove an unconditional expressivity separation between Bayesian networks and their minimal quantum extension, attributed to contextuality and non-locality.
-- **Trainable channels.** Apart from the HQMM learning work in §2.2 and [Stefanski2025], we found no verified paper on "variational quantum instruments" as such. Searches were rate-limited, so this gap is not conclusive. Quantum Boltzmann machines [Amin2018] [Meta] are not sequence models.
+- **Trainable channels.** Apart from the HQMM learning work in §2.2, [Markov2024] and [Stefanski2025], we found no verified paper on "variational quantum instruments" as such. Searches were rate-limited, so this gap is not conclusive. Quantum Boltzmann machines [Amin2018] [Meta] are not sequence models.
 
 ### 2.8 Hardware: mid-circuit measurement, reset, feedforward
 
@@ -379,7 +423,8 @@ The parts of the proposal sort as follows.
 |---|---|---|
 | **Physical mechanism:** measuring a coupled ancilla emits a symbol, and Kraus backaction updates the memory | **Existing.** Textbook quantum instruments and trajectories. | [Davies1970; Kraus1983; Brun2002; Wiseman2009] |
 | **Model class:** instrument {K_y} as a generative sequence model, ρ' = K_yρK_y†/p(y) | **Existing.** This is the HQMM. | [Monras2011; Srinivasan2018; Adhikary2020; Sundar2026] |
-| **Circuit form:** memory ⊗ fresh ancilla → U → measure the ancilla, K_y = ⟨y\|U\|0⟩ | **Existing.** | [Binder2018; Liu2019; Markov2022; Yang2021] |
+| **Circuit form:** memory ⊗ fresh ancilla → U → measure the ancilla, K_y = ⟨y\|U\|0⟩ | **Existing.** Applied to real financial sequences in [Markov2024] and [Stefanski2025]. | [Binder2018; Liu2019; Markov2022; Yang2021; Stefanski2025] |
+| **"Long memory" by conditioning the instrument on past outcomes through a *classical* controller** | **Existing** (a hybrid). This breaks our no-classical-hidden-state rule, so it is a baseline, not our hypothesis. | [Stefanski2025]; QRC analogues [Kobayashi2024; Murauer2025] |
 | **Learning procedure:** maximise sequence likelihood under teacher forcing, gradients through exact simulation | **Existing.** Stiefel-manifold and Adam-based NLL training. A parameter-shift-style recurrent rule exists for a related cost. | [Adhikary2020; Yang2021; Ning2026; Wang2026] |
 | **Generative QRNN sampling** in which the measured output is the token and its collapse is the memory update | **Existing**, though not framed as an instrument and with no strength or memory analysis | [Bausch2020]; [Nikoloska2023], stochastic QRNN variant |
 | **Memory advantage over classical models** for specific processes | **Existing theory; demonstrated** on photonic and IBM hardware for 1–2 qubit memories | [Gu2012; Elliott2020; Wu2023; Palsson2017; Yang2021] |
@@ -400,7 +445,7 @@ The parts of the proposal sort as follows.
    - A as a function of θ (whether weak measurement helps).
 
    We flag this for the architecture issue.
-5. **[Stefanski2025] must be read in full** before any final novelty statement about long-memory adaptive quantum channels.
+5. **[Stefanski2025] does not change this assessment.** It has been read in full. Its quantum part is our model A, with a projective, rotated-basis measurement and an MSE loss. Its long-memory gains come from a classical history controller, and it reports no classical baselines.
 
 ---
 
@@ -457,6 +502,7 @@ Values not verified in this review (the even process and the simple non-unifilar
   - small GRU and RNN.
 - **Classical, same model class:** a complex uMPS / Born machine of bond dimension 2ⁿ, and a locally purified state [Glasser2019; Miller2020]. This is the most important baseline: it separates "quantum-circuit structure" from "complex linear model of this dimension".
 - **Quantum, unconstrained instrument:** an HQMM on the Stiefel manifold trained as in [Adhikary2020]. This separates our physical-circuit parameterisation from a general instrument.
+- **Hybrid classical-feedback baseline:** the non-adaptive channel plus a classical history controller, as in [Stefanski2025]. It measures how much a *classical* side memory adds on top of A, and should be reported apart from the quantum-only models.
 - **Quantum ablations** (issue 2 §6):
   - A: conditioned;
   - B: outcome-averaged control (§3 caveat);
@@ -559,7 +605,9 @@ Each entry gives the read-depth tag; arXiv IDs are given where they exist. Keys 
 - **[Mackey1977]** [Meta] Michael C. Mackey, Leon Glass. *Oscillation and chaos in physiological control systems*. Science 197, 287 (1977). doi:10.1126/science.267326
 - **[Mahoney2016]** [FT-t] J. R. Mahoney, C. Aghamohammadi, J. P. Crutchfield. *Occam's Quantum Strop: Synchronizing and Compressing Classical Cryptic Processes via a Quantum Channel*. Sci. Rep. 6, 20495 (2016). doi:10.1038/srep20495 · arXiv:1508.02760
 - **[Markov2022]** [FT-t] Vanio Markov, Vladimir Rastunkov, Amol Deshmukh, Daniel Fry, Charlee Stefanski. *Implementation and Learning of Quantum Hidden Markov Models*. arXiv preprint (2022). arXiv:2212.03796
+- **[Markov2024]** [Meta] Vanio Slavov Markov, Vladimir Rastunkov, Juan I Adame. *Quantum Generative Models of Mid-Price Movement in Limit Order Books*. Proc. 5th ACM Int. Conf. on AI in Finance (ICAIF '24), pp. 737-744 (2024). doi:10.1145/3677052.3698679
 - **[MartinezPena2021]** [Abs] Rodrigo Martínez-Peña, Gian Luca Giorgi, Johannes Nokkala, Miguel C. Soriano, Roberta Zambrini. *Dynamical Phase Transitions in Quantum Reservoir Computing*. Phys. Rev. Lett. 127, 100502 (2021). doi:10.1103/PhysRevLett.127.100502 · arXiv:2103.05348
+- **[Milekhin2025]** [Meta] Alexey Milekhin, Zofia Adamska, John Preskill. *Observable and computable entanglement in time*. arXiv preprint (2025). arXiv:2502.12240
 - **[Miller2020]** [Abs] Jacob Miller, Guillaume Rabusseau, John Terilla. *Tensor Networks for Probabilistic Sequence Modeling*. arXiv preprint (venue not verified) (2020). arXiv:2003.01039
 - **[Monomi2025]** [FT-t] Tomoya Monomi, Wataru Setoyama, Yoshihiko Hasegawa. *Feedback-enhanced quantum reservoir computing with weak measurements*. arXiv preprint (2025). arXiv:2503.17939
 - **[Monras2011]** [Abs] Alex Monras, Almut Beige, Karoline Wiesner. *Hidden Quantum Markov Models and non-adaptive read-out of many-body states*. Appl. Math. Comput. Sci. 3, 93 (2011). arXiv:1002.2337
@@ -587,7 +635,7 @@ Each entry gives the read-depth tag; arXiv IDs are given where they exist. Keys 
 - **[Srinivasan2018]** [FT-t] Siddarth Srinivasan, Geoff Gordon, Byron Boots. *Learning Hidden Quantum Markov Models*. AISTATS 2018, PMLR 84:1979-1987 (2018). arXiv:1710.09016
 - **[Srinivasan2018HSE]** [Abs] Siddarth Srinivasan, Carlton Downey, Byron Boots. *Learning and Inference in Hilbert Space with Quantum Graphical Models*. arXiv preprint (arXiv comment says NIPS 2018; not verified) (2018). arXiv:1810.12369
 - **[Srinivasan2020TN]** [Abs] Siddarth Srinivasan, Sandesh Adhikary, Jacob Miller, Guillaume Rabusseau, Byron Boots. *Quantum Tensor Networks, Stochastic Processes, and Weighted Automata*. arXiv preprint (2020). arXiv:2010.10653
-- **[Stefanski2025]** [Abs] Charlee Stefanski, Vanio Markov, David Novak, Vladimir Rastunkov. *Adaptive Quantum Channels as Long-Memory Generative Models*. Proc. 6th ACM Int. Conf. on AI in Finance (ICAIF '25), pp. 492-500 (2025). doi:10.1145/3768292.3770440
+- **[Stefanski2025]** [FT] Charlee Stefanski, Vanio Markov, David Novak, Vladimir Rastunkov. *Adaptive Quantum Channels as Long-Memory Generative Models*. Proc. 6th ACM Int. Conf. on AI in Finance (ICAIF '25), pp. 492-500 (2025). doi:10.1145/3768292.3770440
 - **[Stinespring1955]** [Meta] W. Forrest Stinespring. *Positive Functions on C*-Algebras*. Proc. Amer. Math. Soc. 6, 211 (1955). doi:10.2307/2032342
 - **[Sundar2026]** [FT] Rishi Sundar, Thomas J. Elliott. *Quantum dimension reduction of hidden Markov models*. Phys. Rev. A 113, 062461 (2026). doi:10.1103/plt9-cm1x · arXiv:2601.16126
 - **[Takaki2021]** [FT-t] Yuto Takaki, Kosuke Mitarai, Makoto Negoro, Keisuke Fujii, Masahiro Kitagawa. *Learning temporal data with a variational quantum recurrent neural network*. Phys. Rev. A 103, 052414 (2021). doi:10.1103/PhysRevA.103.052414 · arXiv:2012.11242
