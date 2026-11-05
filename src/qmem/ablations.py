@@ -42,7 +42,13 @@ from typing import Any
 import torch
 from torch import nn
 
-from .circuits import Block, ControlledRotationBlock, FixedUnitaryBlock, HardwareEfficientBlock
+from .circuits import (
+    Block,
+    ControlledRotationBlock,
+    FixedUnitaryBlock,
+    HardwareEfficientBlock,
+    OutcomeConditionedBlock,
+)
 from .gates import ry, rz
 from .instrument import kraus_from_unitary
 from .linalg import REAL_DTYPE, eye, trace
@@ -416,6 +422,11 @@ def block_gates(block: Block) -> list[tuple[str, tuple[int, ...]]]:
         return gates
     if isinstance(block, ControlledRotationBlock):
         return [("cry", tuple(p)) for p in block.pairs]
+    if isinstance(block, OutcomeConditionedBlock):
+        # Feed-forward: after the readout, the classically controlled W_y (one per token)
+        # acts on the memory. Count one W_y's gates, mapped onto the memory qubits.
+        mem = block.memory
+        return [(f"ff_{n}", tuple(mem[q] for q in qs)) for n, qs in block_gates(block.ws[0])]
     if isinstance(block, FixedUnitaryBlock):
         return [("fixed", block.qubits)]
     raise TypeError(f"no gate list for {type(block).__name__}")
@@ -453,10 +464,12 @@ def resource_counts(model: QuantumMemoryModel) -> dict[str, Any]:
         "classically_controlled_gates_per_token": 0,
         "n_parameters": model.n_parameters(),
     }
+    n_ff = sum(name.startswith("ff_") for name, _ in gates)
+    out["classically_controlled_gates_per_token"] = n_ff
     if isinstance(model, ClassicalFeedbackModel):
         anc = list(range(model.n_memory, model.n_memory + model.n_output))
         gates = gates + [(r, (q,)) for q in anc for r in ("rz", "ry")]
-        out["classically_controlled_gates_per_token"] = 2 * model.n_output
+        out["classically_controlled_gates_per_token"] += 2 * model.n_output
         out["classical_buffer_bits"] = model.feedback_lags * model.n_output
     out.update(gate_resources(gates, list(range(model.n_qubits))))
     if isinstance(model, ResetMemoryModel):

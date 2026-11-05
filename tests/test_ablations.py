@@ -394,6 +394,19 @@ def test_gate_resources_of_a_hardware_efficient_block():
     assert rc["memory_resets_per_token"] == 0.5 and rc["mid_circuit_measurements_per_token"] == 1
 
 
+def test_resources_count_feedforward_as_classically_controlled():
+    ff = {**BIN, "joint_depth": 0, "feedforward_depth": 2, "strength_shared": True}
+    rc = resource_counts(build_variant(ff))
+    # W_y: 2 layers x (2 qubits x 2 rotations + 1 CNOT) = 10 gates, fed forward per token.
+    assert rc["classically_controlled_gates_per_token"] == 10
+    for variant in ("B", "C", "hybrid"):
+        m = build_variant({**ff, "variant": variant})
+        assert validity_defect(m) < 1e-12
+        with torch.no_grad():
+            p = m.log_prob(all_sequences(2, 4)).exp().sum()
+        assert math.isclose(float(p), 1.0, abs_tol=1e-11)
+
+
 def test_run_one_trains_a_variant():
     spec = RunSpec(
         group="t/D",

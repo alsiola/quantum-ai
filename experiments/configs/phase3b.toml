@@ -91,6 +91,14 @@ name = "A"
 bound = "oracle"
 model = { variant = "A" }
 
+# A under the feed-forward layout of issue #9 (docs/phase3d-strength.md):
+# K_y = W_y D_y(g) V with joint_depth = 0, 2-layer W_y per outcome and one shared g.
+# Added after #9 landed, as the coordinator asked; trained with --from-run.
+[[variants]]
+name = "A (feed-forward)"
+bound = "oracle"
+model = { variant = "A", joint_depth = 0, feedforward_depth = 2, strength_shared = true }
+
 [[variants]]
 name = "B (control)"
 bound = "block1"
