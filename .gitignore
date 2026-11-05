@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+scratch/
+# Raw experiment outputs stay local; small curated summaries are committed.
+results/*
+!results/README.md
+!results/summaries/
