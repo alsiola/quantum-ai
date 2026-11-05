@@ -21,6 +21,9 @@ applied after the readout):
   ``eta = 0`` iff every ``E_y`` is proportional to ``I`` (no information);
   ``eta = 1`` iff the effects are as sharp as ``Y`` outcomes on ``d`` levels
   allow. For the weak measurement ``D_y(g)`` with one coupling, ``eta = sin^2 g``.
+* ``strength_lower_bound``: since ``p(y|rho) <= lambda_max(E_y)``, a model
+  that reproduces a source's next-symbol distributions needs
+  ``sum_y lambda_max(E_y) >= sum_y max_h p(y|h)``: a task-imposed floor on ``eta``.
 * ``mutual_information``: ``I(R:Y)`` in nats between the outcome and a
   reference ``R`` purifying the memory state ``rho`` (Buscemi, Hayashi and
   Horodecki 2008):
@@ -110,6 +113,26 @@ def mutual_information(inst: Instrument, rho: torch.Tensor) -> float:
         if p > 1e-15:
             out -= p * _entropy(sigma / p)
     return out
+
+
+def strength_lower_bound(predictive: torch.Tensor, dim: int) -> dict[str, Any]:
+    """Least ``eta`` any instrument on ``dim`` levels needs to reproduce ``predictive`` exactly.
+
+    ``predictive`` holds next-symbol distributions ``(..., Y)`` over histories
+    (e.g. a task's oracle ``p(.|y_<t)``). A model that reproduces them assigns
+    ``p(y|rho_h) = Tr(E_y rho_h) <= lambda_max(E_y)`` for every history ``h``, so
+    ``sum_y lambda_max(E_y) >= sum_y max_h p(y|h)``, i.e. ``eta`` is at least
+    ``(sum_y max_h p(y|h) - 1) / (min(Y, dim) - 1)``. Histories not in
+    ``predictive`` can only raise the bound. Rows with NaN (impossible
+    prefixes) are skipped.
+    """
+    p = predictive.reshape(-1, predictive.shape[-1]).to(torch.float64)
+    p = p[torch.isfinite(p).all(-1)]
+    top = p.max(0).values
+    y = p.shape[-1]
+    denom = min(y, dim) - 1
+    eta = float((top.sum() - 1) / denom) if denom > 0 else 0.0
+    return {"max_prob_per_outcome": top.tolist(), "eta_lower_bound": max(eta, 0.0)}
 
 
 # -- disturbance -----------------------------------------------------------------------

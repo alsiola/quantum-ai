@@ -27,8 +27,9 @@ from typing import Any
 import torch
 
 from qmem.experiment import RunSpec, aggregate, is_success, load_model, mean_se, run_many
-from qmem.metrics import operational_summary
+from qmem.metrics import operational_summary, strength_lower_bound
 from qmem.records import REPO_ROOT, new_run_dir, run_metadata, save_json
+from qmem.tasks import make_task
 
 sys.path.insert(0, str(Path(__file__).parent))
 import phase2
@@ -90,6 +91,16 @@ def run_metrics(rec: dict[str, Any], success_gap: float) -> dict[str, Any]:
         with torch.no_grad():
             row.update(operational_summary(load_model(rec).instrument()))
     return row
+
+
+def task_floors(tasks_cfg: dict[str, Any], dim: int) -> dict[str, dict[str, Any]]:
+    """Task-imposed floor on eta from the oracle predictive over the test split."""
+    out = {}
+    for name, t in tasks_cfg["tasks"].items():
+        task = make_task({**t["spec"], "name": name})
+        test = phase2.build_splits(task, tasks_cfg["data"]).test
+        out[name] = strength_lower_bound(task.predictive(test), dim)
+    return out
 
 
 def metric_rows(per_run: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -186,7 +197,20 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         w.writerows(flat)
 
 
-def write_summary(summary_dir, cfg, train_rows, met_rows, per_run, meta, wall, commits) -> None:
+def floors_table(floors: dict[str, dict[str, Any]]) -> list[str]:
+    lines = [
+        "| task | max_h p(y|h) per symbol | eta floor |",
+        "|---|---|---|",
+    ]
+    for name, f in floors.items():
+        mx = ", ".join(f"{x:.2f}" for x in f["max_prob_per_outcome"])
+        lines.append(f"| {name} | {mx} | {fmt(f['eta_lower_bound'], 3)} |")
+    return lines
+
+
+def write_summary(
+    summary_dir, cfg, train_rows, met_rows, per_run, floors, meta, wall, commits
+) -> None:
     summary_dir.mkdir(parents=True, exist_ok=True)
     write_csv(summary_dir / "training.csv", train_rows)
     write_csv(summary_dir / "metrics.csv", met_rows)
@@ -198,6 +222,7 @@ def write_summary(summary_dir, cfg, train_rows, met_rows, per_run, meta, wall, c
             "training": train_rows,
             "metrics": met_rows,
             "per_run": slim,
+            "task_floors": floors,
             "wall_seconds": wall,
         },
     )
@@ -233,6 +258,16 @@ def write_summary(summary_dir, cfg, train_rows, met_rows, per_run, meta, wall, c
         "`docs/phase3d-strength.md` for definitions.",
         "",
         *metrics_table(met_rows),
+        "",
+        "## Task-imposed floor on eta",
+        "",
+        "`p(y|rho) <= lambda_max(E_y)`, so reproducing the source exactly needs "
+        "`eta >= (sum_y max_h p(y|h) - 1)/(min(Y,d) - 1)`, maxima over the oracle's "
+        "next-symbol distributions on the test histories (`qmem.metrics.strength_lower_bound`). "
+        "In the feed-forward layout with shared g, `lambda_max(E_y)` is also capped per "
+        "outcome: `sin^2 g` for symbol 1 (binary).",
+        "",
+        *floors_table(floors),
         "",
         f"Stationary states: max residual {max(s['residual'] for s in stat):.1e}; "
         f"{sum(s['n_unit_eigenvalues'] > 1 for s in stat)} of {len(stat)} channels have a "
@@ -279,12 +314,16 @@ def main() -> None:
     print("scoring instruments ...")
     per_run = [run_metrics(r, exp["success_gap"]) for r in records]
     met_rows = metric_rows(per_run)
+    floors = task_floors(tasks_cfg, 2 ** exp["n_memory"])
     wall = time.perf_counter() - start
     meta = run_metadata(cfg)
-    save_json(out / "metrics.json", {"meta": meta, "per_run": per_run, "metrics": met_rows})
+    save_json(
+        out / "metrics.json",
+        {"meta": meta, "per_run": per_run, "metrics": met_rows, "task_floors": floors},
+    )
     summary_dir = REPO_ROOT / exp["summary_dir"]
     commits = [r["meta"]["git_commit"] for r in records]
-    write_summary(summary_dir, cfg, train_rows, met_rows, per_run, meta, wall, commits)
+    write_summary(summary_dir, cfg, train_rows, met_rows, per_run, floors, meta, wall, commits)
     phase3d_plots.make_all(summary_dir, per_run)
     print("\n".join(training_table(train_rows)))
     print(f"\nwrote {summary_dir} and {out} ({wall / 60:.1f} min)")

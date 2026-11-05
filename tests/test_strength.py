@@ -30,6 +30,7 @@ from qmem.metrics import (
     operational_strength,
     operational_summary,
     stationary_state,
+    strength_lower_bound,
     tv_gain,
 )
 
@@ -302,3 +303,20 @@ def test_mutual_information_limits():
     # on a pure state there is nothing to learn about the reference
     plus = ket_to_dm(torch.tensor([1, 1], dtype=DTYPE) / math.sqrt(2))
     assert mutual_information(_weak(math.pi / 2), plus) == pytest.approx(0, abs=1e-12)
+
+
+def test_strength_lower_bound():
+    # iid needs no information; deterministic transitions both ways need eta = 1
+    iid = torch.tensor([[0.8, 0.2], [0.8, 0.2]])
+    assert strength_lower_bound(iid, 4)["eta_lower_bound"] == pytest.approx(0)
+    flip = torch.tensor([[1.0, 0.0], [0.0, 1.0]])
+    assert strength_lower_bound(flip, 4)["eta_lower_bound"] == pytest.approx(1)
+    # a weak instrument cannot exceed its ceiling: p(1|rho) <= sin^2 g for every rho
+    g = 0.6
+    inst = _weak(g, n_memory=2)
+    gen = torch.Generator().manual_seed(7)
+    p = inst.probabilities(ket_to_dm(_haar_kets(5000, 4, gen)))
+    assert float(p[:, 1].max()) <= math.sin(g) ** 2 + 1e-12
+    bound = strength_lower_bound(p, 4)["eta_lower_bound"]
+    assert bound <= operational_strength(inst) + 1e-12
+    assert bound > operational_strength(inst) - 0.02
