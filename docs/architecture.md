@@ -375,3 +375,29 @@ in `docs/phase3b-ablations.md`.
 * The instrument is time-homogeneous (one `U` for all steps); no input-dependent
   gates yet.
 * Barren plateaus are not addressed; `init_scale` is the only knob so far.
+
+## 8. Baselines (Phase 3a, `qmem.baselines`)
+
+Every baseline has A's interface (`step_log_probs`, `log_prob`, `predictive_probs`,
+`sample`, `n_parameters`, `diagnostics`) plus `describe()` (state dimension, analytic
+multiply-adds per symbol), so `qmem.train.train` and `qmem.train.evaluate` treat it
+exactly like A. Results and the comparison are in `docs/phase3a-baselines.md`.
+
+| baseline | maths | code |
+|---|---|---|
+| HMM, D states | labelled transitions `L[y,i,j] = P(y, j \| i)`, belief `b' ∝ b L[y]` (the classical instrument) | `HMMModel`; `fit_em` (Baum-Welch) or gradient via softmax logits |
+| order-k Markov | add-α smoothed counts of the last `min(t, k)` symbols | `NGramModel`, `fit_ngram` (reuses `analysis._markov_counts`) |
+| GRU / tanh RNN | one-hot previous symbol → hidden `h` → softmax | `RNNModel` (float64 `nn.GRU` / `nn.RNN`) |
+| complex uMPS / LPS | `p(y \| L) ∝ Tr(Σ_k A_yk L A_yk† Σ)`, `Σ` the fixed point of `Σ_yk A_yk† · A_yk` | `UMPSModel` (`purification = κ`) |
+| HQMM | Kraus `K[y,e]` stacked as an isometry `V = QR(W)`, `V†V = I` | `StiefelInstrumentModel` (subclasses `QuantumMemoryModel`, so it uses `Instrument`) |
+
+Two identities worth keeping in mind when reading the comparison:
+
+* A uMPS of bond dimension χ with positive-definite `Σ` is gauge-equivalent
+  (`A → Σ^{1/2} A Σ^{-1/2}`) to an instrument with one Kraus operator per outcome on a
+  χ-dimensional pure memory, which is A's model class with `n_env = 0`. The uMPS and the
+  HQMM with `E = 1` are therefore the same class under different parameterisations
+  (unconstrained with a fixed-point normalisation, against the Stiefel manifold).
+* The HQMM's `V` is the ancilla-`|0,0>` column block of an arbitrary unitary on
+  memory ⊗ output ⊗ env (`StiefelInstrumentModel.unitary()` completes it), so the HQMM is
+  A with the circuit replaced by an unrestricted unitary.
