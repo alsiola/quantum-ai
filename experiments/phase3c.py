@@ -30,7 +30,7 @@ from typing import Any
 
 import torch
 
-from qmem.benchmarks import describe_benchmark, literature_checks, recall_metrics
+from qmem.benchmarks import describe_benchmark, literature_checks, noise_profile, recall_metrics
 from qmem.diagnostics import memory_report_for_model, prediction_retention
 from qmem.experiment import RunSpec, aggregate, build_splits, load_model, mean_se, run_many
 from qmem.records import REPO_ROOT, new_run_dir, run_metadata, save_json
@@ -63,7 +63,9 @@ def describe_suite(cfg: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
-def suite_markdown(rows: list[dict[str, Any]], checks: list[dict[str, Any]], meta) -> str:
+def suite_markdown(
+    rows: list[dict[str, Any]], checks: list[dict[str, Any]], meta, noise: list[dict[str, Any]]
+) -> str:
     length = rows[0]["length"] if rows else "?"
     lines = [
         "# Phase 3c benchmark suite",
@@ -122,6 +124,36 @@ def suite_markdown(rows: list[dict[str, Any]], checks: list[dict[str, Any]], met
         )
     n_ok = sum(c["agrees"] for c in checks)
     lines += ["", f"{n_ok} of {len(checks)} literature numbers reproduced.", ""]
+    if noise:
+        dims = sorted(noise[0]["eta_floor"])
+        lines += [
+            "## Retention probes with noise eps",
+            "",
+            "Delayed recall: the recall symbol is wrong with probability eps. Parity: the output",
+            "is flipped with probability eps. Mixed timescales: the data bit breaks its regime's",
+            "rule with probability eps. eps = 0 is the default. `eta_floor(d)` is the least",
+            "operational strength (`qmem.metrics.strength_lower_bound`) with which any instrument",
+            "on a `d`-dimensional memory can reproduce the source exactly. It is exact here,",
+            "taken over the causal states. Optima in bits per symbol, length "
+            f"{noise[0]['length']}.",
+            "",
+            "| probe | eps | H/T | h | recall-position optimum (NLL bits / acc) | "
+            "min / max emission prob | " + " | ".join(f"eta_floor(d={d})" for d in dims) + " |",
+            "|---|---|---|---|---|---|" + "---|" * len(dims),
+        ]
+        for r in noise:
+            rec = (
+                f"{r['recall_optimal_nll_nats'] / LN2:.4f} / {r['recall_optimal_accuracy']:.2f}"
+                if "recall_optimal_nll_nats" in r
+                else "n/a"
+            )
+            floors = " | ".join(f"{r['eta_floor'][d]:.4f}" for d in dims)
+            lines.append(
+                f"| {r['probe']} | {r['eps']:g} | {r['optimal_nll_nats'] / LN2:.4f} | "
+                f"{r['entropy_rate_nats'] / LN2:.4f} | {rec} | "
+                f"{r['min_emission_prob']:.4f} / {r['max_emission_prob']:.4f} | {floors} |"
+            )
+        lines.append("")
     return "\n".join(lines)
 
 
@@ -405,9 +437,12 @@ def main() -> None:
     print("part 1: describing the suite ...")
     suite = describe_suite(cfg)
     checks = literature_checks()
-    save_json(out / "suite.json", {"meta": meta, "suite": suite, "literature": checks})
-    save_json(summary_dir / "suite.json", {"meta": meta, "suite": suite, "literature": checks})
-    (summary_dir / "suite.md").write_text(suite_markdown(suite, checks, meta))
+    nz = cfg["suite"].get("noise")
+    noise = noise_profile(nz["eps"], cfg["data"]["length"], nz["dims"]) if nz else []
+    payload = {"meta": meta, "suite": suite, "literature": checks, "noise": noise}
+    save_json(out / "suite.json", payload)
+    save_json(summary_dir / "suite.json", payload)
+    (summary_dir / "suite.md").write_text(suite_markdown(suite, checks, meta, noise))
     print(f"  literature: {sum(c['agrees'] for c in checks)}/{len(checks)} reproduced")
     if args.suite_only:
         return

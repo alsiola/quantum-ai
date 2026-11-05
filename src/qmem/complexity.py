@@ -61,7 +61,11 @@ def epsilon_machine(task: HMMTask) -> dict[str, Any]:
     """
     succ = _successor(task)
     emit = task.labelled.sum(-1).T  # (S, Y)
-    pi_all = stationary_distribution(task.transition)
+    init = task.initial
+    if torch.allclose(init @ task.transition, init, atol=1e-12):
+        pi_all = init  # the start is stationary (e.g. a deterministic parity, where
+    else:  # the stationary distribution is not unique)
+        pi_all = stationary_distribution(task.transition)
     alive = (pi_all > 1e-14).nonzero().flatten().tolist()
     # initial partition: by emission distribution
     label = {s: tuple(round(x, _ROUND) for x in emit[s].tolist()) for s in alive}

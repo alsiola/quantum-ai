@@ -53,10 +53,16 @@ clip_grad_norm = 0.0
 [suite]
 monte_carlo_seed = 0        # only for entropy rates with no closed form
 
+# Retention probes as functions of the noise eps (every emission probability in
+# [eps, 1-eps] for recall and parity), with eta_floor (qmem.metrics) per memory dimension.
+[suite.noise]
+eps = [0.0, 0.01, 0.02, 0.05, 0.1, 0.2]
+dims = [2, 4, 8]
+
 [suite.tasks]
 perturbed_coin = { kind = "perturbed_coin", p = 0.3 }
 ghafari = { kind = "ghafari", p = 0.5, q = 0.5 }
-ghafari_yang = { kind = "ghafari", p = 0.3, q = 0.8 }
+ghafari_p03_q08 = { kind = "ghafari", p = 0.3, q = 0.8 }
 pmd_N3 = { kind = "pmd_renewal", period = 3, gamma = 0.5, v = 0.4 }
 pmd_N4 = { kind = "pmd_renewal", period = 4, gamma = 0.5, v = 0.4 }
 pmd_N5 = { kind = "pmd_renewal", period = 5, gamma = 0.5, v = 0.4 }

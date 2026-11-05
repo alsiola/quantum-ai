@@ -524,7 +524,7 @@ def srinivasan_hmm(n_symbols: int | None = 8, name: str = "srinivasan_hmm6") -> 
 
 
 # -- retention probes (issue #2, section 7) -----------------------------------------
-def delayed_recall(tau: int = 4, name: str | None = None) -> HMMTask:
+def delayed_recall(tau: int = 4, eps: float = 0.0, name: str | None = None) -> HMMTask:
     """Delayed recall at delay ``tau``: trials of ``tau + 2`` binary symbols.
 
     Each trial is a uniform cue bit ``c``, ``tau`` i.i.d. uniform distractor
@@ -535,9 +535,15 @@ def delayed_recall(tau: int = 4, name: str | None = None) -> HMMTask:
     per-symbol optimum is ``ln 2`` times the fraction of non-recall positions.
     Memory need: one bit held for ``tau + 1`` steps, plus the trial phase
     (``tau + 2`` values) that a time-homogeneous model must also track.
+
+    ``eps`` (default 0): the recall symbol is wrong with probability ``eps``, so
+    every emission probability lies in ``[eps, 1 - eps]``. The recall-position
+    optimum is then ``H(eps)`` nats and accuracy ``1 - eps``.
     """
     if tau < 0:
         raise ValueError("tau must be >= 0")
+    if not 0 <= eps <= 0.5:
+        raise ValueError("eps must lie in [0, 1/2]")
     period = tau + 2
     n = 2 * period
     edges = []
@@ -547,11 +553,14 @@ def delayed_recall(tau: int = 4, name: str | None = None) -> HMMTask:
         for ph in range(1, period - 1):
             for y in (0, 1):
                 edges.append((2 * ph + c, y, 2 * (ph + 1) + c, 0.5))
-        edges.append((2 * (period - 1) + c, c, 0, 1.0))
+        edges.append((2 * (period - 1) + c, c, 0, 1.0 - eps))
+        if eps > 0:
+            edges.append((2 * (period - 1) + c, 1 - c, 0, eps))
     init = torch.zeros(n, dtype=REAL_DTYPE)
     init[0] = 1.0
-    params = {"kind": "delayed_recall", "tau": tau}
-    return HMMTask(_unifilar(2, n, edges), init, name=name or f"recall_tau{tau}", params=params)
+    params = {"kind": "delayed_recall", "tau": tau, "eps": eps}
+    default = f"recall_tau{tau}" + (f"_eps{eps:g}" if eps else "")
+    return HMMTask(_unifilar(2, n, edges), init, name=name or default, params=params)
 
 
 def recall_positions(tau: int, length: int) -> torch.Tensor:
@@ -559,29 +568,34 @@ def recall_positions(tau: int, length: int) -> torch.Tensor:
     return torch.arange(tau + 1, length, tau + 2)
 
 
-def parity_task(k: int = 3, noise: float = 0.1, name: str | None = None) -> HMMTask:
+def parity_task(k: int = 3, noise: float = 0.0, name: str | None = None) -> HMMTask:
     """Noisy parity of the last ``k`` symbols: ``y_t = y_{t-k} xor ... xor y_{t-1} xor e_t``.
 
-    ``e_t ~ Bernoulli(noise)``. An order-``k`` Markov chain whose next symbol
-    depends on all ``k`` previous symbols jointly (no proper subset helps:
-    without one of them the prediction is at chance), so the information is
-    spread over the window. ``2^k`` causal states, ``C_mu = k`` bits.
+    ``e_t ~ Bernoulli(noise)`` (``noise`` is the probe's ``eps``; default 0, a
+    deterministic parity after the first ``k`` symbols). An order-``k`` Markov
+    chain whose next symbol depends on all ``k`` previous symbols jointly (no
+    proper subset helps: without one of them the prediction is at chance), so
+    the information is spread over the window. ``2^k`` causal states,
+    ``C_mu = k`` bits. Starts from the uniform window distribution, which is
+    stationary for every ``noise`` (the window map is a bijection).
     """
-    if k < 1 or not 0 < noise < 0.5:
-        raise ValueError("need k >= 1 and 0 < noise < 0.5")
+    if k < 1 or not 0 <= noise <= 0.5:
+        raise ValueError("need k >= 1 and 0 <= noise <= 0.5")
     rows = []
     for c in range(2**k):
         par = bin(c).count("1") % 2
         rows.append([1 - noise, noise] if par == 0 else [noise, 1 - noise])
-    task = markov_task(k, rows, name=name or f"parity_k{k}")
-    task.params = {"kind": "parity", "k": k, "noise": noise}
-    return task
+    chain = markov_task(k, rows)
+    uniform = torch.full((2**k,), 2.0**-k, dtype=REAL_DTYPE)
+    params = {"kind": "parity", "k": k, "noise": noise}
+    return HMMTask(chain.labelled, uniform, name=name or f"parity_k{k}", params=params)
 
 
 def mixed_timescales(
     switch_prob: float = 0.02,
     fast_stay: float = 0.9,
     marked: bool = True,
+    eps: float = 0.0,
     name: str | None = None,
 ) -> HMMTask:
     """A slow regime bit ``r`` and a fast Markov bit ``b``.
@@ -598,9 +612,15 @@ def mixed_timescales(
     ``marked=False``: the symbol is ``b`` only; the regime is hidden, the
     source is non-unifilar and only the per-sequence oracle is exact.
 
+    ``eps`` (default 0): the data bit is flipped relative to the regime's rule
+    with probability ``eps`` (``fast_stay -> (1-eps) fast_stay + eps (1 - fast_stay)``),
+    so its conditional probabilities lie in ``[eps, 1 - eps]``.
+
     State index ``2 * r + b``; ``b`` starts uniform.
     """
-    s, f = switch_prob, fast_stay
+    if not 0 <= eps <= 0.5:
+        raise ValueError("eps must lie in [0, 1/2]")
+    s, f = switch_prob, (1 - eps) * fast_stay + eps * (1 - fast_stay)
     n_sym = 4 if marked else 2
     edges = []
     for r in (0, 1):
@@ -613,12 +633,18 @@ def mixed_timescales(
                     y = 2 * flip + b2 if marked else b2
                     edges.append((2 * r + b, y, 2 * r2 + b2, ps * pb))
     init = torch.tensor([0.5, 0.5, 0.0, 0.0], dtype=REAL_DTYPE)
-    params = {"kind": "mixed_timescales", "switch_prob": s, "fast_stay": f, "marked": marked}
-    tag = "" if marked else "_hidden"
+    params = {
+        "kind": "mixed_timescales",
+        "switch_prob": s,
+        "fast_stay": fast_stay,
+        "marked": marked,
+        "eps": eps,
+    }
+    tag = ("" if marked else "_hidden") + (f"_eps{eps:g}" if eps else "")
     return HMMTask(
         _unifilar(n_sym, 4, edges),
         init,
-        name=name or f"mixed_s{s:g}_f{f:g}{tag}",
+        name=name or f"mixed_s{s:g}_f{fast_stay:g}{tag}",
         params=params,
     )
 

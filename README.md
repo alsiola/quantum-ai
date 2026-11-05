@@ -46,6 +46,19 @@ and writes `results/summaries/phase2/`. It takes about 20 minutes with 7 worker
 processes. The results and the recommended training recipe are in
 [docs/phase2-results.md](docs/phase2-results.md).
 
+## Phase 3c: memory benchmark suite
+
+```sh
+uv run python experiments/phase3c.py --config experiments/configs/phase3c.toml
+```
+
+It describes every benchmark task exactly (optimum, entropy rate, causal states,
+`C_mu`, `C_q`, quantum dimension), checks the numbers taken from the literature, and
+trains the model on a few of the tasks as a sanity check. It writes
+`results/summaries/phase3c/` in about 12 minutes with 7 workers (`--suite-only`
+skips training). The tasks, their sources and assumptions are in
+[docs/benchmarks.md](docs/benchmarks.md).
+
 ## Minimal use
 
 ```python

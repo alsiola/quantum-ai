@@ -20,19 +20,25 @@ from typing import Any
 
 import torch
 
-from .complexity import memory_profile, pmd_qubit_instrument, quantum_overlaps
+from .complexity import epsilon_machine, memory_profile, pmd_qubit_instrument, quantum_overlaps
+from .metrics import strength_lower_bound
 from .states import von_neumann_entropy
 from .tasks import (
+    HMMTask,
     QuantumSourceTask,
     channel_fixed_point,
+    delayed_recall,
     ghafari_process,
+    mixed_timescales,
     nemo_process,
+    parity_task,
     perturbed_coin,
     pmd_renewal,
     probability_clock,
     recall_positions,
     rk_golden_mean,
     srinivasan_hmm,
+    stationary_distribution,
     stern_gerlach,
     uniform_renewal,
     upset_gambler,
@@ -431,3 +437,64 @@ def task_emission_mass(task: Any) -> torch.Tensor:
     if isinstance(task, QuantumSourceTask):
         return task.instrument.kraus.abs().flatten(1).sum(1)
     return task.labelled.sum(dim=(1, 2))
+
+
+# -- noise eps and the strength floor (for the measurement-strength sweep) ------------
+def strength_floor(task: HMMTask, dim: int) -> dict[str, Any]:
+    """``eta_floor`` of ``qmem.metrics.strength_lower_bound``, exact for a unifilar source.
+
+    The bound needs ``max_h p(y|h)`` over all histories. Every causal state is
+    reached by some history and every other belief is a mixture of them, so
+    the maximum is over the epsilon-machine's emission rows: the bound is
+    attained, not estimated. ``dim`` is the model's memory dimension.
+    """
+    em = epsilon_machine(task)
+    rows = em["labelled"].sum(-1).T  # (n_causal_states, Y)
+    out = strength_lower_bound(rows, dim)
+    out["dim"] = dim
+    return out
+
+
+NOISY_PROBES: dict[str, Callable[[float], HMMTask]] = {
+    "recall_tau1": lambda e: delayed_recall(1, eps=e),
+    "recall_tau4": lambda e: delayed_recall(4, eps=e),
+    "recall_tau8": lambda e: delayed_recall(8, eps=e),
+    "recall_tau16": lambda e: delayed_recall(16, eps=e),
+    "parity_k2": lambda e: parity_task(2, noise=e),
+    "parity_k3": lambda e: parity_task(3, noise=e),
+    "parity_k4": lambda e: parity_task(4, noise=e),
+    "mixed_timescales": lambda e: mixed_timescales(0.02, 0.9, eps=e),
+}
+
+
+def noise_profile(
+    eps_values: list[float], length: int, dims: list[int], probes: list[str] | None = None
+) -> list[dict[str, Any]]:
+    """Exact optimum, rate and ``eta_floor`` of each retention probe as a function of ``eps``."""
+    rows = []
+    for name in probes or list(NOISY_PROBES):
+        for eps in eps_values:
+            task = NOISY_PROBES[name](eps)
+            emit = task.labelled.sum(-1)  # (Y, S): emission probabilities per state
+            used = emit[:, stationary_or_initial(task) > 0]
+            row = {
+                "probe": name,
+                "eps": eps,
+                "optimal_nll_nats": task.optimal_nll(length),
+                "entropy_rate_nats": task.entropy_rate(),
+                "min_emission_prob": float(used.min()),
+                "max_emission_prob": float(used.max()),
+                "eta_floor": {d: strength_floor(task, d)["eta_lower_bound"] for d in dims},
+                "length": length,
+            }
+            if task.params["kind"] == "delayed_recall":
+                h = sum(-p * math.log(p) for p in (eps, 1 - eps) if p > 0)
+                row["recall_optimal_nll_nats"] = h
+                row["recall_optimal_accuracy"] = 1 - eps
+            rows.append(row)
+    return rows
+
+
+def stationary_or_initial(task: HMMTask) -> torch.Tensor:
+    """States with weight in the stationary distribution or at the start."""
+    return stationary_distribution(task.transition) + task.initial

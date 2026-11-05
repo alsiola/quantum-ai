@@ -9,8 +9,10 @@ from qmem import Instrument, ModelConfig, build_model
 from qmem.benchmarks import (
     LITERATURE,
     literature_checks,
+    noise_profile,
     perturbed_coin_cq,
     recall_metrics,
+    strength_floor,
 )
 from qmem.complexity import (
     epsilon_machine,
@@ -407,3 +409,49 @@ def test_evaluate_reports_missing_optimum_for_non_unifilar_sources():
     out = evaluate(model, seqs, task)
     assert math.isnan(out["optimal_nll_nats"]) and "optimal_nll_note" in out
     assert math.isfinite(out["gap_nats"]) or out["gap_nats"] == math.inf
+
+
+# -- noise eps on the retention probes ---------------------------------------------------
+def _h(p):
+    return -sum(x * math.log(x) for x in (p, 1 - p) if x > 0)
+
+
+@pytest.mark.parametrize("eps", [0.0, 0.01, 0.1, 0.3])
+@pytest.mark.parametrize("tau", [1, 4])
+def test_noisy_recall_optimum_and_floor(tau, eps):
+    task = delayed_recall(tau, eps=eps)
+    length = 4 * (tau + 2)
+    expect = (4 * (tau + 1) * LN2 + 4 * _h(eps)) / length
+    assert task.optimal_nll(length) == pytest.approx(expect, abs=1e-12)
+    assert task.entropy_rate() == pytest.approx(((tau + 1) * LN2 + _h(eps)) / (tau + 2))
+    seqs = task.sample(4000, length, seed=3)
+    pos = recall_positions(tau, length)
+    wrong = (seqs[:, pos] != seqs[:, pos - tau - 1]).double().mean()
+    assert abs(float(wrong) - eps) < 4 * math.sqrt(eps * (1 - eps) / wrong.numel()) + 1e-12
+    assert strength_floor(task, 2)["eta_lower_bound"] == pytest.approx(1 - 2 * eps)
+
+
+@pytest.mark.parametrize("eps", [0.0, 0.05, 0.2])
+def test_noisy_parity_and_mixed(eps):
+    par = parity_task(3, noise=eps)
+    assert par.entropy_rate() == pytest.approx(_h(eps), abs=1e-12)
+    assert par.optimal_nll(10) == pytest.approx((3 * LN2 + 7 * _h(eps)) / 10, abs=1e-12)
+    assert strength_floor(par, 2)["eta_lower_bound"] == pytest.approx(1 - 2 * eps)
+    assert memory_profile(par)["n_causal_states"] == 8
+    s, f = 0.02, 0.9
+    mix = mixed_timescales(s, f, eps=eps)
+    f_eff = (1 - eps) * f + eps * (1 - f)
+    assert mix.entropy_rate() == pytest.approx(_h(s) + _h(f_eff), abs=1e-12)
+    # Y = 4 outcomes: the floor uses max_h p(y|h) = (1-s) f_eff, (1-s) f_eff, s f_eff, s f_eff.
+    top = 2 * (1 - s) * f_eff + 2 * s * f_eff
+    assert strength_floor(mix, 4)["eta_lower_bound"] == pytest.approx((top - 1) / 3)
+
+
+def test_noise_profile_defaults_to_the_noiseless_tasks():
+    rows = noise_profile([0.0, 0.1], 32, [2])
+    by = {(r["probe"], r["eps"]): r for r in rows}
+    assert by[("recall_tau4", 0.0)]["optimal_nll_nats"] == pytest.approx(
+        delayed_recall(4).optimal_nll(32)
+    )
+    assert by[("recall_tau4", 0.1)]["min_emission_prob"] == pytest.approx(0.1)
+    assert by[("parity_k2", 0.0)]["eta_floor"][2] == pytest.approx(1.0)

@@ -281,7 +281,10 @@ frequencies against teacher-forced exact probabilities.
 | default layout from a config | `ModelConfig`, `build_model` |
 | initial states, validity checks, purity, entropy | `qmem/states.py` |
 | toy data, fixed train/val/test splits | `qmem/data.py` |
-| tasks (HMM sources, exact optima, oracle log-probs) | `qmem/tasks.py` |
+| tasks (HMM and HQMM sources, exact optima, oracle log-probs) | `qmem/tasks.py` (suite: `docs/benchmarks.md`) |
+| causal states, `C_mu`, `C_q(L)`, exact quantum models of a source | `qmem/complexity.py` |
+| literature numbers, recall scoring, noise `eps`, strength floors | `qmem/benchmarks.py` |
+| stationary memory, retention curves, reference purification | `qmem/diagnostics.py` |
 | training, evaluation, multi-seed runs, analyses | `qmem/train.py`, `qmem/experiment.py`, `qmem/analysis.py` (results: `docs/phase2-results.md`) |
 | run metadata / results files | `qmem/records.py` |
 
