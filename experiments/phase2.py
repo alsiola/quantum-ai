@@ -10,8 +10,9 @@ memory trajectories, instrument spectra, training pathologies), and writes:
 * ``<summary_dir>/``: ``summary.md``, ``main.csv``, ``variants.csv``,
   ``summary.json`` and the plots (small, committed).
 
-``--from-run <dir>`` redoes the aggregation, analyses and plots from saved
-records without retraining.
+``--from-run <dir>`` reuses the records saved in ``<dir>``, trains only the
+runs that are missing (e.g. after an interrupted run), then redoes the
+aggregation, analyses and plots. Saved records must match the config.
 """
 
 from __future__ import annotations
@@ -112,6 +113,16 @@ def load_records(run_dir: Path) -> list[dict[str, Any]]:
             rec["state_dict"] = torch.load(pt)
         records.append(rec)
     return records
+
+
+def check_records_match(records: list[dict[str, Any]], specs: list[RunSpec]) -> None:
+    """Refuse to mix saved records made with a different config into this summary."""
+    want = {(s.group, s.seed): s.config() for s in specs}
+    for r in records:
+        spec = want.get((r["group"], r["seed"]))
+        got = r["meta"]["config"]
+        if spec is not None and any(got[k] != spec[k] for k in ("task", "data", "model", "train")):
+            raise SystemExit(f"saved run {r['group']} seed {r['seed']} has a different config")
 
 
 def order_records(records: list[dict[str, Any]], specs: list[RunSpec]) -> list[dict[str, Any]]:
@@ -452,6 +463,12 @@ def main() -> None:
     if args.from_run:
         out = Path(args.from_run)
         records = load_records(out)
+        check_records_match(records, specs_main + specs_var)
+        have = {(r["group"], r["seed"]) for r in records}
+        missing = [s for s in specs_main + specs_var if (s.group, s.seed) not in have]
+        if missing:
+            print(f"{len(records)} saved records; running {len(missing)} missing -> {out}")
+            records += run_many(missing, out, workers=workers)
     else:
         out = new_run_dir(exp["name"])
         save_json(out / "config.json", {"meta": run_metadata(cfg), "config_path": args.config})
