@@ -10,7 +10,7 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   `uv run ruff check . && uv run ruff format --check . && uv run pytest`
 - Proof of concept (must keep running in under a minute):
   `uv run python experiments/poc_memory.py`
-- Phase 2 reproduction (about 15 min with 7 workers):
+- Phase 2 reproduction (about 20 min with 7 workers):
   `uv run python experiments/phase2.py --config experiments/configs/phase2.toml`
 - Dependencies are pinned in `pyproject.toml` and locked in `uv.lock`. Add one with
   `uv add <pkg>==<version>` (or `uv add --dev`) and commit both files.

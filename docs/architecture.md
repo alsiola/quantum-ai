@@ -136,7 +136,9 @@ frequencies against teacher-forced exact probabilities.
 | sequence model | `QuantumMemoryModel`: `log_prob`, `step_log_probs`, `predictive_probs`, `final_memory`, `unconditioned_memory`, `sample` |
 | default layout from a config | `ModelConfig`, `build_model` |
 | initial states, validity checks, purity, entropy | `qmem/states.py` |
-| toy data | `qmem/data.py` |
+| toy data, fixed train/val/test splits | `qmem/data.py` |
+| tasks (HMM sources, exact optima, oracle log-probs) | `qmem/tasks.py` |
+| training, evaluation, multi-seed runs, analyses | `qmem/train.py`, `qmem/experiment.py`, `qmem/analysis.py` (results: `docs/phase2-results.md`) |
 | run metadata / results files | `qmem/records.py` |
 
 ### Parameter layout

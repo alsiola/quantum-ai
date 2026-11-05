@@ -34,6 +34,18 @@ It builds a 2-memory-qubit, 1-ancilla model, shows that the next-symbol
 distribution depends on past outcomes, and runs a few gradient steps on a
 sticky Markov chain. It takes a few seconds on a laptop CPU.
 
+## Phase 2: training and memory results
+
+```sh
+uv run python experiments/phase2.py --config experiments/configs/phase2.toml
+```
+
+It trains the model over 10 seeds on sources with exactly known optima (i.i.d.,
+Markov, Even and Golden-mean processes), runs the variants and the memory analyses,
+and writes `results/summaries/phase2/`. It takes about 20 minutes with 7 worker
+processes. The results and the recommended training recipe are in
+[docs/phase2-results.md](docs/phase2-results.md).
+
 ## Minimal use
 
 ```python
