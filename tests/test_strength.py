@@ -307,9 +307,9 @@ def test_mutual_information_limits():
 
 def test_strength_lower_bound():
     # iid needs no information; deterministic transitions both ways need eta = 1
-    iid = torch.tensor([[0.8, 0.2], [0.8, 0.2]])
-    assert strength_lower_bound(iid, 4)["eta_lower_bound"] == pytest.approx(0)
-    flip = torch.tensor([[1.0, 0.0], [0.0, 1.0]])
+    iid = torch.tensor([[0.8, 0.2], [0.8, 0.2]], dtype=torch.float64)
+    assert strength_lower_bound(iid, 4)["eta_lower_bound"] == pytest.approx(0, abs=1e-12)
+    flip = torch.tensor([[1.0, 0.0], [0.0, 1.0]], dtype=torch.float64)
     assert strength_lower_bound(flip, 4)["eta_lower_bound"] == pytest.approx(1)
     # a weak instrument cannot exceed its ceiling: p(1|rho) <= sin^2 g for every rho
     g = 0.6
