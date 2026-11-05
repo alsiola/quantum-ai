@@ -36,7 +36,7 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   `Instrument`).
 - `tests/`: pytest. Every new physics feature gets a test against an analytic case or an
   independent brute-force computation.
-- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`; `benchmarks.md` (the task suite). Don't edit `docs/literature-review.md`
+- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`; `benchmarks.md` (the task suite). Don't edit `docs/literature-review.md`
   unless your issue is the literature review.
 - `experiments/`: scripts, plus `experiments/configs/*.toml` (one config per run family).
 - `results/`: raw outputs in `results/<experiment>/<timestamp>/` (gitignored); small curated
