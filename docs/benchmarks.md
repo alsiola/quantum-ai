@@ -276,6 +276,37 @@ sequence starts at a trial boundary. The recall positions are
   recall-position optimum is then `H(ε)` with accuracy `1 − ε`, and the rate is
   `((τ+1) ln 2 + H(ε))/(τ+2)`.
 
+### 3.1b Marked delayed recall (`marked_recall`, issue #10)
+
+The clock-free retention probe of Phase 3e (`docs/phase3e-retention.md`). Four symbols:
+`0` = distractor-a, `1` = distractor-b, `2` = cue-0, `3` = cue-1. On two output ancillas
+the first bit is the *type* and the second the *value*. Cue-type symbols alternate in
+role: the 1st, 3rd, ... are cues (uniform value), the 2nd, 4th, ... are recalls, equal to
+the preceding cue with probability `1 − ε`. Every sequence starts before a cue.
+
+- **Geometric timing (default):** each symbol is cue-type with probability
+  `q = 1/(τ+1)`, independently of everything else, and otherwise a uniform distractor.
+  The number of distractors between a cue and its recall is geometric with mean `τ`.
+  Since the types are i.i.d., the distractors carry no information about the cue or the
+  phase. Causal states: `S` (the next cue-type symbol is a fresh cue), `W0` and `W1`
+  (holding the cue). That is **3 for every τ**, with `C_mu = 1.5` bits: the cue bit plus
+  one phase bit. Rate `H(q) + (1 − q) ln 2 + q (ln 2 + H(ε))/2` (tested). The phaseless
+  q-machine has quantum dimension 3, so a general 2-qubit instrument is exact
+  (`qmachine_instrument`, tested).
+- **Fixed timing** (`timing = "fixed"`): a cue, exactly `τ` distractors, the recall,
+  then the next cue at once. The marking doesn't remove the clock. The source must count
+  to know when the recall comes, so it has `2τ + 3` causal states (tested), as
+  `delayed_recall` does. It is included only to show this. The Phase 3e runs use the
+  geometric version.
+- **Scoring** (`marked_recall_metrics`): each position's loss splits into
+  `−log p(type) − log p(value | type)`. At recalls, the value NLL and accuracy (optimum
+  `H(ε)` and `1 − ε`; chance `ln 2` and 0.5) measure the memory without the timing. The
+  paired gaps to the source are reported for the type and for the value at distractor,
+  cue and recall positions. Under geometric timing each of these is an expected KL. A
+  `by_delay` table bins recall accuracy by the realised delay.
+- `marked_recall_events` gives cue, recall and distractor masks, the trial's cue value
+  and the lag since the cue, for the diagnostics below.
+
 ### 3.2 Noisy parity of the last k symbols (`parity`, k ≥ 1)
 
 `y_t = y_{t−k} ⊕ … ⊕ y_{t−1} ⊕ e_t`, with `e_t ~ Bernoulli(noise)`. `noise` is the probe's ε
@@ -368,6 +399,18 @@ ablations (#7) and HQMM / uMPS baselines (#6) that expose Kraus operators.
   purify (below 0.01 bits), and the median purification time. Tests cover the limits: a
   projective measurement purifies in one step, and outcomes independent of the memory
   never purify.
+
+- **Cue retention** (`label_retention`, issue #10): the Holevo information between a
+  binary label (a trial's cue) and the memory `k` steps after the cue, pooled over
+  trials that are still waiting for their recall. Also gives the trace distance between
+  the two cue-averaged memories. The exact q-machine of `marked_recall` (ε = 0) holds
+  1 bit at every lag; a resetting instrument holds 0 (tested).
+- **Stored-bit alignment** (`stored_bit_alignment`): for chosen outcomes (the
+  distractors), the normalised commutator of the effect with
+  `Δ = rho_bar_0 − rho_bar_1`, the cue-dependence `Tr(E_y Δ)` of the outcome
+  probability, and the contraction of the trace distance between the cue-conditioned
+  memories after the outcome. A decoherence-free readout scores 0, 0 and 1; an erasing
+  one scores contraction 0 (both tested).
 
 ## 6. Sanity runs (architecture A)
 
