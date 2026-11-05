@@ -14,6 +14,8 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   `uv run python experiments/phase2.py --config experiments/configs/phase2.toml`
 - Benchmark suite and its sanity runs (about 12 min with 7 workers; `--suite-only`: under a
   minute): `uv run python experiments/phase3c.py --config experiments/configs/phase3c.toml`
+- Phase 3b ablations (A/B/C_k/D/hybrid; about RUNTIME with 7 workers):
+  `uv run python experiments/phase3b.py --config experiments/configs/phase3b.toml`
 - Dependencies are pinned in `pyproject.toml` and locked in `uv.lock`. Add one with
   `uv add <pkg>==<version>` (or `uv add --dev`) and commit both files.
 
@@ -24,12 +26,14 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   `model` (`QuantumMemoryModel`, `ModelConfig`, `build_model`), `states`, `data` (fixed
   splits), `records`, `tasks` (sources as labelled HMMs with exact optima; add Phase 3 tasks
   with `register_task`), `train` (`TrainConfig`, `train`, `evaluate`), `experiment`
-  (multi-seed `RunSpec`/`run_many`/`aggregate`), `metrics` (operational information gain,
-  disturbance, Banaszek trade-off for any `Instrument`), `analysis` (generation stats, interventions,
-  Markov baselines, memory trajectories), `complexity` (causal states, `C_mu`, `C_q`, exact
-  quantum models of a source), `benchmarks` (the Phase 3 suite: literature numbers with
-  sources, recall scoring, noise `eps` and strength floors), `diagnostics` (stationary
-  memory, retention curves, reference purification for any `Instrument`).
+  (multi-seed `RunSpec`/`run_many`/`aggregate`), `ablations` (Phase 3b variants B, C_k, D
+  and hybrid on A's interface; `build_variant`; resource counts), `metrics` (operational
+  information gain, disturbance, Banaszek trade-off for any `Instrument`), `analysis`
+  (generation stats, interventions, Markov baselines, memory trajectories), `complexity`
+  (causal states, `C_mu`, `C_q`, exact quantum models of a source), `benchmarks` (the Phase 3
+  suite: literature numbers with sources, recall scoring, noise `eps` and strength floors),
+  `diagnostics` (stationary memory, retention curves, reference purification for any
+  `Instrument`).
 - `tests/`: pytest. Every new physics feature gets a test against an analytic case or an
   independent brute-force computation.
 - `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`; `benchmarks.md` (the task suite). Don't edit `docs/literature-review.md`

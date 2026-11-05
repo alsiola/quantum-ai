@@ -355,7 +355,21 @@ about 45 ms with 2 memory qubits and about 0.2 s with 4 memory qubits and 2 anci
   blocks are standard gates (RX/RY/RZ, CNOT/CZ, controlled-RY), so exporting to
   Qiskit with mid-circuit measurement and reset is straightforward.
 
-## 7. Known limitations / for later phases
+## 7. Ablation variants (Phase 3b)
+
+`qmem.ablations` holds the variants of A used to isolate what the conditioned
+update contributes: B (memory follows the unconditioned channel `E`), C_k
+(memory reset to `rho_0` every `k` tokens), D (readout effects `M_y` with the
+post-measurement state discarded, then a token-controlled unitary `V_y`) and a
+hybrid with a classical controller on the measurement basis. Each subclasses
+`QuantumMemoryModel` and overrides three hooks of one shared per-step loop
+(context, readout, update); with the default hooks the loop reproduces A
+exactly. `build_variant` builds any of them from a `[model]` table with a
+`variant` key, and `qmem.experiment` uses it for every run. The maths, the
+matching and the physical caveats (D needs re-preparation to be faithful) are
+in `docs/phase3b-ablations.md`.
+
+## 8. Known limitations / for later phases
 
 * Equal-length sequences only; padding/masking would go in `step_log_probs`.
 * The instrument is time-homogeneous (one `U` for all steps); no input-dependent
