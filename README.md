@@ -46,6 +46,19 @@ and writes `results/summaries/phase2/`. It takes about 20 minutes with 7 worker
 processes. The results and the recommended training recipe are in
 [docs/phase2-results.md](docs/phase2-results.md).
 
+## Phase 3b: quantum ablations
+
+```sh
+uv run python experiments/phase3b.py --config experiments/configs/phase3b.toml
+```
+
+It trains ablations of the model on the Phase 2 tasks, 10 seeds each: an
+outcome-averaged control (B), memory reset every k tokens (C_k), separate readout
+and update (D: unitary, dissipative, matched and larger), and a hybrid with
+classical feedback. It writes `results/summaries/phase3b/` in about an hour with
+7 workers. The variants, their resource counts and the A-versus-D result are in
+[docs/phase3b-ablations.md](docs/phase3b-ablations.md).
+
 ## Phase 3c: memory benchmark suite
 
 ```sh

@@ -14,7 +14,7 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   `uv run python experiments/phase2.py --config experiments/configs/phase2.toml`
 - Benchmark suite and its sanity runs (about 12 min with 7 workers; `--suite-only`: under a
   minute): `uv run python experiments/phase3c.py --config experiments/configs/phase3c.toml`
-- Phase 3b ablations (A/B/C_k/D/hybrid; about RUNTIME with 7 workers):
+- Phase 3b ablations (A/B/C_k/D/hybrid; about an hour with 7 workers):
   `uv run python experiments/phase3b.py --config experiments/configs/phase3b.toml`
 - Dependencies are pinned in `pyproject.toml` and locked in `uv.lock`. Add one with
   `uv add <pkg>==<version>` (or `uv add --dev`) and commit both files.
