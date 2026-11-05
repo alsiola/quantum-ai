@@ -18,7 +18,7 @@ in total, about 21 minutes wall time with 7 worker processes on an Apple-silicon
 laptop. If a run is interrupted, `--from-run <dir>` trains only the missing runs.
 The commits recorded in the runs (`6419e22`, `51db155`) are SHAs from the issue
 branch before it was rebased onto the literature review (#4). The rebase changed
-only `docs/literature-review.md`, so the code that produced the runs is the same.
+only `docs/literature-review.md` and `docs/references.bib`, so the code that produced the runs is the same.
 
 ## 1. Setup
 
