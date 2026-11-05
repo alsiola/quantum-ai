@@ -97,6 +97,12 @@ def specs_for(cfg: dict[str, Any], arms: list[str] | None = None) -> list[RunSpe
                                     n_mem, model["n_output"], extra["eta"]
                                 )
                             task = {**arm["task"], "tau": tau, "eps": eps}
+                            run_data = {
+                                **data,
+                                "length": cfg.get("lengths", {}).get(str(tau), data["length"]),
+                            }
+                            if "length" in arm.get("data", {}):
+                                run_data["length"] = arm["data"]["length"]
                             group = f"{arm['name']}/m{n_mem}/eps{eps:g}/tau{tau}/{label}"
                             if len(lrs) > 1:
                                 group += f"/lr{lr:g}"
@@ -105,7 +111,7 @@ def specs_for(cfg: dict[str, Any], arms: list[str] | None = None) -> list[RunSpe
                                     RunSpec(
                                         group=group,
                                         task=task,
-                                        data=data,
+                                        data=run_data,
                                         model=model,
                                         train={**train, "lr": lr},
                                         seed=seed,

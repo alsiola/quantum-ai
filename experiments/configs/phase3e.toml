@@ -17,8 +17,14 @@ summary_dir = "results/summaries/phase3e"
 n_train = 512
 n_val = 256
 n_test = 512
-length = 128                # tau = 32 still gives ~2 recalls per sequence
+length = 128                # tau = 16, 32: ~4 and ~2 recalls per sequence
 seed = 0
+
+[lengths]                   # shorter sequences where the delay allows (compute)
+1 = 64
+2 = 64
+4 = 64
+8 = 64
 
 [model]                     # architecture A, feed-forward layout, shared strength
 n_memory = 2
@@ -57,8 +63,9 @@ n_reference = 1
 purification_seed = 4321
 purification_threshold_bits = 0.01
 
-# Pruned for compute (the machine is shared): eps = 0 and 0.1 only at three delays and
-# trained strength; the clock arm at trained and projective strength only.
+# Pruned for compute (the machine is shared with other jobs): sequences of 64 for
+# tau <= 8; eps = 0 and 0.1 only at three delays and trained strength; the clock arm at
+# trained and projective strength only; n = 3 at two delays; falsification at tau = 4.
 
 # -- arms ----------------------------------------------------------------------------
 # The marked task is qmem.tasks.marked_recall (geometric timing: 3 causal states for
@@ -100,8 +107,8 @@ trained = true
 name = "n3"
 task = { kind = "marked_recall", eps = 0.05 }
 model = { n_memory = 3 }
-taus = [2, 8, 32]
-etas = [0.6, 0.9, 1.0]
+taus = [2, 8]
+etas = [0.6, 1.0]
 trained = true
 
 # Capacity check: a general circuit (memory HEA -> couplings -> 4 joint HEA layers on
@@ -115,14 +122,14 @@ n_memory = [1, 2]
 etas = []
 trained = true
 
-# Falsification of "weak helps": tuned learning rate, 3x the steps, 4x the data, at
-# eta just above the floor, the best interior eta of the grid, and projective.
+# Falsification of "weak helps" at matched eta above the floor: tuned learning rate
+# with twice the steps and patience, four times the data.
 [[arms]]
 name = "falsify"
 task = { kind = "marked_recall", eps = 0.05 }
 data = { n_train = 2048 }
-train = { steps = 4500, patience = 60 }
-taus = [4, 16]
-etas = [0.6, 0.75, 1.0]
+train = { steps = 3000, patience = 60 }
+taus = [4]
+etas = [0.6, 0.75, 0.9]
 lrs = [0.02, 0.05, 0.1]
-trained = true
+trained = false
