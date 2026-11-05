@@ -20,15 +20,13 @@ Once you have read the issue, post a short start comment with `github.issue.comm
 3. `git fetch origin` and rebase onto `origin/main`. Resolve any conflicts and run the checks again.
 4. Post the report on the issue with `github.issue.comment` (see below).
 5. Push to main: `git push origin HEAD:main`. If the push is refused because `main` moved, fetch, rebase, run the checks and push again. Never force-push `main`.
-6. Close the issue yourself; a `Closes #<number>` line in the commit does nothing here. The toolbelt has no close operation, so close it through the GitHub API with Open Conduit's repository token, which git's credential helper hands out:
+6. Close the issue yourself; a `Closes #<number>` line in the commit does nothing here. The toolbelt has no close operation, and Open Conduit's repository token can't edit issues, so use the owner's `gh` login, which the owner has approved for this one action:
 
    ```sh
-   TOKEN=$(printf 'protocol=https\nhost=github.com\n\n' | git credential fill | sed -n 's/^password=//p')
-   curl -sf -X PATCH -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" \
-     https://api.github.com/repos/<owner>/<repo>/issues/<number> -d '{"state":"closed","state_reason":"completed"}'
+   gh issue close <number> --repo <owner>/<repo> --reason completed
    ```
 
-   Then check with `github.issue.view` that it shows `closed`. If the call is refused, say so on the issue and end with `help`; don't fall back to a personal `gh` login. When an issue takes several pushes, close it only after the last one.
+   Then check with `github.issue.view` that it shows `closed`. Use `gh` for closing only; comments still go through the toolbelt. If the close fails, say so on the issue and end with `help`. When an issue takes several pushes, close it only after the last one.
 7. End with `finished` once the issue has closed. If you pushed with more still to do, leave the issue open and end with `done` or `help` as fits.
 
 ## The report
