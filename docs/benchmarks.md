@@ -388,6 +388,10 @@ gap below 0.01.
 | recall τ = 4 | 2 / 3 | 0.107 / 0.102 | 0/5 | recall accuracy 0.59 / 0.74 (best seed 0.98 with 3 qubits) |
 | recall τ = 8 | 2 / 3 | 0.066 / 0.066 | 0/5 | recall accuracy 0.52 / 0.50: chance |
 
+The runs were trained at commit `cecbb3b`, before this branch was rebased onto the #9
+work (that rebase does not touch the training path). The summaries were regenerated from
+the saved runs at the final commit with `--from-run`, which retrains nothing.
+
 What this shows about the suite:
 
 - **The pipeline works end to end:** exact optima, the paired gap, recall-position

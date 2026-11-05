@@ -285,7 +285,7 @@ def sanity_markdown(groups: list[dict[str, Any]], cfg: dict[str, Any], meta, wal
         f" (commit `{(meta['git_commit'] or '?')[:7]}`, dirty: {meta['git_dirty']}).",
         f"Phase 2 recipe, {len(seeds)} model seeds per row, data seed {cfg['data']['seed']}, "
         f"{cfg['data']['n_train']}/{cfg['data']['n_val']}/{cfg['data']['n_test']} sequences "
-        f"of length {cfg['data']['length']}. Wall time {wall / 60:.1f} min.",
+        f"of length {cfg['data']['length']}. Training: {wall / 60:.1f} CPU-minutes in total.",
         "",
         "## Test NLL (nats/symbol)",
         "",
@@ -467,6 +467,7 @@ def main() -> None:
         suite_by_name[name] = describe_benchmark(task, cfg["data"]["length"])
     groups = summarise_groups(rows, analyses, suite_by_name)
     wall = time.perf_counter() - start
+    train_cpu = sum(r.get("wall_seconds", 0.0) for r in records)
     save_json(out / "analyses.json", {"meta": meta, "analyses": analyses, "groups": groups})
     run_commits = sorted({r["meta"]["git_commit"] for r in records})
     save_json(
@@ -474,7 +475,7 @@ def main() -> None:
         {"meta": meta, "run_commits": run_commits, "aggregate": rows, "groups": groups},
     )
     write_csv(summary_dir / "sanity.csv", groups)
-    (summary_dir / "sanity.md").write_text(sanity_markdown(groups, cfg, meta, wall))
+    (summary_dir / "sanity.md").write_text(sanity_markdown(groups, cfg, meta, train_cpu))
     make_plots(summary_dir, groups)
     print((summary_dir / "sanity.md").read_text())
     print(f"wrote {summary_dir} and {out} ({wall / 60:.1f} min)")

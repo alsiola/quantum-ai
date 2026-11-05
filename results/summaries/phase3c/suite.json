@@ -1,0 +1,2896 @@
+{
+  "literature": [
+    {
+      "agrees": true,
+      "how": "text (upper bound)",
+      "key": "coin_cq_p0.2",
+      "ours": 0.46899559358928145,
+      "quantity": "C_q (bits) of the perturbed coin at p = 0.2 (< 0.5)",
+      "reported": 0.5,
+      "source": "Gu2012, text: 'For p>0.2, Cq<0.5'",
+      "tol": 0.0
+    },
+    {
+      "agrees": true,
+      "how": "text (upper bound)",
+      "key": "coin_cq_p0.4",
+      "ours": 0.08146891501435417,
+      "quantity": "C_q (bits) of the perturbed coin at p = 0.4 (< 0.1)",
+      "reported": 0.1,
+      "source": "Gu2012, text: 'For p>0.4, Cq<0.1'",
+      "tol": 0.0
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "coin_cmu",
+      "ours": 1.0,
+      "quantity": "C_mu (bits) of the perturbed coin, p = 0.3",
+      "reported": 1.0,
+      "source": "Gu2012, text: C_mu = 1 for p != 0.5",
+      "tol": 1e-12
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "ghafari_states",
+      "ours": 3.0,
+      "quantity": "causal states of the asymmetric process",
+      "reported": 3,
+      "source": "Ghafari2019PRX Fig. 1b; Yang2021 Fig. 3a",
+      "tol": 0
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "ghafari_qdim",
+      "ours": 2.0,
+      "quantity": "quantum memory dimension of the asymmetric process (p=0.3, q=0.8)",
+      "reported": 2,
+      "source": "Ghafari2019PRX Eq. 2; Yang2021 ('achieved quantumly on a qubit')",
+      "tol": 0
+    },
+    {
+      "agrees": true,
+      "how": "figure",
+      "key": "ghafari_cmu_peak",
+      "ours": 1.4999999999999998,
+      "quantity": "C_mu (bits) at p = q = 0.5",
+      "reported": 1.5,
+      "source": "Ghafari2019PRX Fig. 4b (p = q cut, peak at q = 0.5)",
+      "tol": 0.02
+    },
+    {
+      "agrees": true,
+      "how": "figure",
+      "key": "ghafari_cq_mid",
+      "ours": 0.8112781244591369,
+      "quantity": "C_q (bits) at p = q = 0.5",
+      "reported": 0.82,
+      "source": "Ghafari2019PRX Fig. 4b (p = q cut, minimum at q = 0.5)",
+      "tol": 0.03
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "upset_gambler_cmu",
+      "ours": 0.9774178175281715,
+      "quantity": "C_mu (bits)",
+      "reported": 0.98,
+      "source": "Binder2018 Fig. 2 caption (p=0.7, q=0.8)",
+      "tol": 0.005
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "upset_gambler_cq",
+      "ours": 0.09963662661915756,
+      "quantity": "C_q (bits)",
+      "reported": 0.1,
+      "source": "Binder2018 Fig. 2 caption (p=0.7, q=0.8)",
+      "tol": 0.005
+    },
+    {
+      "agrees": true,
+      "how": "text (formula)",
+      "key": "upset_gambler_overlap",
+      "ours": 0.9733000047194104,
+      "quantity": "quantum causal-state overlap at p=0.7, q=0.8",
+      "reported": 0.9733000047194348,
+      "source": "Binder2018 Eq. 13: <s_A|s_B> = sqrt(p'q') / (1 - sqrt(pq))",
+      "tol": 1e-10
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "pmd_N3_states",
+      "ours": 3.0,
+      "quantity": "causal states of PMD, N=3, Gamma=0.5, V=0.4",
+      "reported": 3,
+      "source": "Wu2023 Fig. 1 caption / D_mu = log2 N",
+      "tol": 0
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "pmd_N4_states",
+      "ours": 4.0,
+      "quantity": "causal states of PMD, N=4, Gamma=0.5, V=0.4",
+      "reported": 4,
+      "source": "Wu2023 Fig. 1 caption / D_mu = log2 N",
+      "tol": 0
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "pmd_N5_states",
+      "ours": 5.0,
+      "quantity": "causal states of PMD, N=5, Gamma=0.5, V=0.4",
+      "reported": 5,
+      "source": "Wu2023 Fig. 1 caption / D_mu = log2 N",
+      "tol": 0
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "pmd_N6_states",
+      "ours": 6.0,
+      "quantity": "causal states of PMD, N=6, Gamma=0.5, V=0.4",
+      "reported": 6,
+      "source": "Wu2023 Fig. 1 caption / D_mu = log2 N",
+      "tol": 0
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "pmd_N7_states",
+      "ours": 7.0,
+      "quantity": "causal states of PMD, N=7, Gamma=0.5, V=0.4",
+      "reported": 7,
+      "source": "Wu2023 Fig. 1 caption / D_mu = log2 N",
+      "tol": 0
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "pmd_N8_states",
+      "ours": 8.0,
+      "quantity": "causal states of PMD, N=8, Gamma=0.5, V=0.4",
+      "reported": 8,
+      "source": "Wu2023 Fig. 1 caption / D_mu = log2 N",
+      "tol": 0
+    },
+    {
+      "agrees": true,
+      "how": "derived",
+      "key": "pmd_N3_qubit_model",
+      "ours": 5.551115123125783e-16,
+      "quantity": "max |p_qubit - p_PMD| over sampled histories, N=3, Gamma=0.5, V=0.4 (0 = exact)",
+      "reported": 0.0,
+      "source": "Wu2023 Supplement S1 (1-qubit construction, m = 1)",
+      "tol": 1e-12
+    },
+    {
+      "agrees": true,
+      "how": "derived",
+      "key": "pmd_N4_qubit_model",
+      "ours": 3.3306690738754696e-16,
+      "quantity": "max |p_qubit - p_PMD| over sampled histories, N=4, Gamma=0.5, V=0.4 (0 = exact)",
+      "reported": 0.0,
+      "source": "Wu2023 Supplement S1 (1-qubit construction, m = 1)",
+      "tol": 1e-12
+    },
+    {
+      "agrees": true,
+      "how": "derived",
+      "key": "pmd_N5_qubit_model",
+      "ours": 3.3306690738754696e-16,
+      "quantity": "max |p_qubit - p_PMD| over sampled histories, N=5, Gamma=0.5, V=0.4 (0 = exact)",
+      "reported": 0.0,
+      "source": "Wu2023 Supplement S1 (1-qubit construction, m = 1)",
+      "tol": 1e-12
+    },
+    {
+      "agrees": true,
+      "how": "derived",
+      "key": "pmd_N6_qubit_model",
+      "ours": 4.440892098500626e-16,
+      "quantity": "max |p_qubit - p_PMD| over sampled histories, N=6, Gamma=0.5, V=0.4 (0 = exact)",
+      "reported": 0.0,
+      "source": "Wu2023 Supplement S1 (1-qubit construction, m = 1)",
+      "tol": 1e-12
+    },
+    {
+      "agrees": true,
+      "how": "derived",
+      "key": "pmd_N7_qubit_model",
+      "ours": 2.220446049250313e-16,
+      "quantity": "max |p_qubit - p_PMD| over sampled histories, N=7, Gamma=0.5, V=0.4 (0 = exact)",
+      "reported": 0.0,
+      "source": "Wu2023 Supplement S1 (1-qubit construction, m = 1)",
+      "tol": 1e-12
+    },
+    {
+      "agrees": true,
+      "how": "derived",
+      "key": "pmd_N8_qubit_model",
+      "ours": 4.440892098500626e-16,
+      "quantity": "max |p_qubit - p_PMD| over sampled histories, N=8, Gamma=0.5, V=0.4 (0 = exact)",
+      "reported": 0.0,
+      "source": "Wu2023 Supplement S1 (1-qubit construction, m = 1)",
+      "tol": 1e-12
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "uniform_renewal_states",
+      "ours": 3.0,
+      "quantity": "causal states of the uniform renewal process, N = 3",
+      "reported": 3,
+      "source": "Yang2021 ('the classical topological complexity for U_N is N'), N=3",
+      "tol": 0
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "golden_43_cryptic",
+      "ours": 3.0,
+      "quantity": "L at which C_q(L) stops decreasing, 4-3 golden mean (p = 0.505)",
+      "reported": 3,
+      "source": "Mahoney2016 Fig. 2 / text: C_q(3) = C_q(L>3), cryptic order 3",
+      "tol": 0
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "golden_32_cmu",
+      "ours": 1.4345491399952037,
+      "quantity": "C_mu (bits)",
+      "reported": 1.435,
+      "source": "Ho2020 Sec. IV.A (3-2 golden mean, p = 0.9): C_mu \u2248 1.435",
+      "tol": 0.001
+    },
+    {
+      "agrees": true,
+      "how": "figure",
+      "key": "golden_32_cq",
+      "ours": 0.6128698700493506,
+      "quantity": "C_q (bits)",
+      "reported": 0.613,
+      "source": "Ho2020 Fig. 3c (exact C_q line, p = 0.9)",
+      "tol": 0.002
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "nemo_cq_inf",
+      "ours": 1.033592434467573,
+      "quantity": "C_q (bits), Nemo p = 0.666",
+      "reported": 1.0332,
+      "source": "Mahoney2016 text: C_q(inf) \u2248 1.0332 (Fig. 3, p = 0.666)",
+      "tol": 0.001
+    },
+    {
+      "agrees": true,
+      "how": "text",
+      "key": "nemo_ho_cmu",
+      "ours": 1.583143101527774,
+      "quantity": "C_mu (bits)",
+      "reported": 1.583,
+      "source": "Ho2020 Sec. IV.B (p = 0.1, q = 0.9): C_mu \u2248 1.583",
+      "tol": 0.001
+    },
+    {
+      "agrees": true,
+      "how": "figure",
+      "key": "nemo_ho_cq",
+      "ours": 1.5205379466001447,
+      "quantity": "C_q (bits)",
+      "reported": 1.53,
+      "source": "Ho2020 Fig. 4c (exact C_q line, p = 0.1, q = 0.9)",
+      "tol": 0.03
+    },
+    {
+      "agrees": true,
+      "how": "text (finite-sample)",
+      "key": "clock_da",
+      "ours": 0.16228600695403472,
+      "quantity": "DA of the exact model (1 - h / ln 2)",
+      "reported": 0.1632,
+      "source": "Srinivasan2018 Table 2, true HQMM test DA 0.1632 (SD 0.0111)",
+      "tol": 0.0111
+    },
+    {
+      "agrees": true,
+      "how": "text (finite-sample)",
+      "key": "spin_da",
+      "ours": 0.1289509357448464,
+      "quantity": "DA of the exact model (1 - h / ln 6)",
+      "reported": 0.1303,
+      "source": "Srinivasan2018 Table 4, true model test DA 0.1303 (SD 0.0047)",
+      "tol": 0.0047
+    },
+    {
+      "agrees": true,
+      "how": "text (finite-sample)",
+      "key": "srinivasan_hmm_da",
+      "ours": 0.1840499180256241,
+      "quantity": "DA of the exact model (1 - h / ln 6; h by Monte Carlo)",
+      "reported": 0.1838,
+      "source": "Srinivasan2018 Table 5, true (6,6) HMM train DA 0.1838 (SD 0.0095)",
+      "tol": 0.0095
+    }
+  ],
+  "meta": {
+    "config": {
+      "analysis": {
+        "burn_in": 4,
+        "n_reference": 1,
+        "purification_seed": 4321,
+        "retention_lags": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          8,
+          10,
+          12
+        ]
+      },
+      "data": {
+        "length": 32,
+        "n_test": 512,
+        "n_train": 512,
+        "n_val": 256,
+        "seed": 0
+      },
+      "experiment": {
+        "name": "phase3c",
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "success_gap": 0.01,
+        "summary_dir": "results/summaries/phase3c",
+        "workers": 7
+      },
+      "model": {
+        "entangler": "cnot",
+        "init_scale": 1.0,
+        "initial": "zero",
+        "joint_depth": 2,
+        "memory_depth": 2,
+        "n_env": 0,
+        "n_memory": 2,
+        "pattern": "linear",
+        "rotations": [
+          "ry",
+          "rz"
+        ],
+        "strength": 0.7853981633974483,
+        "strength_trainable": true
+      },
+      "sanity": {
+        "ghafari": {
+          "n_memory": [
+            1,
+            2
+          ],
+          "n_output": 2,
+          "spec": {
+            "kind": "ghafari",
+            "p": 0.5,
+            "q": 0.5
+          }
+        },
+        "perturbed_coin": {
+          "n_memory": [
+            1,
+            2
+          ],
+          "n_output": 1,
+          "spec": {
+            "kind": "perturbed_coin",
+            "p": 0.3
+          }
+        },
+        "recall_tau1": {
+          "n_memory": [
+            2,
+            3
+          ],
+          "n_output": 1,
+          "spec": {
+            "kind": "delayed_recall",
+            "tau": 1
+          }
+        },
+        "recall_tau2": {
+          "n_memory": [
+            2,
+            3
+          ],
+          "n_output": 1,
+          "spec": {
+            "kind": "delayed_recall",
+            "tau": 2
+          }
+        },
+        "recall_tau4": {
+          "n_memory": [
+            2,
+            3
+          ],
+          "n_output": 1,
+          "spec": {
+            "kind": "delayed_recall",
+            "tau": 4
+          }
+        },
+        "recall_tau8": {
+          "n_memory": [
+            2,
+            3
+          ],
+          "n_output": 1,
+          "spec": {
+            "kind": "delayed_recall",
+            "tau": 8
+          }
+        }
+      },
+      "suite": {
+        "monte_carlo_seed": 0,
+        "noise": {
+          "dims": [
+            2,
+            4,
+            8
+          ],
+          "eps": [
+            0.0,
+            0.01,
+            0.02,
+            0.05,
+            0.1,
+            0.2
+          ]
+        },
+        "tasks": {
+          "ghafari": {
+            "kind": "ghafari",
+            "p": 0.5,
+            "q": 0.5
+          },
+          "ghafari_p03_q08": {
+            "kind": "ghafari",
+            "p": 0.3,
+            "q": 0.8
+          },
+          "golden_mean_3_2_ho": {
+            "k": 3,
+            "kind": "rk_golden_mean",
+            "loop_symbol": 1,
+            "p": 0.9,
+            "r": 2
+          },
+          "golden_mean_4_3": {
+            "k": 3,
+            "kind": "rk_golden_mean",
+            "p": 0.505,
+            "r": 4
+          },
+          "mixed_timescales": {
+            "fast_stay": 0.9,
+            "kind": "mixed_timescales",
+            "switch_prob": 0.02
+          },
+          "mixed_timescales_hidden": {
+            "fast_stay": 0.9,
+            "kind": "mixed_timescales",
+            "marked": false,
+            "switch_prob": 0.02
+          },
+          "nemo": {
+            "kind": "nemo",
+            "p": 0.666
+          },
+          "nemo_ho": {
+            "kind": "nemo",
+            "loop_symbol": 1,
+            "p": 0.1,
+            "q": 0.9
+          },
+          "parity_k2": {
+            "k": 2,
+            "kind": "parity",
+            "noise": 0.1
+          },
+          "parity_k3": {
+            "k": 3,
+            "kind": "parity",
+            "noise": 0.1
+          },
+          "parity_k4": {
+            "k": 4,
+            "kind": "parity",
+            "noise": 0.1
+          },
+          "perturbed_coin": {
+            "kind": "perturbed_coin",
+            "p": 0.3
+          },
+          "pmd_N3": {
+            "gamma": 0.5,
+            "kind": "pmd_renewal",
+            "period": 3,
+            "v": 0.4
+          },
+          "pmd_N4": {
+            "gamma": 0.5,
+            "kind": "pmd_renewal",
+            "period": 4,
+            "v": 0.4
+          },
+          "pmd_N5": {
+            "gamma": 0.5,
+            "kind": "pmd_renewal",
+            "period": 5,
+            "v": 0.4
+          },
+          "pmd_N6": {
+            "gamma": 0.5,
+            "kind": "pmd_renewal",
+            "period": 6,
+            "v": 0.4
+          },
+          "pmd_N7": {
+            "gamma": 0.5,
+            "kind": "pmd_renewal",
+            "period": 7,
+            "v": 0.4
+          },
+          "pmd_N8": {
+            "gamma": 0.5,
+            "kind": "pmd_renewal",
+            "period": 8,
+            "v": 0.4
+          },
+          "probability_clock": {
+            "kind": "probability_clock"
+          },
+          "recall_tau1": {
+            "kind": "delayed_recall",
+            "tau": 1
+          },
+          "recall_tau16": {
+            "kind": "delayed_recall",
+            "tau": 16
+          },
+          "recall_tau2": {
+            "kind": "delayed_recall",
+            "tau": 2
+          },
+          "recall_tau4": {
+            "kind": "delayed_recall",
+            "tau": 4
+          },
+          "recall_tau8": {
+            "kind": "delayed_recall",
+            "tau": 8
+          },
+          "srinivasan_hmm6": {
+            "kind": "srinivasan_hmm"
+          },
+          "stern_gerlach": {
+            "kind": "stern_gerlach"
+          },
+          "uniform_renewal_N3": {
+            "kind": "uniform_renewal",
+            "n": 3
+          },
+          "uniform_renewal_N5": {
+            "kind": "uniform_renewal",
+            "n": 5
+          },
+          "upset_gambler": {
+            "kind": "upset_gambler",
+            "p": 0.7,
+            "q": 0.8
+          }
+        }
+      },
+      "train": {
+        "batch_seed": 0,
+        "batch_size": 128,
+        "clip_grad_norm": 0.0,
+        "eval_every": 10,
+        "lr": 0.05,
+        "min_delta": 0.0001,
+        "optimizer": "adam",
+        "patience": 30,
+        "restore_best": true,
+        "schedule": "constant",
+        "steps": 1500
+      }
+    },
+    "git_commit": "65508eb401d16c847261c4486c0ed9a477376292",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": null,
+    "timestamp_utc": "2026-11-05T05:12:27+00:00",
+    "torch": "2.15.0"
+  },
+  "noise": [
+    {
+      "entropy_rate_nats": 0.46209812037329684,
+      "eps": 0.0,
+      "eta_floor": {
+        "2": 1.0,
+        "4": 1.0,
+        "8": 1.0
+      },
+      "length": 32,
+      "max_emission_prob": 1.0,
+      "min_emission_prob": 0.0,
+      "optimal_nll_nats": 0.47653868663496235,
+      "probe": "recall_tau1",
+      "recall_optimal_accuracy": 1.0,
+      "recall_optimal_nll_nats": 0.0
+    },
+    {
+      "entropy_rate_nats": 0.4807652984915793,
+      "eps": 0.01,
+      "eta_floor": {
+        "2": 0.98,
+        "4": 0.98,
+        "8": 0.98
+      },
+      "length": 32,
+      "max_emission_prob": 0.99,
+      "min_emission_prob": 0.01,
+      "optimal_nll_nats": 0.4940391661208522,
+      "probe": "recall_tau1",
+      "recall_optimal_accuracy": 0.99,
+      "recall_optimal_nll_nats": 0.056001534354847345
+    },
+    {
+      "entropy_rate_nats": 0.49477782479987414,
+      "eps": 0.02,
+      "eta_floor": {
+        "2": 0.96,
+        "4": 0.96,
+        "8": 0.96
+      },
+      "length": 32,
+      "max_emission_prob": 0.98,
+      "min_emission_prob": 0.02,
+      "optimal_nll_nats": 0.5071759095348787,
+      "probe": "recall_tau1",
+      "recall_optimal_accuracy": 0.98,
+      "recall_optimal_nll_nats": 0.098039113279732
+    },
+    {
+      "entropy_rate_nats": 0.5282698681552543,
+      "eps": 0.05,
+      "eta_floor": {
+        "2": 0.8999999999999999,
+        "4": 0.8999999999999999,
+        "8": 0.8999999999999999
+      },
+      "length": 32,
+      "max_emission_prob": 0.95,
+      "min_emission_prob": 0.05,
+      "optimal_nll_nats": 0.5385747001805476,
+      "probe": "recall_tau1",
+      "recall_optimal_accuracy": 0.95,
+      "recall_optimal_nll_nats": 0.1985152433458726
+    },
+    {
+      "entropy_rate_nats": 0.5704591115037796,
+      "eps": 0.1,
+      "eta_floor": {
+        "2": 0.8,
+        "4": 0.8,
+        "8": 0.8
+      },
+      "length": 32,
+      "max_emission_prob": 0.9,
+      "min_emission_prob": 0.1,
+      "optimal_nll_nats": 0.5781271158197899,
+      "probe": "recall_tau1",
+      "recall_optimal_accuracy": 0.9,
+      "recall_optimal_nll_nats": 0.3250829733914482
+    },
+    {
+      "entropy_rate_nats": 0.6288989282193596,
+      "eps": 0.2,
+      "eta_floor": {
+        "2": 0.6000000000000001,
+        "4": 0.6000000000000001,
+        "8": 0.6000000000000001
+      },
+      "length": 32,
+      "max_emission_prob": 0.8,
+      "min_emission_prob": 0.2,
+      "optimal_nll_nats": 0.6329144439906462,
+      "probe": "recall_tau1",
+      "recall_optimal_accuracy": 0.8,
+      "recall_optimal_nll_nats": 0.5004024235381879
+    },
+    {
+      "entropy_rate_nats": 0.5776226504666211,
+      "eps": 0.0,
+      "eta_floor": {
+        "2": 1.0,
+        "4": 1.0,
+        "8": 1.0
+      },
+      "length": 32,
+      "max_emission_prob": 1.0,
+      "min_emission_prob": 0.0,
+      "optimal_nll_nats": 0.5848429335974539,
+      "probe": "recall_tau4",
+      "recall_optimal_accuracy": 1.0,
+      "recall_optimal_nll_nats": 0.0
+    },
+    {
+      "entropy_rate_nats": 0.5869562395257624,
+      "eps": 0.01,
+      "eta_floor": {
+        "2": 0.98,
+        "4": 0.98,
+        "8": 0.98
+      },
+      "length": 32,
+      "max_emission_prob": 0.99,
+      "min_emission_prob": 0.01,
+      "optimal_nll_nats": 0.5935931733403987,
+      "probe": "recall_tau4",
+      "recall_optimal_accuracy": 0.99,
+      "recall_optimal_nll_nats": 0.056001534354847345
+    },
+    {
+      "entropy_rate_nats": 0.5939625026799098,
+      "eps": 0.02,
+      "eta_floor": {
+        "2": 0.96,
+        "4": 0.96,
+        "8": 0.96
+      },
+      "length": 32,
+      "max_emission_prob": 0.98,
+      "min_emission_prob": 0.02,
+      "optimal_nll_nats": 0.600161545047412,
+      "probe": "recall_tau4",
+      "recall_optimal_accuracy": 0.98,
+      "recall_optimal_nll_nats": 0.098039113279732
+    },
+    {
+      "entropy_rate_nats": 0.6107085243575999,
+      "eps": 0.05,
+      "eta_floor": {
+        "2": 0.8999999999999999,
+        "4": 0.8999999999999999,
+        "8": 0.8999999999999999
+      },
+      "length": 32,
+      "max_emission_prob": 0.95,
+      "min_emission_prob": 0.05,
+      "optimal_nll_nats": 0.6158609403702464,
+      "probe": "recall_tau4",
+      "recall_optimal_accuracy": 0.95,
+      "recall_optimal_nll_nats": 0.1985152433458726
+    },
+    {
+      "entropy_rate_nats": 0.6318031460318625,
+      "eps": 0.1,
+      "eta_floor": {
+        "2": 0.8,
+        "4": 0.8,
+        "8": 0.8
+      },
+      "length": 32,
+      "max_emission_prob": 0.9,
+      "min_emission_prob": 0.1,
+      "optimal_nll_nats": 0.6356371481898676,
+      "probe": "recall_tau4",
+      "recall_optimal_accuracy": 0.9,
+      "recall_optimal_nll_nats": 0.3250829733914482
+    },
+    {
+      "entropy_rate_nats": 0.6610230543896525,
+      "eps": 0.2,
+      "eta_floor": {
+        "2": 0.6000000000000001,
+        "4": 0.6000000000000001,
+        "8": 0.6000000000000001
+      },
+      "length": 32,
+      "max_emission_prob": 0.8,
+      "min_emission_prob": 0.2,
+      "optimal_nll_nats": 0.6630308122752957,
+      "probe": "recall_tau4",
+      "recall_optimal_accuracy": 0.8,
+      "recall_optimal_nll_nats": 0.5004024235381879
+    },
+    {
+      "entropy_rate_nats": 0.623832462503951,
+      "eps": 0.0,
+      "eta_floor": {
+        "2": 1.0,
+        "4": 1.0,
+        "8": 1.0
+      },
+      "length": 32,
+      "max_emission_prob": 1.0,
+      "min_emission_prob": 0.0,
+      "optimal_nll_nats": 0.6281646323824503,
+      "probe": "recall_tau8",
+      "recall_optimal_accuracy": 1.0,
+      "recall_optimal_nll_nats": 0.0
+    },
+    {
+      "entropy_rate_nats": 0.6294326159394357,
+      "eps": 0.01,
+      "eta_floor": {
+        "2": 0.98,
+        "4": 0.98,
+        "8": 0.98
+      },
+      "length": 32,
+      "max_emission_prob": 0.99,
+      "min_emission_prob": 0.01,
+      "optimal_nll_nats": 0.6334147762282174,
+      "probe": "recall_tau8",
+      "recall_optimal_accuracy": 0.99,
+      "recall_optimal_nll_nats": 0.056001534354847345
+    },
+    {
+      "entropy_rate_nats": 0.6336363738319241,
+      "eps": 0.02,
+      "eta_floor": {
+        "2": 0.96,
+        "4": 0.96,
+        "8": 0.96
+      },
+      "length": 32,
+      "max_emission_prob": 0.98,
+      "min_emission_prob": 0.02,
+      "optimal_nll_nats": 0.6373557992524252,
+      "probe": "recall_tau8",
+      "recall_optimal_accuracy": 0.98,
+      "recall_optimal_nll_nats": 0.098039113279732
+    },
+    {
+      "entropy_rate_nats": 0.6436839868385381,
+      "eps": 0.05,
+      "eta_floor": {
+        "2": 0.8999999999999999,
+        "4": 0.8999999999999999,
+        "8": 0.8999999999999999
+      },
+      "length": 32,
+      "max_emission_prob": 0.95,
+      "min_emission_prob": 0.05,
+      "optimal_nll_nats": 0.646775436446126,
+      "probe": "recall_tau8",
+      "recall_optimal_accuracy": 0.95,
+      "recall_optimal_nll_nats": 0.1985152433458726
+    },
+    {
+      "entropy_rate_nats": 0.6563407598430958,
+      "eps": 0.1,
+      "eta_floor": {
+        "2": 0.8,
+        "4": 0.8,
+        "8": 0.8
+      },
+      "length": 32,
+      "max_emission_prob": 0.9,
+      "min_emission_prob": 0.1,
+      "optimal_nll_nats": 0.6586411611378987,
+      "probe": "recall_tau8",
+      "recall_optimal_accuracy": 0.9,
+      "recall_optimal_nll_nats": 0.3250829733914482
+    },
+    {
+      "entropy_rate_nats": 0.6738727048577697,
+      "eps": 0.2,
+      "eta_floor": {
+        "2": 0.6000000000000001,
+        "4": 0.6000000000000001,
+        "8": 0.6000000000000001
+      },
+      "length": 32,
+      "max_emission_prob": 0.8,
+      "min_emission_prob": 0.2,
+      "optimal_nll_nats": 0.6750773595891556,
+      "probe": "recall_tau8",
+      "recall_optimal_accuracy": 0.8,
+      "recall_optimal_nll_nats": 0.5004024235381879
+    },
+    {
+      "entropy_rate_nats": 0.6546390038621706,
+      "eps": 0.0,
+      "eta_floor": {
+        "2": 1.0,
+        "4": 1.0,
+        "8": 1.0
+      },
+      "length": 32,
+      "max_emission_prob": 1.0,
+      "min_emission_prob": 0.0,
+      "optimal_nll_nats": 0.671486331167447,
+      "probe": "recall_tau16",
+      "recall_optimal_accuracy": 1.0,
+      "recall_optimal_nll_nats": 0.0
+    },
+    {
+      "entropy_rate_nats": 0.6577502002152176,
+      "eps": 0.01,
+      "eta_floor": {
+        "2": 0.98,
+        "4": 0.98,
+        "8": 0.98
+      },
+      "length": 32,
+      "max_emission_prob": 0.99,
+      "min_emission_prob": 0.01,
+      "optimal_nll_nats": 0.6732363791160361,
+      "probe": "recall_tau16",
+      "recall_optimal_accuracy": 0.99,
+      "recall_optimal_nll_nats": 0.056001534354847345
+    },
+    {
+      "entropy_rate_nats": 0.6600856212666,
+      "eps": 0.02,
+      "eta_floor": {
+        "2": 0.96,
+        "4": 0.96,
+        "8": 0.96
+      },
+      "length": 32,
+      "max_emission_prob": 0.98,
+      "min_emission_prob": 0.02,
+      "optimal_nll_nats": 0.6745500534574387,
+      "probe": "recall_tau16",
+      "recall_optimal_accuracy": 0.98,
+      "recall_optimal_nll_nats": 0.098039113279732
+    },
+    {
+      "entropy_rate_nats": 0.6656676284924967,
+      "eps": 0.05,
+      "eta_floor": {
+        "2": 0.8999999999999999,
+        "4": 0.8999999999999999,
+        "8": 0.8999999999999999
+      },
+      "length": 32,
+      "max_emission_prob": 0.95,
+      "min_emission_prob": 0.05,
+      "optimal_nll_nats": 0.6776899325220056,
+      "probe": "recall_tau16",
+      "recall_optimal_accuracy": 0.95,
+      "recall_optimal_nll_nats": 0.1985152433458726
+    },
+    {
+      "entropy_rate_nats": 0.6726991690505844,
+      "eps": 0.1,
+      "eta_floor": {
+        "2": 0.8,
+        "4": 0.8,
+        "8": 0.8
+      },
+      "length": 32,
+      "max_emission_prob": 0.9,
+      "min_emission_prob": 0.1,
+      "optimal_nll_nats": 0.6816451740859298,
+      "probe": "recall_tau16",
+      "recall_optimal_accuracy": 0.9,
+      "recall_optimal_nll_nats": 0.3250829733914482
+    },
+    {
+      "entropy_rate_nats": 0.6824391385031809,
+      "eps": 0.2,
+      "eta_floor": {
+        "2": 0.6000000000000001,
+        "4": 0.6000000000000001,
+        "8": 0.6000000000000001
+      },
+      "length": 32,
+      "max_emission_prob": 0.8,
+      "min_emission_prob": 0.2,
+      "optimal_nll_nats": 0.6871239069030154,
+      "probe": "recall_tau16",
+      "recall_optimal_accuracy": 0.8,
+      "recall_optimal_nll_nats": 0.5004024235381879
+    },
+    {
+      "entropy_rate_nats": 0.0,
+      "eps": 0.0,
+      "eta_floor": {
+        "2": 1.0,
+        "4": 1.0,
+        "8": 1.0
+      },
+      "length": 32,
+      "max_emission_prob": 1.0,
+      "min_emission_prob": 0.0,
+      "optimal_nll_nats": 0.04332169878499658,
+      "probe": "parity_k2"
+    },
+    {
+      "entropy_rate_nats": 0.056001534354847345,
+      "eps": 0.01,
+      "eta_floor": {
+        "2": 0.98,
+        "4": 0.98,
+        "8": 0.98
+      },
+      "length": 32,
+      "max_emission_prob": 0.99,
+      "min_emission_prob": 0.01,
+      "optimal_nll_nats": 0.09582313724266596,
+      "probe": "parity_k2"
+    },
+    {
+      "entropy_rate_nats": 0.098039113279732,
+      "eps": 0.02,
+      "eta_floor": {
+        "2": 0.96,
+        "4": 0.96,
+        "8": 0.96
+      },
+      "length": 32,
+      "max_emission_prob": 0.98,
+      "min_emission_prob": 0.02,
+      "optimal_nll_nats": 0.13523336748474535,
+      "probe": "parity_k2"
+    },
+    {
+      "entropy_rate_nats": 0.1985152433458726,
+      "eps": 0.05,
+      "eta_floor": {
+        "2": 0.8999999999999999,
+        "4": 0.8999999999999999,
+        "8": 0.8999999999999999
+      },
+      "length": 32,
+      "max_emission_prob": 0.95,
+      "min_emission_prob": 0.05,
+      "optimal_nll_nats": 0.22942973942175213,
+      "probe": "parity_k2"
+    },
+    {
+      "entropy_rate_nats": 0.3250829733914482,
+      "eps": 0.1,
+      "eta_floor": {
+        "2": 0.8,
+        "4": 0.8,
+        "8": 0.8
+      },
+      "length": 32,
+      "max_emission_prob": 0.9,
+      "min_emission_prob": 0.1,
+      "optimal_nll_nats": 0.34808698633947927,
+      "probe": "parity_k2"
+    },
+    {
+      "entropy_rate_nats": 0.5004024235381879,
+      "eps": 0.2,
+      "eta_floor": {
+        "2": 0.6000000000000001,
+        "4": 0.6000000000000001,
+        "8": 0.6000000000000001
+      },
+      "length": 32,
+      "max_emission_prob": 0.8,
+      "min_emission_prob": 0.2,
+      "optimal_nll_nats": 0.5124489708520477,
+      "probe": "parity_k2"
+    },
+    {
+      "entropy_rate_nats": 0.0,
+      "eps": 0.0,
+      "eta_floor": {
+        "2": 1.0,
+        "4": 1.0,
+        "8": 1.0
+      },
+      "length": 32,
+      "max_emission_prob": 1.0,
+      "min_emission_prob": 0.0,
+      "optimal_nll_nats": 0.06498254817749487,
+      "probe": "parity_k3"
+    },
+    {
+      "entropy_rate_nats": 0.056001534354847345,
+      "eps": 0.01,
+      "eta_floor": {
+        "2": 0.98,
+        "4": 0.98,
+        "8": 0.98
+      },
+      "length": 32,
+      "max_emission_prob": 0.99,
+      "min_emission_prob": 0.01,
+      "optimal_nll_nats": 0.11573393868657528,
+      "probe": "parity_k3"
+    },
+    {
+      "entropy_rate_nats": 0.098039113279732,
+      "eps": 0.02,
+      "eta_floor": {
+        "2": 0.96,
+        "4": 0.96,
+        "8": 0.96
+      },
+      "length": 32,
+      "max_emission_prob": 0.98,
+      "min_emission_prob": 0.02,
+      "optimal_nll_nats": 0.153830494587252,
+      "probe": "parity_k3"
+    },
+    {
+      "entropy_rate_nats": 0.1985152433458726,
+      "eps": 0.05,
+      "eta_floor": {
+        "2": 0.8999999999999999,
+        "4": 0.8999999999999999,
+        "8": 0.8999999999999999
+      },
+      "length": 32,
+      "max_emission_prob": 0.95,
+      "min_emission_prob": 0.05,
+      "optimal_nll_nats": 0.2448869874596919,
+      "probe": "parity_k3"
+    },
+    {
+      "entropy_rate_nats": 0.3250829733914482,
+      "eps": 0.1,
+      "eta_floor": {
+        "2": 0.8,
+        "4": 0.8,
+        "8": 0.8
+      },
+      "length": 32,
+      "max_emission_prob": 0.9,
+      "min_emission_prob": 0.1,
+      "optimal_nll_nats": 0.3595889928134948,
+      "probe": "parity_k3"
+    },
+    {
+      "entropy_rate_nats": 0.500402423538188,
+      "eps": 0.2,
+      "eta_floor": {
+        "2": 0.6000000000000001,
+        "4": 0.6000000000000001,
+        "8": 0.6000000000000001
+      },
+      "length": 32,
+      "max_emission_prob": 0.8,
+      "min_emission_prob": 0.2,
+      "optimal_nll_nats": 0.5184722445089777,
+      "probe": "parity_k3"
+    },
+    {
+      "entropy_rate_nats": 0.0,
+      "eps": 0.0,
+      "eta_floor": {
+        "2": 1.0,
+        "4": 1.0,
+        "8": 1.0
+      },
+      "length": 32,
+      "max_emission_prob": 1.0,
+      "min_emission_prob": 0.0,
+      "optimal_nll_nats": 0.08664339756999316,
+      "probe": "parity_k4"
+    },
+    {
+      "entropy_rate_nats": 0.05600153435484734,
+      "eps": 0.01,
+      "eta_floor": {
+        "2": 0.98,
+        "4": 0.98,
+        "8": 0.98
+      },
+      "length": 32,
+      "max_emission_prob": 0.99,
+      "min_emission_prob": 0.01,
+      "optimal_nll_nats": 0.13564474013048458,
+      "probe": "parity_k4"
+    },
+    {
+      "entropy_rate_nats": 0.098039113279732,
+      "eps": 0.02,
+      "eta_floor": {
+        "2": 0.96,
+        "4": 0.96,
+        "8": 0.96
+      },
+      "length": 32,
+      "max_emission_prob": 0.98,
+      "min_emission_prob": 0.02,
+      "optimal_nll_nats": 0.17242762168975867,
+      "probe": "parity_k4"
+    },
+    {
+      "entropy_rate_nats": 0.19851524334587256,
+      "eps": 0.05,
+      "eta_floor": {
+        "2": 0.8999999999999999,
+        "4": 0.8999999999999999,
+        "8": 0.8999999999999999
+      },
+      "length": 32,
+      "max_emission_prob": 0.95,
+      "min_emission_prob": 0.05,
+      "optimal_nll_nats": 0.2603442354976317,
+      "probe": "parity_k4"
+    },
+    {
+      "entropy_rate_nats": 0.3250829733914482,
+      "eps": 0.1,
+      "eta_floor": {
+        "2": 0.8,
+        "4": 0.8,
+        "8": 0.8
+      },
+      "length": 32,
+      "max_emission_prob": 0.9,
+      "min_emission_prob": 0.1,
+      "optimal_nll_nats": 0.3710909992875103,
+      "probe": "parity_k4"
+    },
+    {
+      "entropy_rate_nats": 0.5004024235381879,
+      "eps": 0.2,
+      "eta_floor": {
+        "2": 0.6000000000000001,
+        "4": 0.6000000000000001,
+        "8": 0.6000000000000001
+      },
+      "length": 32,
+      "max_emission_prob": 0.8,
+      "min_emission_prob": 0.2,
+      "optimal_nll_nats": 0.5244955181659076,
+      "probe": "parity_k4"
+    },
+    {
+      "entropy_rate_nats": 0.4231220866711803,
+      "eps": 0.0,
+      "eta_floor": {
+        "2": 0.8,
+        "4": 0.26666666666666666,
+        "8": 0.26666666666666666
+      },
+      "length": 32,
+      "max_emission_prob": 0.882,
+      "min_emission_prob": 0.0019999999999999996,
+      "optimal_nll_nats": 0.4346240931451958,
+      "probe": "mixed_timescales"
+    },
+    {
+      "entropy_rate_nats": 0.4403524294710849,
+      "eps": 0.01,
+      "eta_floor": {
+        "2": 0.7840000000000003,
+        "4": 0.2613333333333334,
+        "8": 0.2613333333333334
+      },
+      "length": 32,
+      "max_emission_prob": 0.87416,
+      "min_emission_prob": 0.0021599999999999996,
+      "optimal_nll_nats": 0.4513159877326037,
+      "probe": "mixed_timescales"
+    },
+    {
+      "entropy_rate_nats": 0.45691788672185396,
+      "eps": 0.02,
+      "eta_floor": {
+        "2": 0.7679999999999998,
+        "4": 0.25599999999999995,
+        "8": 0.25599999999999995
+      },
+      "length": 32,
+      "max_emission_prob": 0.86632,
+      "min_emission_prob": 0.00232,
+      "optimal_nll_nats": 0.46736377444428584,
+      "probe": "mixed_timescales"
+    },
+    {
+      "entropy_rate_nats": 0.5030025983436706,
+      "eps": 0.05,
+      "eta_floor": {
+        "2": 0.7200000000000002,
+        "4": 0.24000000000000007,
+        "8": 0.24000000000000007
+      },
+      "length": 32,
+      "max_emission_prob": 0.8428,
+      "min_emission_prob": 0.0028000000000000004,
+      "optimal_nll_nats": 0.5120083388279207,
+      "probe": "mixed_timescales"
+    },
+    {
+      "entropy_rate_nats": 0.5694326000898261,
+      "eps": 0.1,
+      "eta_floor": {
+        "2": 0.6400000000000001,
+        "4": 0.21333333333333337,
+        "8": 0.21333333333333337
+      },
+      "length": 32,
+      "max_emission_prob": 0.8036000000000001,
+      "min_emission_prob": 0.003599999999999999,
+      "optimal_nll_nats": 0.5763624030195091,
+      "probe": "mixed_timescales"
+    },
+    {
+      "entropy_rate_nats": 0.6710960304111524,
+      "eps": 0.2,
+      "eta_floor": {
+        "2": 0.48,
+        "4": 0.16,
+        "8": 0.16
+      },
+      "length": 32,
+      "max_emission_prob": 0.7252000000000001,
+      "min_emission_prob": 0.005199999999999998,
+      "optimal_nll_nats": 0.6748488511432937,
+      "probe": "mixed_timescales"
+    }
+  ],
+  "suite": [
+    {
+      "entropy_rate_nats": 0.6108643020548935,
+      "generator": "HMM, 2 states",
+      "generator_states": 2,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.0,
+        "classical_bits": 1,
+        "cq_bits": 0.25022491161107063,
+        "cq_by_length": [
+          1.0,
+          0.25022491161107063
+        ],
+        "cq_saturates_at": 1,
+        "d_mu_bits": 1.0,
+        "n_causal_states": 2,
+        "name": "perturbed_coin",
+        "quantum_dim": 2,
+        "qubits": 1,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "perturbed_coin",
+      "optimal_nll_nats": 0.6134356420081762,
+      "params": {
+        "kind": "perturbed_coin",
+        "name": "perturbed_coin",
+        "p": 0.3
+      },
+      "seconds": 0.004419125150889158,
+      "spec": {
+        "kind": "perturbed_coin",
+        "p": 0.3
+      }
+    },
+    {
+      "entropy_rate_nats": 0.6931471805599453,
+      "generator": "HMM, 3 states",
+      "generator_states": 3,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.4999999999999998,
+        "classical_bits": 2,
+        "cq_bits": 0.8112781244591369,
+        "cq_by_length": [
+          1.4999999999999998,
+          0.8112781244591334
+        ],
+        "cq_saturates_at": 1,
+        "d_mu_bits": 1.584962500721156,
+        "n_causal_states": 3,
+        "name": "ghafari",
+        "quantum_dim": 2,
+        "qubits": 1,
+        "unifilar": true
+      },
+      "n_symbols": 4,
+      "n_symbols_emitted": 3,
+      "name": "ghafari",
+      "optimal_nll_nats": 0.7039776052561945,
+      "params": {
+        "kind": "ghafari",
+        "name": "ghafari",
+        "p": 0.5,
+        "q": 0.5
+      },
+      "seconds": 0.003465333953499794,
+      "spec": {
+        "kind": "ghafari",
+        "p": 0.5,
+        "q": 0.5
+      }
+    },
+    {
+      "entropy_rate_nats": 0.580738335186701,
+      "generator": "HMM, 3 states",
+      "generator_states": 3,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.4862897724265767,
+        "classical_bits": 2,
+        "cq_bits": 0.8079348996393588,
+        "cq_by_length": [
+          1.4862897724265767,
+          0.8079348996393587
+        ],
+        "cq_saturates_at": 1,
+        "d_mu_bits": 1.584962500721156,
+        "n_causal_states": 3,
+        "name": "ghafari_p03_q08",
+        "quantum_dim": 2,
+        "qubits": 1,
+        "unifilar": true
+      },
+      "n_symbols": 4,
+      "n_symbols_emitted": 3,
+      "name": "ghafari_p03_q08",
+      "optimal_nll_nats": 0.5947845611262591,
+      "params": {
+        "kind": "ghafari",
+        "name": "ghafari_p03_q08",
+        "p": 0.3,
+        "q": 0.8
+      },
+      "seconds": 0.003271999768912792,
+      "spec": {
+        "kind": "ghafari",
+        "p": 0.3,
+        "q": 0.8
+      }
+    },
+    {
+      "entropy_rate_nats": 0.6522920198249399,
+      "generator": "HMM, 3 states",
+      "generator_states": 3,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.2449737775841294,
+        "classical_bits": 2,
+        "cq_bits": 0.22859952133037306,
+        "cq_by_length": [
+          1.2449737775841296,
+          0.9816466464709434,
+          0.7070369115202709,
+          0.5115574100237165,
+          0.37196583584453735,
+          0.30694910442204393,
+          0.2704102649219516,
+          0.24815125492698667,
+          0.23893421025647296,
+          0.23397989263477598,
+          0.23107548256347388,
+          0.22990127687637907,
+          0.22927468942967452,
+          0.22890953511599654,
+          0.2287623995295574,
+          0.22868395879171471,
+          0.22863828119609467,
+          0.22861988359348076,
+          0.22861007666163471,
+          0.22860436644087867,
+          0.228602066652142,
+          0.22860084075690365,
+          0.2286001269711624,
+          0.22859983949618892,
+          0.22859968625883398,
+          0.2285995970354897,
+          0.22859956110109564,
+          0.22859954194641824,
+          0.22859953079349857,
+          0.22859952630169988,
+          0.2285995239073639,
+          0.22859952251324944,
+          0.22859952195177388,
+          0.22859952165248254,
+          0.2285995214782176,
+          0.22859952140803308,
+          0.22859952137062087,
+          0.2285995213488391,
+          0.22859952134006412,
+          0.2285995213353882,
+          0.22859952133266628,
+          0.2285995213315693,
+          0.22859952133098482
+        ],
+        "cq_saturates_at": 42,
+        "d_mu_bits": 1.584962500721156,
+        "n_causal_states": 3,
+        "name": "pmd_N3",
+        "quantum_dim": 3,
+        "qubit_model": {
+          "max_predictive_error": 5.551115123125783e-16,
+          "quantum_dim": 2,
+          "source": "Wu2023 Supplement S1",
+          "stationary_entropy_bits": 0.3772469966268081
+        },
+        "qubits": 2,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "pmd_N3",
+      "optimal_nll_nats": 0.6543328966149915,
+      "params": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "name": "pmd_N3",
+        "period": 3,
+        "v": 0.4
+      },
+      "seconds": 0.01857329113408923,
+      "spec": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "period": 3,
+        "v": 0.4
+      }
+    },
+    {
+      "entropy_rate_nats": 0.6662244917166483,
+      "generator": "HMM, 4 states",
+      "generator_states": 4,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.4930774708763104,
+        "classical_bits": 2,
+        "cq_bits": 0.1703627973345981,
+        "cq_by_length": [
+          1.4930774708763104,
+          1.128706397569671,
+          0.7612058435056153,
+          0.5417697131541783,
+          0.37830260646442887,
+          0.2722502951565547,
+          0.22406871808408338,
+          0.20132544976153727,
+          0.1864810806838741,
+          0.17782750201537112,
+          0.17415935127930293,
+          0.17248234367250556,
+          0.17144021613366878,
+          0.1708533366526389,
+          0.17060786174971093,
+          0.17049766743973882,
+          0.17043084466552316,
+          0.17039364883176578,
+          0.17037816268235978,
+          0.1703712391199804,
+          0.1703670535566907,
+          0.1703647263801797,
+          0.1703637578689094,
+          0.17036332499577617,
+          0.17036306336137066,
+          0.17036291790318225,
+          0.17036285736876106,
+          0.17036283031360006,
+          0.17036281396130637,
+          0.17036280487013183,
+          0.17036280108672036,
+          0.1703627993957717,
+          0.1703627983737518,
+          0.17036279780555397,
+          0.1703627975690905,
+          0.17036279746340655,
+          0.17036279739952986,
+          0.17036279736401727,
+          0.17036279734923845,
+          0.17036279734263307,
+          0.1703627973386408,
+          0.17036279733642135,
+          0.17036279733549822
+        ],
+        "cq_saturates_at": 42,
+        "d_mu_bits": 2.0,
+        "n_causal_states": 4,
+        "name": "pmd_N4",
+        "quantum_dim": 4,
+        "qubit_model": {
+          "max_predictive_error": 3.3306690738754696e-16,
+          "quantum_dim": 2,
+          "source": "Wu2023 Supplement S1",
+          "stationary_entropy_bits": 0.25672044474120315
+        },
+        "qubits": 2,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "pmd_N4",
+      "optimal_nll_nats": 0.6676002045813678,
+      "params": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "name": "pmd_N4",
+        "period": 4,
+        "v": 0.4
+      },
+      "seconds": 0.02488404093310237,
+      "spec": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "period": 4,
+        "v": 0.4
+      }
+    },
+    {
+      "entropy_rate_nats": 0.6757761827543234,
+      "generator": "HMM, 5 states",
+      "generator_states": 5,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.6348936497266662,
+        "classical_bits": 3,
+        "cq_bits": 0.11129693920120778,
+        "cq_by_length": [
+          1.6348936497266662,
+          1.2100978976573522,
+          0.767863321779743,
+          0.5153256650848601,
+          0.3593829808696597,
+          0.24534268822829539,
+          0.17627826716925393,
+          0.1440532145662626,
+          0.12978979028702659,
+          0.12192922096810996,
+          0.116677361385264,
+          0.11376003212082231,
+          0.11249089424729908,
+          0.1119502190263868,
+          0.11166089623222651,
+          0.11147606495044407,
+          0.111377111002772,
+          0.11133516590867171,
+          0.11131764604301099,
+          0.11130840658417529,
+          0.11130256214313247,
+          0.11129945018579472,
+          0.1112981350320564,
+          0.11129758663342809,
+          0.11129729765994473,
+          0.11129711494463897,
+          0.11129701767513397,
+          0.1112969765721237,
+          0.11129695943376736,
+          0.11129695040311041,
+          0.11129694469318137,
+          0.11129694165348894,
+          0.11129694036901436,
+          0.11129693983344241,
+          0.11129693955123345,
+          0.11129693937279718,
+          0.11129693927780784,
+          0.11129693923766804,
+          0.11129693922093056,
+          0.11129693921211221,
+          0.11129693920653617,
+          0.11129693920356663,
+          0.11129693920231228,
+          0.11129693920179012
+        ],
+        "cq_saturates_at": 43,
+        "d_mu_bits": 2.321928094887362,
+        "n_causal_states": 5,
+        "name": "pmd_N5",
+        "quantum_dim": 5,
+        "qubit_model": {
+          "max_predictive_error": 3.3306690738754696e-16,
+          "quantum_dim": 2,
+          "source": "Wu2023 Supplement S1",
+          "stationary_entropy_bits": 0.17561139559168676
+        },
+        "qubits": 3,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "pmd_N5",
+      "optimal_nll_nats": 0.6766030472872733,
+      "params": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "name": "pmd_N5",
+        "period": 5,
+        "v": 0.4
+      },
+      "seconds": 0.038916874676942825,
+      "spec": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "period": 5,
+        "v": 0.4
+      }
+    },
+    {
+      "entropy_rate_nats": 0.6812750255112133,
+      "generator": "HMM, 6 states",
+      "generator_states": 6,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.7176291574890192,
+        "classical_bits": 3,
+        "cq_bits": 0.07412207226943614,
+        "cq_by_length": [
+          1.7176291574890192,
+          1.257574432190422,
+          0.7681569643174229,
+          0.4865041378391085,
+          0.32900952481652723,
+          0.22523988222689262,
+          0.1540373479728952,
+          0.11270436887972063,
+          0.0929554092943088,
+          0.08429689527964003,
+          0.08003128420693041,
+          0.07742666564135531,
+          0.07576920195254908,
+          0.07487654372373816,
+          0.07447704029655014,
+          0.07430891795678704,
+          0.07422759455697352,
+          0.07417934743703926,
+          0.07414992614295178,
+          0.07413464251305445,
+          0.07412794631406797,
+          0.07412514457879522,
+          0.07412379338086161,
+          0.07412300107444879,
+          0.07412252355795226,
+          0.07412227650527503,
+          0.0741221679321479,
+          0.07412212220993845,
+          0.07412210012740619,
+          0.07412208726371572,
+          0.07412207956131005,
+          0.07412207558077677,
+          0.07412207382421987,
+          0.07412207307976762,
+          0.07412207271970371,
+          0.07412207251120122,
+          0.07412207238709384,
+          0.07412207232302111,
+          0.07412207229463616,
+          0.07412207228253431,
+          0.07412207227667561,
+          0.07412207227330175,
+          0.0741220722713028,
+          0.07412207227027898
+        ],
+        "cq_saturates_at": 43,
+        "d_mu_bits": 2.584962500721156,
+        "n_causal_states": 6,
+        "name": "pmd_N6",
+        "quantum_dim": 5,
+        "qubit_model": {
+          "max_predictive_error": 4.440892098500626e-16,
+          "quantum_dim": 2,
+          "source": "Wu2023 Supplement S1",
+          "stationary_entropy_bits": 0.12272964253519167
+        },
+        "qubits": 3,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "pmd_N6",
+      "optimal_nll_nats": 0.6817883364830193,
+      "params": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "name": "pmd_N6",
+        "period": 6,
+        "v": 0.4
+      },
+      "seconds": 0.06493008323013783,
+      "spec": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "period": 6,
+        "v": 0.4
+      }
+    },
+    {
+      "entropy_rate_nats": 0.6846920341278113,
+      "generator": "HMM, 7 states",
+      "generator_states": 7,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.7674980552022612,
+        "classical_bits": 3,
+        "cq_bits": 0.05056323817212696,
+        "cq_by_length": [
+          1.7674980552022612,
+          1.2876675991438251,
+          0.7694465519939139,
+          0.4640956825265546,
+          0.299932986816499,
+          0.20290281266277505,
+          0.13821005524325022,
+          0.09628195467126496,
+          0.07261059846545774,
+          0.06110966197992078,
+          0.056002203958508,
+          0.05363483703180115,
+          0.05234023262859121,
+          0.051531069887414314,
+          0.051040993136603735,
+          0.05078226462853023,
+          0.05066399611091203,
+          0.050613826802475385,
+          0.05059112935413461,
+          0.05057893672200437,
+          0.05057155022936171,
+          0.050567239913567145,
+          0.05056503818911041,
+          0.050564055611585196,
+          0.0505636445215175,
+          0.05056346019048487,
+          0.05056336222349481,
+          0.050563303535047184,
+          0.05056326955176807,
+          0.050563252265178625,
+          0.05056324456627559,
+          0.05056324134874109,
+          0.05056323990713862,
+          0.05056323914138409,
+          0.05056323868278359,
+          0.05056323841725441,
+          0.050563238282199774,
+          0.05056323822204827,
+          0.050563238196913975,
+          0.050563238185650686,
+          0.05056323817967017,
+          0.050563238176082215,
+          0.05056323817401119,
+          0.050563238172958005
+        ],
+        "cq_saturates_at": 43,
+        "d_mu_bits": 2.807354922057604,
+        "n_causal_states": 7,
+        "name": "pmd_N7",
+        "quantum_dim": 7,
+        "qubit_model": {
+          "max_predictive_error": 2.220446049250313e-16,
+          "quantum_dim": 2,
+          "source": "Wu2023 Supplement S1",
+          "stationary_entropy_bits": 0.08771031410530233
+        },
+        "qubits": 3,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "pmd_N7",
+      "optimal_nll_nats": 0.6850202674699466,
+      "params": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "name": "pmd_N7",
+        "period": 7,
+        "v": 0.4
+      },
+      "seconds": 0.06576075032353401,
+      "spec": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "period": 7,
+        "v": 0.4
+      }
+    },
+    {
+      "entropy_rate_nats": 0.6869300497342169,
+      "generator": "HMM, 8 states",
+      "generator_states": 8,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.7993025726412153,
+        "classical_bits": 3,
+        "cq_bits": 0.035167680104280535,
+        "cq_by_length": [
+          1.7993025726412153,
+          1.308965963030487,
+          0.7733839141586457,
+          0.4499345000659973,
+          0.2772252954503308,
+          0.18185301147217908,
+          0.1230216196159649,
+          0.08454577454932827,
+          0.06069532205160811,
+          0.04749242073240481,
+          0.04100339680245539,
+          0.03806854115696337,
+          0.036739999640195975,
+          0.03607067932923208,
+          0.03568180057542765,
+          0.03544218488947754,
+          0.03530258231587234,
+          0.03522984671035055,
+          0.03519603239835334,
+          0.0351814144982437,
+          0.035174979929249076,
+          0.0351717840435432,
+          0.03516996014311076,
+          0.035168867597628224,
+          0.0351682507150297,
+          0.03516793844465093,
+          0.03516779653911816,
+          0.03516773605711532,
+          0.03516770961521794,
+          0.03516769655648711,
+          0.03516768917369776,
+          0.03516768479973234,
+          0.03516768235173344,
+          0.035167681119391475,
+          0.035167680561040394,
+          0.03516768032345908,
+          0.03516768021972996,
+          0.035167680168573676,
+          0.0351676801396928,
+          0.03516768012259422,
+          0.03516768011302471,
+          0.03516768010821352,
+          0.03516768010603089,
+          0.03516768010510362
+        ],
+        "cq_saturates_at": 43,
+        "d_mu_bits": 3.0,
+        "n_causal_states": 8,
+        "name": "pmd_N8",
+        "quantum_dim": 7,
+        "qubit_model": {
+          "max_predictive_error": 4.440892098500626e-16,
+          "quantum_dim": 2,
+          "source": "Wu2023 Supplement S1",
+          "stationary_entropy_bits": 0.0640003627743563
+        },
+        "qubits": 3,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "pmd_N8",
+      "optimal_nll_nats": 0.6871453971489172,
+      "params": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "name": "pmd_N8",
+        "period": 8,
+        "v": 0.4
+      },
+      "seconds": 0.06393858278170228,
+      "spec": {
+        "gamma": 0.5,
+        "kind": "pmd_renewal",
+        "period": 8,
+        "v": 0.4
+      }
+    },
+    {
+      "entropy_rate_nats": 0.56537999913625,
+      "generator": "HMM, 2 states",
+      "generator_states": 2,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 0.9774178175281715,
+        "classical_bits": 1,
+        "cq_bits": 0.09963662661915756,
+        "cq_by_length": [
+          0.9774178175281715,
+          0.9346087796250298,
+          0.8436234350702396,
+          0.7377799818243354,
+          0.6332852026808475,
+          0.5377293712032011,
+          0.45415136339960377,
+          0.3831709590276794,
+          0.3241618572297755,
+          0.2759104929625787,
+          0.2369862112726519,
+          0.20594519823549468,
+          0.18143761584819657,
+          0.16225837949112965,
+          0.1473653731239521,
+          0.13587910781875467,
+          0.1270720768110676,
+          0.12035275607770675,
+          0.11524733776881944,
+          0.11138119976404237,
+          0.10846140683952135,
+          0.1062610134687929,
+          0.10460553100308287,
+          0.10336162234241364,
+          0.10242789070351159,
+          0.10172752123974116,
+          0.10120249281832569,
+          0.10080907903964278,
+          0.10051438335929141,
+          0.10029368931827415,
+          0.1001284449353882,
+          0.10000473568828779,
+          0.09991213118254631,
+          0.09984281606719876,
+          0.09979093627733716,
+          0.09975210789420808,
+          0.09972304853363921,
+          0.09970130089764748,
+          0.09968502555984295,
+          0.09967284570970535,
+          0.09966373086298536,
+          0.09965690977863104,
+          0.09965180525821092,
+          0.09964798533546051,
+          0.09964512673933491,
+          0.09964298754636576,
+          0.09964138671224734,
+          0.09964018875282274,
+          0.09963929227935334,
+          0.09963862141851182,
+          0.09963811939137415,
+          0.09963774370818582,
+          0.09963746257236283,
+          0.09963725218942639,
+          0.09963709475316941,
+          0.09963697693861522,
+          0.0996368887742492,
+          0.09963682279806536,
+          0.09963677342600102,
+          0.09963673647932667,
+          0.09963670883096466,
+          0.09963668814082353,
+          0.0996366726577391,
+          0.0996366610712592,
+          0.09963665240073111,
+          0.09963664591230241,
+          0.0996366410568065,
+          0.099636637423286,
+          0.09963663470420842,
+          0.0996366326694362,
+          0.09963663114675331,
+          0.09963663000728129,
+          0.09963662915457858,
+          0.09963662851647445,
+          0.09963662803896087,
+          0.09963662768162265,
+          0.09963662741421511,
+          0.09963662721410542,
+          0.09963662706435657,
+          0.09963662695229548,
+          0.09963662686843604,
+          0.09963662680568233,
+          0.09963662675872105,
+          0.0996366267235786,
+          0.09963662669728054,
+          0.09963662667760087,
+          0.09963662666287339,
+          0.09963662665185286,
+          0.09963662664360556,
+          0.0996366266374342,
+          0.09963662663281572,
+          0.09963662662936036,
+          0.09963662662677333,
+          0.0996366266248383,
+          0.09963662662338965,
+          0.09963662662230656,
+          0.09963662662149486,
+          0.09963662662088821,
+          0.09963662662043335,
+          0.09963662662009395
+        ],
+        "cq_saturates_at": 99,
+        "d_mu_bits": 1.0,
+        "n_causal_states": 2,
+        "name": "upset_gambler",
+        "quantum_dim": 2,
+        "qubits": 1,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "upset_gambler",
+      "optimal_nll_nats": 0.5661876930774692,
+      "params": {
+        "kind": "upset_gambler",
+        "name": "upset_gambler",
+        "p": 0.7,
+        "q": 0.8
+      },
+      "seconds": 0.011109374929219484,
+      "spec": {
+        "kind": "upset_gambler",
+        "p": 0.7,
+        "q": 0.8
+      }
+    },
+    {
+      "entropy_rate_nats": 0.5493061443340549,
+      "generator": "HMM, 3 states",
+      "generator_states": 3,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.4591479170272448,
+        "classical_bits": 2,
+        "cq_bits": 0.7747497161417596,
+        "cq_by_length": [
+          1.4591479170272448,
+          1.0820052108682776,
+          0.7747497161417596
+        ],
+        "cq_saturates_at": 2,
+        "d_mu_bits": 1.584962500721156,
+        "n_causal_states": 3,
+        "name": "uniform_renewal_N3",
+        "quantum_dim": 3,
+        "qubits": 2,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "uniform_renewal_N3",
+      "optimal_nll_nats": 0.5565264274648876,
+      "params": {
+        "kind": "uniform_renewal",
+        "n": 3,
+        "name": "uniform_renewal_N3"
+      },
+      "seconds": 0.0033412501215934753,
+      "spec": {
+        "kind": "uniform_renewal",
+        "n": 3
+      }
+    },
+    {
+      "entropy_rate_nats": 0.5364793041447001,
+      "generator": "HMM, 5 states",
+      "generator_states": 5,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 2.1492553971685,
+        "classical_bits": 3,
+        "cq_bits": 0.9713184497606098,
+        "cq_by_length": [
+          2.1492553971685,
+          1.8406647063875163,
+          1.4379324001831042,
+          1.1284282457393573,
+          0.9713184497606087
+        ],
+        "cq_saturates_at": 4,
+        "d_mu_bits": 2.321928094887362,
+        "n_causal_states": 5,
+        "name": "uniform_renewal_N5",
+        "quantum_dim": 5,
+        "qubits": 3,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "uniform_renewal_N5",
+      "optimal_nll_nats": 0.5449621302884181,
+      "params": {
+        "kind": "uniform_renewal",
+        "n": 5,
+        "name": "uniform_renewal_N5"
+      },
+      "seconds": 0.0038555003702640533,
+      "spec": {
+        "kind": "uniform_renewal",
+        "n": 5
+      }
+    },
+    {
+      "entropy_rate_nats": 0.17458367247520867,
+      "generator": "HMM, 7 states",
+      "generator_states": 7,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 2.748097123739641,
+        "classical_bits": 3,
+        "cq_bits": 2.3516275561036175,
+        "cq_by_length": [
+          2.7480971237396417,
+          2.6081874421095756,
+          2.4788988560912606,
+          2.3516275561036175
+        ],
+        "cq_saturates_at": 3,
+        "d_mu_bits": 2.807354922057604,
+        "n_causal_states": 7,
+        "name": "golden_mean_4_3",
+        "quantum_dim": 7,
+        "qubits": 3,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "golden_mean_4_3",
+      "optimal_nll_nats": 0.21774257109394005,
+      "params": {
+        "k": 3,
+        "kind": "rk_golden_mean",
+        "name": "golden_mean_4_3",
+        "p": 0.505,
+        "r": 4
+      },
+      "seconds": 0.004031000193208456,
+      "spec": {
+        "k": 3,
+        "kind": "rk_golden_mean",
+        "p": 0.505,
+        "r": 4
+      }
+    },
+    {
+      "entropy_rate_nats": 0.23220212385103428,
+      "generator": "HMM, 5 states",
+      "generator_states": 5,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.4345491399952037,
+        "classical_bits": 3,
+        "cq_bits": 0.6128698700493506,
+        "cq_by_length": [
+          1.4345491399952035,
+          1.1438636775777895,
+          0.8729494789628701,
+          0.6128698700493507
+        ],
+        "cq_saturates_at": 3,
+        "d_mu_bits": 2.321928094887362,
+        "n_causal_states": 5,
+        "name": "golden_mean_3_2_ho",
+        "quantum_dim": 5,
+        "qubits": 3,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "golden_mean_3_2_ho",
+      "optimal_nll_nats": 0.24150672760757408,
+      "params": {
+        "k": 3,
+        "kind": "rk_golden_mean",
+        "loop_symbol": 1,
+        "name": "golden_mean_3_2_ho",
+        "p": 0.9,
+        "r": 2
+      },
+      "seconds": 0.003467999864369631,
+      "spec": {
+        "k": 3,
+        "kind": "rk_golden_mean",
+        "loop_symbol": 1,
+        "p": 0.9,
+        "r": 2
+      }
+    },
+    {
+      "entropy_rate_nats": 0.5206753147812,
+      "generator": "HMM, 3 states",
+      "generator_states": 3,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.3717100770209503,
+        "classical_bits": 2,
+        "cq_bits": 1.033592434467573,
+        "cq_by_length": [
+          1.3717100770209503,
+          1.2035031074525402,
+          1.1443600005185137,
+          1.1419110441670963,
+          1.076245858189955,
+          1.058489527889265,
+          1.0535681412970848,
+          1.0411566405682884,
+          1.0379380647384562,
+          1.0369858579225948,
+          1.0348683024766205,
+          1.0343234533272143,
+          1.0341607671266395,
+          1.0338058588718915,
+          1.0337146626882112,
+          1.0336873916418838,
+          1.033628086236667,
+          1.0336128507113733,
+          1.0336082935886157,
+          1.03359838858897,
+          1.0335958440955002,
+          1.033595082976288,
+          1.0335934288135404,
+          1.0335930038786474,
+          1.0335928767695166,
+          1.0335926005235616,
+          1.0335925295593094,
+          1.0335925083320228,
+          1.0335924621989263,
+          1.0335924503478926,
+          1.0335924468029338,
+          1.0335924390987066,
+          1.0335924371195837,
+          1.0335924365275757,
+          1.0335924352409693,
+          1.0335924349104562,
+          1.0335924348115908,
+          1.0335924345967276,
+          1.0335924345415317,
+          1.0335924345250216,
+          1.033592434489139,
+          1.0335924344799212,
+          1.0335924344771643,
+          1.0335924344711716,
+          1.0335924344696328,
+          1.033592434469172,
+          1.033592434468171
+        ],
+        "cq_saturates_at": 46,
+        "d_mu_bits": 1.584962500721156,
+        "n_causal_states": 3,
+        "name": "nemo",
+        "quantum_dim": 3,
+        "qubits": 2,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "nemo",
+      "optimal_nll_nats": 0.5325787034446521,
+      "params": {
+        "kind": "nemo",
+        "name": "nemo",
+        "p": 0.666
+      },
+      "seconds": 0.02290395786985755,
+      "spec": {
+        "kind": "nemo",
+        "p": 0.666
+      }
+    },
+    {
+      "entropy_rate_nats": 0.2205920176584827,
+      "generator": "HMM, 3 states",
+      "generator_states": 3,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 1.583143101527774,
+        "classical_bits": 2,
+        "cq_bits": 1.5205379466001447,
+        "cq_by_length": [
+          1.583143101527774,
+          1.538486492252748,
+          1.5341699821706514,
+          1.53136718658394,
+          1.5228842553828899,
+          1.5221929127204572,
+          1.5215561867632252,
+          1.5207550137195343,
+          1.5206903885833234,
+          1.5206299433324704,
+          1.5205575304207746,
+          1.5205516947132813,
+          1.5205462291839424,
+          1.5205397095310156,
+          1.5205391841598557,
+          1.520538692055998,
+          1.5205381052670575,
+          1.5205380579823773,
+          1.52053801369136,
+          1.5205379608801919,
+          1.5205379566245603,
+          1.5205379526383553,
+          1.5205379478853487,
+          1.520537947502342,
+          1.5205379471435834,
+          1.5205379467158127,
+          1.5205379466813418,
+          1.5205379466490536,
+          1.5205379466105544,
+          1.520537946607452,
+          1.520537946604546,
+          1.520537946601081
+        ],
+        "cq_saturates_at": 31,
+        "d_mu_bits": 1.584962500721156,
+        "n_causal_states": 3,
+        "name": "nemo_ho",
+        "quantum_dim": 3,
+        "qubits": 2,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "nemo_ho",
+      "optimal_nll_nats": 0.2498040806432194,
+      "params": {
+        "kind": "nemo",
+        "loop_symbol": 1,
+        "name": "nemo_ho",
+        "p": 0.1,
+        "q": 0.9
+      },
+      "seconds": 0.006340791005641222,
+      "spec": {
+        "kind": "nemo",
+        "loop_symbol": 1,
+        "p": 0.1,
+        "q": 0.9
+      }
+    },
+    {
+      "entropy_rate_nats": 0.5806590923954245,
+      "generator": "HQMM, quantum dim 2",
+      "generator_quantum_dim": 2,
+      "length": 32,
+      "memory": {
+        "name": "probability_clock",
+        "note": "non-unifilar presentation: the causal states may be infinite and are not computed; see docs/benchmarks.md for the known figures",
+        "unifilar": false
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "probability_clock",
+      "optimal_nll_nats": 0.5889983364672802,
+      "params": {
+        "kind": "probability_clock",
+        "name": "probability_clock"
+      },
+      "seconds": 0.047059832606464624,
+      "spec": {
+        "kind": "probability_clock"
+      }
+    },
+    {
+      "entropy_rate_nats": 1.560710409041408,
+      "generator": "HQMM, quantum dim 2",
+      "generator_quantum_dim": 2,
+      "length": 32,
+      "memory": {
+        "name": "stern_gerlach",
+        "note": "non-unifilar presentation: the causal states may be infinite and are not computed; see docs/benchmarks.md for the known figures",
+        "unifilar": false
+      },
+      "n_symbols": 8,
+      "n_symbols_emitted": 6,
+      "name": "stern_gerlach",
+      "optimal_nll_nats": 1.5679306921722473,
+      "params": {
+        "kind": "stern_gerlach",
+        "name": "stern_gerlach"
+      },
+      "seconds": 0.00702774990350008,
+      "spec": {
+        "kind": "stern_gerlach"
+      }
+    },
+    {
+      "entropy_rate_mc": {
+        "burn_in": 1000,
+        "length": 3000,
+        "n": 200,
+        "nats": 1.4629498729354213,
+        "se": 0.0015136135095544635,
+        "seed": 0
+      },
+      "entropy_rate_nats": null,
+      "entropy_rate_upper_bound_nats": 1.4634110160480969,
+      "generator": "HMM, 6 states",
+      "generator_states": 6,
+      "length": 32,
+      "memory": {
+        "name": "srinivasan_hmm6",
+        "note": "non-unifilar presentation: the causal states may be infinite and are not computed; see docs/benchmarks.md for the known figures",
+        "unifilar": false
+      },
+      "n_symbols": 8,
+      "n_symbols_emitted": 6,
+      "name": "srinivasan_hmm6",
+      "optimal_nll_nats": null,
+      "optimal_nll_note": "279936 belief states; reduce length",
+      "params": {
+        "kind": "srinivasan_hmm",
+        "name": "srinivasan_hmm6"
+      },
+      "seconds": 7.062978083267808,
+      "spec": {
+        "kind": "srinivasan_hmm"
+      }
+    },
+    {
+      "entropy_rate_nats": 0.46209812037329684,
+      "generator": "HMM, 6 states",
+      "generator_states": 6,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 2.251629167387823,
+        "classical_bits": 3,
+        "cq_bits": 2.251629167387823,
+        "cq_by_length": [
+          2.251629167387823,
+          2.251629167387823
+        ],
+        "cq_saturates_at": 0,
+        "d_mu_bits": 2.321928094887362,
+        "n_causal_states": 5,
+        "name": "recall_tau1",
+        "quantum_dim": 5,
+        "qubits": 3,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "recall_tau1",
+      "optimal_nll_nats": 0.47653868663496235,
+      "params": {
+        "kind": "delayed_recall",
+        "name": "recall_tau1",
+        "tau": 1
+      },
+      "seconds": 0.0033997083082795143,
+      "spec": {
+        "kind": "delayed_recall",
+        "tau": 1
+      }
+    },
+    {
+      "entropy_rate_nats": 0.519860385419959,
+      "generator": "HMM, 8 states",
+      "generator_states": 8,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 2.75,
+        "classical_bits": 3,
+        "cq_bits": 2.75,
+        "cq_by_length": [
+          2.75,
+          2.75
+        ],
+        "cq_saturates_at": 0,
+        "d_mu_bits": 2.807354922057604,
+        "n_causal_states": 7,
+        "name": "recall_tau2",
+        "quantum_dim": 7,
+        "qubits": 3,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "recall_tau2",
+      "optimal_nll_nats": 0.5198603854199589,
+      "params": {
+        "kind": "delayed_recall",
+        "name": "recall_tau2",
+        "tau": 2
+      },
+      "seconds": 0.0034064999781548977,
+      "spec": {
+        "kind": "delayed_recall",
+        "tau": 2
+      }
+    },
+    {
+      "entropy_rate_nats": 0.5776226504666211,
+      "generator": "HMM, 12 states",
+      "generator_states": 12,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 3.418295834054489,
+        "classical_bits": 4,
+        "cq_bits": 3.41829583405449,
+        "cq_by_length": [
+          3.4182958340544896,
+          3.41829583405449
+        ],
+        "cq_saturates_at": 0,
+        "d_mu_bits": 3.4594316186372973,
+        "n_causal_states": 11,
+        "name": "recall_tau4",
+        "quantum_dim": 11,
+        "qubits": 4,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "recall_tau4",
+      "optimal_nll_nats": 0.5848429335974539,
+      "params": {
+        "kind": "delayed_recall",
+        "name": "recall_tau4",
+        "tau": 4
+      },
+      "seconds": 0.006609749980270863,
+      "spec": {
+        "kind": "delayed_recall",
+        "tau": 4
+      }
+    },
+    {
+      "entropy_rate_nats": 0.623832462503951,
+      "generator": "HMM, 20 states",
+      "generator_states": 20,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 4.221928094887363,
+        "classical_bits": 5,
+        "cq_bits": 4.221928094887363,
+        "cq_by_length": [
+          4.221928094887362,
+          4.221928094887363
+        ],
+        "cq_saturates_at": 0,
+        "d_mu_bits": 4.247927513443585,
+        "n_causal_states": 19,
+        "name": "recall_tau8",
+        "quantum_dim": 19,
+        "qubits": 5,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "recall_tau8",
+      "optimal_nll_nats": 0.6281646323824503,
+      "params": {
+        "kind": "delayed_recall",
+        "name": "recall_tau8",
+        "tau": 8
+      },
+      "seconds": 0.017178792040795088,
+      "spec": {
+        "kind": "delayed_recall",
+        "tau": 8
+      }
+    },
+    {
+      "entropy_rate_nats": 0.6546390038621706,
+      "generator": "HMM, 36 states",
+      "generator_states": 36,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 5.114369445886757,
+        "classical_bits": 6,
+        "cq_bits": 5.114369445886759,
+        "cq_by_length": [
+          5.114369445886757,
+          5.114369445886759
+        ],
+        "cq_saturates_at": 0,
+        "d_mu_bits": 5.129283016944966,
+        "n_causal_states": 35,
+        "name": "recall_tau16",
+        "quantum_dim": 35,
+        "qubits": 6,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "recall_tau16",
+      "optimal_nll_nats": 0.671486331167447,
+      "params": {
+        "kind": "delayed_recall",
+        "name": "recall_tau16",
+        "tau": 16
+      },
+      "seconds": 0.025291542056947947,
+      "spec": {
+        "kind": "delayed_recall",
+        "tau": 16
+      }
+    },
+    {
+      "entropy_rate_nats": 0.3250829733914482,
+      "generator": "HMM, 4 states",
+      "generator_states": 4,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 2.0,
+        "classical_bits": 2,
+        "cq_bits": 1.4438561897747249,
+        "cq_by_length": [
+          2.0,
+          1.7219280948873625,
+          1.4438561897747246
+        ],
+        "cq_saturates_at": 2,
+        "d_mu_bits": 2.0,
+        "n_causal_states": 4,
+        "name": "parity_k2",
+        "quantum_dim": 4,
+        "qubits": 2,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "parity_k2",
+      "optimal_nll_nats": 0.34808698633947927,
+      "params": {
+        "k": 2,
+        "kind": "parity",
+        "name": "parity_k2",
+        "noise": 0.1
+      },
+      "seconds": 0.00375987496227026,
+      "spec": {
+        "k": 2,
+        "kind": "parity",
+        "noise": 0.1
+      }
+    },
+    {
+      "entropy_rate_nats": 0.3250829733914482,
+      "generator": "HMM, 8 states",
+      "generator_states": 8,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 3.0,
+        "classical_bits": 3,
+        "cq_bits": 2.1657842846620867,
+        "cq_by_length": [
+          3.0,
+          2.721928094887362,
+          2.4438561897747246,
+          2.1657842846620863
+        ],
+        "cq_saturates_at": 3,
+        "d_mu_bits": 3.0,
+        "n_causal_states": 8,
+        "name": "parity_k3",
+        "quantum_dim": 8,
+        "qubits": 3,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "parity_k3",
+      "optimal_nll_nats": 0.3595889928134948,
+      "params": {
+        "k": 3,
+        "kind": "parity",
+        "name": "parity_k3",
+        "noise": 0.1
+      },
+      "seconds": 0.004782499745488167,
+      "spec": {
+        "k": 3,
+        "kind": "parity",
+        "noise": 0.1
+      }
+    },
+    {
+      "entropy_rate_nats": 0.3250829733914482,
+      "generator": "HMM, 16 states",
+      "generator_states": 16,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 4.0,
+        "classical_bits": 4,
+        "cq_bits": 2.887712379549449,
+        "cq_by_length": [
+          4.0,
+          3.721928094887363,
+          3.4438561897747246,
+          3.165784284662086,
+          2.887712379549449
+        ],
+        "cq_saturates_at": 4,
+        "d_mu_bits": 4.0,
+        "n_causal_states": 16,
+        "name": "parity_k4",
+        "quantum_dim": 16,
+        "qubits": 4,
+        "unifilar": true
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "parity_k4",
+      "optimal_nll_nats": 0.3710909992875103,
+      "params": {
+        "k": 4,
+        "kind": "parity",
+        "name": "parity_k4",
+        "noise": 0.1
+      },
+      "seconds": 0.00891912542283535,
+      "spec": {
+        "k": 4,
+        "kind": "parity",
+        "noise": 0.1
+      }
+    },
+    {
+      "entropy_rate_nats": 0.4231220866711803,
+      "generator": "HMM, 4 states",
+      "generator_states": 4,
+      "length": 32,
+      "memory": {
+        "c_mu_bits": 2.0,
+        "classical_bits": 2,
+        "cq_bits": 1.7219280948873623,
+        "cq_by_length": [
+          2.0,
+          1.721928094887362
+        ],
+        "cq_saturates_at": 1,
+        "d_mu_bits": 2.0,
+        "n_causal_states": 4,
+        "name": "mixed_timescales",
+        "quantum_dim": 4,
+        "qubits": 2,
+        "unifilar": true
+      },
+      "n_symbols": 4,
+      "n_symbols_emitted": 4,
+      "name": "mixed_timescales",
+      "optimal_nll_nats": 0.4346240931451958,
+      "params": {
+        "fast_stay": 0.9,
+        "kind": "mixed_timescales",
+        "name": "mixed_timescales",
+        "switch_prob": 0.02
+      },
+      "seconds": 0.004072916228324175,
+      "spec": {
+        "fast_stay": 0.9,
+        "kind": "mixed_timescales",
+        "switch_prob": 0.02
+      }
+    },
+    {
+      "entropy_rate_mc": {
+        "burn_in": 1000,
+        "length": 3000,
+        "n": 200,
+        "nats": 0.399745044415709,
+        "se": 0.0011704807953146178,
+        "seed": 0
+      },
+      "entropy_rate_nats": null,
+      "entropy_rate_upper_bound_nats": 0.40033354186793424,
+      "generator": "HMM, 4 states",
+      "generator_states": 4,
+      "length": 32,
+      "memory": {
+        "name": "mixed_timescales_hidden",
+        "note": "non-unifilar presentation: the causal states may be infinite and are not computed; see docs/benchmarks.md for the known figures",
+        "unifilar": false
+      },
+      "n_symbols": 2,
+      "n_symbols_emitted": 2,
+      "name": "mixed_timescales_hidden",
+      "optimal_nll_nats": null,
+      "optimal_nll_note": "260920 belief states; reduce length",
+      "params": {
+        "fast_stay": 0.9,
+        "kind": "mixed_timescales",
+        "marked": false,
+        "name": "mixed_timescales_hidden",
+        "switch_prob": 0.02
+      },
+      "seconds": 4.542520040646195,
+      "spec": {
+        "fast_stay": 0.9,
+        "kind": "mixed_timescales",
+        "marked": false,
+        "switch_prob": 0.02
+      }
+    }
+  ]
+}
