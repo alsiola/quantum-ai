@@ -57,6 +57,9 @@ n_reference = 1
 purification_seed = 4321
 purification_threshold_bits = 0.01
 
+# Pruned for compute (the machine is shared): eps = 0 and 0.1 only at three delays and
+# trained strength; the clock arm at trained and projective strength only.
+
 # -- arms ----------------------------------------------------------------------------
 # The marked task is qmem.tasks.marked_recall (geometric timing: 3 causal states for
 # every tau). "clock" is #8's delayed_recall (binary alphabet, fixed delay, 2 tau + 3
@@ -66,14 +69,14 @@ purification_threshold_bits = 0.01
 name = "grid"               # strength x delay, 2 memory qubits
 task = { kind = "marked_recall", eps = 0.05 }
 taus = [1, 2, 4, 8, 16, 32]
-etas = [0.45, 0.6, 0.75, 0.9, 0.97, 1.0]
+etas = [0.45, 0.6, 0.75, 0.9, 1.0]
 trained = true
 
 [[arms]]
 name = "eps"                # the other noise levels, trained strength only
 task = { kind = "marked_recall" }
 eps = [0.0, 0.1]
-taus = [1, 2, 4, 8, 16, 32]
+taus = [1, 4, 16]
 etas = []
 trained = true
 
@@ -82,7 +85,7 @@ name = "clock"              # #8's implicit-clock recall at matched settings
 task = { kind = "delayed_recall", eps = 0.05 }
 model = { n_output = 1 }
 taus = [1, 2, 4, 8, 16, 32]
-etas = [0.97, 1.0]          # its eta floor is 0.95 at eps = 0.05
+etas = [1.0]                # its eta floor is 0.95 at eps = 0.05
 trained = true
 
 [[arms]]
@@ -90,7 +93,7 @@ name = "n1"
 task = { kind = "marked_recall", eps = 0.05 }
 model = { n_memory = 1 }
 taus = [1, 4, 16]
-etas = [0.6, 0.9, 1.0]
+etas = [0.6, 1.0]
 trained = true
 
 [[arms]]
