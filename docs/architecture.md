@@ -101,9 +101,146 @@ K_0 = |0><0| + cos g |1><1|,      K_1 = sin g |1><1|
 These cases are tested exactly (`tests/test_instrument.py`).
 
 **Caveat:** with `joint_depth > 0` the readout passes through a general circuit,
-so `g` no longer bounds the information extracted per step. Measurement
-strength sweeps should use `joint_depth = 0` (or analyse the full instrument,
-e.g. via the effects `M_y`).
+so `g` no longer bounds the information extracted per step (Phase 2 found
+several seeds learning `g ≈ 0` with a sharp instrument). `joint_depth = 0`
+keeps `g` meaningful but can't fit even an i.i.d. source. Use the
+feed-forward layout below for strength sweeps, and the operational metrics
+(section 2.3) to compare any layouts.
+
+### 2.1 The strength-faithful (feed-forward) layout
+
+`feedforward_depth > 0` with `joint_depth = 0` (issue #9) gives
+
+```
+U = W · C(g) · V,      W = sum_y W_y(theta_y) ⊗ |y><y|_A ⊗ I_E
+K_{y,e} = W_y · D_{y,e}(g) · V
+```
+
+where `D_{y,e}(g) = (I ⊗ <y,e|) C(g) (I ⊗ |0,0>)` is the weak-measurement
+Kraus operator of section 2 and each `W_y` is its own `feedforward_depth`-layer
+hardware-efficient unitary on the memory (`OutcomeConditionedBlock`).
+
+**Effect invariance.** `W` is block-diagonal in the ancilla basis, so
+`(I ⊗ <y,e|) W = W_y (I ⊗ <y,e|)`. Hence `K_{y,e} = W_y K^0_{y,e}`, where `K^0` are
+the Kraus operators without `W`, and
+
+```
+E_y = sum_e K_{y,e}^† K_{y,e} = sum_e K^0_{y,e}^† W_y^† W_y K^0_{y,e} = V^† (sum_e D_{y,e}^† D_{y,e}) V
+```
+
+for every choice of `W`. So `p(y | rho) = Tr(E_y rho)`, and with it everything
+one step's readout can reveal about the memory, is fixed by `g` and `V` alone.
+`W_y` only steers the post-measurement memory `W_y D_y V rho V^† D_y^† W_y^† / p`,
+and so what later steps will see. Tests: `tests/test_strength.py`
+(`K_y = W_y K^0_y` exactly; effects unchanged when the `W` parameters are
+redrawn; the block equals measure-then-apply-`W_y`).
+
+**Limits** (tested). At `g = 0`, `E_0 = I` and the other effects vanish: no
+information, and the update `rho -> W_0 V rho V^† W_0^†` is the same unitary
+whatever the memory (only `y = 0` ever occurs). At `g = pi/2`, every `E_y` is a
+projector: `V^† (|b><b| ⊗ I) V` on the coupled memory qubits, a projective
+measurement in the basis `V` chooses.
+
+**Hardware form.** Two equivalent circuits:
+1. Mid-circuit measurement of the output ancillas, then a classically
+   controlled `W_y` on the memory (dynamic circuits, feed-forward), then reset.
+2. Before the measurement, the gates of `W_y` multi-controlled on the output
+   ancillas being in `|y>` (for one output ancilla: `W_0` on `|0>`, `W_1` on
+   `|1>`; equivalently `W_0`, then `W_1 W_0^†` controlled on the ancilla).
+   Because the block is diagonal in the ancilla basis it commutes with the
+   readout, so this is the deferred-measurement form of option 1.
+
+**Not a classical hidden state.** `W_y` is selected by the one outcome just
+read and acts once. Nothing classical persists to the next step: all memory of
+the past is still carried by `rho`. The model is the same kind of object as
+before (a time-homogeneous instrument with a fixed Kraus set); only the
+parameterisation of the Kraus operators has changed.
+
+### 2.2 Generalising the strength knob
+
+With `n_output` output ancillas, the coupling reads memory qubits
+`0..n_output-1`, one controlled-`RY(2g_k)` each. The `D_y` factorise:
+`D_y = D_{y_1}(g_1) ⊗ D_{y_2}(g_2) ⊗ ...`. **Decision:** sweeps use one global
+strength, `strength_shared = true`, a single `g` shared by every output coupling
+(`ControlledRotationBlock(..., shared=True)`, one parameter). That `g` is the
+"measurement strength" scalar a sweep sets. Per-coupling strengths remain
+available (`strength_shared = false`, the default, as in Phase 2), but a sweep
+over a vector of strengths has no single axis to report. Env couplings
+(`env_strength`) are separate: they are decoherence, not readout.
+
+Because `g` is only meaningful in this layout, results are reported in
+operational units too. For `D_y(g)` with shared `g`, the operational strength
+`eta` of section 2.3 is `sin^2 g` for one coupling (binary alphabet) and
+`(2 sin^2 g + sin^4 g)/3` for two couplings (4 symbols); the TV gain is
+`sin^2 g` and `1 - cos^4 g`.
+
+### 2.3 Operational information gain and disturbance
+
+`qmem.metrics` computes these for any `Instrument` (any Kraus tensor, so also
+`joint_depth > 0` models and an unconstrained HQMM), with `d` the memory
+dimension, `Y` the number of outcomes and `E_y` the effects.
+
+*Information gain.* All three depend on the effects only, so they are blind to
+any unitary applied after the readout.
+
+* `tv_gain = max_{rho,sigma} TV(p(.|rho), p(.|sigma))`. Since
+  `TV = max_S [p(S|rho) - p(S|sigma)]` over outcome subsets `S`, it equals
+  `max_S [lambda_max(E_S) - lambda_min(E_S)]` with `E_S = sum_{y in S} E_y` (for
+  `Y = 2`, `lambda_max(E_0) - lambda_min(E_0)`, which is half the spread of the
+  eigenvalues of `E_0 - E_1`).
+* Estimation fidelity `G` (Banaszek 2001): the mean fidelity between a
+  Haar-random pure input `psi` and the best guess `phi_y` from the outcome. Using
+  `∫ |psi><psi|^{⊗2} dpsi = (I + SWAP)/(d(d+1))`,
+  `∫ |<phi|psi>|^2 <psi|E|psi> dpsi = (Tr E + <phi|E|phi>)/(d(d+1))`, so
+  `G = (d + sum_y lambda_max(E_y)) / (d(d+1))`.
+* **Operational strength** `eta = (sum_y lambda_max(E_y) - 1) / (min(Y, d) - 1)`,
+  `G` rescaled to `[0, 1]`. Since `1 = lambda_max(sum E_y) <= sum lambda_max(E_y) <= min(Y, d)`,
+  `eta = 0` exactly when every `E_y ∝ I`, and `eta = 1` when the effects are as
+  sharp as `Y` outcomes on `d` levels allow (rank-1 projectors if `Y = d`). This is
+  the scalar to report in place of `g`.
+* `mutual_information(inst, rho)`: `I(R:Y)` between the outcome and a
+  reference `R` purifying `rho`,
+  `S(rho) - sum_y p_y S(sqrt(rho) E_y sqrt(rho)/p_y)` in nats (the information
+  gain of Buscemi, Hayashi and Horodecki, PRL 100, 210504, 2008). It is evaluated at the
+  stationary state of the unconditioned channel (`stationary_state`, a
+  least-squares solve of `E(rho) = rho` with `Tr rho = 1`).
+
+*Disturbance.* This is correction-invariant: before comparing, it applies
+the best unitary `U_y` for each outcome, so feed-forward `K_y -> W_y K_y` is
+not counted as disturbance.
+
+* `F_e = max_{U_y} sum_{y,e} |Tr(U_y^† K_{y,e})|^2 / d^2`, the entanglement fidelity
+  of the corrected channel. With one Kraus operator per outcome it is
+  `sum_y ||K_y||_1^2 / d^2` (polar decomposition). With several, a monotone
+  minorise-maximise iteration over polar factors is used (`best_correction`).
+* Operation fidelity `F = (d F_e + 1)/(d + 1)`, the mean fidelity between
+  output and input over Haar-random pure inputs (Horodecki, Horodecki and
+  Horodecki, PRA 60, 1888, 1999; Nielsen, Phys. Lett. A 303, 249, 2002). This
+  is Banaszek's `F`, and `disturbance = 1 - F`. The uncorrected value
+  (`U_y = I`) is reported too.
+
+*Trade-off.* For any instrument on `d` levels (Banaszek 2001, PRL 86, 1366):
+
+```
+sqrt(F - 1/(d+1)) <= sqrt(G - 1/(d+1)) + sqrt((d-1)(2/(d+1) - G))
+```
+
+`banaszek_bound(G, d)` returns the largest `F`. The bound allows any number of
+outcomes, so with a binary readout on `d = 4` it is not tight. The weak family
+`D_y(g)` on a qubit gives `G = (3 + sin^2 g)/6` and `F = (2 + cos g)/3`. It meets the
+bound only at `g = 0` and `g = pi/2`, and lies below it in between, so a weak Z measurement is not an optimal
+operation. Fuchs and Peres (PRA 53, 2038, 1996) give the corresponding
+trade-off in information-theoretic terms for two non-orthogonal states. We use
+Banaszek's fidelity form because it applies to any instrument without
+choosing an ensemble.
+
+| Weak family `D_y(g)`, one coupling | closed form |
+| --- | --- |
+| `tv_gain`, `eta` | `sin^2 g` |
+| `G` (qubit / 2-qubit memory) | `(3 + sin^2 g)/6`, `(5 + sin^2 g)/20` |
+| `F_e` (corrected = uncorrected, `D_y >= 0`) | `(1 + cos g)/2` |
+| `F` (qubit / 2-qubit memory) | `(2 + cos g)/3`, `(3 + 2 cos g)/5` |
+| `I(R:Y)` at `I/2` (qubit) | `ln 2 - p_0 h(1/(1 + cos^2 g))`, `p_0 = (1 + cos^2 g)/2` |
 
 ## 3. Teacher forcing vs generation vs postselection
 
@@ -129,7 +266,8 @@ frequencies against teacher-forced exact probabilities.
 | --- | --- |
 | dtypes, qubit ordering, `embed` | `qmem/linalg.py` |
 | rotations, CNOT/CZ, controlled gates | `qmem/gates.py` |
-| `V`, `C(g)`, `J`, fixed unitaries; `U = B_last ... B_1` | `qmem/circuits.py`: `HardwareEfficientBlock`, `ControlledRotationBlock`, `FixedUnitaryBlock`, `Circuit` |
+| `V`, `C(g)`, `W_y`, `J`, fixed unitaries; `U = B_last ... B_1` | `qmem/circuits.py`: `HardwareEfficientBlock`, `ControlledRotationBlock`, `OutcomeConditionedBlock`, `FixedUnitaryBlock`, `Circuit` |
+| information gain, disturbance, Banaszek bound, stationary state | `qmem/metrics.py` (`operational_summary`; results: `docs/phase3d-strength.md`) |
 | `K_{y,e}` from `U` | `qmem/instrument.py`: `kraus_from_unitary` |
 | (1) channel, (2) probabilities, (3) conditional state | `Instrument.channel`, `Instrument.probabilities`, `Instrument.condition` / `branch` / `branches`, `Instrument.effects` |
 | (4) persistent memory | `qmem.model.Memory` (batched `rho`, `(B, d, d)`) |
@@ -148,9 +286,11 @@ frequencies against teacher-forced exact probabilities.
   (default `RY` then `RZ`), then the entanglers on the `pattern` pairs
   (`linear`, `ring`, `all`, `none`; `cnot` or `cz`). Init is uniform on
   `[-pi·init_scale, pi·init_scale]` from a seeded generator.
-* `ControlledRotationBlock.strength`: one `g` per (control, target) pair; a
-  parameter if `strength_trainable`, otherwise a buffer (set with
-  `set_strength`).
+* `ControlledRotationBlock.strength`: one `g` per (control, target) pair, or a
+  single shared `g` (`strength_shared`); a parameter if `strength_trainable`,
+  otherwise a buffer (set with `set_strength`).
+* `OutcomeConditionedBlock.ws[y].theta`: the `W_y` layers, one
+  `HardwareEfficientBlock` per outcome on the memory qubits.
 * `build_model` draws all parameters, in block order, from
   `torch.Generator().manual_seed(config.seed)`.
 * `model.rho0` is a buffer (the initial memory is not trained yet).

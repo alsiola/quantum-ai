@@ -22,7 +22,8 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   `model` (`QuantumMemoryModel`, `ModelConfig`, `build_model`), `states`, `data` (fixed
   splits), `records`, `tasks` (sources as labelled HMMs with exact optima; add Phase 3 tasks
   with `register_task`), `train` (`TrainConfig`, `train`, `evaluate`), `experiment`
-  (multi-seed `RunSpec`/`run_many`/`aggregate`), `analysis` (generation stats, interventions,
+  (multi-seed `RunSpec`/`run_many`/`aggregate`), `metrics` (operational information gain,
+  disturbance, Banaszek trade-off for any `Instrument`), `analysis` (generation stats, interventions,
   Markov baselines, memory trajectories).
 - `tests/`: pytest. Every new physics feature gets a test against an analytic case or an
   independent brute-force computation.
