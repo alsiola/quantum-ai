@@ -10,6 +10,8 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   `uv run ruff check . && uv run ruff format --check . && uv run pytest`
 - Proof of concept (must keep running in under a minute):
   `uv run python experiments/poc_memory.py`
+- Phase 2 reproduction (about 15 min with 7 workers):
+  `uv run python experiments/phase2.py --config experiments/configs/phase2.toml`
 - Dependencies are pinned in `pyproject.toml` and locked in `uv.lock`. Add one with
   `uv add <pkg>==<version>` (or `uv add --dev`) and commit both files.
 
@@ -17,7 +19,11 @@ Research campaign: measurement-induced memory in quantum-native sequence models
 
 - `src/qmem/`: the package. `linalg` (dtypes, ordering, `embed`), `gates`, `circuits`
   (blocks → unitary), `instrument` (Kraus, channel, probabilities, conditional states),
-  `model` (`QuantumMemoryModel`, `ModelConfig`, `build_model`), `states`, `data`, `records`.
+  `model` (`QuantumMemoryModel`, `ModelConfig`, `build_model`), `states`, `data` (fixed
+  splits), `records`, `tasks` (sources as labelled HMMs with exact optima; add Phase 3 tasks
+  with `register_task`), `train` (`TrainConfig`, `train`, `evaluate`), `experiment`
+  (multi-seed `RunSpec`/`run_many`/`aggregate`), `analysis` (generation stats, interventions,
+  Markov baselines, memory trajectories).
 - `tests/`: pytest. Every new physics feature gets a test against an analytic case or an
   independent brute-force computation.
 - `docs/`: `architecture.md` (maths ↔ code). Don't edit `docs/literature-review.md`
