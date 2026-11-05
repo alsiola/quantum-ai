@@ -1,0 +1,77 @@
+# Phase 3a (issue #6): classical and model-class baselines against architecture A.
+# Run: uv run python experiments/phase3a.py --config experiments/configs/phase3a.toml
+#
+# Tasks, data splits and A's recipe are read from the Phase 2 config (a_config), so every
+# model sees the same sequences (data.seed = 0) and A is re-run with exactly its Phase 2
+# settings and seeds. Each baseline "cell" (family x size) is run in two stages:
+#
+#   1. tuning: every candidate (learning rate, and hidden size for the RNNs) is trained with
+#      the tuning seeds; the candidate with the lowest median best-validation NLL wins.
+#      Selection uses validation NLL only, never test.
+#   2. evaluation: the winning candidate is trained with the 10 evaluation seeds
+#      (the same seeds as A), and those runs are what the tables report.
+#
+# Gradient baselines get A's optimiser budget: Adam, batch 128, at most 1500 steps,
+# validation every 10 steps, early stopping after 30 evaluations, best-validation restore.
+
+[experiment]
+name = "phase3a"
+workers = 7
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+tuning_seeds = [100, 101]
+success_gap = 0.01            # same definition of failure as Phase 2 (nats/symbol)
+summary_dir = "results/summaries/phase3a"
+a_config = "experiments/configs/phase2.toml"
+run_a = true                  # re-run architecture A (main groups of Phase 2) in this run
+
+[train]                       # gradient baselines; lr comes from the tuning grid
+optimizer = "adam"
+schedule = "constant"
+steps = 1500
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 30
+min_delta = 1e-4
+restore_best = true
+clip_grad_norm = 0.0
+
+[tuning]
+lr_grid = [0.01, 0.03, 0.1]
+# Cells whose state dimension is above this reuse the learning rate chosen for the same
+# family at this dimension on the same task (D = 16 runs cost 5-20x more).
+max_tuned_state_dim = 8
+
+[ngram]
+orders = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+alphas = [0.01, 0.1, 0.5, 1.0]
+
+[hmm]
+n_states = [2, 4, 8, 16]
+init_scale = 1.0
+em = { max_iters = 500, patience = 20, min_delta = 1e-5 }
+
+[rnn]                         # applies to both the GRU and the vanilla tanh RNN
+cells = ["gru", "rnn"]
+# "matched": the largest hidden size with at most as many parameters as A (2 memory
+# qubits) on the same task; "large": tuned over these hidden sizes.
+large_hidden = [16, 64]
+
+[umps]
+bond_dims = [2, 4, 8, 16]
+purification = 1
+fp_iters = 200
+fp_grad_iters = 20
+fp_tol = 1e-8
+
+[lps]                         # locally purified uMPS (purification index 2)
+bond_dims = [2, 4]
+purification = 2
+fp_iters = 200
+fp_grad_iters = 20
+fp_tol = 1e-8
+
+[hqmm]
+# (n_memory, n_env): D = 2^n_memory, 2^n_env Kraus operators per outcome.
+sizes = [[1, 0], [2, 0], [3, 0], [4, 0], [1, 1], [2, 1]]
+init_scale = 1.0
