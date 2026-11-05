@@ -1,0 +1,122 @@
+# Phase 3c (issue #8): the memory benchmark suite and its sanity runs.
+# Run: uv run python experiments/phase3c.py --config experiments/configs/phase3c.toml
+#
+# Part 1 ([suite.*]) needs no training: for every benchmark task it records the exact
+# optimum at [data].length, the entropy rate, the causal-state count, C_mu, C_q and the
+# quantum memory dimension, and checks every recorded literature number
+# (qmem.benchmarks.LITERATURE).
+# Part 2 ([sanity.*]) trains architecture A with the Phase 2 recipe ([model], [train],
+# copied from experiments/configs/phase2.toml) on a few tasks at small sizes, to check the
+# suite works end to end. The full comparison grid is the next phase.
+
+[experiment]
+name = "phase3c"
+workers = 7
+seeds = [0, 1, 2, 3, 4]
+success_gap = 0.01          # as Phase 2: a run succeeds if test gap < this (nats/symbol)
+summary_dir = "results/summaries/phase3c"
+
+[data]
+n_train = 512
+n_val = 256
+n_test = 512
+length = 32
+seed = 0
+
+[model]                     # Phase 2 recipe
+n_memory = 2
+n_env = 0
+memory_depth = 2
+joint_depth = 2
+strength = 0.7853981633974483
+strength_trainable = true
+rotations = ["ry", "rz"]
+entangler = "cnot"
+pattern = "linear"
+initial = "zero"
+init_scale = 1.0
+
+[train]                     # Phase 2 recipe
+optimizer = "adam"
+lr = 0.05
+schedule = "constant"
+steps = 1500
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 30
+min_delta = 1e-4
+restore_best = true
+clip_grad_norm = 0.0
+
+# -- part 1: the suite catalogue (spec = qmem.tasks.make_task input) -------------------
+[suite]
+monte_carlo_seed = 0        # only for entropy rates with no closed form
+
+[suite.tasks]
+perturbed_coin = { kind = "perturbed_coin", p = 0.3 }
+ghafari = { kind = "ghafari", p = 0.5, q = 0.5 }
+ghafari_yang = { kind = "ghafari", p = 0.3, q = 0.8 }
+pmd_N3 = { kind = "pmd_renewal", period = 3, gamma = 0.5, v = 0.4 }
+pmd_N4 = { kind = "pmd_renewal", period = 4, gamma = 0.5, v = 0.4 }
+pmd_N5 = { kind = "pmd_renewal", period = 5, gamma = 0.5, v = 0.4 }
+pmd_N6 = { kind = "pmd_renewal", period = 6, gamma = 0.5, v = 0.4 }
+pmd_N7 = { kind = "pmd_renewal", period = 7, gamma = 0.5, v = 0.4 }
+pmd_N8 = { kind = "pmd_renewal", period = 8, gamma = 0.5, v = 0.4 }
+upset_gambler = { kind = "upset_gambler", p = 0.7, q = 0.8 }
+uniform_renewal_N3 = { kind = "uniform_renewal", n = 3 }
+uniform_renewal_N5 = { kind = "uniform_renewal", n = 5 }
+golden_mean_4_3 = { kind = "rk_golden_mean", r = 4, k = 3, p = 0.505 }
+golden_mean_3_2_ho = { kind = "rk_golden_mean", r = 2, k = 3, p = 0.9, loop_symbol = 1 }
+nemo = { kind = "nemo", p = 0.666 }
+nemo_ho = { kind = "nemo", p = 0.1, q = 0.9, loop_symbol = 1 }
+probability_clock = { kind = "probability_clock" }
+stern_gerlach = { kind = "stern_gerlach" }
+srinivasan_hmm6 = { kind = "srinivasan_hmm" }
+recall_tau1 = { kind = "delayed_recall", tau = 1 }
+recall_tau2 = { kind = "delayed_recall", tau = 2 }
+recall_tau4 = { kind = "delayed_recall", tau = 4 }
+recall_tau8 = { kind = "delayed_recall", tau = 8 }
+recall_tau16 = { kind = "delayed_recall", tau = 16 }
+parity_k2 = { kind = "parity", k = 2, noise = 0.1 }
+parity_k3 = { kind = "parity", k = 3, noise = 0.1 }
+parity_k4 = { kind = "parity", k = 4, noise = 0.1 }
+mixed_timescales = { kind = "mixed_timescales", switch_prob = 0.02, fast_stay = 0.9 }
+mixed_timescales_hidden = { kind = "mixed_timescales", switch_prob = 0.02, fast_stay = 0.9, marked = false }
+
+# -- part 2: sanity runs of architecture A ---------------------------------------------
+[sanity.perturbed_coin]
+spec = { kind = "perturbed_coin", p = 0.3 }
+n_output = 1
+n_memory = [1, 2]
+
+[sanity.ghafari]
+spec = { kind = "ghafari", p = 0.5, q = 0.5 }   # 3 symbols, padded to 4
+n_output = 2
+n_memory = [1, 2]
+
+[sanity.recall_tau1]
+spec = { kind = "delayed_recall", tau = 1 }
+n_output = 1
+n_memory = [2, 3]
+
+[sanity.recall_tau2]
+spec = { kind = "delayed_recall", tau = 2 }
+n_output = 1
+n_memory = [2, 3]
+
+[sanity.recall_tau4]
+spec = { kind = "delayed_recall", tau = 4 }
+n_output = 1
+n_memory = [2, 3]
+
+[sanity.recall_tau8]
+spec = { kind = "delayed_recall", tau = 8 }
+n_output = 1
+n_memory = [2, 3]
+
+[analysis]
+burn_in = 4                 # memory averages skip the first 4 steps of each test sequence
+retention_lags = [1, 2, 3, 4, 6, 8, 10, 12]
+n_reference = 1             # reference qubits for the purification probe
+purification_seed = 4321
