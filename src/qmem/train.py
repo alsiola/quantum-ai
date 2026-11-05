@@ -109,7 +109,8 @@ def nll_per_symbol(model: QuantumMemoryModel, sequences: torch.Tensor) -> torch.
 def strengths(model: QuantumMemoryModel) -> list[float]:
     """Every coupling strength ``g`` in the circuit (output and env couplings)."""
     out: list[float] = []
-    for b in model.circuit.blocks:
+    circuit = getattr(model, "circuit", None)  # baselines have no circuit
+    for b in circuit.blocks if circuit is not None else []:
         if hasattr(b, "strength"):
             out.extend(float(x) for x in b.strength.detach())
     return out

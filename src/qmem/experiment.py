@@ -21,6 +21,7 @@ import math
 import multiprocessing as mp
 import time
 import traceback
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -122,8 +123,8 @@ def _worker_init() -> None:
     torch.set_num_threads(1)
 
 
-def _run_in_worker(spec: RunSpec) -> dict[str, Any]:
-    return run_one(spec)
+def _run_in_worker(runner: Callable[[Any], dict[str, Any]], spec: Any) -> dict[str, Any]:
+    return runner(spec)
 
 
 def save_record(record: dict[str, Any], out_dir: Path) -> Path:
@@ -137,9 +138,17 @@ def save_record(record: dict[str, Any], out_dir: Path) -> Path:
 
 
 def run_many(
-    specs: list[RunSpec], out_dir: Path, workers: int = 1, log: Any = print
+    specs: list[Any],
+    out_dir: Path,
+    workers: int = 1,
+    log: Any = print,
+    runner: Callable[[Any], dict[str, Any]] = run_one,
 ) -> list[dict[str, Any]]:
-    """Run every spec (in parallel if ``workers > 1``), saving each record as it lands."""
+    """Run every spec (in parallel if ``workers > 1``), saving each record as it lands.
+
+    ``runner`` turns one spec into a record (default ``run_one``; Phase 3a passes
+    ``qmem.baselines.runner.run_baseline``). Specs need ``group`` and ``seed``.
+    """
     records: list[dict[str, Any]] = []
 
     def done(rec: dict[str, Any]) -> None:
@@ -153,11 +162,11 @@ def run_many(
 
     if workers <= 1:
         for s in specs:
-            done(run_one(s))
+            done(runner(s))
     else:
         ctx = mp.get_context("spawn")
         with cf.ProcessPoolExecutor(workers, mp_context=ctx, initializer=_worker_init) as ex:
-            for fut in cf.as_completed([ex.submit(_run_in_worker, s) for s in specs]):
+            for fut in cf.as_completed([ex.submit(_run_in_worker, runner, s) for s in specs]):
                 done(fut.result())
     order = {(s.group, s.seed): i for i, s in enumerate(specs)}
     records.sort(key=lambda r: order[(r["group"], r["seed"])])
