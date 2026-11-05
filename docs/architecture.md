@@ -141,6 +141,12 @@ whatever the memory (only `y = 0` ever occurs). At `g = pi/2`, every `E_y` is a
 projector: `V^† (|b><b| ⊗ I) V` on the coupled memory qubits, a projective
 measurement in the basis `V` chooses.
 
+**Probability cap.** Because `p(y|rho) <= lambda_max(E_y)`, a strength `g`
+also caps the outcome probabilities: for a binary alphabet, `p(1|rho) <= sin^2 g`
+for every memory state. A source that needs `p(1|h) > sin^2 g` after some
+history `h` can't be represented at that `g` (`docs/phase3d-strength.md`; the
+general form is the task floor `strength_lower_bound` in section 2.3).
+
 **Hardware form.** Two equivalent circuits:
 1. Mid-circuit measurement of the output ancillas, then a classically
    controlled `W_y` on the memory (dynamic circuits, feed-forward), then reset.
