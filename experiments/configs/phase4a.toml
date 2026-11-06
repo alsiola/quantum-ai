@@ -1,0 +1,206 @@
+# Phase 4a (issue #12): trainability of architecture A and of the large-D quantum baselines.
+# Run: uv run python experiments/phase4a.py --config experiments/configs/phase4a.toml
+#
+# Two parts.
+#   [init_stats]: no training. Gradient statistics, predictive entropy, history
+#     dependence and the purity of the outcome-averaged memory of freshly initialised
+#     models, against n, over init_stats.seeds.
+#   [[arms]]: training cells. Each arm = one family x model/train overrides x tasks x
+#     sizes x the evaluation seeds. An arm with `lrs` is tuned first: every lr is trained
+#     with the tuning seeds and the lr with the lowest median best-validation NLL is then
+#     trained with the evaluation seeds (selection on validation only). An arm with a
+#     `teacher` is fitted to that teacher's predictive (soft targets, qmem.trainability):
+#     mode "fit" stops there (can this parameterisation reach that function?), mode "warm"
+#     then trains on the data NLL. Teacher "best:<arm>" is the run of <arm> (same task) with
+#     the lowest best-validation NLL, so arms run in config order.
+#
+# Families: "A" (architecture A; base [model] and [train] from the Phase 2 recipe,
+# a_config), "A_ff" (the Phase 3d/3e feed-forward layout, base from phase3e.toml),
+# "hqmm" and "umps" (Phase 3a baselines with the Phase 3a [train]). `n` is the number of
+# memory qubits; D = 2^n.
+#
+# Pruned for compute: the machine is shared with #11 and other jobs and was swapping
+# when this ran, so cells were chosen to answer each question once (see the doc).
+
+[experiment]
+name = "phase4a"
+workers = 2
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+tuning_seeds = [100, 101]
+success_gap = 0.01
+summary_dir = "results/summaries/phase4a"
+a_config = "experiments/configs/phase2.toml"     # tasks, data, A's recipe
+ff_config = "experiments/configs/phase3e.toml"   # feed-forward recipe, marked_recall data
+baseline_config = "experiments/configs/phase3a.toml"
+
+[baseline_train]              # Phase 3a budget for hqmm/umps (lr from the arm or tuning)
+optimizer = "adam"
+schedule = "constant"
+steps = 1500
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 30
+min_delta = 1e-4
+restore_best = true
+
+[baseline_model.hqmm]
+n_env = 0
+init_scale = 1.0
+
+[baseline_model.umps]
+purification = 1
+init_scale = 1.0
+fp_iters = 200
+fp_grad_iters = 20
+fp_tol = 1e-8
+
+[init_stats]
+seeds = 20                    # seeds 0..19
+task = "markov1_quaternary"   # batch: the first 128 training sequences
+batch = 128
+ns = [1, 2, 3, 4]
+models = [
+  { name = "A general (jd=2)", family = "A" },
+  { name = "A general, jd=4", family = "A", model = { joint_depth = 4 } },
+  { name = "A general, CZ", family = "A", model = { entangler = "cz" } },
+  { name = "A general, CZ product init", family = "A", model = { entangler = "cz", init = "product", init_scale = 0.05, strength = 0.1, init_probs = "data" } },
+  { name = "A feed-forward", family = "A_ff", model = { strength_trainable = true } },
+  { name = "HQMM", family = "hqmm" },
+  { name = "HQMM identity init", family = "hqmm", model = { init = "identity", init_scale = 0.3, init_probs = "data" } },
+  { name = "uMPS", family = "umps" },
+  { name = "uMPS identity init", family = "umps", model = { init = "identity", init_scale = 0.3, init_probs = "data" } },
+]
+
+[analysis]                    # marked_recall arms (as Phase 3e)
+max_lag = 40
+delay_bins = [0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48]
+holevo_threshold_bits = 0.1
+n_reference = 1
+purification_seed = 4321
+purification_threshold_bits = 0.01
+hessian_arms = ["m1q_A_recipe"]   # Hessian spectrum of the trained train-NLL (small P only)
+
+# -- markov1_quaternary: A at n = 2 --------------------------------------------------
+[[arms]]
+name = "m1q_A_recipe"         # before (Phase 2 recipe, reproduces docs/phase2-results.md)
+family = "A"
+tasks = ["markov1_quaternary"]
+ns = [2, 3]
+
+[[arms]]
+name = "m1q_A_jd3"            # capacity: one more joint layer
+family = "A"
+model = { joint_depth = 3 }
+tasks = ["markov1_quaternary"]
+ns = [2]
+
+[[arms]]
+name = "m1q_A_jd4"
+family = "A"
+model = { joint_depth = 4 }
+tasks = ["markov1_quaternary"]
+ns = [2, 3]
+
+[[arms]]
+name = "m1q_A_cz"             # control for the product init: CZ entanglers, random init
+family = "A"
+model = { entangler = "cz" }
+tasks = ["markov1_quaternary"]
+ns = [2]
+
+[[arms]]
+name = "m1q_A_product"        # near-product start: E_y ~ p_y I (unigram of the training split)
+family = "A"
+model = { entangler = "cz", init = "product", init_scale = 0.05, strength = 0.1, init_probs = "data" }
+tasks = ["markov1_quaternary"]
+ns = [2, 3]
+
+[[arms]]
+name = "m1q_A_restarts"       # best of 4 starts screened for 300 steps, on validation
+family = "A"
+train = { restarts = 4, restart_steps = 300 }
+tasks = ["markov1_quaternary"]
+ns = [2, 3]
+
+[[arms]]
+name = "m1q_A_budget"         # n = 3: lr tuned per n, then 4x the steps, no early stopping
+family = "A"
+lrs = [0.01, 0.03, 0.05]
+train = { steps = 6000, patience = 0 }
+tune_train = { steps = 1500, patience = 30 }   # the tuning runs use the standard budget
+tasks = ["markov1_quaternary"]
+ns = [3]
+
+[[arms]]
+name = "m1q_A_fit_source"     # landscape without sampling noise: fit the exact predictive
+family = "A"
+teacher = { kind = "source", mode = "fit" }
+tasks = ["markov1_quaternary"]
+ns = [2]
+
+[[arms]]
+name = "m1q_hqmm_teacher"     # the HQMM solution to fit A to (Phase 3a lr for D = 4)
+family = "hqmm"
+train = { lr = 0.01 }
+tasks = ["markov1_quaternary"]
+ns = [2]
+
+[[arms]]
+name = "m1q_A_fit_hqmm"       # reachability: fit A's circuit to the best HQMM's function
+family = "A"
+teacher = { kind = "best:m1q_hqmm_teacher", mode = "fit" }
+tasks = ["markov1_quaternary"]
+ns = [2]
+
+[[arms]]
+name = "m1q_A_grow"           # warm start n = 3 from the best n = 2 model, then train
+family = "A"
+teacher = { kind = "best:m1q_A_restarts", n = 2, mode = "warm", train = { steps = 1500, patience = 30 } }
+tasks = ["markov1_quaternary"]
+ns = [3]
+
+# -- large-D quantum baselines -------------------------------------------------------
+[[arms]]
+name = "big_hqmm_tuned"       # per-D tuning (Phase 3a reused the D = 8 lr at D = 16)
+family = "hqmm"
+lrs = [0.003, 0.01, 0.03]
+tasks = ["iid_quaternary", "markov1_quaternary"]
+ns = [4]
+
+[[arms]]
+name = "big_hqmm_identity"
+family = "hqmm"
+model = { init = "identity", init_scale = 0.3, init_probs = "data" }
+lrs = [0.003, 0.01, 0.03]
+tasks = ["iid_quaternary", "markov1_quaternary"]
+ns = [3, 4]
+
+[[arms]]
+name = "big_umps_identity"
+family = "umps"
+model = { init = "identity", init_scale = 0.3, init_probs = "data" }
+lrs = [0.003, 0.01, 0.03]
+tasks = ["iid_quaternary"]
+ns = [4]
+
+# -- retention (marked_recall, tau = 4, feed-forward layout, trained strength) -------------
+[[arms]]
+name = "ret_ff_recipe"        # before: the Phase 3e recipe
+family = "A_ff"
+model = { strength_trainable = true }
+tasks = ["marked_recall_tau4"]
+ns = [2, 3]
+
+[[arms]]
+name = "ret_ff_restarts"      # with the fix that works on markov1_quaternary
+family = "A_ff"
+model = { strength_trainable = true }
+train = { restarts = 4, restart_steps = 300 }
+tasks = ["marked_recall_tau4"]
+ns = [2, 3]
+
+[extra_tasks.marked_recall_tau4]
+spec = { kind = "marked_recall", tau = 4, eps = 0.05 }
+n_output = 2
+length = 64                    # as Phase 3e at tau <= 8

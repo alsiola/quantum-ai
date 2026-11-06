@@ -22,6 +22,7 @@ starts: conjugating every ``K`` by a unitary keeps ``V`` on the manifold.
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import torch
@@ -30,6 +31,7 @@ from torch import nn
 from ..instrument import Instrument
 from ..linalg import DTYPE, REAL_DTYPE
 from ..model import QuantumMemoryModel
+from ..trainability import INIT_MODES_BASELINE, symbol_probs
 
 
 def isometry_from_matrix(w: torch.Tensor) -> torch.Tensor:
@@ -50,13 +52,30 @@ class StiefelInstrumentModel(QuantumMemoryModel):
         n_env: int = 0,
         seed: int = 0,
         init_scale: float = 1.0,
+        init: str = "random",
+        init_probs: Any = "uniform",
     ):
         super().__init__(n_memory, n_output, blocks=[], n_env=n_env, initial="zero")
         gen = torch.Generator().manual_seed(seed)
-        d = 2**n_memory
-        rows = d * 2**n_output * 2**n_env
-        self.w_re = nn.Parameter(init_scale * torch.randn(rows, d, generator=gen, dtype=REAL_DTYPE))
-        self.w_im = nn.Parameter(init_scale * torch.randn(rows, d, generator=gen, dtype=REAL_DTYPE))
+        d, dy, de = 2**n_memory, 2**n_output, 2**n_env
+        rows = d * dy * de
+        w_re = init_scale * torch.randn(rows, d, generator=gen, dtype=REAL_DTYPE)
+        w_im = init_scale * torch.randn(rows, d, generator=gen, dtype=REAL_DTYPE)
+        if init == "identity":
+            # K[y, 0] = sqrt(p_y) I plus noise of total size init_scale per column
+            # (qmem.trainability), so the start is near the memoryless E_y = p_y I.
+            p = symbol_probs(init_probs, dy)
+            base = torch.zeros(d, dy, de, d, dtype=REAL_DTYPE)  # (i, y, e, j)
+            for y in range(dy):
+                base[:, y, 0, :] = torch.sqrt(p[y]) * torch.eye(d, dtype=REAL_DTYPE)
+            noise = 1 / math.sqrt(2 * rows)
+            w_re = base.reshape(rows, d) + noise * w_re
+            w_im = noise * w_im
+        elif init != "random":
+            raise ValueError(f"unknown init {init!r}; choose from {INIT_MODES_BASELINE}")
+        self.init = init
+        self.w_re = nn.Parameter(w_re)
+        self.w_im = nn.Parameter(w_im)
 
     def isometry(self) -> torch.Tensor:
         return isometry_from_matrix(torch.complex(self.w_re, self.w_im))

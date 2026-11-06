@@ -43,6 +43,7 @@ import torch
 from torch import nn
 
 from ..linalg import DTYPE, REAL_DTYPE, trace
+from ..trainability import INIT_MODES_BASELINE, symbol_probs
 from .base import RecurrentModel
 
 
@@ -59,6 +60,8 @@ class UMPSModel(RecurrentModel):
         fp_iters: int = 200,
         fp_grad_iters: int = 20,
         fp_tol: float = 1e-8,
+        init: str = "random",
+        init_probs: Any = "uniform",
     ):
         super().__init__(n_symbols)
         self.bond_dim, self.purification = bond_dim, purification
@@ -69,8 +72,19 @@ class UMPSModel(RecurrentModel):
         shape = (n_symbols, purification, bond_dim, bond_dim)
         # Scale so that the transfer map has spectral radius about 1 at init.
         s = init_scale / math.sqrt(2 * n_symbols * purification * bond_dim)
-        self.a_re = nn.Parameter(s * torch.randn(shape, generator=gen, dtype=REAL_DTYPE))
-        self.a_im = nn.Parameter(s * torch.randn(shape, generator=gen, dtype=REAL_DTYPE))
+        a_re = s * torch.randn(shape, generator=gen, dtype=REAL_DTYPE)
+        a_im = s * torch.randn(shape, generator=gen, dtype=REAL_DTYPE)
+        if init == "identity":
+            # A[y, k] = sqrt(p_y / kappa) I plus the noise above (qmem.trainability):
+            # Sigma = I is then the fixed point and p(y | L) = p_y for every L.
+            p = symbol_probs(init_probs, n_symbols)
+            eye = torch.eye(bond_dim, dtype=REAL_DTYPE)
+            a_re = a_re + torch.sqrt(p / purification)[:, None, None, None] * eye
+        elif init != "random":
+            raise ValueError(f"unknown init {init!r}; choose from {INIT_MODES_BASELINE}")
+        self.init = init
+        self.a_re = nn.Parameter(a_re)
+        self.a_im = nn.Parameter(a_im)
         b = 1 / math.sqrt(2 * bond_dim)
         self.l_re = nn.Parameter(b * torch.randn(bond_dim, generator=gen, dtype=REAL_DTYPE))
         self.l_im = nn.Parameter(b * torch.randn(bond_dim, generator=gen, dtype=REAL_DTYPE))

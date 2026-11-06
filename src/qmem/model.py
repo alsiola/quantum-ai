@@ -49,6 +49,7 @@ from .circuits import (
 from .instrument import Instrument
 from .linalg import trace
 from .states import initial_state
+from .trainability import INIT_MODES_A, apply_product_init
 
 logger = logging.getLogger("qmem")
 
@@ -263,6 +264,11 @@ class ModelConfig:
       strength-faithful layout is ``feedforward_depth > 0, joint_depth = 0``.
     * ``strength_shared``: one ``g`` for every output coupling (the global
       measurement strength) instead of one per coupling.
+    * ``init``: ``"random"`` (default; every angle uniform on
+      ``[-pi init_scale, pi init_scale]``) or ``"product"`` (needs ``entangler = "cz"``):
+      the same draw, plus an ancilla preparation in the first joint layer so that the
+      start is near the memoryless instrument ``E_y = p_y I``, with ``p_y`` from
+      ``init_probs`` (``qmem.trainability``; issue #12).
     """
 
     n_memory: int = 2
@@ -282,6 +288,8 @@ class ModelConfig:
     init_scale: float = 1.0
     seed: int = 0
     prob_floor: float | None = None
+    init: str = "random"
+    init_probs: Any = "uniform"
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
@@ -297,7 +305,10 @@ class ModelConfig:
         d = dict(d)
         if "rotations" in d:
             d["rotations"] = tuple(d["rotations"])
-        return cls(**d)
+        cfg = cls(**d)
+        if cfg.init not in INIT_MODES_A:
+            raise ValueError(f"unknown init {cfg.init!r}; choose from {INIT_MODES_A}")
+        return cfg
 
 
 def build_model(config: ModelConfig) -> QuantumMemoryModel:
@@ -331,7 +342,7 @@ def build_model(config: ModelConfig) -> QuantumMemoryModel:
         blocks.append(OutcomeConditionedBlock(memory, outputs, n, c.feedforward_depth, **hea))
     if c.joint_depth > 0:
         blocks.append(HardwareEfficientBlock(list(range(n)), n, c.joint_depth, **hea))
-    return QuantumMemoryModel(
+    model = QuantumMemoryModel(
         c.n_memory,
         c.n_output,
         blocks,
@@ -340,3 +351,8 @@ def build_model(config: ModelConfig) -> QuantumMemoryModel:
         prob_floor=c.prob_floor,
         generator=gen,
     )
+    if c.init == "product":
+        apply_product_init(model, c)
+    elif c.init != "random":
+        raise ValueError(f"unknown init {c.init!r}; choose from {INIT_MODES_A}")
+    return model

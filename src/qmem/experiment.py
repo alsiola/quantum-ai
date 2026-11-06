@@ -33,7 +33,8 @@ from .data import Splits, make_splits
 from .model import QuantumMemoryModel
 from .records import run_metadata, save_json
 from .tasks import HMMTask, make_task
-from .train import TrainConfig, evaluate, strengths, train
+from .train import TrainConfig, evaluate, strengths, train_with_restarts
+from .trainability import resolve_init_probs, restart_seed
 
 
 @dataclass
@@ -90,14 +91,21 @@ def run_one(spec: RunSpec) -> dict[str, Any]:
     try:
         task = make_task(spec.task)
         splits = build_splits(task, spec.data)
-        model = build_run_model(spec)
-        if model.n_symbols != task.n_symbols:
-            raise ValueError(f"model alphabet {model.n_symbols} != task alphabet {task.n_symbols}")
+        model_cfg = resolve_init_probs(spec.model, splits.train, task.n_symbols)
+        record["model_resolved"] = model_cfg
+
+        def make_model(r: int) -> QuantumMemoryModel:
+            return build_variant({**model_cfg, "seed": restart_seed(spec.seed, r)})
+
+        probe = make_model(0)
+        if probe.n_symbols != task.n_symbols:
+            raise ValueError(f"model alphabet {probe.n_symbols} != task alphabet {task.n_symbols}")
         record["task"] = task.describe()
         record["splits"] = splits.describe()
-        record["n_parameters"] = model.n_parameters()
-        record["strength_init"] = strengths(model)
-        result = train(model, splits, TrainConfig.from_dict(spec.train))
+        record["n_parameters"] = probe.n_parameters()
+        record["strength_init"] = strengths(probe)
+        model, result = train_with_restarts(make_model, splits, TrainConfig.from_dict(spec.train))
+        record["restart_screen"] = result.restart_screen
         record.update(
             status=result.status,
             message=result.message,
@@ -176,7 +184,8 @@ def run_many(
 def load_model(record: dict[str, Any]) -> QuantumMemoryModel:
     """Rebuild a trained model from a record (needs ``state_dict``)."""
     cfg = record["meta"]["config"]
-    model = build_variant({**cfg["model"], "seed": record["seed"]})
+    model_cfg = record.get("model_resolved", cfg["model"])
+    model = build_variant({**model_cfg, "seed": record["seed"]})
     model.load_state_dict(record["state_dict"])
     return model
 

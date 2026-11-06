@@ -18,7 +18,8 @@ from __future__ import annotations
 import copy
 import math
 import time
-from dataclasses import asdict, dataclass, fields
+from collections.abc import Callable
+from dataclasses import asdict, dataclass, field, fields, replace
 from typing import Any
 
 import torch
@@ -45,6 +46,9 @@ class TrainConfig:
       restored at the end.
     * ``clip_grad_norm``: clip the global gradient norm to this value (0: off).
       The pre-clip norm is always logged.
+    * ``restarts``: with ``restarts > 1``, ``train_with_restarts`` screens that many
+      initialisations for ``restart_steps`` steps each (early stopping off) and trains
+      the one with the best validation NLL with the full budget (issue #12).
     """
 
     optimizer: str = "adam"
@@ -62,6 +66,8 @@ class TrainConfig:
     min_delta: float = 1e-4
     restore_best: bool = True
     clip_grad_norm: float = 0.0
+    restarts: int = 1
+    restart_steps: int = 300
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
@@ -125,13 +131,24 @@ class TrainResult:
     curves: dict[str, list]
     wall_seconds: float
     message: str = ""
+    restart_screen: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
-def train(model: QuantumMemoryModel, splits: Splits, cfg: TrainConfig) -> TrainResult:
-    """Train ``model`` in place on ``splits.train``; early-stop on ``splits.val``."""
+def train(
+    model: QuantumMemoryModel,
+    splits: Splits,
+    cfg: TrainConfig,
+    loss_fn: Callable[[Any, torch.Tensor], torch.Tensor] | None = None,
+) -> TrainResult:
+    """Train ``model`` in place on ``splits.train``; early-stop on ``splits.val``.
+
+    ``loss_fn(model, sequences)`` replaces the teacher-forced NLL for both the
+    training steps and the validation score (e.g. ``qmem.trainability.soft_target_loss``).
+    """
+    objective = nll_per_symbol if loss_fn is None else loss_fn
     start = time.perf_counter()
     params = [p for p in model.parameters() if p.requires_grad]
     opt = _optimizer(cfg, params)
@@ -152,7 +169,7 @@ def train(model: QuantumMemoryModel, splits: Splits, cfg: TrainConfig) -> TrainR
     def run_eval(step: int) -> bool:
         nonlocal best, bad_evals
         with torch.no_grad():
-            v = float(nll_per_symbol(model, splits.val))
+            v = float(objective(model, splits.val))
         curves["eval_step"].append(step)
         curves["val_nll"].append(v)
         curves["strength"].append(strengths(model))
@@ -177,7 +194,7 @@ def train(model: QuantumMemoryModel, splits: Splits, cfg: TrainConfig) -> TrainR
             group["lr"] = lr
         before = dict(model.diagnostics)
         opt.zero_grad()
-        loss = nll_per_symbol(model, batch)
+        loss = objective(model, batch)
         loss_v = float(loss.detach())
         grad_norm = math.nan
         if math.isfinite(loss_v):
@@ -218,6 +235,45 @@ def train(model: QuantumMemoryModel, splits: Splits, cfg: TrainConfig) -> TrainR
         wall_seconds=time.perf_counter() - start,
         message=message,
     )
+
+
+def train_with_restarts(
+    make_model: Callable[[int], Any],
+    splits: Splits,
+    cfg: TrainConfig,
+    loss_fn: Callable[[Any, torch.Tensor], torch.Tensor] | None = None,
+) -> tuple[Any, TrainResult]:
+    """Best-of-``cfg.restarts`` on validation, then the full budget (``TrainConfig`` doc).
+
+    ``make_model(r)`` builds restart ``r``'s initialisation (restart 0 is the plain
+    seed). Every restart is screened for ``restart_steps`` steps without early
+    stopping; the winner (lowest best validation score) is restored to its best
+    point and trained again with ``cfg`` (fresh optimiser). The screen is recorded in
+    ``restart_screen``; ``wall_seconds`` covers the screen too.
+    """
+    if cfg.restarts <= 1:
+        model = make_model(0)
+        return model, train(model, splits, cfg, loss_fn)
+    start = time.perf_counter()
+    screen_cfg = replace(cfg, steps=cfg.restart_steps, patience=0, restarts=1)
+    screen, best = [], None
+    for r in range(cfg.restarts):
+        m = make_model(r)
+        res = train(m, splits, screen_cfg, loss_fn)
+        screen.append(
+            {"restart": r, "status": res.status, "best_val_nll": res.best_val_nll,
+             "best_step": res.best_step, "wall_seconds": res.wall_seconds}
+        )  # fmt: skip
+        ok = res.status != "diverged" and math.isfinite(res.best_val_nll)
+        if ok and (best is None or res.best_val_nll < best[0]):
+            best = (res.best_val_nll, r, m)
+    if best is None:  # every restart diverged: train restart 0 as a plain run
+        best = (math.nan, 0, make_model(0))
+    model = best[2]
+    result = train(model, splits, replace(cfg, restarts=1), loss_fn)
+    result.restart_screen = [{**s, "chosen": s["restart"] == best[1]} for s in screen]
+    result.wall_seconds = time.perf_counter() - start
+    return model, result
 
 
 def _accuracy(pred: torch.Tensor, seq: torch.Tensor) -> float:
