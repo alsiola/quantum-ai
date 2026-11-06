@@ -5,7 +5,13 @@ import math
 import pytest
 import torch
 
-from qmem.complexity import epsilon_machine, set_partitions, unifilar_merge_bound
+from qmem.complexity import (
+    best_unifilar_merge_bound,
+    epsilon_machine,
+    future_distributions,
+    set_partitions,
+    unifilar_merge_bound,
+)
 from qmem.linalg import REAL_DTYPE
 from qmem.tasks import hmm_task, make_task
 
@@ -138,3 +144,33 @@ def test_pmd_needs_more_than_a_two_dimensional_real_model(period):
     for j in range(4):
         h = torch.stack([g_h[j + i : j + i + 3] for i in range(3)])
         assert abs(float(torch.linalg.det(h))) < 1e-12
+
+
+def test_future_distributions_match_the_source():
+    from qmem.data import all_sequences
+
+    task = make_task({"kind": "uniform_renewal", "n": 3})
+    block, pi = future_distributions(task, 3)
+    seqs = all_sequences(task.n_symbols, 3)
+    # Stationary block probabilities from the machine equal the source's own.
+    src = task.log_probs(seqs).sum(-1).exp()
+    assert torch.allclose(pi @ block, src, atol=1e-12)
+    assert torch.allclose(block.sum(-1), torch.ones(len(pi), dtype=REAL_DTYPE))
+
+
+def test_block_bound_holds_for_random_two_state_unifilar_models():
+    """Uniform renewal N = 3: the length-2 bound (tighter than length 1) is never beaten."""
+    task = make_task({"kind": "uniform_renewal", "n": 3})
+    best = best_unifilar_merge_bound(task, 2, max_length=8)
+    assert best["bound_nats"] > unifilar_merge_bound(task, 2, 1)["bound_nats"] + 0.02
+    gen = torch.Generator().manual_seed(3)
+    for _ in range(16):
+        emit = torch.rand(2, 2, generator=gen, dtype=REAL_DTYPE) * 0.9 + 0.05
+        emit = emit / emit.sum(-1, keepdim=True)
+        nxt = torch.randint(0, 2, (2, 2), generator=gen)
+        lab = torch.zeros(2, 2, 2, dtype=REAL_DTYPE)
+        for s in range(2):
+            for y in range(2):
+                lab[y, s, int(nxt[s, y])] = emit[s, y]
+        kl = _kl_rate_mc(task, hmm_task(lab.tolist(), name="u2"), n=200, length=300, seed=2)
+        assert kl > best["bound_nats"] - 3e-3

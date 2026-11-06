@@ -49,6 +49,7 @@ from qmem.baselines.rnn import matched_hidden_size
 from qmem.baselines.runner import BaselineSpec, build_baseline, load_baseline, run_baseline
 from qmem.benchmarks import marked_recall_metrics, recall_metrics
 from qmem.complexity import (
+    best_unifilar_merge_bound,
     epsilon_machine,
     pmd_qubit_instrument,
     qmachine_instrument,
@@ -560,6 +561,7 @@ def dimensional_table(cfg, rows, tasks_cfg, post):
             continue
         task = make_task(tasks_cfg[t]["spec"])
         mb = unifilar_merge_bound(task, 2)
+        bb = best_unifilar_merge_bound(task, 2, max_length=10)
         em = epsilon_machine(task)
         entry = {
             "task": t,
@@ -567,6 +569,9 @@ def dimensional_table(cfg, rows, tasks_cfg, post):
             "causal_states": em["n_states"],
             "unifilar_bound_nats": mb["bound_nats"],
             "unifilar_bound_realisable": mb["realisable"],
+            "block_bound_nats": bb["bound_nats"],
+            "block_bound_length": bb["future_length"],
+            "block_bound_by_length": bb["by_length"],
             "exact": post["long"].get(f"{t}|exact"),
             "models": {},
         }
@@ -693,7 +698,8 @@ def write_summary(out, cfg, tasks_cfg, tasks, rows, tuning_table, suspects, mdim
         for k, v in e["models"].items():
             flat_dimtest.append({"task": e["task"], "cell": k, **v,
                                  "entropy_rate_nats": e["entropy_rate_nats"],
-                                 "unifilar_bound_nats": e["unifilar_bound_nats"]})  # fmt: skip
+                                 "unifilar_bound_nats": e["unifilar_bound_nats"],
+                                 "block_bound_nats": e["block_bound_nats"]})  # fmt: skip
     write_csv(out / "dimensional.csv", flat_dimtest)
     write_csv(out / "retention.csv", retention)
     save_json(out / "summary.json", {

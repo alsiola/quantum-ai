@@ -311,54 +311,90 @@ def set_partitions(n: int, max_blocks: int):
     yield from grow([], 0)
 
 
-def unifilar_merge_bound(task: HMMTask, n_states: int) -> dict[str, Any]:
-    """Least KL rate (nats/symbol) of any ``n_states``-state *unifilar* model of ``task``.
-
-    A unifilar model's state is a deterministic function of the past, so its
-    prediction depends on the past through an ``n_states``-valued label. For a
-    fixed label function the best predictions are the stationary mixtures of
-    the true conditionals within each label, and for fixed predictions the
-    best label of a past depends only on its causal state. So the optimum is
-    a merge of causal states, and the bound is
-
-        min over partitions g of the causal states into <= n_states blocks of
-        sum_s pi_s KL( P(.|s) || Q_g(s) ),   Q_b = sum_{s in b} pi_s P(.|s) / pi_b.
-
-    This is Yang et al.'s Box 2 [Yang2021] at future length 1. They show it is
-    tight for Markov order 1; here it is a lower bound for every unifilar
-    source, and is reached whenever the minimising merge is itself unifilar
-    (``realisable``). It does **not** bound non-unifilar models (a general
-    ``n_states``-state HMM can do better).
-
-    Returns ``bound_nats``, the minimising ``partition`` (block of each causal
-    state), ``realisable`` and every partition's value (``table``).
-    """
+def future_distributions(task: HMMTask, length: int) -> tuple[torch.Tensor, torch.Tensor]:
+    """``P(x_1..x_L | s)`` for every causal state ``s`` (``(n, Y**L)``, row-major) and ``pi``."""
     em = epsilon_machine(task)
     lab, pi = em["labelled"], em["pi"]
-    n = em["n_states"]
     emit = lab.sum(-1).T  # (n, Y)
     succ = lab.argmax(-1).T  # (n, Y)
-    logp = torch.where(emit > 0, torch.log(emit.clamp_min(1e-300)), torch.zeros_like(emit))
+    n = emit.shape[0]
+    block = torch.ones(n, 1, dtype=REAL_DTYPE)
+    for _ in range(length):
+        # P(y, rest | s) = P(y | s) P(rest | succ(s, y))
+        block = (emit[:, :, None] * block[succ]).reshape(n, -1)
+    return block, pi
+
+
+def unifilar_merge_bound(task: HMMTask, n_states: int, future_length: int = 1) -> dict[str, Any]:
+    """Least KL rate (nats/symbol) of any ``n_states``-state *unifilar* model of ``task``.
+
+    A unifilar model's state is a deterministic function of the past, and its
+    prediction of the next ``L = future_length`` symbols depends on the past only
+    through that ``n_states``-valued label. By the chain rule its KL rate is
+    ``(1/L) E_past KL(P(X_1..L | past) || P_model(X_1..L | label))``, which only
+    decreases if the label's block prediction is relaxed to any distribution.
+    For fixed block predictions the best label of a past depends only on its
+    causal state, and for a fixed labelling the best predictions are stationary
+    mixtures. So the relaxed optimum is a merge of causal states:
+
+        min over partitions g of the causal states into <= n_states blocks of
+        (1/L) sum_s pi_s KL( P(X_1..L|s) || Q_g(s) ),
+        Q_b = sum_{s in b} pi_s P(X_1..L|s) / pi_b.
+
+    This is Yang et al.'s Box 2 [Yang2021] with future length ``L``; it is a lower
+    bound for every unifilar model of a unifilar source at every ``L`` (take the
+    largest over ``L``), and is reached at ``L = 1`` whenever the minimising merge
+    is itself unifilar (``realisable``), as for Markov order 1. It does **not**
+    bound non-unifilar models (a general ``n_states``-state HMM can do better).
+
+    Returns ``bound_nats``, the minimising ``partition`` (block of each causal
+    state), ``realisable`` (at ``L = 1``) and every partition's value (``table``).
+    """
+    em = epsilon_machine(task)
+    lab = em["labelled"]
+    n = em["n_states"]
+    emit1 = lab.sum(-1).T
+    succ = lab.argmax(-1).T
+    block, pi = future_distributions(task, future_length)
+    logp = torch.log(block.clamp_min(1e-300))
     table = []
     for part in set_partitions(n, n_states):
         g = torch.tensor(part)
-        q = torch.zeros(max(part) + 1, emit.shape[1], dtype=REAL_DTYPE)
-        q.index_add_(0, g, pi[:, None] * emit)
+        q = torch.zeros(max(part) + 1, block.shape[1], dtype=REAL_DTYPE)
+        q.index_add_(0, g, pi[:, None] * block)
         q = q / q.sum(-1, keepdim=True)
         logq = torch.log(q[g].clamp_min(1e-300))
-        kl = float((pi[:, None] * torch.where(emit > 0, emit * (logp - logq), 0.0)).sum())
+        terms = torch.where(block > 0, block * (logp - logq), torch.zeros_like(block))
+        kl = float((pi[:, None] * terms).sum()) / future_length
         realisable = all(
-            len({part[int(succ[s, y])] for s in range(n) if part[s] == b and emit[s, y] > 0}) <= 1
+            len({part[int(succ[s, y])] for s in range(n) if part[s] == b and emit1[s, y] > 0}) <= 1
             for b in set(part)
-            for y in range(emit.shape[1])
+            for y in range(emit1.shape[1])
         )
         table.append({"partition": part, "kl_nats": kl, "realisable": realisable})
     best = min(table, key=lambda r: r["kl_nats"])
     return {
         "n_states": n_states,
+        "future_length": future_length,
         "n_causal_states": n,
         "bound_nats": max(best["kl_nats"], 0.0),
         "partition": best["partition"],
         "realisable": best["realisable"],
         "table": table,
     }
+
+
+def best_unifilar_merge_bound(task: HMMTask, n_states: int, max_length: int = 6,
+                              max_futures: int = 4096) -> dict[str, Any]:  # fmt: skip
+    """The tightest ``unifilar_merge_bound`` over future lengths ``1..max_length``.
+
+    Lengths with more than ``max_futures`` futures (``Y**L``) are skipped.
+    """
+    y_dim = task.n_symbols
+    runs = [
+        unifilar_merge_bound(task, n_states, L)
+        for L in range(1, max_length + 1)
+        if y_dim**L <= max_futures
+    ]
+    best = max(runs, key=lambda r: r["bound_nats"])
+    return {**best, "by_length": {r["future_length"]: r["bound_nats"] for r in runs}}
