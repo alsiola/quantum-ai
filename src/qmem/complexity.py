@@ -293,3 +293,72 @@ def pmd_qubit_instrument(period: int, gamma: float, v: float) -> tuple[Instrumen
     a1 = zeta * torch.outer(s0, vh[1])  # |s_0><v_1|: the rows of vh are the bras <v_k|
     kraus = torch.stack([a0, a1])[:, None]
     return Instrument(kraus), torch.outer(s0, s0.conj())
+
+
+# -- best coarse-grained classical model of fixed size ------------------------------
+def set_partitions(n: int, max_blocks: int):
+    """Every partition of ``range(n)`` into at most ``max_blocks`` blocks (restricted growth)."""
+
+    def grow(prefix: list[int], used: int):
+        if len(prefix) == n:
+            yield list(prefix)
+            return
+        for b in range(min(used + 1, max_blocks)):
+            prefix.append(b)
+            yield from grow(prefix, max(used, b + 1))
+            prefix.pop()
+
+    yield from grow([], 0)
+
+
+def unifilar_merge_bound(task: HMMTask, n_states: int) -> dict[str, Any]:
+    """Least KL rate (nats/symbol) of any ``n_states``-state *unifilar* model of ``task``.
+
+    A unifilar model's state is a deterministic function of the past, so its
+    prediction depends on the past through an ``n_states``-valued label. For a
+    fixed label function the best predictions are the stationary mixtures of
+    the true conditionals within each label, and for fixed predictions the
+    best label of a past depends only on its causal state. So the optimum is
+    a merge of causal states, and the bound is
+
+        min over partitions g of the causal states into <= n_states blocks of
+        sum_s pi_s KL( P(.|s) || Q_g(s) ),   Q_b = sum_{s in b} pi_s P(.|s) / pi_b.
+
+    This is Yang et al.'s Box 2 [Yang2021] at future length 1. They show it is
+    tight for Markov order 1; here it is a lower bound for every unifilar
+    source, and is reached whenever the minimising merge is itself unifilar
+    (``realisable``). It does **not** bound non-unifilar models (a general
+    ``n_states``-state HMM can do better).
+
+    Returns ``bound_nats``, the minimising ``partition`` (block of each causal
+    state), ``realisable`` and every partition's value (``table``).
+    """
+    em = epsilon_machine(task)
+    lab, pi = em["labelled"], em["pi"]
+    n = em["n_states"]
+    emit = lab.sum(-1).T  # (n, Y)
+    succ = lab.argmax(-1).T  # (n, Y)
+    logp = torch.where(emit > 0, torch.log(emit.clamp_min(1e-300)), torch.zeros_like(emit))
+    table = []
+    for part in set_partitions(n, n_states):
+        g = torch.tensor(part)
+        q = torch.zeros(max(part) + 1, emit.shape[1], dtype=REAL_DTYPE)
+        q.index_add_(0, g, pi[:, None] * emit)
+        q = q / q.sum(-1, keepdim=True)
+        logq = torch.log(q[g].clamp_min(1e-300))
+        kl = float((pi[:, None] * torch.where(emit > 0, emit * (logp - logq), 0.0)).sum())
+        realisable = all(
+            len({part[int(succ[s, y])] for s in range(n) if part[s] == b and emit[s, y] > 0}) <= 1
+            for b in set(part)
+            for y in range(emit.shape[1])
+        )
+        table.append({"partition": part, "kl_nats": kl, "realisable": realisable})
+    best = min(table, key=lambda r: r["kl_nats"])
+    return {
+        "n_states": n_states,
+        "n_causal_states": n,
+        "bound_nats": max(best["kl_nats"], 0.0),
+        "partition": best["partition"],
+        "realisable": best["realisable"],
+        "table": table,
+    }

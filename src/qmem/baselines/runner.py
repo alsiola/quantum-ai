@@ -36,7 +36,7 @@ from typing import Any
 
 import torch
 
-from ..ablations import build_variant
+from ..ablations import SeparateUpdateReadoutModel, build_variant
 from ..experiment import RunSpec, build_splits, run_one
 from ..model import QuantumMemoryModel
 from ..records import run_metadata
@@ -122,6 +122,17 @@ def describe_model(model: Any) -> dict[str, Any]:
     """Family, parameter count, state dimension and compute cost, for any model."""
     if hasattr(model, "describe"):
         return model.describe()
+    if isinstance(model, SeparateUpdateReadoutModel):  # D / D_diss (qmem.ablations)
+        d, e = model.memory_dim, 2**model.update_env
+        return {
+            "family": "D_diss" if model.update_env else "D",
+            "n_symbols": model.n_symbols,
+            "n_parameters": model.n_parameters(),
+            "state_dim": d,
+            "state_kind": "D x D density" if model.update_env else "pure D-dim quantum state",
+            # readout Tr(M_y rho) for every y, then the observed token's update channel
+            "flops_per_step": 4 * (2 * e * d**3 + model.n_symbols * d**2),
+        }
     if isinstance(model, QuantumMemoryModel):  # architecture A
         d, e = model.memory_dim, 2**model.n_env
         return {
