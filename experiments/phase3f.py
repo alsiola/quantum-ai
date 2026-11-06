@@ -784,14 +784,18 @@ def write_summary(out, cfg, tasks_cfg, tasks, rows, tuning_table, suspects, mdim
           "standard test set. *long*: the validation-selected run re-scored on "
           f"{cfg['dimensional']['long_test']['n']} sequences of "
           f"{cfg['dimensional']['long_test']['length']} (paired gap ± SE). *bound*: least KL "
-          "rate of any 2-state unifilar model (`unifilar_merge_bound`).", ""]  # fmt: skip
+          "rate of any 2-state unifilar model: *one-step* is the merge bound with future "
+          "length 1 (`unifilar_merge_bound`), *block* the tightest over future lengths "
+          "1-10 (`best_unifilar_merge_bound`). Both are lower bounds; the block one is "
+          "tighter.", ""]  # fmt: skip
     for e in dimtab:
         ex = e["exact"]
         L += [
             f"### {e['task']} (h = {e['entropy_rate_nats']:.4f} nats, "
-            f"{e['causal_states']} causal states; 2-state unifilar bound "
+            f"{e['causal_states']} causal states; 2-state unifilar bound: one-step "
             f"{e['unifilar_bound_nats']:.5f}"
-            f"{'' if e['unifilar_bound_realisable'] else ', not reached by a merge'}; exact "
+            f"{'' if e['unifilar_bound_realisable'] else ' (not reached by a merge)'}, block "
+            f"{e['block_bound_nats']:.5f} at L = {e['block_bound_length']}; exact "
             f"1-qubit model long gap "
             f"{(fmt(ex['gap'], 6) + ' ± ' + fmt(ex['se'], 6)) if ex else 'none'})",
             "",
