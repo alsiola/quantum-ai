@@ -465,6 +465,8 @@ def cell_str(r: dict | None, params: bool = False) -> str:
 def flag_suspects(rows: list[dict], margin: float) -> list[dict]:
     """Cells that do worse than a smaller cell of the same family on the same task."""
     out = []
+    for r in rows:
+        r.setdefault("suspect", False)
     grid = [r for r in rows if is_grid(r)
             and r["family"] not in ("ngram", "gru")]  # fmt: skip
     for r in grid:
@@ -638,7 +640,7 @@ def plots(rows, tasks, out: Path) -> None:
             ax.axhline(0.01, color="#999999", lw=0.8, ls="--")
             ax.set_xscale("log", base=2)
             ax.set_yscale("log")
-            ax.set_title(t, fontsize=9)
+            ax.set_title(f"{t} (dashed: failure threshold)" if t == tasks[0] else t, fontsize=9)
             ax.tick_params(labelsize=7)
             ax.grid(alpha=0.25, lw=0.5)
         for ax in list(axes.flat)[n:]:
@@ -648,11 +650,10 @@ def plots(rows, tasks, out: Path) -> None:
             h, lab = ax.get_legend_handles_labels()
             if len(h) > len(handles):
                 handles, labels = h, lab
-        fig.legend(handles, labels, loc="lower center", ncol=8, fontsize=8, frameon=False)
-        fig.supxlabel(xlabel, fontsize=9, y=0.03)
-        fig.supylabel(f"median test gap (nats/symbol; floored at {floor:g}); dashed: failure "
-                      "threshold", fontsize=9)  # fmt: skip
-        fig.tight_layout(rect=(0.01, 0.05, 1, 1))
+        fig.legend(handles, labels, loc="upper center", ncol=8, fontsize=8, frameon=False)
+        fig.supxlabel(xlabel, fontsize=9)
+        fig.supylabel("median test gap (nats/symbol)", fontsize=9)
+        fig.tight_layout(rect=(0.01, 0.0, 1, 0.97))
         fig.savefig(out / fname, dpi=110)
         plt.close(fig)
 

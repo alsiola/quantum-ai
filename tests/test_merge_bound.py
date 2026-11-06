@@ -84,3 +84,57 @@ def test_random_two_state_unifilar_models_never_beat_the_bound():
         kl = _kl_rate_mc(task, model, n=200, length=200, seed=1)
         assert kl > bound - 5e-3
     assert math.isfinite(bound) and bound > 0.01
+
+
+# -- what a 2-state classical model can and cannot do (docs/phase3f-grid.md section 4) --------
+@pytest.mark.parametrize("p,q", [(0.5, 0.5), (0.3, 0.8)])
+def test_ghafari_is_a_two_state_non_unifilar_hmm(p, q):
+    """The coin with "0 before 1 written as 2" is an edge-emitting HMM on the coin value.
+
+    From coin 0: emit 0 and stay (1 - p), or emit 2 and flip (p). From coin 1: emit 1, and
+    the next coin is 0 (q) or 1 (1 - q), which the symbol does not reveal (non-unifilar).
+    So a 2-state classical model is exact, although every 2-state *unifilar* model is not
+    (merge bound > 0).
+    """
+    from qmem.data import all_sequences
+
+    task = make_task({"kind": "ghafari", "p": p, "q": q})
+    lab = torch.zeros(task.n_symbols, 2, 2, dtype=REAL_DTYPE)
+    lab[0, 0, 0], lab[2, 0, 1] = 1 - p, p
+    lab[1, 1, 0], lab[1, 1, 1] = q, 1 - q
+    model = hmm_task(lab.tolist(), initial=[q / (p + q), p / (p + q)], name="coin")
+    seqs = all_sequences(task.n_symbols, 6)
+    src, mod = task.log_probs(seqs).sum(-1), model.log_probs(seqs).sum(-1)
+    ok = torch.isfinite(src)
+    assert torch.equal(ok, torch.isfinite(mod))
+    assert torch.allclose(src[ok], mod[ok], atol=1e-12)
+    assert unifilar_merge_bound(task, 2)["bound_nats"] > 0.05
+
+
+@pytest.mark.parametrize("period", [3, 4, 5, 6, 7, 8])
+def test_pmd_needs_more_than_a_two_dimensional_real_model(period):
+    """g(k) = P(1 0^k 1) of any 2-state HMM is pi T1 T0^k T1 1: a linear recurrence of order 2.
+
+    PMD's survival function has three modes (Gamma^n and Gamma^n e^{+-2 pi i n / N}), so
+    consecutive 3x3 Hankel determinants of g are non-zero: no 2-state HMM, and no real
+    2-dimensional linear model of any sign, reproduces it. Wu et al.'s 1-qubit model does,
+    with complex amplitudes (test_benchmarks.test_pmd_qubit_model_is_exact).
+    """
+    task = make_task({"kind": "pmd_renewal", "period": period, "gamma": 0.5, "v": 0.4})
+    seqs = torch.zeros(12, 13, dtype=torch.long)
+    for k in range(12):  # 1, k zeros, 1, then padding zeros (ignored below)
+        seqs[k, 0], seqs[k, k + 1] = 1, 1
+    lp = task.log_probs(seqs)
+    g = torch.stack([lp[k, : k + 2].sum() for k in range(12)]).exp()
+    for j in range(4):  # relative to the scale of the entries (g decays like Gamma^k)
+        h = torch.stack([g[j + i : j + i + 3] for i in range(3)])
+        assert abs(float(torch.linalg.det(h))) > 1e-6 * float(h.abs().max()) ** 3
+    # Control: a 2-state HMM's g obeys the order-2 recurrence (Hankel determinants vanish).
+    gen = torch.Generator().manual_seed(period)
+    lab = torch.rand(2, 2, 2, generator=gen, dtype=REAL_DTYPE)
+    lab = lab / lab.sum((0, 2), keepdim=True)
+    lp_h = hmm_task(lab.tolist(), name="h2").log_probs(seqs)
+    g_h = torch.stack([lp_h[k, : k + 2].sum() for k in range(12)]).exp()
+    for j in range(4):
+        h = torch.stack([g_h[j + i : j + i + 3] for i in range(3)])
+        assert abs(float(torch.linalg.det(h))) < 1e-12
