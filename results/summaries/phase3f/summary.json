@@ -15112,12 +15112,12 @@
         }
       }
     },
-    "git_commit": "28325640e27c997594e7c0e8153ff7de4f9c68a9",
+    "git_commit": "de13e6fea3720996bc6ce23c990fd054c01010dc",
     "git_dirty": false,
     "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
     "python": "3.13.6",
     "seed": null,
-    "timestamp_utc": "2026-11-06T18:53:54+00:00",
+    "timestamp_utc": "2026-11-06T18:56:12+00:00",
     "torch": "2.15.0"
   },
   "n_cells": 441,
@@ -49988,5 +49988,5 @@
       "wall_seconds": 12.6822588336654
     }
   ],
-  "wall_seconds": 31.905377791263163
+  "wall_seconds": 29.767070416361094
 }
