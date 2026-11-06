@@ -1,0 +1,141 @@
+task,family,dims_run,median_dim,median_params,selected_dim,selected_params
+perturbed_coin,A,[2],2,13,2,13
+perturbed_coin,A_ff,[2],2,13,2,13
+perturbed_coin,D,[2],,,,
+perturbed_coin,D_diss,[2],,,,
+perturbed_coin,hmm,"[2, 3]",2,10,2,10
+perturbed_coin,umps,[2],2,20,2,20
+perturbed_coin,hqmm,[2],2,16,2,16
+upset_gambler,A,[2],2,13,2,13
+upset_gambler,A_ff,[2],2,13,2,13
+upset_gambler,D,[2],2,13,2,13
+upset_gambler,D_diss,[2],2,17,2,17
+upset_gambler,hmm,"[2, 3]",2,10,2,10
+upset_gambler,umps,[2],2,20,2,20
+upset_gambler,hqmm,[2],2,16,2,16
+ghafari,A,"[2, 4]",2,18,2,18
+ghafari,A_ff,"[2, 4]",4,41,4,41
+ghafari,D,"[2, 4]",,,,
+ghafari,D_diss,"[2, 4]",,,,
+ghafari,hmm,"[2, 4]",2,18,2,18
+ghafari,umps,"[2, 4]",2,36,2,36
+ghafari,hqmm,"[2, 4]",2,32,2,32
+ghafari_p03_q08,A,"[2, 4]",2,18,2,18
+ghafari_p03_q08,A_ff,"[2, 4]",4,41,4,41
+ghafari_p03_q08,D,"[2, 4]",,,,
+ghafari_p03_q08,D_diss,"[2, 4]",,,,
+ghafari_p03_q08,hmm,"[2, 4]",2,18,2,18
+ghafari_p03_q08,umps,"[2, 4]",2,36,2,36
+ghafari_p03_q08,hqmm,"[2, 4]",2,32,2,32
+pmd_N3,A,"[2, 4]",2,13,2,13
+pmd_N3,A_ff,"[2, 4]",2,13,2,13
+pmd_N3,D,"[2, 4]",,,,
+pmd_N3,D_diss,"[2, 4]",2,17,2,17
+pmd_N3,hmm,"[2, 3, 4]",3,21,3,21
+pmd_N3,umps,"[2, 4]",2,20,2,20
+pmd_N3,hqmm,"[2, 4]",2,16,2,16
+pmd_N4,A,[2],2,13,2,13
+pmd_N4,A_ff,[2],2,13,2,13
+pmd_N4,D,[2],,,,
+pmd_N4,D_diss,[2],2,17,2,17
+pmd_N4,hmm,"[2, 3]",3,21,3,21
+pmd_N4,umps,[2],2,20,2,20
+pmd_N4,hqmm,[2],2,16,2,16
+pmd_N5,A,"[2, 4]",2,13,2,13
+pmd_N5,A_ff,"[2, 4]",2,13,2,13
+pmd_N5,D,"[2, 4]",2,13,2,13
+pmd_N5,D_diss,"[2, 4]",2,17,2,17
+pmd_N5,hmm,"[2, 3, 4, 8]",2,10,2,10
+pmd_N5,umps,"[2, 4]",2,20,2,20
+pmd_N5,hqmm,"[2, 4, 8]",2,16,2,16
+pmd_N6,A,[2],2,13,2,13
+pmd_N6,A_ff,[2],2,13,2,13
+pmd_N6,D,[2],2,13,2,13
+pmd_N6,D_diss,[2],2,17,2,17
+pmd_N6,hmm,"[2, 3]",2,10,2,10
+pmd_N6,umps,[2],2,20,2,20
+pmd_N6,hqmm,[2],2,16,2,16
+pmd_N7,A,[2],2,13,2,13
+pmd_N7,A_ff,[2],2,13,2,13
+pmd_N7,D,[2],2,13,2,13
+pmd_N7,D_diss,[2],2,17,2,17
+pmd_N7,hmm,"[2, 3]",2,10,2,10
+pmd_N7,umps,[2],2,20,2,20
+pmd_N7,hqmm,[2],2,16,2,16
+pmd_N8,A,"[2, 4]",2,13,2,13
+pmd_N8,A_ff,"[2, 4]",2,13,2,13
+pmd_N8,D,"[2, 4]",2,13,2,13
+pmd_N8,D_diss,"[2, 4]",2,17,2,17
+pmd_N8,hmm,"[2, 3, 4, 8]",2,10,2,10
+pmd_N8,umps,"[2, 4]",2,20,2,20
+pmd_N8,hqmm,"[2, 4, 8]",2,16,2,16
+uniform_renewal_N3,A,"[2, 4]",4,21,4,21
+uniform_renewal_N3,A_ff,"[2, 4]",4,25,4,25
+uniform_renewal_N3,D,"[2, 4]",,,,
+uniform_renewal_N3,D_diss,"[2, 4]",,,,
+uniform_renewal_N3,hmm,"[2, 3, 4]",3,21,3,21
+uniform_renewal_N3,umps,"[2, 4]",4,72,4,72
+uniform_renewal_N3,hqmm,"[2, 4]",4,64,4,64
+golden_mean_4_3,A,"[2, 4, 8]",,,8,29
+golden_mean_4_3,A_ff,"[2, 4, 8]",,,,
+golden_mean_4_3,D,"[2, 4]",,,,
+golden_mean_4_3,D_diss,"[2, 4, 8]",,,,
+golden_mean_4_3,hmm,"[2, 3, 4, 8]",8,136,8,136
+golden_mean_4_3,umps,"[2, 4]",,,,
+golden_mean_4_3,hqmm,"[2, 4, 8]",8,256,8,256
+nemo,A,"[2, 4]",2,13,2,13
+nemo,A_ff,"[2, 4]",4,25,4,25
+nemo,D,"[2, 4]",,,,
+nemo,D_diss,"[2, 4]",,,,
+nemo,hmm,"[2, 3, 4]",3,21,3,21
+nemo,umps,"[2, 4]",2,20,2,20
+nemo,hqmm,"[2, 4]",2,16,2,16
+probability_clock,A,"[2, 4]",2,13,2,13
+probability_clock,A_ff,"[2, 4]",2,13,2,13
+probability_clock,D,"[2, 4]",,,,
+probability_clock,D_diss,"[2, 4]",,,,
+probability_clock,hmm,"[2, 3, 4, 8]",4,36,4,36
+probability_clock,umps,"[2, 4]",2,20,2,20
+probability_clock,hqmm,"[2, 4, 8]",2,16,2,16
+stern_gerlach,A,"[2, 4]",,,,
+stern_gerlach,A_ff,"[2, 4]",,,,
+stern_gerlach,D,"[2, 4]",,,,
+stern_gerlach,D_diss,"[2, 4]",,,,
+stern_gerlach,hmm,"[2, 4, 8]",4,132,4,132
+stern_gerlach,umps,"[2, 4]",2,68,2,68
+stern_gerlach,hqmm,"[2, 4, 8]",2,64,2,64
+recall_tau2,A,"[2, 4, 8]",,,,
+recall_tau2,A_ff,"[2, 4, 8]",,,,
+recall_tau2,D,"[2, 4]",,,4,21
+recall_tau2,D_diss,"[2, 4, 8]",,,4,25
+recall_tau2,hmm,"[2, 3, 4, 8]",8,136,8,136
+recall_tau2,umps,"[2, 4]",,,,
+recall_tau2,hqmm,"[2, 4, 8]",8,256,8,256
+parity_k3,A,"[2, 4, 8]",8,29,8,29
+parity_k3,A_ff,"[2, 4, 8]",8,37,8,37
+parity_k3,D,"[2, 4]",,,,
+parity_k3,D_diss,"[2, 4, 8]",,,,
+parity_k3,hmm,"[2, 3, 4, 8]",8,136,8,136
+parity_k3,umps,"[2, 4]",,,,
+parity_k3,hqmm,"[2, 4, 8]",8,256,8,256
+mixed_timescales,A,"[2, 4]",,,4,26
+mixed_timescales,A_ff,"[2, 4]",,,,
+mixed_timescales,D,"[2, 4]",,,,
+mixed_timescales,D_diss,"[2, 4]",,,,
+mixed_timescales,hmm,"[2, 4]",4,68,4,68
+mixed_timescales,umps,"[2, 4]",4,136,4,136
+mixed_timescales,hqmm,"[2, 4]",4,128,4,128
+marked_recall_tau4,A,"[2, 4]",,,,
+marked_recall_tau4,A_ff,"[2, 4]",,,,
+marked_recall_tau4,D,"[2, 4]",,,,
+marked_recall_tau4,D_diss,"[2, 4]",,,,
+marked_recall_tau4,hmm,"[2, 4]",4,68,4,68
+marked_recall_tau4,umps,"[2, 4]",4,136,4,136
+marked_recall_tau4,hqmm,"[2, 4]",4,128,4,128
+marked_recall_tau16,A,"[2, 4]",,,,
+marked_recall_tau16,A_ff,"[2, 4]",,,,
+marked_recall_tau16,D,"[2, 4]",,,,
+marked_recall_tau16,D_diss,"[2, 4]",,,4,34
+marked_recall_tau16,hmm,"[2, 4]",2,18,2,18
+marked_recall_tau16,umps,"[2, 4]",,,2,36
+marked_recall_tau16,hqmm,"[2, 4]",,,2,32
