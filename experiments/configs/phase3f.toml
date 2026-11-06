@@ -214,6 +214,10 @@ alphas = [0.01, 0.1, 0.5, 1.0]
 tasks = ["ghafari", "ghafari_p03_q08", "pmd_N3", "pmd_N4", "pmd_N5", "pmd_N6", "pmd_N7",
          "pmd_N8", "uniform_renewal_N3"]
 em_restarts = 100             # seeds 0..99
+# Large-data EM restarts: 20 (seeds 0..19). The two Ghafari tasks ran 100 before this was cut
+# (every PMD standard-data restart converged to the same fit, and each large run took ~100 s
+# on the loaded machine); their extra restarts are kept in the tables.
+large_em_restarts = 20
 em = { max_iters = 2000, patience = 100, min_delta = 1e-7 }
 large_data = { n_train = 8192, n_val = 1024 }
 large_data_families = ["A", "A_ff", "hqmm", "umps", "hmm"]

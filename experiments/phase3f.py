@@ -180,8 +180,9 @@ def build_cells(cfg: dict, tasks: dict[str, dict], max_dim: int | None) -> list[
             add("hmm-em/D2/restarts", "hmm", "hmm", "em", hmm_model(cfg, 2), 2, seeds=restarts,
                 fit=dim_cfg["em"])  # fmt: skip
             big = dict(dim_cfg["large_data"])
+            big_restarts = list(range(dim_cfg.get("large_em_restarts", len(restarts))))
             add("hmm-em/D2/restarts/large", "hmm", "hmm", "em", hmm_model(cfg, 2), 2, wave=3,
-                seeds=restarts, fit=dim_cfg["em"], data=big)  # fmt: skip
+                seeds=big_restarts, fit=dim_cfg["em"], data=big)  # fmt: skip
             for fam in dim_cfg["large_data_families"]:
                 src = next((c for c in cells if c.task == name and c.family == fam
                             and c.state_dim == 2 and c.method == "gradient"), None)  # fmt: skip
