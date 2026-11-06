@@ -91,7 +91,8 @@ class Setup:
             base = self.ff["train"]
         else:
             base = {"lr": 0.03, **self.cfg["baseline_train"]}
-        return {**base, **extra}
+        # [train_override] (absent in the committed config) caps budgets for smoke tests.
+        return {**base, **extra, **self.cfg.get("train_override", {})}
 
 
 def runner_family(family: str) -> str:
