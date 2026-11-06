@@ -114,9 +114,13 @@ machine (Yang's "simple asymmetric process"):
 `S2 −1|1→ S1`.
 
 The process has three classical states, and its quantum causal states span 2 dimensions
-for every `(p, q)`. Their overlaps `√q`, `√(1−q)` and 0 match Ghafari Eq. 2. This is the
-dimensional-advantage test: an exact 1-qubit model exists (we build it with
-`qmachine_instrument`), while no 2-state classical model is exact.
+for every `(p, q)`. Their overlaps `√q`, `√(1−q)` and 0 match Ghafari Eq. 2. An exact 1-qubit
+model exists (we build it with `qmachine_instrument`), while no 2-state *unifilar* model is
+exact. A 2-state *non-unifilar* (edge-emitting) HMM is exact, though: the hidden coin value
+of the perturbed coin before post-processing is a 2-state hidden state, and emitting 2 on a
+0→1 flip is an edge emission (`tests/test_merge_bound.py`). Ghafari's dimensional
+advantage is therefore over unifilar models (Yang et al.'s comparison class), not over
+every 2-state classical model; `docs/phase3f-grid.md` §3 has the numbers.
 
 - **Reproduced:** 3 causal states; quantum dimension 2; `C_mu = 1.5` and
   `C_q = 0.811` at `p = q = 0.5`. Ghafari Fig. 4b, read off the plot, shows a peak of
@@ -125,9 +129,11 @@ dimensional-advantage test: an exact 1-qubit model exists (we build it with
   `p = q = 0.5` (Ghafari's `p = q` cut, where `C_mu` peaks) and `p = 0.3, q = 0.8` as a
   second point (`ghafari_p03_q08`). Yang et al.'s own parameter values appear only in figures that we could
   not read reliably, so that point is illustrative, not theirs.
-- **Not reproduced here:** Yang et al.'s *provable bound* on the best 2-state classical
-  model's distortion. "Beats any 2-state classical model" needs that bound, which belongs
-  with the classical baselines (#6) and the comparison grid.
+- **Bound:** Yang et al.'s figures could not be read, so their Box 2 construction is
+  recomputed (`qmem.complexity.unifilar_merge_bound`, `block_unifilar_bound`): the best
+  2-state unifilar model's KL rate is 0.131 nats/symbol at `p = q = 0.5` and 0.061 at
+  `p = 0.3, q = 0.8` (tight; Markov order 1). It does not bound non-unifilar HMMs, which
+  are exact here (above).
 
 ### 2.3 PMD renewal processes [Wu2023]
 
