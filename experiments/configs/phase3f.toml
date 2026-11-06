@@ -1,0 +1,223 @@
+# Phase 3f (issue #11): cross-model grid on the #8 memory benchmark suite, at matched state
+# dimension and at matched parameter count, plus the 1-qubit vs 2-state dimensional test.
+# Run: uv run python experiments/phase3f.py --config experiments/configs/phase3f.toml
+#
+# Every gradient-trained cell (family x size x task), architecture A included, is run in two
+# stages, as in Phase 3a (#6):
+#   1. tuning: each learning rate in [tuning].lr_grid is trained with the tuning seeds; the
+#      lowest median best-validation NLL wins (validation only, never test);
+#   2. evaluation: the winner is trained with the 10 evaluation seeds; only these are reported.
+# Every size is tuned on its own (no reuse of the D = 8 learning rate): the trainability fixes
+# of #12 had not landed when this ran.
+#
+# The grid runs in waves of increasing state dimension (2, then 4, then 8), each wave tuned
+# and then evaluated, so a partial run already holds complete small-dimension tables.
+# `--from-run <dir>` resumes; `--no-train` re-summarises saved runs.
+
+[experiment]
+name = "phase3f"
+workers = 6                   # shared machine (load average 50-90 on 8 cores when launched)
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+tuning_seeds = [100, 101]
+success_gap = 0.01            # a run fails if crashed/diverged or test gap >= this (nats/symbol)
+summary_dir = "results/summaries/phase3f"
+suite_config = "experiments/configs/phase3c.toml"   # task specs ([suite.tasks]) and [data]
+match_reference = "A/D4"      # matched-parameter table: each family at most this cell's count
+
+[data]                        # as Phase 3c: the same splits for every model of a task
+n_train = 512
+n_val = 256
+n_test = 512
+length = 32
+seed = 0
+
+[train]                       # A's optimiser budget (Phase 2/3a); lr comes from the grid
+optimizer = "adam"
+schedule = "constant"
+steps = 1500
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 30
+min_delta = 1e-4
+restore_best = true
+clip_grad_norm = 0.0
+
+[tuning]
+lr_grid = [0.01, 0.03, 0.1]   # the Phase 3a grid, now for A, D and D_diss too
+
+# -- tasks ---------------------------------------------------------------------------------
+# `ns`: memory sizes n (state dimension D = 2^n for every family). The suite has 29 tasks plus
+# marked recall at 6 delays; compute forced pruning (docs/phase3f-grid.md section 1):
+#   * D = 8 (n = 3) only where the source needs more than 4 classical states; D = 4 suffices
+#     for every model class elsewhere. At D = 8 the circuit families (A, A_ff, D_diss) run
+#     only where the quantum dimension also exceeds 4 (`circuit_ns`), and D and uMPS stop at
+#     D = 4 (`max_n`): unitary D fails every memory task in Phase 3b, and uMPS is HQMM's
+#     model class (docs/architecture.md section 8) with unreliable chi = 8 fits in Phase 3a;
+#   * D = 2 only for the 2-state sources and for the PMD periods that serve the
+#     dimensional test alone (pmd_N4, N6, N7);
+#   * dropped: parameter variants of kept tasks (uniform_renewal_N5, golden_mean_3_2_ho,
+#     nemo_ho), tasks no model at D <= 8 can represent (recall_tau8/16: 19 and 35 causal
+#     states; parity_k4: 16), recall_tau1 and recall_tau4 (recall_tau2 is the one clocked
+#     recall that fits in D = 8: 7 causal states),
+#     parity_k2 (an order-2 Markov chain, as Phase 2's markov2_binary), srinivasan_hmm6 and
+#     mixed_timescales_hidden (classical, non-unifilar, no exact optimum; 8 symbols for the
+#     former).
+# `suite`: key in [suite.tasks] of suite_config. `spec` instead gives the task directly.
+# `circuit_ns` (default `ns`): the sizes for A, A_ff, D and D_diss.
+[tasks.perturbed_coin]
+suite = "perturbed_coin"
+ns = [1]
+[tasks.upset_gambler]
+suite = "upset_gambler"
+ns = [1]
+[tasks.ghafari]
+suite = "ghafari"
+ns = [1, 2]
+[tasks.ghafari_p03_q08]
+suite = "ghafari_p03_q08"
+ns = [1, 2]
+[tasks.pmd_N3]
+suite = "pmd_N3"
+ns = [1, 2]
+[tasks.pmd_N4]
+suite = "pmd_N4"
+ns = [1]
+[tasks.pmd_N5]
+suite = "pmd_N5"
+ns = [1, 2, 3]
+circuit_ns = [1, 2]
+[tasks.pmd_N6]
+suite = "pmd_N6"
+ns = [1]
+[tasks.pmd_N7]
+suite = "pmd_N7"
+ns = [1]
+[tasks.pmd_N8]
+suite = "pmd_N8"
+ns = [1, 2, 3]
+circuit_ns = [1, 2]
+[tasks.uniform_renewal_N3]
+suite = "uniform_renewal_N3"
+ns = [1, 2]
+[tasks.golden_mean_4_3]
+suite = "golden_mean_4_3"
+ns = [1, 2, 3]
+[tasks.nemo]
+suite = "nemo"
+ns = [1, 2]
+[tasks.probability_clock]
+suite = "probability_clock"
+ns = [1, 2, 3]
+circuit_ns = [1, 2]
+[tasks.stern_gerlach]
+suite = "stern_gerlach"
+ns = [1, 2, 3]
+circuit_ns = [1, 2]
+[tasks.recall_tau2]
+suite = "recall_tau2"
+ns = [1, 2, 3]
+[tasks.parity_k3]
+suite = "parity_k3"
+ns = [1, 2, 3]
+[tasks.mixed_timescales]
+suite = "mixed_timescales"
+ns = [1, 2]
+# Marked recall (docs/phase3e-retention.md): eps = 0.05, geometric timing, 3 causal states at
+# every tau, so D = 4 suffices. We use the two delays of Phase 3e's general-vs-feed-forward arm,
+# tau = 4 and 16 (tau = 1, 2, 8, 32 pruned for compute). Lengths as Phase 3e: 64 and 128.
+[tasks.marked_recall_tau4]
+spec = { kind = "marked_recall", tau = 4, eps = 0.05 }
+ns = [1, 2]
+data = { length = 64 }
+[tasks.marked_recall_tau16]
+spec = { kind = "marked_recall", tau = 16, eps = 0.05 }
+ns = [1, 2]
+data = { length = 128 }
+
+# -- model families --------------------------------------------------------------------------
+# Architecture A and its variants run through qmem.experiment.run_one (qmem.ablations).
+# [families.<name>].model is merged over [a_model] (A/D) or used as is (baselines); for D and
+# D_diss `by_n_output` sets the readout depth as Phase 3b did to match A's count.
+[a_model]                     # the Phase 2 recipe (general circuit, joint_depth = 2)
+variant = "A"
+n_env = 0
+memory_depth = 2
+joint_depth = 2
+strength = 0.7853981633974483
+strength_trainable = true
+rotations = ["ry", "rz"]
+entangler = "cnot"
+pattern = "linear"
+initial = "zero"
+init_scale = 1.0
+
+[families.A]                  # general circuit
+kind = "A"
+label = "A, general"
+model = {}
+
+[families.A_ff]               # feed-forward shared-strength layout (#9, #10; trained g)
+kind = "A"
+label = "A, feed-forward"
+model = { joint_depth = 0, feedforward_depth = 2, strength_shared = true }
+
+[families.D]                  # separate unitary update and readout (#7)
+kind = "A"
+label = "D"
+max_n = 2
+model = { variant = "D", memory_depth = 0, update_depth = 1 }
+by_n_output = { "1" = { joint_depth = 2 }, "2" = { joint_depth = 1 }, "3" = { joint_depth = 1 } }
+
+[families.D_diss]             # D with a dissipative update (one traced-out ancilla)
+kind = "A"
+label = "D_diss"
+model = { variant = "D", memory_depth = 0, update_depth = 1, update_env = 1 }
+by_n_output = { "1" = { joint_depth = 2 }, "2" = { joint_depth = 1 }, "3" = { joint_depth = 1 } }
+
+[families.hmm]                # edge-emitting HMM: EM (each seed one restart) and gradient
+kind = "hmm"
+label = "HMM"
+init_scale = 1.0
+em = { max_iters = 500, patience = 20, min_delta = 1e-5 }
+
+[families.umps]
+kind = "umps"
+label = "uMPS"
+max_n = 2
+model = { purification = 1, fp_iters = 200, fp_grad_iters = 20, fp_tol = 1e-8 }
+
+[families.hqmm]               # Stiefel HQMM, one Kraus operator per outcome (pure memory)
+kind = "hqmm"
+label = "HQMM"
+model = { n_env = 0, init_scale = 1.0 }
+
+[families.gru]                # matched-parameter arm only: largest H with <= A/m2's count
+kind = "gru"
+label = "GRU"
+
+[ngram]
+orders = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+alphas = [0.01, 0.1, 0.5, 1.0]
+
+# -- the dimensional-advantage test (issue #11) -----------------------------------------------
+# On these tasks the 1-qubit quantum models (exact and trained) meet the best 2-state classical
+# model. The trained cells are those of the grid (A, A_ff, HQMM and uMPS at D = 2; HMM D = 2 by
+# EM and gradient) plus:
+#   * `em_restarts` more EM restarts of the 2-state HMM with a longer budget (`em`);
+#   * a large-data arm (`large_data`): the same models on 16x the training data, to separate
+#     capacity from estimation error. Its gradient cells reuse the learning rate each family
+#     chose on the standard data for the same task (no second tuning).
+# The validation-selected models are then re-scored on `long_test` (long sequences from a
+# separate seed), where the paired gap estimates the KL rate to the source closely.
+[dimensional]
+tasks = ["ghafari", "ghafari_p03_q08", "pmd_N3", "pmd_N4", "pmd_N5", "pmd_N6", "pmd_N7",
+         "pmd_N8", "uniform_renewal_N3"]
+em_restarts = 100             # seeds 0..99
+em = { max_iters = 2000, patience = 100, min_delta = 1e-7 }
+large_data = { n_train = 8192, n_val = 1024 }
+large_data_families = ["A", "A_ff", "hqmm", "umps", "hmm"]
+long_test = { n = 256, length = 1024, seed = 777 }
+
+[analysis]
+suspect_margin = 0.001        # flag a cell whose median gap exceeds a smaller same-family cell by more
