@@ -20,7 +20,7 @@ uniform predictive. The near-identity start with the data unigram fixes it on
 All generated tables are in `results/summaries/phase4a/summary.md`, next to `cells.csv`,
 `init_stats.csv`, `tuning.csv`, `summary.json` and `init_stats.png`.
 
-Reproduce (4 workers; RUNTIME_PLACEHOLDER):
+Reproduce (4 workers; about 3 h 10 min wall time on a loaded shared machine (189 min), 692 CPU-minutes of training):
 
 ```
 uv run python experiments/phase4a.py --config experiments/configs/phase4a.toml
@@ -73,7 +73,8 @@ lr); the per-D-tuned random start is in the table after this one.
 | HQMM | markov1_quaternary | 4 (16) | 10/10, 0.0275 | 10/10, 0.0174 | identity init, data `p_y`, lr 0.003 (gap down, still fails) |
 | HQMM | markov1_quaternary | 3 (8) | see #6 | 5/10, 0.0092 | identity init, data `p_y`, lr 0.003 |
 | uMPS | iid_quaternary | χ = 16 | 10/10, 0.0170 | **0/10, 0.0009** | identity init, data `p_y`, lr 0.01 |
-RET_ROWS
+| A, feed-forward | marked_recall τ = 4 | 2 (4) | retain 0/10, acc 0.756, horizon 2.9 | 0/10, 0.763, 2.9 | restarts (no effect) |
+| A, feed-forward | marked_recall τ = 4 | 3 (8) | retain 1/10, acc 0.696, horizon 6.7 | **5/10, 0.795, 21.6** | restarts |
 
 Things that did **not** help, each recorded as a cell in the summary:
 
@@ -198,7 +199,37 @@ with it the best lr moved to 0.003, the bottom of the grid. A smaller lr was not
 
 ### 6. Purification vs retention
 
-RETENTION_SECTION
+Does a memory that purifies sooner retain a cue longer? On `marked_recall` (τ = 4), "retain"
+means the cue's Holevo information stays above 0.1 bits to lag 40, and "purification steps"
+is the median number of generated tokens until a reference qubit entangled with the initial
+memory drops below 0.01 bits of entropy (`qmem.diagnostics.reference_purification`). Every cell
+"fails" the 0.01 gap on this task, so recall accuracy, horizon and retention are the
+measures.
+
+| cell | recall acc | horizon | retain | purification steps |
+|---|---|---|---|---|
+| feed-forward n = 2, recipe | 0.756 ± 0.022 | 2.9 ± 0.2 | 0/10 | 4 |
+| feed-forward n = 2, restarts | 0.763 ± 0.023 | 2.9 ± 0.3 | 0/10 | 3 |
+| feed-forward n = 3, recipe | 0.696 ± 0.033 | 6.7 ± 3.8 | 1/10 | 30 |
+| feed-forward n = 3, restarts | 0.795 ± 0.046 | 21.6 ± 6.5 | 5/10 | 8.5 |
+
+- **Slower purification does not buy retention by itself.** With the recipe, going from
+  n = 2 to n = 3 slows purification about 8× (4 to 30 steps), but the horizon barely moves
+  (2.9 to 6.7) and only 1/10 seeds retain. Slow purification is not the same as protection.
+- **At n = 3 retention is a trainability problem.** Restarts screened on validation raise
+  retention to 5/10 (horizon 21.6), even though their reference purifies *faster* than the
+  recipe's (8.5 steps). At n = 2 restarts change nothing: 0/10 either way, consistent with
+  #13's finding that no n = 2 shared-g feed-forward layout has an exact protected subspace
+  at the source's distractor levels.
+- **#13 confirms it.** With a near-identity start (CZ entanglers, `init = "product"`, which
+  makes V and W_y near the identity in this layout), the same restarts and the Phase 3e
+  falsification recipe (4× data, 3000 steps, lr 0.1), n = 3 feed-forward with free η
+  retains in 10/10 seeds (horizon 41, η → 0.95; `docs/phase4b-falsification.md`). The
+  representation exists at n = 3; from a random start the optimiser finds it in about half
+  the seeds with restarts and in 1/10 without.
+
+So the n = 3 feed-forward model's poor retention under the Phase 3e recipe was a trainability
+limit, not a capacity limit, and purification time is not what predicts retention.
 
 ## Recommended recipe
 
@@ -206,8 +237,8 @@ RETENTION_SECTION
 |---|---|---|
 | A, general layout | 2 | Phase 2 recipe + 4 restarts screened for 300 steps (`train.restarts = 4`, `restart_steps = 300`); on 4-symbol tasks also `joint_depth = 3` |
 | A, general layout | 3 | as n = 2, with `joint_depth = 4` on 4-symbol tasks; expect about half the seeds to fail `markov1_quaternary` and select by validation |
-| A, feed-forward | 2, 3 | Phase 3e recipe (strength trainable) + 4 screened restarts FF_NOTE |
-| A, any | any | **not** `init = "product"` |
+| A, feed-forward | 2, 3 | Phase 3e recipe (strength trainable) + 4 screened restarts; for retention at n = 3 use #13's near-identity CZ start (`entangler = "cz"`, `init = "product"`, `init_scale = 0.05`, `init_probs = "data"`) with the Phase 3e falsification recipe (10/10 retain), not the random start (5/10 with restarts) |
+| A, general layout | any | **not** `init = "product"` (in the feed-forward layout it is what makes n = 3 retain; see above) |
 | HQMM | ≤ 2 (D ≤ 4) | Phase 3a recipe (random Stiefel init) |
 | HQMM | ≥ 3 (D ≥ 8) | `init = "identity"`, `init_scale = 0.3`, `init_probs = "data"`, lr tuned with 0.003 in the grid |
 | uMPS | χ ≥ 8 | `init = "identity"`, `init_scale = 0.3`, `init_probs = "data"`, lr tuned (0.01 chosen at χ = 16); tested on `iid_quaternary` only |
