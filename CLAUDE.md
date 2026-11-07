@@ -1,7 +1,10 @@
 # Project rules for agents
 
 Research campaign: measurement-induced memory in quantum-native sequence models
-(brief: issue #2). Simulation only: never call quantum cloud services.
+(brief: issue #2). Simulation only: never call quantum cloud services. The one exception is
+`experiments/phase6.py` (IBM hardware run, approved by the owner on #16, free Open plan):
+never submit a job outside an issue where the owner asks for one, always `--dry-run` first,
+and keep within the plan's allowance. Credentials live in `.env` (gitignored; never commit it).
 
 ## Setup and checks
 
@@ -22,6 +25,9 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   about 1 h with 4 workers on a shared machine):
   `uv run --group hardware python experiments/phase5a.py --config experiments/configs/phase5a.toml`.
   The main check does not need the group; `tests/test_hardware.py` skips without it.
+- Phase 6 hardware run (PMD N = 3 on `ibm_kingston`; spends QPU time, see above):
+  `uv run --group hardware python experiments/phase6.py --config experiments/configs/phase6.toml --dry-run`,
+  then without `--dry-run`. `--from-run <dir>` resumes; a submitted job is re-fetched by id.
 - Dependencies are pinned in `pyproject.toml` and locked in `uv.lock`. Add one with
   `uv add <pkg>==<version>` (or `uv add --dev`) and commit both files.
 
@@ -44,7 +50,7 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   imported by nothing else).
 - `tests/`: pytest. Every new physics feature gets a test against an analytic case or an
   independent brute-force computation.
-- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings), `phase5a-hardware.md` (QPU feasibility, cost); `benchmarks.md` (the task suite); `report.md` (the campaign report; figures in `docs/figures/` from `experiments/report_figures.py`). Don't edit `docs/literature-review.md`
+- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings), `phase5a-hardware.md` (QPU feasibility, cost), `phase6-hardware-run.md` (the IBM run); `benchmarks.md` (the task suite); `report.md` (the campaign report; figures in `docs/figures/` from `experiments/report_figures.py`). Don't edit `docs/literature-review.md`
   unless your issue is the literature review.
 - `experiments/`: scripts, plus `experiments/configs/*.toml` (one config per run family).
 - `results/`: raw outputs in `results/<experiment>/<timestamp>/` (gitignored); small curated

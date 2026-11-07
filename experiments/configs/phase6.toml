@@ -1,0 +1,68 @@
+# Phase 6 (issue #16): the trained 1-qubit PMD N = 3 model run on a real IBM QPU.
+# Run: uv run --group hardware python experiments/phase6.py --config experiments/configs/phase6.toml
+#
+# The one experiment in the campaign that calls a quantum cloud service, at the owner's
+# request on #16. It is on IBM's free Open plan (600 s per 28 days), so it is kept small: one
+# pilot and one main job, each guarded by `max_qpu_seconds` and the account's remaining
+# allowance. `--dry-run` runs every stage against a local Aer simulator of the live backend
+# instead (no job leaves the machine); always do that first.
+#
+# Stages: train (re-train pmd_N3 as Phase 5a), prepare (transpile against the live backend,
+# snapshot its calibration), pilot, main (submit, fetch, save every shot), analyse.
+
+[experiment]
+name = "phase6"
+title = "Phase 6: PMD N = 3 on IBM hardware"
+summary_dir = "results/summaries/phase6"
+workers = 1
+# The model and its training recipe come from the Phase 5a config (validation-selected seed
+# of #11's A/D2 cell; it reproduces the committed val NLL bit for bit).
+base_config = "experiments/configs/phase5a.toml"
+model = "pmd_N3"
+
+[ibm]
+env_file = ".env"             # IBM_API_KEY, IBM_INSTANCE_CRN (gitignored)
+channel = "ibm_cloud"
+backend = "ibm_kingston"      # Heron r2, the Phase 5a target (FakeKingston)
+
+[circuit]
+length = 64                   # symbols per shot (one shot = one sequence)
+optimization_level = 3
+seed_transpiler = 0
+# Phase 5a's assumed classical-control latency. The PMD model (general layout) has no
+# classical control, so this does not change its noise model.
+feedforward_latency_s = 1.0e-6
+
+[sampler]                     # no error mitigation: the raw device process is the object
+dynamical_decoupling = false
+twirling_gates = false
+twirling_measure = false
+
+[budget]
+# Usage model of Phase 5a (IBM's estimate-job-run-time guide): 2 s per job plus
+# (rep_delay + circuit duration) per shot; rep_delay default 250 us.
+sub_job_overhead_s = 2.0
+rep_delay_s = 250e-6
+max_qpu_seconds = 20.0        # refuse to submit any single job estimated above this
+
+[pilot]
+shots = 200
+
+[main]
+shots = 20000
+
+[dry_run]
+max_shots = 2000              # Aer took > 30 min for 20,000 shots of this circuit
+
+[analysis]
+# The Hankel witness exactly as Phase 5a: g(k) = P(1 0^k 1) from start positions >= burn;
+# normalised 3x3 determinants at offsets j; bootstrap over shots.
+witness = { k_max = 7, burn = 16, offsets = [0, 1, 2, 3], bootstrap = 1000, seed = 21 }
+block_lengths = [1, 2, 4, 8]  # block KL on aligned blocks from position `burn`
+kl_bootstrap = 200
+# Simulated datasets of the same size as the device's, for the null levels of every statistic.
+simulated_seed = 5
+control_seed = 21             # the random 2-state HMM control (Phase 5a's)
+# Classical HMMs fitted by EM to the device's own shots (first `train_fraction` of the shots,
+# the last 10% of those for early stopping), scored on the rest.
+hmm = { states = [2, 3, 4], restarts = 8, seed = 0, max_iters = 500, patience = 20, train_fraction = 0.5 }
