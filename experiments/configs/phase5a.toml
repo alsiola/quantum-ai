@@ -216,7 +216,7 @@ sweeps.reset = [1e-4, 1e-3, 3e-3, 1e-2, 3e-2, 1e-1]
 sweeps.idle = [1e-3, 3e-4, 1e-4, 3e-5, 1e-5]
 sweeps.scaled = [0.01, 0.03, 0.1, 0.3, 1.0, 3.0]
 generation = { n = 4096, length = 64, seed = 5 }   # sampled sequences for generative recall
-aer_check = { length = 6, shots = 200000, seed = 3, models = ["pmd_N3", "recall_n3"] }
+aer_check = { length = 6, shots = 100000, seed = 3, models = ["pmd_N3", "recall_n3"] }
 # PMD reference: the best 2-state classical model and the unifilar block bound per N
 # (results/summaries/phase3f/dimensional.csv, long re-scoring).
 reference_csv = "results/summaries/phase3f/dimensional.csv"
@@ -243,3 +243,6 @@ train_steps = "recorded"      # gradient steps: the trained run's own count
 train_shots_per_eval = 10000
 experiment_shots = 20000      # the proposed minimal experiment
 experiment_length = 64
+# The Hankel dimension witness of the PMD models (#11's proof that no 2-state HMM is exact):
+# g(k) = P(1 0^k 1) for k <= k_max from start positions >= burn; 3x3 determinants at offsets j.
+witness = { k_max = 7, burn = 16, offsets = [0, 1, 2, 3], bootstrap = 200, seed = 21 }

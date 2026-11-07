@@ -96,6 +96,8 @@ def test_aer_samples_the_dynamic_circuit() -> None:
 
     m = model("ff_n2_4sym")
     qc = hw.export_circuit(m, 2)
+    # shot branching is fast and exact without noise (it mis-applies mid-circuit readout
+    # errors in qiskit-aer 0.18.2, so the noisy cross-check in phase5a.py does not use it)
     sim = AerSimulator(method="density_matrix", shot_branching_enable=True)
     n = 40_000
     counts = sim.run(transpile(qc, sim), shots=n, seed_simulator=5).result().get_counts()

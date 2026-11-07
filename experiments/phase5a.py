@@ -216,7 +216,7 @@ def export_checks(cfg: dict[str, Any], trained: dict[str, Any], summary_dir: Pat
                 row["deferred_max_dp"] = dd
             if length == c["aer_length"]:
                 qc = hw.export_circuit(m, length)
-                sim = AerSimulator(method="density_matrix", shot_branching_enable=True)
+                sim = AerSimulator(method="density_matrix", shot_branching_enable=True)  # noiseless
                 counts = (
                     sim.run(transpile(qc, sim), shots=c["aer_shots"], seed_simulator=c["aer_seed"])
                     .result()
@@ -562,8 +562,9 @@ def aer_crosscheck(cfg: dict[str, Any], trained: dict[str, Any]) -> list[dict[st
         be = get_backend(bname)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
+            # No shot branching here: in qiskit-aer 0.18.2 it mis-applies readout errors to
+            # mid-circuit measurements (docs/phase5a-hardware.md); noiseless runs are fine.
             sim = AerSimulator.from_backend(be, method="density_matrix")
-            sim.set_options(shot_branching_enable=True)
         for name in a["models"]:
             t = trained[name]
             m = t["model"]
@@ -622,8 +623,9 @@ def thresholds(cfg: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str
             row = {"model": name, "sweep": kind, "noiseless_kl": r0["kl_rate"], **refs}
             for label in ("hmm_long_gap", "block_bound"):
                 row[f"threshold_{label}"] = crossing([(0.0, r0["kl_rate"]), *pts], refs[label])
-                if kind == "idle" and row[f"threshold_{label}"] is not None:
-                    row[f"threshold_{label}"] = 1 / row[f"threshold_{label}"]
+                x = row[f"threshold_{label}"]
+                if kind == "idle" and x is not None:  # 0 (fails noiseless) -> T = infinity
+                    row[f"threshold_{label}"] = 1 / x if x > 0 else math.inf
             out.append(row)
     return out
 
@@ -722,7 +724,113 @@ def cost_study(cfg, trained, transpiled, noise_rows) -> dict[str, Any]:
         row["train_cost_usd"] = row["train_qpu_s"] * price_s
         rows.append(row)
     experiment = minimal_experiment(cfg, trained, transpiled, rows)
-    return {"rows": rows, "experiment": experiment}
+    witness = dimension_witness(cfg, trained)
+    return {"rows": rows, "experiment": experiment, "witness": witness}
+
+
+@torch.no_grad()
+def window_probs(inst: Any, rho0: torch.Tensor, k_max: int, burn: int) -> torch.Tensor:
+    """``g(k) = P(1 0^k 1)`` from the state after ``burn`` unread steps, ``k = 0..k_max``."""
+    rho = rho0
+    for _ in range(burn):
+        rho = inst.channel(rho)
+    first = inst.branch(rho, 1)
+    out = []
+    cur = first
+    for _k in range(k_max + 1):
+        out.append(float(inst.branch(cur, 1).diagonal().sum().real))
+        cur = inst.branch(cur, 0)
+    return torch.tensor(out, dtype=torch.float64)
+
+
+def control_hmm(seed: int) -> Any:
+    """A random 2-state binary HMM (labelled transitions): the witness's null control."""
+    from qmem.tasks import hmm_task
+
+    gen = torch.Generator().manual_seed(seed)
+    lab = torch.rand(2, 2, 2, generator=gen, dtype=torch.float64)
+    lab = lab / lab.sum((0, 2), keepdim=True)
+    return hmm_task(lab.tolist(), name="control_2state")
+
+
+def hankel_witness(g: torch.Tensor, j: int) -> float:
+    """``det [g(j+a+b)]_{a,b<3} / max|entry|^3``: 0 for every 2-state HMM (#11's proof)."""
+    h = torch.stack([g[j + a : j + a + 3] for a in range(3)])
+    return float(torch.linalg.det(h) / h.abs().max() ** 3)
+
+
+def empirical_windows(seqs: torch.Tensor, k_max: int, burn: int) -> torch.Tensor:
+    """Per sequence, the frequency of ``1 0^k 1`` over start positions ``>= burn``."""
+    n, length = seqs.shape
+    out = torch.zeros(n, k_max + 1, dtype=torch.float64)
+    ones = seqs == 1
+    for k in range(k_max + 1):
+        span = k + 2
+        starts = range(burn, length - span + 1)
+        hit = torch.zeros(n, dtype=torch.float64)
+        for t in starts:
+            w = ones[:, t] & ones[:, t + k + 1]
+            if k:
+                w = w & ~ones[:, t + 1 : t + k + 1].any(-1)
+            hit += w.double()
+        out[:, k] = hit / len(starts)
+    return out
+
+
+@torch.no_grad()
+def dimension_witness(cfg: dict[str, Any], trained: dict[str, Any]) -> list[dict[str, Any]]:
+    """The Hankel dimension witness of each PMD model: exact, and from a simulated experiment.
+
+    A 2-state HMM's ``g(k)`` obeys an order-2 linear recurrence whatever its initial state,
+    so every 3x3 Hankel determinant of ``g`` vanishes (``tests/test_merge_bound.py``). A
+    significantly non-zero determinant in a device's samples therefore excludes every
+    2-state classical model. The z-score is the determinant over its bootstrap standard
+    error (over shots) in ``experiment_shots`` sampled sequences of ``experiment_length``.
+    """
+    from qmem import hardware as hw
+
+    w = cfg["cost"]["witness"]
+    c = cfg["cost"]
+    out = []
+    for name, t in trained.items():
+        if t["kind"] != "pmd":
+            continue
+        m, task = t["model"], t["task"]
+        variants: list[tuple[str, Any]] = [
+            ("source", task),
+            ("control: 2-state HMM", control_hmm(w["seed"])),
+            ("noiseless", m.instrument()),
+        ]
+        for bname in cfg["noise"]["backends"]:
+            be = get_backend(bname)
+            cq, phys, mem_in, mem_out = step_for_backend(m, be, cfg)
+            noise, _ = hw.backend_noise(be, phys, cfg["noise"]["feedforward_latency_s"])
+            inst = hw.noisy_instrument(cq, 1, 1, noise, mem_in, memory_qubits_out=mem_out)
+            variants.append((bname, inst))
+        for label, inst in variants:
+            row: dict[str, Any] = {"model": name, "variant": label}
+            if not hasattr(inst, "sample"):  # an instrument: exact witness, then sample it
+                g = window_probs(inst, m.rho0, w["k_max"], w["burn"])
+                row.update({f"exact_j{j}": hankel_witness(g, j) for j in w["offsets"]})
+                sampler = hw.InstrumentModel(inst, 1, 1)
+                seqs = sampler.sample(c["experiment_shots"], c["experiment_length"], w["seed"])
+            else:  # a classical source: sample it directly
+                seqs = inst.sample(c["experiment_shots"], c["experiment_length"], w["seed"])
+            per = empirical_windows(seqs, w["k_max"], w["burn"])
+            gen = torch.Generator().manual_seed(w["seed"])
+            boots = []
+            for _ in range(w["bootstrap"]):
+                idx = torch.randint(len(per), (len(per),), generator=gen)
+                boots.append(per[idx].mean(0))
+            g_hat = per.mean(0)
+            for j in w["offsets"]:
+                est = hankel_witness(g_hat, j)
+                se = statistics.stdev(hankel_witness(b, j) for b in boots)
+                row[f"sampled_j{j}"] = est
+                row[f"z_j{j}"] = est / se if se > 0 else math.nan
+            out.append(row)
+            print(f"[witness] {fmt_row(row)}", flush=True)
+    return out
 
 
 def param_shift_evals(m: Any) -> int:
@@ -1053,6 +1161,30 @@ def markdown(cfg, models, export, transpiled, noise, thr, cost, meta) -> str:
             f"| {r['model']} | {r['blocks_L8']} | {g(r['qpu_s'], 1)} | "
             f"{g(r['cost_usd'], 0)} | {g(r['open_plan_fraction'], 2)} |"
         )
+    w = cfg["cost"]["witness"]
+    js = w["offsets"]
+    L += [
+        "",
+        "**Hankel dimension witness** det[g(j+a+b)]/max^3 with g(k) = P(1 0^k 1) after "
+        f"{w['burn']} steps: exactly 0 for every 2-state HMM. *exact*: from the instrument; "
+        f"*sampled (z)*: estimate from {c['experiment_shots']} simulated shots of "
+        f"T = {c['experiment_length']} and its z-score (bootstrap SE over shots).",
+        "",
+        "| model | variant | "
+        + " | ".join(f"exact j={j}" for j in js)
+        + " | "
+        + " | ".join(f"sampled j={j} (z)" for j in js)
+        + " |",
+        "|---|---|" + "---|" * (2 * len(js)),
+    ]
+    for r in cost["witness"]:
+        L.append(
+            f"| {r['model']} | {r['variant']} | "
+            + " | ".join(g(r.get(f"exact_j{j}")) for j in js)
+            + " | "
+            + " | ".join(f"{g(r[f'sampled_j{j}'])} ({g(r[f'z_j{j}'], 1)})" for j in js)
+            + " |"
+        )
     return "\n".join(L) + "\n"
 
 
@@ -1126,6 +1258,7 @@ def main() -> None:
     write_csv(summary_dir / "aer_check.csv", results["noise"]["aer"])
     write_csv(summary_dir / "cost.csv", results["cost"]["rows"])
     write_csv(summary_dir / "experiment.csv", results["cost"]["experiment"])
+    write_csv(summary_dir / "witness.csv", results["cost"]["witness"])
     (summary_dir / "summary.md").write_text(
         markdown(
             cfg,
