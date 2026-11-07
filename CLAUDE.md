@@ -18,6 +18,10 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   `uv run python experiments/phase3b.py --config experiments/configs/phase3b.toml`
 - Phase 4b falsification (one config per finding; 4–6 h each with 4 workers on a shared machine):
   `uv run python experiments/phase4b.py --config experiments/configs/phase4b_{a,b,c}.toml`
+- Phase 5a hardware feasibility (optional `hardware` group: Qiskit, Aer, fake IBM backends;
+  about 30 min with 4 workers):
+  `uv run --group hardware python experiments/phase5a.py --config experiments/configs/phase5a.toml`.
+  The main check does not need the group; `tests/test_hardware.py` skips without it.
 - Dependencies are pinned in `pyproject.toml` and locked in `uv.lock`. Add one with
   `uv add <pkg>==<version>` (or `uv add --dev`) and commit both files.
 
@@ -35,10 +39,12 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   (causal states, `C_mu`, `C_q`, exact quantum models of a source), `benchmarks` (the Phase 3
   suite: literature numbers with sources, recall scoring, noise `eps` and strength floors),
   `diagnostics` (stationary memory, retention curves, reference purification for any
-  `Instrument`).
+  `Instrument`), `hardware` (Qiskit export of A as a dynamic circuit, exact branch
+  simulation, noisy instruments from transpiled steps; needs the `hardware` group and is
+  imported by nothing else).
 - `tests/`: pytest. Every new physics feature gets a test against an analytic case or an
   independent brute-force computation.
-- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings); `benchmarks.md` (the task suite). Don't edit `docs/literature-review.md`
+- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings), `phase5a-hardware.md` (QPU feasibility, cost); `benchmarks.md` (the task suite). Don't edit `docs/literature-review.md`
   unless your issue is the literature review.
 - `experiments/`: scripts, plus `experiments/configs/*.toml` (one config per run family).
 - `results/`: raw outputs in `results/<experiment>/<timestamp>/` (gitignored); small curated

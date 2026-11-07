@@ -1,0 +1,245 @@
+# Phase 5a (issue #14): hardware feasibility study for the best trained models.
+# Run: uv run --group hardware python experiments/phase5a.py --config experiments/configs/phase5a.toml
+#
+# Simulation and desk study only: local Qiskit simulators and fake backends, no account and no
+# job sent to any quantum cloud service.
+#
+# 1. Models. The raw runs of #11 and #13 (with their parameters) are gitignored and no longer
+#    exist, so each model is re-trained here: the validation-selected seed of each cell, with
+#    the cell's own recipe and (tuned) learning rate, through the Phase 4b runner
+#    (experiments/phase4b.py:run_spec, which builds A exactly as qmem.experiment.run_one).
+#    `reference` is the cell's selected run as committed (val NLL or test gap) and is checked.
+# 2. Export each model to a Qiskit circuit (qmem.hardware), check it exactly against qmem.
+# 3. Transpile on fake IBM backends; 4. exact noisy instruments under the backends' noise and
+#    swept errors; 5. shots, QPU time and cost.
+
+[experiment]
+name = "phase5a"
+title = "Phase 5a: hardware feasibility of the best models"
+workers = 4                   # shared machine
+summary_dir = "results/summaries/phase5a"
+
+[data]                        # the Phase 2/3c/3f splits
+n_train = 512
+n_val = 256
+n_test = 512
+length = 32
+seed = 0
+
+[train]                       # A's budget (Phase 2/3a/3f); lr per model
+optimizer = "adam"
+schedule = "constant"
+steps = 1500
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 30
+min_delta = 1e-4
+restore_best = true
+clip_grad_norm = 0.0
+
+[analysis]                    # retention diagnostics as Phase 4b (b)
+max_lag = 40
+delay_bins = [0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48]
+holevo_threshold_bits = 0.1
+subspace_restarts = 0
+
+[tasks.pmd_N3]
+spec = { kind = "pmd_renewal", period = 3, gamma = 0.5, v = 0.4 }
+[tasks.pmd_N4]
+spec = { kind = "pmd_renewal", period = 4, gamma = 0.5, v = 0.4 }
+[tasks.pmd_N5]
+spec = { kind = "pmd_renewal", period = 5, gamma = 0.5, v = 0.4 }
+[tasks.pmd_N6]
+spec = { kind = "pmd_renewal", period = 6, gamma = 0.5, v = 0.4 }
+[tasks.pmd_N7]
+spec = { kind = "pmd_renewal", period = 7, gamma = 0.5, v = 0.4 }
+[tasks.pmd_N8]
+spec = { kind = "pmd_renewal", period = 8, gamma = 0.5, v = 0.4 }
+[tasks.markov1_quaternary]
+spec = { kind = "markov", order = 1, probs = [
+  [0.7, 0.1, 0.1, 0.1],
+  [0.1, 0.1, 0.7, 0.1],
+  [0.2, 0.2, 0.2, 0.4],
+  [0.5, 0.0, 0.0, 0.5],
+] }
+[tasks.marked_recall_tau4]    # the Phase 3e falsification recipe: 4x data, length 64
+spec = { kind = "marked_recall", tau = 4, eps = 0.05 }
+data = { n_train = 2048, length = 64 }
+
+[a_model]
+variant = "A"
+n_env = 0
+strength = 0.7853981633974483
+strength_trainable = true
+rotations = ["ry", "rz"]
+entangler = "cnot"
+pattern = "linear"
+initial = "zero"
+init_scale = 1.0
+
+[families.A_general]          # the Phase 2 recipe (#11 "A, general"; #13 (a) "A")
+kind = "A"
+model = { n_memory = 2, memory_depth = 2, joint_depth = 2 }
+
+[families.A_ff]               # #13 (b): feed-forward, one shared trained g
+kind = "A"
+model = { n_memory = 2, memory_depth = 2, joint_depth = 0, feedforward_depth = 2, strength_shared = true }
+
+# -- the models (one validation-selected run each) -------------------------------------
+# PMD: results/summaries/phase3f/main.csv, cell A/D2 (standard data): lr from tuning.csv,
+# selected_seed and selected_val_nll; long_gap from dimensional.csv.
+[[models]]
+name = "pmd_N3"
+family = "A_general"
+model = { n_memory = 1 }
+task = "pmd_N3"
+lr = 0.1
+seed = 8
+reference = { val_nll = 0.6536773314117355, long_gap = 0.00041095631819270724 }
+
+[[models]]
+name = "pmd_N4"
+family = "A_general"
+model = { n_memory = 1 }
+task = "pmd_N4"
+lr = 0.03
+seed = 9
+reference = { val_nll = 0.6690841365266131, long_gap = 0.0004454668831628995 }
+
+[[models]]
+name = "pmd_N5"
+family = "A_general"
+model = { n_memory = 1 }
+task = "pmd_N5"
+lr = 0.03
+seed = 7
+reference = { val_nll = 0.6771178479347899, long_gap = 0.00047007959766529566 }
+
+[[models]]
+name = "pmd_N6"
+family = "A_general"
+model = { n_memory = 1 }
+task = "pmd_N6"
+lr = 0.03
+seed = 9
+reference = { val_nll = 0.6842904653958479, long_gap = 0.0007595691509188931 }
+
+[[models]]
+name = "pmd_N7"
+family = "A_general"
+model = { n_memory = 1 }
+task = "pmd_N7"
+lr = 0.1
+seed = 1
+reference = { val_nll = 0.6872284048821488, long_gap = 0.00040725301042635856 }
+
+[[models]]
+name = "pmd_N8"
+family = "A_general"
+model = { n_memory = 1 }
+task = "pmd_N8"
+lr = 0.1
+seed = 1
+reference = { val_nll = 0.6884185968294678 }
+
+# results/summaries/phase4b/a/main.csv, arm A on markov1_quaternary: lr 0.1, selected seed 2.
+[[models]]
+name = "mq_n2"
+family = "A_general"
+task = "markov1_quaternary"
+lr = 0.1
+seed = 2
+reference = { test_gap = 0.0018514848556274743 }
+
+# results/summaries/phase4b/b/main.csv: arm prior01 (weak eta learned with the prior
+# 0.1 (eta - 0.6)^2) and arm n3_free (n = 3, #12's near-identity start and restarts);
+# the Phase 3e recipe (3000 steps, patience 60, lr 0.1); selected seed 2 for both.
+[[models]]
+name = "recall_n2_weak"
+family = "A_ff"
+task = "marked_recall_tau4"
+lr = 0.1
+seed = 2
+mode = "penalty"
+penalty = { eta0 = 0.6, lam = 0.1 }
+train = { steps = 3000, patience = 60 }
+reference = { test_gap = 0.03480575948777799 }
+
+[[models]]
+name = "recall_n3"
+family = "A_ff"
+task = "marked_recall_tau4"
+lr = 0.1
+seed = 2
+model = { n_memory = 3, entangler = "cz", init = "product", init_scale = 0.05, init_probs = "data" }
+train = { steps = 3000, patience = 60, restarts = 4, restart_steps = 300 }
+reference = { test_gap = 0.022440727293688338 }
+
+# -- 2. export and exactness ------------------------------------------------------------
+[export]
+lengths = [1, 2, 3, 4, 6, 8]  # sequence lengths checked exactly (all token strings)
+max_branches = 4096           # skip a length whose n_symbols^T exceeds this
+deferred_max_qubits = 12      # deferred-measurement statevector check up to this width
+aer_length = 4                # Aer density-matrix (sampled) check on this length
+aer_shots = 100000
+aer_seed = 11
+qasm_length = 4               # OpenQASM 3 of this length goes to the summaries
+
+# -- 3. transpilation -------------------------------------------------------------------
+[transpile]
+backends = ["fake_kingston", "fake_nighthawk"]  # Heron r2 heavy-hex 156q; Nighthawk square 120q
+optimization_level = 3
+seed_transpiler = 0
+lengths = [1, 8, 32]
+
+# -- 4. noise ---------------------------------------------------------------------------
+# Exact noisy instruments of the transpiled step (qmem.hardware.noisy_instrument). Backend
+# calibration: depolarising gate errors with the reported average gate error, symmetric
+# readout flips at the reported measurement error, the same flip after a reset, and T1/T2
+# relaxation of idle qubits during measurement, reset and the classical control.
+[noise]
+backends = ["fake_kingston", "fake_fez"]
+sweep_backend = "fake_kingston"   # the sweeps use this backend's transpiled step
+# No public figure was found for IBM's feed-forward latency (see docs/phase5a-hardware.md);
+# assumed, for the idle relaxation it causes.
+feedforward_latency_s = 1.0e-6
+# PMD scoring as #11's long re-scoring: 256 sequences of 1024 symbols from seed 777.
+long_test = { n = 256, length = 1024, seed = 777 }
+lengths = [8, 32, 128, 1024]      # KL rate over the first T symbols
+# One-at-a-time sweeps (every other error 0). "depolarising": p2 on 2-qubit gates with
+# p1 = p2 / 10 on 1-qubit gates. "idle": T1 = T2 = value (seconds), with the backend's
+# measurement and reset durations. "scaled": every error of sweep_backend times the factor.
+sweeps.depolarising = [1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2, 1e-1]
+sweeps.readout = [1e-4, 1e-3, 3e-3, 1e-2, 3e-2, 1e-1]
+sweeps.reset = [1e-4, 1e-3, 3e-3, 1e-2, 3e-2, 1e-1]
+sweeps.idle = [1e-3, 3e-4, 1e-4, 3e-5, 1e-5]
+sweeps.scaled = [0.01, 0.03, 0.1, 0.3, 1.0, 3.0]
+generation = { n = 4096, length = 64, seed = 5 }   # sampled sequences for generative recall
+aer_check = { length = 6, shots = 200000, seed = 3, models = ["pmd_N3", "recall_n3"] }
+# PMD reference: the best 2-state classical model and the unifilar block bound per N
+# (results/summaries/phase3f/dimensional.csv, long re-scoring).
+reference_csv = "results/summaries/phase3f/dimensional.csv"
+
+# -- 5. shots, QPU time and cost ---------------------------------------------------------
+# https://www.ibm.com/quantum/pricing (read 2026-11-07): Pay-As-You-Go "Starts at $96 USD /
+# minute", "Billed per second of usage"; Open plan "up to 10 minutes of runtime per month"
+# ("per 28-day rolling window" in the plans overview). Usage model
+# (https://quantum.cloud.ibm.com/docs/en/guides/estimate-job-run-time, read 2026-11-07):
+# ~2 s per sub-job + (rep_delay + circuit length) x executions; default rep_delay 250 us.
+[cost]
+price_usd_per_minute = 96.0
+open_plan_minutes = 10.0
+rep_delay_s = 250e-6
+sub_job_overhead_s = 2.0
+circuits_per_sub_job = 1      # conservative: one sub-job per distinct circuit
+kl_precision = 1e-3           # nats/symbol for the block-KL estimate
+block_lengths = [1, 2, 4, 6, 8, 10]
+loglik_rel_precision = 0.01   # nats on log p(sequence) by post-selection
+loglik_lengths = [4, 8, 16, 32]
+recall_precision = 0.01       # half-width of a 95% interval on recall accuracy
+tv_precision = 0.01           # L-block distribution to this TV distance
+train_steps = "recorded"      # gradient steps: the trained run's own count
+train_shots_per_eval = 10000
+experiment_shots = 20000      # the proposed minimal experiment
+experiment_length = 64
