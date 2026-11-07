@@ -24,7 +24,7 @@
 
 [experiment]
 name = "phase4a"
-workers = 2
+workers = 4
 seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 tuning_seeds = [100, 101]
 success_gap = 0.01
@@ -159,6 +159,27 @@ family = "A"
 teacher = { kind = "best:m1q_A_restarts", n = 2, mode = "warm", train = { steps = 1500, patience = 30 } }
 tasks = ["markov1_quaternary"]
 ns = [3]
+
+# -- the other Phase 2 tasks run at n = 2 and 3: before/after ----------------------------
+[[arms]]
+name = "p2_A_recipe"          # before (the Phase 2 recipe)
+family = "A"
+tasks = ["markov2_binary", "even"]
+ns = [2, 3]
+
+[[arms]]
+name = "p2_A_product"         # after, candidate 1: near-product start
+family = "A"
+model = { entangler = "cz", init = "product", init_scale = 0.05, strength = 0.1, init_probs = "data" }
+tasks = ["markov2_binary", "even"]
+ns = [2, 3]
+
+[[arms]]
+name = "p2_A_restarts"        # after, candidate 2: 4 screened restarts
+family = "A"
+train = { restarts = 4, restart_steps = 300 }
+tasks = ["markov2_binary", "even"]
+ns = [2, 3]
 
 # -- large-D quantum baselines -------------------------------------------------------
 [[arms]]
