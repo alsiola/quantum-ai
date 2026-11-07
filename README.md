@@ -6,7 +6,9 @@ a persistent quantum memory are the same operation: a trainable quantum
 instrument measures a fresh ancilla coupled to the memory, the outcome is the
 symbol, and the memory keeps the outcome-conditioned state.
 
-This is a simulation-first research campaign (see issue #2). The `qmem` package
+This is a simulation-first research campaign (see issue #2). **The findings, negative
+results, limitations and every reproduction command are in the
+[research report](docs/report.md).** The `qmem` package
 is a small, differentiable density-matrix simulator (PyTorch, complex128) for
 2–4 memory qubits and 1–2 output ancillas.
 
