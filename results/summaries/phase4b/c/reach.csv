@@ -1,0 +1,5 @@
+task,family,median_reach,median_reach_arm,selected_reach,selected_reach_arm
+marked_recall_tau4,A_ff,,,62,ff_n3_unshared
+marked_recall_tau4,A_general,,,,
+marked_recall_tau4,hqmm,,,128,hqmm_4
+marked_recall_tau4,umps,,,136,umps_4

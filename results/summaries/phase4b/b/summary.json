@@ -1,0 +1,3060 @@
+{
+  "meta": {
+    "commits": [
+      "4aee102",
+      "f870ea7"
+    ],
+    "config": {
+      "_path": "experiments/configs/phase4b_b.toml",
+      "a_model": {
+        "entangler": "cnot",
+        "feedforward_depth": 2,
+        "init_scale": 1.0,
+        "initial": "zero",
+        "joint_depth": 0,
+        "memory_depth": 2,
+        "n_env": 0,
+        "n_memory": 2,
+        "pattern": "linear",
+        "rotations": [
+          "ry",
+          "rz"
+        ],
+        "strength": 0.7853981633974483,
+        "strength_shared": true,
+        "strength_trainable": true,
+        "variant": "A"
+      },
+      "analysis": {
+        "delay_bins": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          6,
+          8,
+          12,
+          16,
+          24,
+          32,
+          48
+        ],
+        "holevo_threshold_bits": 0.1,
+        "max_lag": 40,
+        "subspace_restarts": 0
+      },
+      "arms": [
+        {
+          "eta": 0.6,
+          "family": "A_ff",
+          "label": "eta = 0.6 fixed",
+          "name": "eta06",
+          "tasks": [
+            "marked_recall_tau4",
+            "markov1_quaternary"
+          ]
+        },
+        {
+          "eta": 0.9,
+          "family": "A_ff",
+          "label": "eta = 0.9 fixed",
+          "name": "eta09",
+          "tasks": [
+            "marked_recall_tau4",
+            "markov1_quaternary"
+          ]
+        },
+        {
+          "family": "A_ff",
+          "label": "eta free",
+          "name": "free",
+          "tasks": [
+            "marked_recall_tau4",
+            "markov1_quaternary"
+          ]
+        },
+        {
+          "family": "A_ff",
+          "label": "eta 0.6 frozen, then free",
+          "mode": "stages",
+          "name": "anneal",
+          "stages": [
+            {
+              "eta": 0.6,
+              "frozen": [
+                "strength"
+              ],
+              "label": "weak",
+              "train": {
+                "steps": 1500
+              }
+            },
+            {
+              "label": "free",
+              "train": {
+                "steps": 1500
+              }
+            }
+          ],
+          "tasks": [
+            "marked_recall_tau4",
+            "markov1_quaternary"
+          ]
+        },
+        {
+          "family": "A_ff",
+          "label": "prior 0.1 (eta - 0.6)^2",
+          "mode": "penalty",
+          "name": "prior01",
+          "penalty": {
+            "eta0": 0.6,
+            "lam": 0.1
+          },
+          "tasks": [
+            "marked_recall_tau4",
+            "markov1_quaternary"
+          ]
+        },
+        {
+          "family": "A_ff",
+          "label": "prior 1 (eta - 0.6)^2",
+          "mode": "penalty",
+          "name": "prior1",
+          "penalty": {
+            "eta0": 0.6,
+            "lam": 1.0
+          },
+          "tasks": [
+            "marked_recall_tau4",
+            "markov1_quaternary"
+          ]
+        },
+        {
+          "family": "A_ff",
+          "label": "curriculum tau 1 -> 2 -> 4, eta free",
+          "mode": "stages",
+          "name": "curriculum",
+          "stages": [
+            {
+              "label": "tau1",
+              "task": {
+                "tau": 1
+              },
+              "train": {
+                "patience": 30,
+                "steps": 1000
+              }
+            },
+            {
+              "label": "tau2",
+              "task": {
+                "tau": 2
+              },
+              "train": {
+                "patience": 30,
+                "steps": 1000
+              }
+            },
+            {
+              "label": "tau4"
+            }
+          ],
+          "tasks": [
+            "marked_recall_tau4"
+          ]
+        },
+        {
+          "eta": 0.6,
+          "family": "A_ff",
+          "label": "eta = 0.6, soft targets (source)",
+          "mode": "soft_source",
+          "name": "soft06",
+          "tasks": [
+            "marked_recall_tau4"
+          ]
+        },
+        {
+          "eta": 0.9,
+          "family": "A_ff",
+          "label": "eta = 0.9, soft targets (source)",
+          "mode": "soft_source",
+          "name": "soft09",
+          "tasks": [
+            "marked_recall_tau4"
+          ]
+        },
+        {
+          "eta": 0.9,
+          "family": "A_ff",
+          "label": "eta 0.6 model, retrained at 0.9",
+          "mode": "warm",
+          "name": "from06_to09",
+          "tasks": [
+            "marked_recall_tau4"
+          ],
+          "warm": {
+            "eta": 0.9,
+            "from": "eta06"
+          },
+          "wave": 1
+        },
+        {
+          "eta": 0.6,
+          "family": "A_ff",
+          "label": "eta 0.9 model, retrained at 0.6",
+          "mode": "warm",
+          "name": "from09_to06",
+          "tasks": [
+            "marked_recall_tau4"
+          ],
+          "warm": {
+            "eta": 0.6,
+            "from": "eta09"
+          },
+          "wave": 1
+        },
+        {
+          "family": "A_ff",
+          "label": "eta 0.6 model, released to free eta",
+          "mode": "warm",
+          "name": "from06_free",
+          "tasks": [
+            "marked_recall_tau4"
+          ],
+          "warm": {
+            "free_strength": true,
+            "from": "eta06"
+          },
+          "wave": 1
+        },
+        {
+          "family": "A_general",
+          "label": "general, free",
+          "name": "gen_free",
+          "tasks": [
+            "marked_recall_tau4",
+            "marked_recall_tau16"
+          ]
+        },
+        {
+          "family": "A_general",
+          "label": "general, prior 1 (eta - 0.3)^2",
+          "mode": "penalty",
+          "name": "gen_weak",
+          "penalty": {
+            "eta0": 0.3,
+            "lam": 1.0
+          },
+          "tasks": [
+            "marked_recall_tau4",
+            "marked_recall_tau16"
+          ]
+        },
+        {
+          "family": "A_general",
+          "label": "general, prior 1 (eta - 0.9)^2",
+          "mode": "penalty",
+          "name": "gen_strong",
+          "penalty": {
+            "eta0": 0.9,
+            "lam": 1.0
+          },
+          "tasks": [
+            "marked_recall_tau4",
+            "marked_recall_tau16"
+          ]
+        },
+        {
+          "eta": 0.6,
+          "family": "A_ff",
+          "label": "n=3, eta = 0.6 fixed, #12 init",
+          "model": {
+            "entangler": "cz",
+            "init": "product",
+            "init_probs": "data",
+            "init_scale": 0.05,
+            "n_memory": 3
+          },
+          "name": "n3_eta06",
+          "tasks": [
+            "marked_recall_tau4"
+          ],
+          "train": {
+            "restart_steps": 300,
+            "restarts": 4
+          }
+        },
+        {
+          "eta": 0.9,
+          "family": "A_ff",
+          "label": "n=3, eta = 0.9 fixed, #12 init",
+          "model": {
+            "entangler": "cz",
+            "init": "product",
+            "init_probs": "data",
+            "init_scale": 0.05,
+            "n_memory": 3
+          },
+          "name": "n3_eta09",
+          "tasks": [
+            "marked_recall_tau4"
+          ],
+          "train": {
+            "restart_steps": 300,
+            "restarts": 4
+          }
+        },
+        {
+          "family": "A_ff",
+          "label": "n=3, eta free, #12 init",
+          "model": {
+            "entangler": "cz",
+            "init": "product",
+            "init_probs": "data",
+            "init_scale": 0.05,
+            "n_memory": 3
+          },
+          "name": "n3_free",
+          "tasks": [
+            "marked_recall_tau4"
+          ],
+          "train": {
+            "restart_steps": 300,
+            "restarts": 4
+          }
+        }
+      ],
+      "data": {
+        "length": 32,
+        "n_test": 512,
+        "n_train": 512,
+        "n_val": 256,
+        "seed": 0
+      },
+      "experiment": {
+        "name": "phase4b_b",
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "success_gap": 0.01,
+        "summary_dir": "results/summaries/phase4b/b",
+        "title": "Phase 4b (b): weak measurement and retention",
+        "tuning_seeds": [
+          100,
+          101
+        ],
+        "workers": 4
+      },
+      "families": {
+        "A_ff": {
+          "kind": "A"
+        },
+        "A_general": {
+          "kind": "A",
+          "model": {
+            "feedforward_depth": 0,
+            "joint_depth": 4,
+            "strength_shared": false
+          }
+        }
+      },
+      "summary": {
+        "recall_bars": true
+      },
+      "tasks": {
+        "marked_recall_tau16": {
+          "data": {
+            "length": 128
+          },
+          "spec": {
+            "eps": 0.05,
+            "kind": "marked_recall",
+            "tau": 16
+          }
+        },
+        "marked_recall_tau4": {
+          "data": {
+            "length": 64,
+            "n_train": 2048
+          },
+          "spec": {
+            "eps": 0.05,
+            "kind": "marked_recall",
+            "tau": 4
+          }
+        },
+        "markov1_quaternary": {
+          "spec": {
+            "kind": "markov",
+            "order": 1,
+            "probs": [
+              [
+                0.7,
+                0.1,
+                0.1,
+                0.1
+              ],
+              [
+                0.1,
+                0.1,
+                0.7,
+                0.1
+              ],
+              [
+                0.2,
+                0.2,
+                0.2,
+                0.4
+              ],
+              [
+                0.5,
+                0.0,
+                0.0,
+                0.5
+              ]
+            ]
+          }
+        }
+      },
+      "train": {
+        "batch_seed": 0,
+        "batch_size": 128,
+        "clip_grad_norm": 0.0,
+        "eval_every": 10,
+        "lr": 0.1,
+        "min_delta": 0.0001,
+        "optimizer": "adam",
+        "patience": 60,
+        "restore_best": true,
+        "schedule": "constant",
+        "steps": 3000
+      }
+    },
+    "cpu_hours": 16.43639496083334,
+    "git_commit": "4aee102bbd04749521f39b1cfdd2d782ada5fe50",
+    "git_dirty": true,
+    "n_errors": 0,
+    "n_runs": 270,
+    "n_tune": 0,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "run_dir": "results/phase4b_b/20261107T091757Z",
+    "seed": null,
+    "timestamp_utc": "2026-11-07T14:48:36+00:00",
+    "torch": "2.15.0"
+  },
+  "reach": [
+    {
+      "family": "A_general",
+      "median_reach": null,
+      "median_reach_arm": null,
+      "selected_reach": 42,
+      "selected_reach_arm": "gen_free",
+      "sizes": [
+        42,
+        42,
+        42
+      ],
+      "task": "marked_recall_tau16"
+    },
+    {
+      "family": "A_ff",
+      "median_reach": null,
+      "median_reach_arm": null,
+      "selected_reach": null,
+      "selected_reach_arm": null,
+      "sizes": [
+        40,
+        40,
+        40,
+        40,
+        40,
+        40,
+        41,
+        41,
+        41,
+        41,
+        41,
+        41,
+        60,
+        60,
+        61
+      ],
+      "task": "marked_recall_tau4"
+    },
+    {
+      "family": "A_general",
+      "median_reach": null,
+      "median_reach_arm": null,
+      "selected_reach": null,
+      "selected_reach_arm": null,
+      "sizes": [
+        42,
+        42,
+        42
+      ],
+      "task": "marked_recall_tau4"
+    },
+    {
+      "family": "A_ff",
+      "median_reach": 41,
+      "median_reach_arm": "free",
+      "selected_reach": 41,
+      "selected_reach_arm": "free",
+      "sizes": [
+        40,
+        40,
+        41,
+        41,
+        41,
+        41
+      ],
+      "task": "markov1_quaternary"
+    }
+  ],
+  "rows": [
+    {
+      "acc_by_delay": {
+        "0": 0.9458966565349544,
+        "1": 0.9283834586466165,
+        "2": 0.906060606060606,
+        "3": 0.8845901639344262,
+        "4": 0.8416666666666666,
+        "6": 0.7421875,
+        "8": 0.6174050632911393,
+        "12": 0.5313725490196078,
+        "16": 0.5166666666666667,
+        "24": 0.48,
+        "32": 0.6333333333333333
+      },
+      "arm": "eta06",
+      "commutator_mean": 0.2943968686822148,
+      "commutator_se": 0.007070396834272785,
+      "contraction_mean": 0.739880179526392,
+      "contraction_se": 0.01376786440866726,
+      "disturbance_mean": 0.30604032087622995,
+      "disturbance_se": 4.440892098500626e-17,
+      "eta_horizon": [
+        [
+          0.59999999999979,
+          4
+        ],
+        [
+          0.59999999999979,
+          6
+        ],
+        [
+          0.59999999999979,
+          5
+        ],
+        [
+          0.5999999999997896,
+          4
+        ],
+        [
+          0.59999999999979,
+          4
+        ],
+        [
+          0.59999999999979,
+          3
+        ],
+        [
+          0.5999999999997896,
+          4
+        ],
+        [
+          0.5999999999997904,
+          5
+        ],
+        [
+          0.5999999999997895,
+          5
+        ],
+        [
+          0.59999999999979,
+          5
+        ]
+      ],
+      "eta_mean": 0.5999999999997899,
+      "eta_se": 8.75755732095546e-17,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.039008533762636216,
+      "gap_median": 0.03775407996080931,
+      "gap_min": 0.03375077800835553,
+      "gap_non_recall_mean": 0.007585450992170557,
+      "gap_q25": 0.035989859155457694,
+      "gap_q75": 0.04290974585878724,
+      "gap_se": 0.0013377400245396308,
+      "gap_value_recall_mean": 0.3422203473921116,
+      "gaps": [
+        0.036507028832202956,
+        0.04209782731702885,
+        0.03375077800835553,
+        0.03610164479934328,
+        0.035654502223800934,
+        0.046166515374247735,
+        0.0364549793108635,
+        0.039001131089415664,
+        0.03900542918704132,
+        0.045345501484062405
+      ],
+      "horizon_mean": 4.5,
+      "horizon_se": 0.26874192494328497,
+      "label": "eta = 0.6 fixed",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 40,
+      "n_runs": 10,
+      "prob_bias_mean": 0.007569646532031325,
+      "prob_bias_se": 0.0016091838273900102,
+      "recall_acc_mean": 0.8427689307767305,
+      "recall_acc_se": 0.02044487928487704,
+      "retaining_seeds": 0,
+      "selected_gap": 0.03375077800835553,
+      "selected_recall_acc": 0.896977575560611,
+      "selected_seed": 2,
+      "steps_mean": 2242.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 609.5771243207997,
+      "val_nll_median": 1.1861507249661554
+    },
+    {
+      "arm": "eta06",
+      "commutator_mean": NaN,
+      "commutator_se": NaN,
+      "contraction_mean": NaN,
+      "contraction_se": NaN,
+      "disturbance_mean": 0.30604032087623,
+      "disturbance_se": 8.107922592650823e-17,
+      "eta_horizon": [],
+      "eta_mean": 0.59999999999979,
+      "eta_se": 6.982548711125693e-17,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.11025539304499925,
+      "gap_median": 0.11010070489104443,
+      "gap_min": 0.10748506651400958,
+      "gap_q25": 0.10803610757017226,
+      "gap_q75": 0.11237607486557163,
+      "gap_se": 0.000658819989544892,
+      "gaps": [
+        0.10748506651400958,
+        0.11234936208765066,
+        0.11029229144748973,
+        0.1124562131993346,
+        0.10804481541778363,
+        0.11271496024262931,
+        0.10800998402733822,
+        0.11234258854852171,
+        0.10990911833459911,
+        0.10894953063063605
+      ],
+      "horizon_mean": NaN,
+      "horizon_se": NaN,
+      "label": "eta = 0.6 fixed",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 40,
+      "n_runs": 10,
+      "prob_bias_mean": NaN,
+      "prob_bias_se": NaN,
+      "selected_gap": 0.10800998402733822,
+      "selected_seed": 6,
+      "steps_mean": 1462.0,
+      "task": "markov1_quaternary",
+      "train_seconds_mean": 100.81102270000011,
+      "val_nll_median": 1.0498201206056477
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9522796352583587,
+        "1": 0.956015037593985,
+        "2": 0.9063131313131313,
+        "3": 0.7242622950819672,
+        "4": 0.5761261261261261,
+        "6": 0.49609375,
+        "8": 0.48797468354430384,
+        "12": 0.5058823529411764,
+        "16": 0.4883333333333334,
+        "24": 0.45999999999999996,
+        "32": 0.4333333333333333
+      },
+      "arm": "eta09",
+      "commutator_mean": 0.3700673704440805,
+      "commutator_se": 0.008856482208420856,
+      "contraction_mean": 0.3731725974666607,
+      "contraction_se": 0.007282032863059201,
+      "disturbance_mean": 0.4741009227905213,
+      "disturbance_se": 6.1925281682775e-17,
+      "eta_horizon": [
+        [
+          0.9000000000000705,
+          3
+        ],
+        [
+          0.9000000000000709,
+          3
+        ],
+        [
+          0.9000000000000702,
+          3
+        ],
+        [
+          0.9000000000000696,
+          3
+        ],
+        [
+          0.9000000000000701,
+          3
+        ],
+        [
+          0.9000000000000705,
+          3
+        ],
+        [
+          0.9000000000000702,
+          3
+        ],
+        [
+          0.9000000000000709,
+          3
+        ],
+        [
+          0.9000000000000705,
+          3
+        ],
+        [
+          0.9000000000000711,
+          2
+        ]
+      ],
+      "eta_mean": 0.9000000000000705,
+      "eta_se": 1.3652683980160003e-16,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.039225935078552605,
+      "gap_median": 0.03879069595657944,
+      "gap_min": 0.0380951340415402,
+      "gap_non_recall_mean": 0.006048448282690562,
+      "gap_q25": 0.03830883236142952,
+      "gap_q75": 0.04026809474673515,
+      "gap_se": 0.0003651478471448161,
+      "gap_value_recall_mean": 0.3593665787106425,
+      "gaps": [
+        0.03876966423870975,
+        0.03837219917312519,
+        0.03853866160495092,
+        0.03881172767444914,
+        0.03811873192634251,
+        0.04024045328509521,
+        0.04159208661811298,
+        0.03936967309154517,
+        0.0380951340415402,
+        0.04035101913165497
+      ],
+      "horizon_mean": 2.9,
+      "horizon_se": 0.09999999999999999,
+      "label": "eta = 0.9 fixed",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 40,
+      "n_runs": 10,
+      "prob_bias_mean": 0.0039381462160761795,
+      "prob_bias_se": 0.0007182231022177889,
+      "recall_acc_mean": 0.7593435164120896,
+      "recall_acc_se": 0.010165344341695857,
+      "retaining_seeds": 0,
+      "selected_gap": 0.03837219917312519,
+      "selected_recall_acc": 0.7549561260968476,
+      "selected_seed": 1,
+      "steps_mean": 1977.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 298.2686284375997,
+      "val_nll_median": 1.1882665788363724
+    },
+    {
+      "arm": "eta09",
+      "commutator_mean": NaN,
+      "commutator_se": NaN,
+      "contraction_mean": NaN,
+      "contraction_se": NaN,
+      "disturbance_mean": 0.4741009227905214,
+      "disturbance_se": 4.8109664400423446e-17,
+      "eta_horizon": [],
+      "eta_mean": 0.9000000000000702,
+      "eta_se": 1.349122749335865e-16,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.022093719327682653,
+      "gap_median": 0.022336890438258677,
+      "gap_min": 0.02035858755936566,
+      "gap_q25": 0.0214155682892527,
+      "gap_q75": 0.022900977920387013,
+      "gap_se": 0.0002949601182053591,
+      "gaps": [
+        0.022720667708314202,
+        0.02227362073035829,
+        0.023190354957768916,
+        0.021019622046772452,
+        0.021547550370079452,
+        0.02287843801785645,
+        0.0229685976279787,
+        0.022400160146159066,
+        0.021579594112173354,
+        0.02035858755936566
+      ],
+      "horizon_mean": NaN,
+      "horizon_se": NaN,
+      "label": "eta = 0.9 fixed",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 40,
+      "n_runs": 10,
+      "prob_bias_mean": NaN,
+      "prob_bias_se": NaN,
+      "selected_gap": 0.022720667708314202,
+      "selected_seed": 0,
+      "steps_mean": 1306.0,
+      "task": "markov1_quaternary",
+      "train_seconds_mean": 99.66736402940005,
+      "val_nll_median": 0.9609030165407998
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9440729483282675,
+        "1": 0.9406015037593984,
+        "2": 0.876010101010101,
+        "3": 0.7711475409836066,
+        "4": 0.6551801801801802,
+        "6": 0.52578125,
+        "8": 0.49936708860759493,
+        "12": 0.5127450980392158,
+        "16": 0.49833333333333335,
+        "24": 0.44000000000000006,
+        "32": 0.3
+      },
+      "arm": "free",
+      "commutator_mean": 0.33743824434925807,
+      "commutator_se": 0.013593491284402896,
+      "contraction_mean": 0.5536465933998443,
+      "contraction_se": 0.057442983629741075,
+      "disturbance_mean": 0.38907081906824875,
+      "disturbance_se": 0.024537457141801916,
+      "eta_horizon": [
+        [
+          0.7055376575426132,
+          3
+        ],
+        [
+          0.6804160253847885,
+          4
+        ],
+        [
+          0.7251756530020274,
+          4
+        ],
+        [
+          0.7799402192747444,
+          3
+        ],
+        [
+          0.8385393242682002,
+          3
+        ],
+        [
+          0.9274692507208369,
+          3
+        ],
+        [
+          0.6562632524997273,
+          5
+        ],
+        [
+          0.5074300412605967,
+          5
+        ],
+        [
+          0.958692022780932,
+          2
+        ],
+        [
+          0.7245166542539897,
+          4
+        ]
+      ],
+      "eta_mean": 0.7503980100988457,
+      "eta_se": 0.0420968435244014,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.039626618136072295,
+      "gap_median": 0.03925304735174143,
+      "gap_min": 0.036082594883134936,
+      "gap_non_recall_mean": 0.007028228710760423,
+      "gap_q25": 0.038333033737190256,
+      "gap_q75": 0.03991672233070795,
+      "gap_se": 0.0009800622376606907,
+      "gap_value_recall_mean": 0.35417935795633076,
+      "gaps": [
+        0.03989845923802131,
+        0.036082594883134936,
+        0.03926078742148079,
+        0.03893102963354251,
+        0.03966978645421883,
+        0.039096544877928255,
+        0.0365390460481335,
+        0.04757111391349291,
+        0.03997151160876786,
+        0.03924530728200207
+      ],
+      "horizon_mean": 3.6,
+      "horizon_se": 0.30550504633038933,
+      "label": "eta free",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 41,
+      "n_runs": 10,
+      "prob_bias_mean": 0.008043684690143564,
+      "prob_bias_se": 0.0012359916996925158,
+      "recall_acc_mean": 0.7709782255443615,
+      "recall_acc_se": 0.01577563588449219,
+      "retaining_seeds": 0,
+      "selected_gap": 0.036082594883134936,
+      "selected_recall_acc": 0.821254468638284,
+      "selected_seed": 1,
+      "steps_mean": 1973.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 240.04456969999956,
+      "val_nll_median": 1.1882877280002746
+    },
+    {
+      "arm": "free",
+      "commutator_mean": NaN,
+      "commutator_se": NaN,
+      "contraction_mean": NaN,
+      "contraction_se": NaN,
+      "disturbance_mean": 0.5972490632485769,
+      "disturbance_se": 0.0005401377967338938,
+      "eta_horizon": [],
+      "eta_mean": 0.9999159204502253,
+      "eta_se": 2.4254056104791266e-05,
+      "failures": 0,
+      "family": "A_ff",
+      "gap_mean": 0.0005403172598026703,
+      "gap_median": 0.0005833802908638352,
+      "gap_min": 0.0003118963341269033,
+      "gap_q25": 0.00033466950452337295,
+      "gap_q75": 0.000668519352292592,
+      "gap_se": 5.154279435375838e-05,
+      "gaps": [
+        0.0007451678040412888,
+        0.0003403827657852106,
+        0.0005262945566890296,
+        0.00031752972073786,
+        0.0005430111282411626,
+        0.0006237494534865077,
+        0.0006597509376425695,
+        0.0003118963341269033,
+        0.0006948245962426595,
+        0.0006405653010335118
+      ],
+      "horizon_mean": NaN,
+      "horizon_se": NaN,
+      "label": "eta free",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 41,
+      "n_runs": 10,
+      "prob_bias_mean": NaN,
+      "prob_bias_se": NaN,
+      "selected_gap": 0.0005430111282411626,
+      "selected_seed": 4,
+      "steps_mean": 891.0,
+      "task": "markov1_quaternary",
+      "train_seconds_mean": 56.85457930389966,
+      "val_nll_median": 0.9388517046921014
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9530395136778116,
+        "1": 0.9417293233082706,
+        "2": 0.9025252525252526,
+        "3": 0.8491803278688523,
+        "4": 0.7639639639639639,
+        "6": 0.645703125,
+        "8": 0.5645569620253165,
+        "12": 0.5176470588235295,
+        "16": 0.5033333333333333,
+        "24": 0.44000000000000006,
+        "32": 0.5333333333333333
+      },
+      "arm": "anneal",
+      "commutator_mean": 0.30728815561940365,
+      "commutator_se": 0.01102978340272792,
+      "contraction_mean": 0.6308337165430472,
+      "contraction_se": 0.03968874136991683,
+      "disturbance_mean": 0.3519911850635796,
+      "disturbance_se": 0.01706562906551934,
+      "eta_horizon": [
+        [
+          0.6401254869173986,
+          4
+        ],
+        [
+          0.8095983899314549,
+          3
+        ],
+        [
+          0.5999999999997904,
+          6
+        ],
+        [
+          0.6569122263203336,
+          4
+        ],
+        [
+          0.5999999999997904,
+          4
+        ],
+        [
+          0.6300495620426666,
+          3
+        ],
+        [
+          0.5999999999997896,
+          4
+        ],
+        [
+          0.8875633646068145,
+          3
+        ],
+        [
+          0.7490275203717468,
+          4
+        ],
+        [
+          0.6999768871415418,
+          3
+        ]
+      ],
+      "eta_mean": 0.6873253437331327,
+      "eta_se": 0.03132688396737207,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.038076814622468036,
+      "gap_median": 0.037886898027639566,
+      "gap_min": 0.033744954349558466,
+      "gap_non_recall_mean": 0.007215752160826569,
+      "gap_q25": 0.03651687295370783,
+      "gap_q75": 0.03859091933637535,
+      "gap_se": 0.0009789094442946198,
+      "gap_value_recall_mean": 0.3358655067084598,
+      "gaps": [
+        0.03655539239330951,
+        0.037831036313469533,
+        0.033744954349558466,
+        0.036537504167989274,
+        0.0379427597418096,
+        0.04562683468519981,
+        0.0364549793108635,
+        0.03982971342397401,
+        0.03806698386466417,
+        0.03817798797384247
+      ],
+      "horizon_mean": 3.8,
+      "horizon_se": 0.29059326290271154,
+      "label": "eta 0.6 frozen, then free",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 41,
+      "n_runs": 10,
+      "prob_bias_mean": 0.008077345379327265,
+      "prob_bias_se": 0.0021983152049967524,
+      "recall_acc_mean": 0.8170945726356841,
+      "recall_acc_se": 0.020190038690070786,
+      "retaining_seeds": 0,
+      "selected_gap": 0.033744954349558466,
+      "selected_recall_acc": 0.8947026324341891,
+      "selected_seed": 2,
+      "steps_mean": 2452.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 314.30949645819965,
+      "val_nll_median": 1.185614803172434
+    },
+    {
+      "arm": "anneal",
+      "commutator_mean": NaN,
+      "commutator_se": NaN,
+      "contraction_mean": NaN,
+      "contraction_se": NaN,
+      "disturbance_mean": 0.5964538342237454,
+      "disturbance_se": 0.0005430755961654211,
+      "eta_horizon": [],
+      "eta_mean": 0.9998745235967037,
+      "eta_se": 2.719236101036807e-05,
+      "failures": 0,
+      "family": "A_ff",
+      "gap_mean": 0.0006277766982916053,
+      "gap_median": 0.0006912663667584219,
+      "gap_min": 0.0003354856961383017,
+      "gap_q25": 0.0004935670581646649,
+      "gap_q75": 0.0007294198020434667,
+      "gap_se": 4.988213192323735e-05,
+      "gaps": [
+        0.0007050887843147459,
+        0.0005200106616107243,
+        0.0006895960627234705,
+        0.000802412855229629,
+        0.0006929366707933732,
+        0.0006145626025826831,
+        0.0008058163485358837,
+        0.00041423624782648666,
+        0.0006976210531607545,
+        0.0003354856961383017
+      ],
+      "horizon_mean": NaN,
+      "horizon_se": NaN,
+      "label": "eta 0.6 frozen, then free",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 41,
+      "n_runs": 10,
+      "prob_bias_mean": NaN,
+      "prob_bias_se": NaN,
+      "selected_gap": 0.0005200106616107243,
+      "selected_seed": 1,
+      "steps_mean": 2225.0,
+      "task": "markov1_quaternary",
+      "train_seconds_mean": 148.7905721874002,
+      "val_nll_median": 0.9387474465205925
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9518237082066869,
+        "1": 0.9515037593984962,
+        "2": 0.9434343434343434,
+        "3": 0.9413114754098361,
+        "4": 0.8770270270270271,
+        "6": 0.711328125,
+        "8": 0.5870253164556962,
+        "12": 0.5284313725490196,
+        "16": 0.5033333333333333,
+        "24": 0.45999999999999996,
+        "32": 0.4
+      },
+      "arm": "prior01",
+      "commutator_mean": 0.2859217096969676,
+      "commutator_se": 0.004659181003944939,
+      "contraction_mean": 0.6766453363926205,
+      "contraction_se": 0.014298641080916413,
+      "disturbance_mean": 0.3274792540014752,
+      "disturbance_se": 0.004922091022060979,
+      "eta_horizon": [
+        [
+          0.6119446143774114,
+          4
+        ],
+        [
+          0.6470219004348897,
+          4
+        ],
+        [
+          0.6023587086090075,
+          5
+        ],
+        [
+          0.6656998616110953,
+          4
+        ],
+        [
+          0.6433794583194609,
+          4
+        ],
+        [
+          0.6567213798350754,
+          4
+        ],
+        [
+          0.6196551178938626,
+          4
+        ],
+        [
+          0.6499125183944917,
+          3
+        ],
+        [
+          0.7083130448766131,
+          4
+        ],
+        [
+          0.6241581118034913,
+          4
+        ]
+      ],
+      "eta_mean": 0.6429164716155399,
+      "eta_se": 0.009746531256821943,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.0378291501727525,
+      "gap_median": 0.03720121949721336,
+      "gap_min": 0.03480575948777799,
+      "gap_non_recall_mean": 0.007947609302507257,
+      "gap_q25": 0.0365094373581925,
+      "gap_q75": 0.039328113699142214,
+      "gap_se": 0.0006636769455880186,
+      "gap_value_recall_mean": 0.3261661114917167,
+      "gaps": [
+        0.038115006687047225,
+        0.03929426097944483,
+        0.03480575948777799,
+        0.03652309269837469,
+        0.03690977309556894,
+        0.03646847133764594,
+        0.03942967185823436,
+        0.03693191297053925,
+        0.042343026589004254,
+        0.03747052602388748
+      ],
+      "horizon_mean": 4.0,
+      "horizon_se": 0.14907119849998596,
+      "label": "prior 0.1 (eta - 0.6)^2",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 41,
+      "n_runs": 10,
+      "prob_bias_mean": 0.00820219183902776,
+      "prob_bias_se": 0.002185918859108626,
+      "recall_acc_mean": 0.8572635684107898,
+      "recall_acc_se": 0.00907352896874152,
+      "retaining_seeds": 0,
+      "selected_gap": 0.03480575948777799,
+      "selected_recall_acc": 0.9005524861878453,
+      "selected_seed": 2,
+      "steps_mean": 2108.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 330.5137630417008,
+      "val_nll_median": 1.1852516547914806
+    },
+    {
+      "arm": "prior01",
+      "commutator_mean": NaN,
+      "commutator_se": NaN,
+      "contraction_mean": NaN,
+      "contraction_se": NaN,
+      "disturbance_mean": 0.5972152020734479,
+      "disturbance_se": 0.0004818210512293399,
+      "eta_horizon": [],
+      "eta_mean": 0.999918759601643,
+      "eta_se": 2.1849693771595037e-05,
+      "failures": 0,
+      "family": "A_ff",
+      "gap_mean": 0.0006289014673494491,
+      "gap_median": 0.0006782789410704298,
+      "gap_min": 0.0003516109699908446,
+      "gap_q25": 0.000524038327190402,
+      "gap_q75": 0.0007228724079517859,
+      "gap_se": 5.067556229703823e-05,
+      "gaps": [
+        0.000677104087007653,
+        0.0006794537951332067,
+        0.0004076769360833758,
+        0.0006950201112292333,
+        0.0008064292981194438,
+        0.0005628254575594108,
+        0.0003516109699908446,
+        0.0006844280897291527,
+        0.0008591793224270341,
+        0.000565286606215136
+      ],
+      "horizon_mean": NaN,
+      "horizon_se": NaN,
+      "label": "prior 0.1 (eta - 0.6)^2",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 41,
+      "n_runs": 10,
+      "prob_bias_mean": NaN,
+      "prob_bias_se": NaN,
+      "selected_gap": 0.000677104087007653,
+      "selected_seed": 0,
+      "steps_mean": 789.0,
+      "task": "markov1_quaternary",
+      "train_seconds_mean": 75.67098329580003,
+      "val_nll_median": 0.9388661375402606
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9537993920972644,
+        "1": 0.9227443609022556,
+        "2": 0.8434343434343434,
+        "3": 0.8573770491803279,
+        "4": 0.8006756756756757,
+        "6": 0.683984375,
+        "8": 0.5582278481012659,
+        "12": 0.5078431372549019,
+        "16": 0.49333333333333335,
+        "24": 0.54,
+        "32": 0.6333333333333333
+      },
+      "arm": "prior1",
+      "commutator_mean": 0.2768783415097292,
+      "commutator_se": 0.004212272190466209,
+      "contraction_mean": 0.7080769092741146,
+      "contraction_se": 0.012953362535188398,
+      "disturbance_mean": 0.3092268910035704,
+      "disturbance_se": 0.0012958256628481798,
+      "eta_horizon": [
+        [
+          0.5946449739080011,
+          2
+        ],
+        [
+          0.6024132231566358,
+          4
+        ],
+        [
+          0.6210495025760953,
+          3
+        ],
+        [
+          0.6131805109956474,
+          4
+        ],
+        [
+          0.6143726907238832,
+          5
+        ],
+        [
+          0.6085112194982217,
+          5
+        ],
+        [
+          0.6026613818552775,
+          4
+        ],
+        [
+          0.6083050383629609,
+          4
+        ],
+        [
+          0.6033723201666851,
+          4
+        ],
+        [
+          0.5959481397566088,
+          6
+        ]
+      ],
+      "eta_mean": 0.6064459001000018,
+      "eta_se": 0.002621858807506372,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.040209065596634716,
+      "gap_median": 0.03726484901229409,
+      "gap_min": 0.033822032836632036,
+      "gap_non_recall_mean": 0.00814626179663538,
+      "gap_q25": 0.035601913837856276,
+      "gap_q75": 0.04509474491806017,
+      "gap_se": 0.0021481736086869166,
+      "gap_value_recall_mean": 0.3495937609576295,
+      "gaps": [
+        0.046210112029801104,
+        0.04019575149420154,
+        0.055631543226548036,
+        0.044722955880813195,
+        0.035026428161677385,
+        0.03696157323707033,
+        0.035793742396582576,
+        0.036158391915503144,
+        0.03756812478751785,
+        0.033822032836632036
+      ],
+      "horizon_mean": 4.1,
+      "horizon_se": 0.348010216963685,
+      "label": "prior 1 (eta - 0.6)^2",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 41,
+      "n_runs": 10,
+      "prob_bias_mean": 0.010385628466600138,
+      "prob_bias_se": 0.0018946266148236266,
+      "recall_acc_mean": 0.8147546311342216,
+      "recall_acc_se": 0.02912329383733023,
+      "retaining_seeds": 0,
+      "selected_gap": 0.033822032836632036,
+      "selected_recall_acc": 0.8901527461813454,
+      "selected_seed": 9,
+      "steps_mean": 2218.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 351.91252888340057,
+      "val_nll_median": 1.185211743265128
+    },
+    {
+      "arm": "prior1",
+      "commutator_mean": NaN,
+      "commutator_se": NaN,
+      "contraction_mean": NaN,
+      "contraction_se": NaN,
+      "disturbance_mean": 0.3819070591662044,
+      "disturbance_se": 0.0012104412327430289,
+      "eta_horizon": [],
+      "eta_mean": 0.7481127211907892,
+      "eta_se": 0.002241993784211194,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.06254155010962863,
+      "gap_median": 0.06154172416890791,
+      "gap_min": 0.05866355164898798,
+      "gap_q25": 0.06093283038907136,
+      "gap_q75": 0.06462792167034767,
+      "gap_se": 0.0008553985693202633,
+      "gaps": [
+        0.05866355164898798,
+        0.06776515337753888,
+        0.061335880887424796,
+        0.061627809473600394,
+        0.05994708715379229,
+        0.06449156601000708,
+        0.06145563886421543,
+        0.06503698865136948,
+        0.06383041356185228,
+        0.06126141146749771
+      ],
+      "horizon_mean": NaN,
+      "horizon_se": NaN,
+      "label": "prior 1 (eta - 0.6)^2",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 41,
+      "n_runs": 10,
+      "prob_bias_mean": NaN,
+      "prob_bias_se": NaN,
+      "selected_gap": 0.05866355164898798,
+      "selected_seed": 0,
+      "steps_mean": 1387.0,
+      "task": "markov1_quaternary",
+      "train_seconds_mean": 108.38768630830054,
+      "val_nll_median": 1.0015458012934944
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9480243161094226,
+        "1": 0.9509398496240602,
+        "2": 0.9361111111111111,
+        "3": 0.9229508196721312,
+        "4": 0.8448198198198199,
+        "6": 0.7109375,
+        "8": 0.6066455696202532,
+        "12": 0.5362745098039217,
+        "16": 0.5183333333333333,
+        "24": 0.5599999999999999,
+        "32": 0.5666666666666667
+      },
+      "arm": "curriculum",
+      "commutator_mean": 0.30377009899314683,
+      "commutator_se": 0.010190647551174482,
+      "contraction_mean": 0.68020011989434,
+      "contraction_se": 0.03010516098478374,
+      "disturbance_mean": 0.33724445386961927,
+      "disturbance_se": 0.011900350171892003,
+      "eta_horizon": [
+        [
+          0.5939713737604958,
+          6
+        ],
+        [
+          0.8139576353533777,
+          3
+        ],
+        [
+          0.6493661376419381,
+          4
+        ],
+        [
+          0.6284555682994061,
+          4
+        ],
+        [
+          0.6560653155135148,
+          4
+        ],
+        [
+          0.6349387043034262,
+          5
+        ],
+        [
+          0.7379234162794672,
+          4
+        ],
+        [
+          0.6314758926402773,
+          4
+        ],
+        [
+          0.5660894913730493,
+          6
+        ],
+        [
+          0.6970590883887514,
+          4
+        ]
+      ],
+      "eta_mean": 0.6609302623553704,
+      "eta_se": 0.022823964680974758,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.036351071673013116,
+      "gap_median": 0.03644290672432753,
+      "gap_min": 0.034431072075313096,
+      "gap_non_recall_mean": 0.007246173426643137,
+      "gap_q25": 0.03509634306018551,
+      "gap_q75": 0.03755964290372907,
+      "gap_se": 0.0004618183410502817,
+      "gap_value_recall_mean": 0.3171939490967933,
+      "gaps": [
+        0.034431072075313096,
+        0.03848209875860896,
+        0.035343811590058186,
+        0.035279956610532764,
+        0.03561395990010911,
+        0.03454550240914375,
+        0.03730297943896643,
+        0.037739937790821285,
+        0.03727185354854595,
+        0.037499544608031656
+      ],
+      "horizon_mean": 4.4,
+      "horizon_se": 0.30550504633038933,
+      "label": "curriculum tau 1 -> 2 -> 4, eta free",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 41,
+      "n_runs": 10,
+      "prob_bias_mean": 0.011391272905172254,
+      "prob_bias_se": 0.002020662266619932,
+      "recall_acc_mean": 0.8518037049073772,
+      "recall_acc_se": 0.013340862597557545,
+      "retaining_seeds": 0,
+      "selected_gap": 0.034431072075313096,
+      "selected_recall_acc": 0.87812804679883,
+      "selected_seed": 0,
+      "steps_mean": 3531.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 413.7156240997996,
+      "val_nll_median": 1.1844645943465206
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9548632218844985,
+        "1": 0.9428571428571428,
+        "2": 0.8452020202020203,
+        "3": 0.8806557377049181,
+        "4": 0.8225225225225226,
+        "6": 0.751953125,
+        "8": 0.6348101265822785,
+        "12": 0.5627450980392157,
+        "16": 0.49000000000000005,
+        "24": 0.38,
+        "32": 0.4
+      },
+      "arm": "soft06",
+      "commutator_mean": 0.28557700233700506,
+      "commutator_se": 0.008466116325902847,
+      "contraction_mean": 0.7160990440961953,
+      "contraction_se": 0.015297961900367356,
+      "disturbance_mean": 0.30604032087622995,
+      "disturbance_se": 5.538765574740298e-17,
+      "eta_horizon": [
+        [
+          0.59999999999979,
+          5
+        ],
+        [
+          0.5999999999997904,
+          4
+        ],
+        [
+          0.5999999999997899,
+          5
+        ],
+        [
+          0.5999999999997904,
+          5
+        ],
+        [
+          0.5999999999997901,
+          4
+        ],
+        [
+          0.5999999999997897,
+          5
+        ],
+        [
+          0.59999999999979,
+          4
+        ],
+        [
+          0.59999999999979,
+          4
+        ],
+        [
+          0.5999999999997896,
+          6
+        ],
+        [
+          0.59999999999979,
+          3
+        ]
+      ],
+      "eta_mean": 0.59999999999979,
+      "eta_se": 7.841734706181025e-17,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.0380139099730385,
+      "gap_median": 0.03568373557846588,
+      "gap_min": 0.032816106836443946,
+      "gap_non_recall_mean": 0.006724575008804254,
+      "gap_q25": 0.034551306456063205,
+      "gap_q75": 0.04128735763869207,
+      "gap_se": 0.001688714072142439,
+      "gap_value_recall_mean": 0.339935146379629,
+      "gaps": [
+        0.03447784455078064,
+        0.034875049593512994,
+        0.03929966877594149,
+        0.03457579375782407,
+        0.037792175694479645,
+        0.034768228065044836,
+        0.03649242156341876,
+        0.04725042422694381,
+        0.032816106836443946,
+        0.04779138666599484
+      ],
+      "horizon_mean": 4.5,
+      "horizon_se": 0.26874192494328497,
+      "label": "eta = 0.6, soft targets (source)",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 40,
+      "n_runs": 10,
+      "prob_bias_mean": 0.011063799297315557,
+      "prob_bias_se": 0.0018473742501589484,
+      "recall_acc_mean": 0.8389340266493338,
+      "recall_acc_se": 0.02797906374613573,
+      "retaining_seeds": 0,
+      "selected_gap": 0.032816106836443946,
+      "selected_recall_acc": 0.9161520961975951,
+      "selected_seed": 8,
+      "steps_mean": 2074.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 187.90195125819992,
+      "val_nll_median": 1.1846931650588681
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.954711246200608,
+        "1": 0.9562030075187969,
+        "2": 0.940909090909091,
+        "3": 0.8249180327868852,
+        "4": 0.6002252252252253,
+        "6": 0.50703125,
+        "8": 0.49525316455696206,
+        "12": 0.49411764705882355,
+        "16": 0.505,
+        "24": 0.52,
+        "32": 0.5
+      },
+      "arm": "soft09",
+      "commutator_mean": 0.36316656896871935,
+      "commutator_se": 0.0073693036751854716,
+      "contraction_mean": 0.3661460252077754,
+      "contraction_se": 0.008515207280364704,
+      "disturbance_mean": 0.4741009227905213,
+      "disturbance_se": 6.148136713008271e-17,
+      "eta_horizon": [
+        [
+          0.9000000000000704,
+          3
+        ],
+        [
+          0.9000000000000704,
+          3
+        ],
+        [
+          0.9000000000000704,
+          3
+        ],
+        [
+          0.9000000000000702,
+          3
+        ],
+        [
+          0.9000000000000704,
+          3
+        ],
+        [
+          0.9000000000000697,
+          3
+        ],
+        [
+          0.9000000000000704,
+          3
+        ],
+        [
+          0.9000000000000697,
+          3
+        ],
+        [
+          0.9000000000000702,
+          3
+        ],
+        [
+          0.9000000000000709,
+          3
+        ]
+      ],
+      "eta_mean": 0.9000000000000703,
+      "eta_se": 1.0571437693441228e-16,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.03772690136645967,
+      "gap_median": 0.037918098103124645,
+      "gap_min": 0.03711066241090085,
+      "gap_non_recall_mean": 0.0049394779383500455,
+      "gap_q25": 0.03728217623317013,
+      "gap_q75": 0.03806920264376111,
+      "gap_se": 0.00012897194357465677,
+      "gap_value_recall_mean": 0.35410369337296066,
+      "gaps": [
+        0.037189273988563615,
+        0.03797872317511332,
+        0.03810450030183583,
+        0.03791185031566758,
+        0.03749080090888515,
+        0.037924345890581704,
+        0.03731314364803897,
+        0.03805743675773621,
+        0.038188276267273495,
+        0.03711066241090085
+      ],
+      "horizon_mean": 3.0,
+      "horizon_se": 0.0,
+      "label": "eta = 0.9, soft targets (source)",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 40,
+      "n_runs": 10,
+      "prob_bias_mean": 0.004594069409083452,
+      "prob_bias_se": 0.000714125569685814,
+      "recall_acc_mean": 0.7795580110497238,
+      "recall_acc_se": 0.005721672484458081,
+      "retaining_seeds": 0,
+      "selected_gap": 0.037189273988563615,
+      "selected_recall_acc": 0.7666558336041599,
+      "selected_seed": 0,
+      "steps_mean": 2029.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 200.76396084150036,
+      "val_nll_median": 1.1871541284796172
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.956838905775076,
+        "1": 0.956766917293233,
+        "2": 0.905050505050505,
+        "3": 0.7347540983606557,
+        "4": 0.5657657657657658,
+        "6": 0.503515625,
+        "8": 0.494620253164557,
+        "12": 0.5088235294117647,
+        "16": 0.4833333333333333,
+        "24": 0.44000000000000006,
+        "32": 0.4
+      },
+      "arm": "from06_to09",
+      "commutator_mean": 0.35072928919678803,
+      "commutator_se": 0.007390708537580813,
+      "contraction_mean": 0.354882472979696,
+      "contraction_se": 0.008049613333783751,
+      "disturbance_mean": 0.4741009227905213,
+      "disturbance_se": 4.965068306494546e-17,
+      "eta_horizon": [
+        [
+          0.9000000000000702,
+          2
+        ],
+        [
+          0.9000000000000706,
+          3
+        ],
+        [
+          0.9000000000000696,
+          2
+        ],
+        [
+          0.9000000000000704,
+          3
+        ],
+        [
+          0.9000000000000705,
+          3
+        ],
+        [
+          0.9000000000000702,
+          3
+        ],
+        [
+          0.90000000000007,
+          3
+        ],
+        [
+          0.9000000000000705,
+          3
+        ],
+        [
+          0.9000000000000705,
+          2
+        ],
+        [
+          0.9000000000000705,
+          3
+        ]
+      ],
+      "eta_mean": 0.9000000000000703,
+      "eta_se": 9.992007221626409e-17,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.03805773687568746,
+      "gap_median": 0.03786196955651505,
+      "gap_min": 0.037450484428465595,
+      "gap_non_recall_mean": 0.0051366441178103085,
+      "gap_q25": 0.03750926380549249,
+      "gap_q75": 0.038409918718592256,
+      "gap_se": 0.00021315438230663387,
+      "gap_value_recall_mean": 0.3557243488594801,
+      "gaps": [
+        0.0379765681951483,
+        0.038023532811808654,
+        0.03819326339419072,
+        0.037450484428465595,
+        0.037714440838195695,
+        0.03774737091788181,
+        0.03747404246924984,
+        0.03752100425090671,
+        0.039416776759230464,
+        0.03905988469179686
+      ],
+      "horizon_mean": 2.7,
+      "horizon_se": 0.15275252316519466,
+      "label": "eta 0.6 model, retrained at 0.9",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 40,
+      "n_runs": 10,
+      "prob_bias_mean": 0.005432883340032481,
+      "prob_bias_se": 0.00078409332876171,
+      "recall_acc_mean": 0.7610659733506663,
+      "recall_acc_se": 0.005943946510491085,
+      "retaining_seeds": 0,
+      "selected_gap": 0.03747404246924984,
+      "selected_recall_acc": 0.7731556711082223,
+      "selected_seed": 6,
+      "steps_mean": 1523.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 114.54920077929964,
+      "val_nll_median": 1.1872702028356796
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9486322188449849,
+        "1": 0.9509398496240602,
+        "2": 0.9383838383838384,
+        "3": 0.9380327868852459,
+        "4": 0.8772522522522523,
+        "6": 0.785546875,
+        "8": 0.6569620253164558,
+        "12": 0.5343137254901962,
+        "16": 0.5066666666666666,
+        "24": 0.45999999999999996,
+        "32": 0.4666666666666666
+      },
+      "arm": "from09_to06",
+      "commutator_mean": 0.27612566625724044,
+      "commutator_se": 0.003808699245959803,
+      "contraction_mean": 0.7352519557062314,
+      "contraction_se": 0.009087274363763496,
+      "disturbance_mean": 0.30604032087623,
+      "disturbance_se": 3.719201103062486e-17,
+      "eta_horizon": [
+        [
+          0.59999999999979,
+          5
+        ],
+        [
+          0.59999999999979,
+          5
+        ],
+        [
+          0.5999999999997901,
+          5
+        ],
+        [
+          0.59999999999979,
+          4
+        ],
+        [
+          0.5999999999997905,
+          4
+        ],
+        [
+          0.5999999999997904,
+          4
+        ],
+        [
+          0.5999999999997904,
+          5
+        ],
+        [
+          0.5999999999997897,
+          5
+        ],
+        [
+          0.5999999999997901,
+          3
+        ],
+        [
+          0.5999999999997904,
+          5
+        ]
+      ],
+      "eta_mean": 0.5999999999997903,
+      "eta_se": 7.364386412590295e-17,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.03725660774871929,
+      "gap_median": 0.03630008680213444,
+      "gap_min": 0.03403265461203464,
+      "gap_non_recall_mean": 0.008174438321955442,
+      "gap_q25": 0.035000820334831796,
+      "gap_q75": 0.03864709582117661,
+      "gap_se": 0.0010304188493365145,
+      "gap_value_recall_mean": 0.3178801672059976,
+      "gaps": [
+        0.0350517839301763,
+        0.034847929548798284,
+        0.03403265461203464,
+        0.036680612279931135,
+        0.04000956092816679,
+        0.036005475416372085,
+        0.03819294078551322,
+        0.03651629641699868,
+        0.04514494638193156,
+        0.03608387718727019
+      ],
+      "horizon_mean": 4.5,
+      "horizon_se": 0.22360679774997896,
+      "label": "eta 0.9 model, retrained at 0.6",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 40,
+      "n_runs": 10,
+      "prob_bias_mean": 0.014788023485882082,
+      "prob_bias_se": 0.002483638811983058,
+      "recall_acc_mean": 0.8692232694182647,
+      "recall_acc_se": 0.011597368953097648,
+      "retaining_seeds": 0,
+      "selected_gap": 0.034847929548798284,
+      "selected_recall_acc": 0.8865778355541112,
+      "selected_seed": 1,
+      "steps_mean": 1950.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 197.75858841249902,
+      "val_nll_median": 1.184027444507998
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9498480243161094,
+        "1": 0.9428571428571428,
+        "2": 0.9244949494949495,
+        "3": 0.9045901639344262,
+        "4": 0.8207207207207208,
+        "6": 0.691015625,
+        "8": 0.5927215189873418,
+        "12": 0.5107843137254902,
+        "16": 0.515,
+        "24": 0.48,
+        "32": 0.5666666666666667
+      },
+      "arm": "from06_free",
+      "commutator_mean": 0.30516041439476155,
+      "commutator_se": 0.009596049533836387,
+      "contraction_mean": 0.6744842530060531,
+      "contraction_se": 0.020551504743193765,
+      "disturbance_mean": 0.3358670882455654,
+      "disturbance_se": 0.010268704561736243,
+      "eta_horizon": [
+        [
+          0.6528626050171412,
+          3
+        ],
+        [
+          0.7489621256308349,
+          4
+        ],
+        [
+          0.59999999999979,
+          5
+        ],
+        [
+          0.5999999999997896,
+          4
+        ],
+        [
+          0.59999999999979,
+          4
+        ],
+        [
+          0.6300495620426666,
+          3
+        ],
+        [
+          0.5999999999997896,
+          4
+        ],
+        [
+          0.7293460041977582,
+          3
+        ],
+        [
+          0.7490275203717468,
+          4
+        ],
+        [
+          0.676985776791372,
+          5
+        ]
+      ],
+      "eta_mean": 0.6587233594050679,
+      "eta_se": 0.020074643243181756,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.037698191839168775,
+      "gap_median": 0.03648679585336908,
+      "gap_min": 0.03375077800835553,
+      "gap_non_recall_mean": 0.007278011229654141,
+      "gap_q25": 0.035989859155457694,
+      "gap_q75": 0.03908313571778191,
+      "gap_se": 0.0011138925755081236,
+      "gap_value_recall_mean": 0.33123266778232746,
+      "gaps": [
+        0.03651861239587466,
+        0.03615262041400046,
+        0.03375077800835553,
+        0.03610164479934328,
+        0.035654502223800934,
+        0.04562683468519981,
+        0.0364549793108635,
+        0.03652337141245033,
+        0.03806698386466417,
+        0.0421315912771351
+      ],
+      "horizon_mean": 3.9,
+      "horizon_se": 0.2333333333333333,
+      "label": "eta 0.6 model, released to free eta",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 41,
+      "n_runs": 10,
+      "prob_bias_mean": 0.006904470132279493,
+      "prob_bias_se": 0.001786655612792523,
+      "recall_acc_mean": 0.8398765030874229,
+      "recall_acc_se": 0.016884088160328197,
+      "retaining_seeds": 0,
+      "selected_gap": 0.03375077800835553,
+      "selected_recall_acc": 0.896977575560611,
+      "selected_seed": 2,
+      "steps_mean": 1220.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 88.71823015019982,
+      "val_nll_median": 1.1846287239119446
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.8606382978723405,
+        "1": 0.8509398496240601,
+        "2": 0.8550505050505051,
+        "3": 0.8583606557377049,
+        "4": 0.8457207207207208,
+        "6": 0.8453125,
+        "8": 0.8648734177215189,
+        "12": 0.8470588235294118,
+        "16": 0.7966666666666666,
+        "24": 0.8400000000000001,
+        "32": 0.8666666666666666
+      },
+      "arm": "gen_free",
+      "commutator_mean": 0.07250420758694662,
+      "commutator_se": 0.022111544865687983,
+      "contraction_mean": 1.0001090989505892,
+      "contraction_se": 0.000682952776651111,
+      "disturbance_mean": 0.06786231180993252,
+      "disturbance_se": 0.03551853895900521,
+      "eta_horizon": [
+        [
+          0.5196796294372282,
+          41
+        ],
+        [
+          0.14789373182179263,
+          41
+        ],
+        [
+          0.08494701582093711,
+          41
+        ],
+        [
+          0.13154579238518496,
+          41
+        ],
+        [
+          0.02673443716444564,
+          1
+        ],
+        [
+          0.0856674440669954,
+          41
+        ],
+        [
+          0.09992534371467572,
+          41
+        ],
+        [
+          0.029364629283831805,
+          1
+        ],
+        [
+          0.09457507522901872,
+          41
+        ],
+        [
+          0.08392337092526751,
+          41
+        ]
+      ],
+      "eta_mean": 0.13042564698493778,
+      "eta_se": 0.04487511611323917,
+      "failures": 10,
+      "family": "A_general",
+      "gap_mean": 0.028052373794442885,
+      "gap_median": 0.025447645374750825,
+      "gap_min": 0.014544518823729695,
+      "gap_non_recall_mean": 0.007121019982032399,
+      "gap_q25": 0.02164192615645655,
+      "gap_q75": 0.03344608193721592,
+      "gap_se": 0.003516863382061854,
+      "gap_value_recall_mean": 0.23002599291835568,
+      "gaps": [
+        0.022692341890980204,
+        0.023020281880238185,
+        0.02446329031470524,
+        0.014544518823729695,
+        0.047236401375719994,
+        0.026758399004692953,
+        0.018490678952885604,
+        0.04803651647563269,
+        0.02884930879104789,
+        0.026432000434796415
+      ],
+      "horizon_mean": 33.0,
+      "horizon_se": 5.333333333333333,
+      "label": "general, free",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 42,
+      "n_runs": 10,
+      "prob_bias_mean": 0.005419373992181604,
+      "prob_bias_se": 0.001662074755297601,
+      "recall_acc_mean": 0.8532986675333116,
+      "recall_acc_se": 0.055876201319419484,
+      "retaining_seeds": 8,
+      "selected_gap": 0.014544518823729695,
+      "selected_recall_acc": 0.9337016574585635,
+      "selected_seed": 3,
+      "steps_mean": 1667.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 76.26640694580018,
+      "val_nll_median": 1.1726482843632586
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.8029850746268657,
+        "1": 0.7404958677685951,
+        "2": 0.648051948051948,
+        "3": 0.6527472527472528,
+        "4": 0.6798913043478261,
+        "6": 0.655944055944056,
+        "8": 0.6735408560311285,
+        "12": 0.647159090909091,
+        "16": 0.6796296296296296,
+        "24": 0.6533783783783784,
+        "32": 0.6759398496240602,
+        "48": 0.6484375
+      },
+      "arm": "gen_free",
+      "commutator_mean": 0.1824042916413925,
+      "commutator_se": 0.05986773327140308,
+      "contraction_mean": 0.8000345936272468,
+      "contraction_se": 0.10493165059234205,
+      "disturbance_mean": 0.1670264405663461,
+      "disturbance_se": 0.06275407470277873,
+      "eta_horizon": [
+        [
+          0.6110916246815963,
+          2
+        ],
+        [
+          0.1942177773376282,
+          41
+        ],
+        [
+          0.02209208628759307,
+          1
+        ],
+        [
+          0.05170874898970982,
+          41
+        ],
+        [
+          0.013732803993493784,
+          1
+        ],
+        [
+          0.020709001146854773,
+          1
+        ],
+        [
+          0.47521734286027656,
+          1
+        ],
+        [
+          0.04044556853411274,
+          41
+        ],
+        [
+          0.35938429841128333,
+          41
+        ],
+        [
+          0.93532656468063,
+          2
+        ]
+      ],
+      "eta_mean": 0.2723925816923179,
+      "eta_se": 0.10024502560801335,
+      "failures": 6,
+      "family": "A_general",
+      "gap_mean": 0.011341089953490665,
+      "gap_median": 0.013298818150443698,
+      "gap_min": 0.006267604861970359,
+      "gap_non_recall_mean": 0.0014413236048678758,
+      "gap_q25": 0.008239034781208129,
+      "gap_q75": 0.013572339544407324,
+      "gap_se": 0.000988604799923447,
+      "gap_value_recall_mean": 0.36228175042541166,
+      "gaps": [
+        0.013467316403312545,
+        0.006267604861970359,
+        0.01349158699401032,
+        0.009697561178163906,
+        0.013513309807951828,
+        0.013749428753773815,
+        0.014499304256160247,
+        0.008680835871421867,
+        0.006913631510566914,
+        0.013130319897574851
+      ],
+      "horizon_mean": 17.2,
+      "horizon_se": 6.478682993736715,
+      "label": "general, free",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 42,
+      "n_runs": 10,
+      "prob_bias_mean": 0.0042395522205267615,
+      "prob_bias_se": 0.0019604983468160617,
+      "recall_acc_mean": 0.6807563959955506,
+      "recall_acc_se": 0.06337493679121942,
+      "retaining_seeds": 4,
+      "selected_gap": 0.006913631510566914,
+      "selected_recall_acc": 0.9243604004449388,
+      "selected_seed": 8,
+      "steps_mean": 1451.0,
+      "task": "marked_recall_tau16",
+      "train_seconds_mean": 164.72271259560003,
+      "val_nll_median": 0.9102573126628677
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9378419452887539,
+        "1": 0.9347744360902256,
+        "2": 0.9161616161616163,
+        "3": 0.9160655737704918,
+        "4": 0.8986486486486486,
+        "6": 0.87734375,
+        "8": 0.8958860759493671,
+        "12": 0.8705882352941176,
+        "16": 0.8216666666666667,
+        "24": 0.9199999999999999,
+        "32": 0.9
+      },
+      "arm": "gen_weak",
+      "commutator_mean": 0.103447047964944,
+      "commutator_se": 0.036700919279253084,
+      "contraction_mean": 0.9633436920113236,
+      "contraction_se": 0.03079646673259656,
+      "disturbance_mean": 0.13391436869144444,
+      "disturbance_se": 0.008488836831030298,
+      "eta_horizon": [
+        [
+          0.30137564773211745,
+          41
+        ],
+        [
+          0.2995010564684161,
+          41
+        ],
+        [
+          0.31464099133847206,
+          41
+        ],
+        [
+          0.3038784223724251,
+          41
+        ],
+        [
+          0.29968273928463457,
+          41
+        ],
+        [
+          0.26278627233195406,
+          3
+        ],
+        [
+          0.299608367527086,
+          17
+        ],
+        [
+          0.302539614659106,
+          41
+        ],
+        [
+          0.3069582913776377,
+          41
+        ],
+        [
+          0.3177614592215412,
+          41
+        ]
+      ],
+      "eta_mean": 0.300873286231339,
+      "eta_se": 0.004689667487481192,
+      "failures": 10,
+      "family": "A_general",
+      "gap_mean": 0.026580976378841638,
+      "gap_median": 0.023887916569118095,
+      "gap_min": 0.022769150692458086,
+      "gap_non_recall_mean": 0.008819389289676129,
+      "gap_q25": 0.022988903542064305,
+      "gap_q75": 0.027376357418153644,
+      "gap_se": 0.002092219121063232,
+      "gap_value_recall_mean": 0.1979684584277249,
+      "gaps": [
+        0.02472844102692995,
+        0.023142919213820685,
+        0.02303833204155407,
+        0.022840618043595013,
+        0.023779699197383743,
+        0.04209214421501638,
+        0.03532010659182472,
+        0.022769150692458086,
+        0.02410221882498128,
+        0.023996133940852444
+      ],
+      "horizon_mean": 34.8,
+      "horizon_se": 4.263019274332844,
+      "label": "general, prior 1 (eta - 0.3)^2",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 42,
+      "n_runs": 10,
+      "prob_bias_mean": 0.014093910622078496,
+      "prob_bias_se": 0.0038360832214442203,
+      "recall_acc_mean": 0.912804679883003,
+      "recall_acc_se": 0.01941078345433331,
+      "retaining_seeds": 8,
+      "selected_gap": 0.022840618043595013,
+      "selected_recall_acc": 0.9379265518362041,
+      "selected_seed": 3,
+      "steps_mean": 2004.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 139.1802630376009,
+      "val_nll_median": 1.1709604585548208
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.7768656716417911,
+        "1": 0.7694214876033059,
+        "2": 0.7467532467532467,
+        "3": 0.7395604395604396,
+        "4": 0.7266304347826087,
+        "6": 0.7083916083916084,
+        "8": 0.711284046692607,
+        "12": 0.7125,
+        "16": 0.7018518518518518,
+        "24": 0.7040540540540541,
+        "32": 0.6721804511278195,
+        "48": 0.6859375
+      },
+      "arm": "gen_weak",
+      "commutator_mean": 0.194626155010679,
+      "commutator_se": 0.027450493008925925,
+      "contraction_mean": 0.8889749521337768,
+      "contraction_se": 0.05741965013985685,
+      "disturbance_mean": 0.16502847478410504,
+      "disturbance_se": 0.014614167332114299,
+      "eta_horizon": [
+        [
+          0.29948847615093394,
+          1
+        ],
+        [
+          0.29903800196364005,
+          41
+        ],
+        [
+          0.31836764928031075,
+          26
+        ],
+        [
+          0.30483599743691386,
+          2
+        ],
+        [
+          0.3054579167072841,
+          41
+        ],
+        [
+          0.28284485494161976,
+          41
+        ],
+        [
+          0.2966147850214778,
+          2
+        ],
+        [
+          0.3029509036658602,
+          1
+        ],
+        [
+          0.31047813244604444,
+          41
+        ],
+        [
+          0.2993864314411738,
+          2
+        ]
+      ],
+      "eta_mean": 0.30194631490552587,
+      "eta_se": 0.0029410621411635283,
+      "failures": 8,
+      "family": "A_general",
+      "gap_mean": 0.01249388173665772,
+      "gap_median": 0.013332655461555236,
+      "gap_min": 0.00715970146495904,
+      "gap_non_recall_mean": 0.0026892885932504823,
+      "gap_q25": 0.011319159464373917,
+      "gap_q75": 0.014054960943366956,
+      "gap_se": 0.0008033673939295088,
+      "gap_value_recall_mean": 0.3600607103097866,
+      "gaps": [
+        0.013165924548982409,
+        0.00715970146495904,
+        0.012392863452088943,
+        0.013750174641793572,
+        0.012058219772523523,
+        0.013499386374128062,
+        0.013603920117757498,
+        0.014969319848087106,
+        0.009101978539925098,
+        0.01523732860633194
+      ],
+      "horizon_mean": 19.8,
+      "horizon_se": 6.23039146264324,
+      "label": "general, prior 1 (eta - 0.3)^2",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 42,
+      "n_runs": 10,
+      "prob_bias_mean": 0.0034444433450764823,
+      "prob_bias_se": 0.0010032988950482726,
+      "recall_acc_mean": 0.7186874304783093,
+      "recall_acc_se": 0.0504750278082371,
+      "retaining_seeds": 4,
+      "selected_gap": 0.00715970146495904,
+      "selected_recall_acc": 0.9165739710789766,
+      "selected_seed": 1,
+      "steps_mean": 1417.0,
+      "task": "marked_recall_tau16",
+      "train_seconds_mean": 193.4586580704992,
+      "val_nll_median": 0.9102999521703455
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9515197568389058,
+        "1": 0.9406015037593984,
+        "2": 0.8085858585858586,
+        "3": 0.7386885245901639,
+        "4": 0.6754504504504505,
+        "6": 0.608203125,
+        "8": 0.5367088607594936,
+        "12": 0.5098039215686274,
+        "16": 0.5016666666666667,
+        "24": 0.56,
+        "32": 0.5333333333333333
+      },
+      "arm": "gen_strong",
+      "commutator_mean": 0.35490710880703985,
+      "commutator_se": 0.01937232738425183,
+      "contraction_mean": 0.4358515747834494,
+      "contraction_se": 0.06098425562306404,
+      "disturbance_mean": 0.4665269859004268,
+      "disturbance_se": 0.00451426868637201,
+      "eta_horizon": [
+        [
+          0.8773377432535323,
+          3
+        ],
+        [
+          0.8777567425871974,
+          3
+        ],
+        [
+          0.892509925996599,
+          3
+        ],
+        [
+          0.9171549688422137,
+          2
+        ],
+        [
+          0.8977875375496455,
+          2
+        ],
+        [
+          0.8658047524921365,
+          4
+        ],
+        [
+          0.905874164573008,
+          2
+        ],
+        [
+          0.9070283154812951,
+          2
+        ],
+        [
+          0.889890985507846,
+          3
+        ],
+        [
+          0.8757976022738446,
+          4
+        ]
+      ],
+      "eta_mean": 0.8906942738557317,
+      "eta_se": 0.005205584986722176,
+      "failures": 10,
+      "family": "A_general",
+      "gap_mean": 0.038000659769498665,
+      "gap_median": 0.037806007086057344,
+      "gap_min": 0.031688023480272595,
+      "gap_non_recall_mean": 0.006692918754715335,
+      "gap_q25": 0.03432307023053919,
+      "gap_q75": 0.04154614234665563,
+      "gap_se": 0.0013247056833547881,
+      "gap_value_recall_mean": 0.3400995023011631,
+      "gaps": [
+        0.03552638272919084,
+        0.03398868234883503,
+        0.03923415639431838,
+        0.04090092672424865,
+        0.043843796968041936,
+        0.031688023480272595,
+        0.040530449200632424,
+        0.043481789213876576,
+        0.03637785777779631,
+        0.034434532857773904
+      ],
+      "horizon_mean": 2.8,
+      "horizon_se": 0.24944382578492938,
+      "label": "general, prior 1 (eta - 0.9)^2",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 42,
+      "n_runs": 10,
+      "prob_bias_mean": 0.008221886304037774,
+      "prob_bias_se": 0.002389533071973994,
+      "recall_acc_mean": 0.774683132921677,
+      "recall_acc_se": 0.027679059811188397,
+      "retaining_seeds": 0,
+      "selected_gap": 0.031688023480272595,
+      "selected_recall_acc": 0.8878778030549236,
+      "selected_seed": 5,
+      "steps_mean": 1896.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 128.64499488750008,
+      "val_nll_median": 1.186243368532748
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.8902985074626866,
+        "1": 0.7429752066115702,
+        "2": 0.525974025974026,
+        "3": 0.4956043956043956,
+        "4": 0.49945652173913047,
+        "6": 0.5006993006993007,
+        "8": 0.5066147859922179,
+        "12": 0.50625,
+        "16": 0.5014814814814815,
+        "24": 0.5054054054054055,
+        "32": 0.5060150375939849,
+        "48": 0.478125
+      },
+      "arm": "gen_strong",
+      "commutator_mean": 0.426659868187909,
+      "commutator_se": 0.02197145533413727,
+      "contraction_mean": 0.17664655701804824,
+      "contraction_se": 0.031127370532030886,
+      "disturbance_mean": 0.45504459008022147,
+      "disturbance_se": 0.004754396562490447,
+      "eta_horizon": [
+        [
+          0.900209008743493,
+          1
+        ],
+        [
+          0.9007338090070395,
+          2
+        ],
+        [
+          0.9001113769603185,
+          2
+        ],
+        [
+          0.8330221938975431,
+          1
+        ],
+        [
+          0.9005486702530682,
+          1
+        ],
+        [
+          0.9005228927099752,
+          2
+        ],
+        [
+          0.9014736306191248,
+          1
+        ],
+        [
+          0.9013414003467858,
+          2
+        ],
+        [
+          0.9021162701146966,
+          2
+        ],
+        [
+          0.9002909919179833,
+          2
+        ]
+      ],
+      "eta_mean": 0.8940370244570028,
+      "eta_se": 0.006782460202279,
+      "failures": 10,
+      "family": "A_general",
+      "gap_mean": 0.013912510364501751,
+      "gap_median": 0.013896806356991795,
+      "gap_min": 0.013322751417693951,
+      "gap_non_recall_mean": 0.0010878098090673974,
+      "gap_q25": 0.01353641461834474,
+      "gap_q75": 0.01418211979430405,
+      "gap_se": 0.00014715163739611892,
+      "gap_value_recall_mean": 0.46854029901982425,
+      "gaps": [
+        0.014056812186929267,
+        0.013322751417693951,
+        0.014558042616428395,
+        0.01475131689815036,
+        0.013991840480676514,
+        0.013833226965197351,
+        0.013960385748786237,
+        0.013686326991977707,
+        0.0133737712720771,
+        0.01359062906710062
+      ],
+      "horizon_mean": 1.6,
+      "horizon_se": 0.16329931618554522,
+      "label": "general, prior 1 (eta - 0.9)^2",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 42,
+      "n_runs": 10,
+      "prob_bias_mean": 0.001228536420111258,
+      "prob_bias_se": 0.00030112743584618514,
+      "recall_acc_mean": 0.5482202447163516,
+      "recall_acc_se": 0.005244997805631605,
+      "retaining_seeds": 0,
+      "selected_gap": 0.013322751417693951,
+      "selected_recall_acc": 0.5645161290322581,
+      "selected_seed": 1,
+      "steps_mean": 1178.0,
+      "task": "marked_recall_tau16",
+      "train_seconds_mean": 102.3339057999001,
+      "val_nll_median": 0.9106764830198887
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9361702127659575,
+        "1": 0.9334586466165413,
+        "2": 0.9267676767676768,
+        "3": 0.939344262295082,
+        "4": 0.9168918918918919,
+        "6": 0.92265625,
+        "8": 0.925632911392405,
+        "12": 0.8843137254901962,
+        "16": 0.8433333333333334,
+        "24": 0.9400000000000001,
+        "32": 0.9
+      },
+      "arm": "n3_eta06",
+      "commutator_mean": 0.251857477021756,
+      "commutator_se": 0.0034908299793421976,
+      "contraction_mean": 0.9711626611506015,
+      "contraction_se": 0.02656528435091662,
+      "disturbance_mean": 0.3400448009735889,
+      "disturbance_se": 1.1200481986640738e-16,
+      "eta_horizon": [
+        [
+          0.5999999999997906,
+          41
+        ],
+        [
+          0.5999999999997908,
+          41
+        ],
+        [
+          0.59999999999979,
+          41
+        ],
+        [
+          0.5999999999997896,
+          41
+        ],
+        [
+          0.5999999999997897,
+          41
+        ],
+        [
+          0.5999999999997905,
+          41
+        ],
+        [
+          0.59999999999979,
+          5
+        ],
+        [
+          0.5999999999997904,
+          41
+        ],
+        [
+          0.5999999999997904,
+          41
+        ],
+        [
+          0.5999999999997895,
+          41
+        ]
+      ],
+      "eta_mean": 0.5999999999997901,
+      "eta_se": 1.4237044181850193e-16,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.029502989358797686,
+      "gap_median": 0.02866462128151528,
+      "gap_min": 0.026756196883941753,
+      "gap_non_recall_mean": 0.01079909093768117,
+      "gap_q25": 0.027059995828788205,
+      "gap_q75": 0.030773016754289204,
+      "gap_se": 0.0009452489454576198,
+      "gap_value_recall_mean": 0.20998314796177803,
+      "gaps": [
+        0.030531215104614977,
+        0.03093459274071776,
+        0.02707080258336077,
+        0.02923211320600341,
+        0.02796016305045264,
+        0.03071915809214635,
+        0.03670094700464159,
+        0.027027575565070502,
+        0.028097129357027153,
+        0.026756196883941753
+      ],
+      "horizon_mean": 37.4,
+      "horizon_se": 3.6,
+      "label": "n=3, eta = 0.6 fixed, #12 init",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 60,
+      "n_runs": 10,
+      "prob_bias_mean": 0.009238845652179401,
+      "prob_bias_se": 0.0012912201527353613,
+      "recall_acc_mean": 0.926259343516412,
+      "recall_acc_se": 0.0023317270564359093,
+      "retaining_seeds": 9,
+      "selected_gap": 0.02707080258336077,
+      "selected_recall_acc": 0.9343516412089697,
+      "selected_seed": 2,
+      "steps_mean": 1226.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 250.7171600499987,
+      "val_nll_median": 1.17685886380427
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.9486322188449849,
+        "1": 0.9422932330827068,
+        "2": 0.9234848484848485,
+        "3": 0.9078688524590163,
+        "4": 0.8804054054054055,
+        "6": 0.88671875,
+        "8": 0.9034810126582279,
+        "12": 0.8794117647058824,
+        "16": 0.8416666666666666,
+        "24": 0.9,
+        "32": 0.9
+      },
+      "arm": "n3_eta09",
+      "commutator_mean": 0.3190704925413415,
+      "commutator_se": 0.008633602902541249,
+      "contraction_mean": 0.9352763667475076,
+      "contraction_se": 0.062186165010267955,
+      "disturbance_mean": 0.5267788031005791,
+      "disturbance_se": 4.8109664400423446e-17,
+      "eta_horizon": [
+        [
+          0.9000000000000702,
+          41
+        ],
+        [
+          0.9000000000000705,
+          41
+        ],
+        [
+          0.90000000000007,
+          41
+        ],
+        [
+          0.9000000000000711,
+          3
+        ],
+        [
+          0.9000000000000706,
+          41
+        ],
+        [
+          0.9000000000000713,
+          41
+        ],
+        [
+          0.9000000000000711,
+          41
+        ],
+        [
+          0.9000000000000715,
+          41
+        ],
+        [
+          0.9000000000000706,
+          41
+        ],
+        [
+          0.9000000000000711,
+          41
+        ]
+      ],
+      "eta_mean": 0.9000000000000709,
+      "eta_se": 1.5635367204116223e-16,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.026164891502389303,
+      "gap_median": 0.024728906752897364,
+      "gap_min": 0.021813652349467152,
+      "gap_non_recall_mean": 0.010378128870053533,
+      "gap_q25": 0.023028105721731584,
+      "gap_q75": 0.027069593750115275,
+      "gap_se": 0.001636473398148648,
+      "gap_value_recall_mean": 0.17849663323676782,
+      "gaps": [
+        0.02314013786016919,
+        0.025325041030779556,
+        0.027346388066939606,
+        0.039831780921089785,
+        0.022692009306418758,
+        0.02413277247501517,
+        0.02356329728267164,
+        0.021813652349467152,
+        0.026826506753501695,
+        0.026977328977840498
+      ],
+      "horizon_mean": 37.2,
+      "horizon_se": 3.8,
+      "label": "n=3, eta = 0.9 fixed, #12 init",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 60,
+      "n_runs": 10,
+      "prob_bias_mean": 0.005492509688256494,
+      "prob_bias_se": 0.0015126250724737669,
+      "recall_acc_mean": 0.9161195970100747,
+      "recall_acc_se": 0.02058546699120329,
+      "retaining_seeds": 9,
+      "selected_gap": 0.021813652349467152,
+      "selected_recall_acc": 0.9395515112122197,
+      "selected_seed": 7,
+      "steps_mean": 1576.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 548.7927920414004,
+      "val_nll_median": 1.1728022825526967
+    },
+    {
+      "acc_by_delay": {
+        "0": 0.944984802431611,
+        "1": 0.9404135338345865,
+        "2": 0.9305555555555556,
+        "3": 0.9429508196721311,
+        "4": 0.9252252252252253,
+        "6": 0.93828125,
+        "8": 0.9509493670886077,
+        "12": 0.9284313725490196,
+        "16": 0.8833333333333334,
+        "24": 1.0,
+        "32": 0.9666666666666666
+      },
+      "arm": "n3_free",
+      "commutator_mean": 0.3365242385456806,
+      "commutator_se": 0.005882174681044947,
+      "contraction_mean": 0.9990243449737302,
+      "contraction_se": 0.0005219602253640667,
+      "disturbance_mean": 0.6046507849552201,
+      "disturbance_se": 0.028972753534164643,
+      "eta_horizon": [
+        [
+          0.9996788038607004,
+          41
+        ],
+        [
+          0.9989003457733756,
+          41
+        ],
+        [
+          0.9985139037773137,
+          41
+        ],
+        [
+          0.785172240386313,
+          41
+        ],
+        [
+          0.9999848440265814,
+          41
+        ],
+        [
+          0.7430701522958358,
+          41
+        ],
+        [
+          0.9997832513055496,
+          41
+        ],
+        [
+          0.9854486529196422,
+          41
+        ],
+        [
+          0.9848962810898468,
+          41
+        ],
+        [
+          0.9986920253274875,
+          41
+        ]
+      ],
+      "eta_mean": 0.9494140500762646,
+      "eta_se": 0.031094778512660917,
+      "failures": 10,
+      "family": "A_ff",
+      "gap_mean": 0.02347177148150187,
+      "gap_median": 0.022830824275299144,
+      "gap_min": 0.022089267761006847,
+      "gap_non_recall_mean": 0.009451183029253355,
+      "gap_q25": 0.022411809779981133,
+      "gap_q75": 0.02395644889718527,
+      "gap_se": 0.0005138353205974908,
+      "gap_value_recall_mean": 0.15876110906216848,
+      "gaps": [
+        0.02329567780210634,
+        0.022858027716726678,
+        0.022440727293688338,
+        0.02593876218242205,
+        0.02274838596851999,
+        0.02693227647053359,
+        0.02232505723885953,
+        0.023285911547283714,
+        0.02280362083387161,
+        0.022089267761006847
+      ],
+      "horizon_mean": 41.0,
+      "horizon_se": 0.0,
+      "label": "n=3, eta free, #12 init",
+      "lr": null,
+      "n_errors": 0,
+      "n_parameters": 61,
+      "n_runs": 10,
+      "prob_bias_mean": 0.008141259873293985,
+      "prob_bias_se": 0.001322426071680651,
+      "recall_acc_mean": 0.9376990575235619,
+      "recall_acc_se": 0.001645092479217689,
+      "retaining_seeds": 10,
+      "selected_gap": 0.022440727293688338,
+      "selected_recall_acc": 0.9444263893402665,
+      "selected_seed": 2,
+      "steps_mean": 1094.0,
+      "task": "marked_recall_tau4",
+      "train_seconds_mean": 352.69420346250047,
+      "val_nll_median": 1.169821965303784
+    }
+  ],
+  "structural": []
+}

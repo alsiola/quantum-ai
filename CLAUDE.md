@@ -16,6 +16,8 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   minute): `uv run python experiments/phase3c.py --config experiments/configs/phase3c.toml`
 - Phase 3b ablations (A/B/C_k/D/hybrid; about an hour with 7 workers):
   `uv run python experiments/phase3b.py --config experiments/configs/phase3b.toml`
+- Phase 4b falsification (one config per finding; 4–6 h each with 4 workers on a shared machine):
+  `uv run python experiments/phase4b.py --config experiments/configs/phase4b_{a,b,c}.toml`
 - Dependencies are pinned in `pyproject.toml` and locked in `uv.lock`. Add one with
   `uv add <pkg>==<version>` (or `uv add --dev`) and commit both files.
 
@@ -36,7 +38,7 @@ Research campaign: measurement-induced memory in quantum-native sequence models
   `Instrument`).
 - `tests/`: pytest. Every new physics feature gets a test against an analytic case or an
   independent brute-force computation.
-- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test); `benchmarks.md` (the task suite). Don't edit `docs/literature-review.md`
+- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings); `benchmarks.md` (the task suite). Don't edit `docs/literature-review.md`
   unless your issue is the literature review.
 - `experiments/`: scripts, plus `experiments/configs/*.toml` (one config per run family).
 - `results/`: raw outputs in `results/<experiment>/<timestamp>/` (gitignored); small curated

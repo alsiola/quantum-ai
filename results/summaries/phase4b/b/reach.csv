@@ -1,0 +1,5 @@
+task,family,median_reach,median_reach_arm,selected_reach,selected_reach_arm
+marked_recall_tau16,A_general,,,42,gen_free
+marked_recall_tau4,A_ff,,,,
+marked_recall_tau4,A_general,,,,
+markov1_quaternary,A_ff,41,free,41,free
