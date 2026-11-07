@@ -8,8 +8,8 @@ CSVs (`models`, `export`, `transpile`, `noise`, `thresholds`, `aer_check`, `cost
 the exported circuits as OpenQASM 3 (`circuits/<model>_T4.qasm`).
 
 Reproduce (needs the optional, pinned `hardware` group: qiskit 2.6.2, qiskit-aer 0.18.2,
-qiskit-ibm-runtime 0.51.0 for the fake backends; about 20 min of training plus 30–40 min of
-analysis on a shared machine):
+qiskit-ibm-runtime 0.51.0 for the fake backends; about 15 min of training with 4 workers plus
+45 min of analysis on a shared machine, most of it the noisy Aer cross-check and the witness):
 
 ```
 uv run --group hardware python experiments/phase5a.py --config experiments/configs/phase5a.toml
@@ -26,8 +26,9 @@ memory-dimension claim on its output, is a small experiment. Each symbol is 2 ph
 qubits, 3 CZ gates, one mid-circuit measurement and one reset (about 5 µs). Under
 FakeKingston's and FakeFez's calibrations the exact noisy model keeps a KL rate below the
 best 2-state classical model at every N = 3–8, by 1.4× to 17×. A Hankel dimension witness
-that is exactly zero for *every* 2-state HMM comes out at |z| ≈ 15–70 from 20,000 shots of 64
-symbols. That is 13.5 s of QPU time per model: about 22 USD at Pay-As-You-Go prices, or 2% of
+that is exactly zero for *every* 2-state HMM comes out at |z| ≈ 6.6–68 (N = 8 to 3) from
+20,000 shots of 64 symbols, against |z| ≤ 1.1 for a 2-state HMM control. That is 13.5 s of
+QPU time per model: about 22 USD at Pay-As-You-Go prices, or 2% of
 the free Open plan's monthly allowance.
 
 **Feasible, with care.** The n = 3 feed-forward retention model (5 qubits, 24 CZ per
@@ -282,8 +283,20 @@ shows the two differ, as expected.
 ### 4.4 Cross-check against Aer's own noise model
 
 `AerSimulator.from_backend(FakeKingston)` (Aer's model: thermal relaxation within gates, the
-backend's asymmetric readout, no reset or idle error) was run on the transpiled T = 6
-circuits, 100,000 shots. TV distances of the 6-symbol distribution: AER_TABLE
+backend's asymmetric readout, no reset or idle error) was run on the transpiled circuits (T = 6 for pmd_N3, T = 3 for recall_n3, so that
+n_symbols^T ≤ 4,096), 100,000 shots, without shot branching. TV distances of the T-symbol distribution:
+
+| model | T | strings | vs noiseless | vs calibrated (this study) | vs calibrated, no idle relaxation | sampling scale ½√(K/N) |
+|---|---|---|---|---|---|---|
+| pmd_N3 | 6 | 64 | 0.0141 | 0.0187 | **0.0115** | 0.0126 |
+| recall_n3 | 3 | 4,096 | 0.0667 | 0.0725 | **0.0601** | 0.101 |
+
+For pmd_N3, Aer's model matches this study's calibrated instrument *without* idle
+relaxation, within sampling (the scale column is an upper bound on the expected TV). Aer's
+`from_backend` model applies no relaxation during measurement and reset, so it is the more
+optimistic of the two, and the instruments used above are the more pessimistic. For
+recall_n3 the 4,096-string distribution is too sparse at 100,000 shots to separate the
+variants, but the ordering is the same.
 
 **An Aer pitfall found on the way.** In qiskit-aer 0.18.2, `shot_branching_enable=True`
 mis-applies readout errors to mid-circuit measurements. With a 10% flip, three successive
@@ -355,7 +368,20 @@ error mitigation and no training.
      recurrence (#11, `tests/test_merge_bound.py`). A significantly non-zero value excludes
      every 2-state classical model of the device's output.
    - Predicted, from simulated 20,000-shot experiments with bootstrap errors over shots
-     (`witness.csv`): WITNESS_SUMMARY
+     (`witness.csv`),
+     the largest |z| over the four offsets.
+
+     | | N = 3 | 4 | 5 | 6 | 7 | 8 |
+     |---|---|---|---|---|---|---|
+     | source (PMD itself) | 80 | 63 | 40 | 19 | 10 | 6.2 |
+     | 1-qubit A, noiseless | 78 | 58 | 36 | 19 | 9.7 | 9.9 |
+     | … FakeKingston calibration | 68 | 46 | 31 | 17 | 6.9 | 6.6 |
+     | … FakeFez calibration | 64 | 44 | 29 | 17 | 8.0 | 6.2 |
+     | control: a random 2-state HMM | 1.1 | | | | | |
+
+     The witness shrinks with N, for the source itself as for the models, but even N = 8 is
+     over 6σ at 20,000 shots. The exact witness of the noisy models agrees with the
+     sampled one (`witness.csv`).
 2. **Block KL** D_L/L(device ‖ source), L ≤ 8, against the simulated noisy prediction
    (PMD). With 160,000 blocks of 8 per model it is precise to about ±0.001.
 3. **Generative recall (recall_n3).** Predicted 0.60 (Kingston calibration) against 0.5 for

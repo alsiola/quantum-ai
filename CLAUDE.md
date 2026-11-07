@@ -19,7 +19,7 @@ Research campaign: measurement-induced memory in quantum-native sequence models
 - Phase 4b falsification (one config per finding; 4–6 h each with 4 workers on a shared machine):
   `uv run python experiments/phase4b.py --config experiments/configs/phase4b_{a,b,c}.toml`
 - Phase 5a hardware feasibility (optional `hardware` group: Qiskit, Aer, fake IBM backends;
-  about 30 min with 4 workers):
+  about 1 h with 4 workers on a shared machine):
   `uv run --group hardware python experiments/phase5a.py --config experiments/configs/phase5a.toml`.
   The main check does not need the group; `tests/test_hardware.py` skips without it.
 - Dependencies are pinned in `pyproject.toml` and locked in `uv.lock`. Add one with

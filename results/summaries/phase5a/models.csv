@@ -1,0 +1,10 @@
+model,task,layout,n_memory,n_output,n_qubits,n_parameters,seed,test_gap,steps_run,repro_val_nll_diff,repro_test_gap_diff
+pmd_N3,pmd_N3,general,1,1,2,13,8,0.00034218096588663747,1350,0.0,
+pmd_N4,pmd_N4,general,1,1,2,13,9,0.0011453919677313136,480,0.0,
+pmd_N5,pmd_N5,general,1,1,2,13,7,0.0008636390589745228,1350,0.0,
+pmd_N6,pmd_N6,general,1,1,2,13,9,0.00116427910664823,630,0.0,
+pmd_N7,pmd_N7,general,1,1,2,13,1,0.0007583027195347462,1060,0.0,
+pmd_N8,pmd_N8,general,1,1,2,13,1,0.0014642615008041812,670,0.0,
+mq_n2,markov1_quaternary,general,2,2,4,26,2,0.0018514848556274743,890,,0.0
+recall_n2_weak,marked_recall_tau4,feed-forward,2,2,4,41,2,0.03480575948777799,3000,,0.0
+recall_n3,marked_recall_tau4,feed-forward,3,2,5,61,2,0.022440727293688338,1540,,0.0
