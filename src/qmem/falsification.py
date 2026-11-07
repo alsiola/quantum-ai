@@ -171,15 +171,9 @@ def protected_subspace_search(
         ev = torch.linalg.eigvalsh(dagger(q) @ diff @ q)
         return ev[:, -1] - ev[:, 0], res
 
-    w = torch.randn(restarts, 2, d, dim, generator=gen, dtype=REAL_DTYPE).requires_grad_(True)
-    for mu in penalties:
-        opt = torch.optim.Adam([w], lr=0.02)
-        for _ in range(steps):
-            con, res = measure(w)
-            loss = (-con + mu * res).sum()  # restarts are independent: sum their losses
-            opt.zero_grad()
-            loss.backward()
-            opt.step()
+    w = torch.randn(restarts, 2, d, dim, generator=gen, dtype=REAL_DTYPE)
+    with torch.enable_grad():  # callers may sit inside no_grad (e.g. post-training analysis)
+        _ascend(w, measure, penalties, steps)
     with torch.no_grad():
         con, res = measure(w)
     feasible = res < tol
@@ -194,6 +188,19 @@ def protected_subspace_search(
         "restarts": restarts,
         "max_contrast_unconstrained": float(ev[-1] - ev[0]),
     }
+
+
+def _ascend(w: torch.Tensor, measure: Callable, penalties: Sequence[float], steps: int) -> None:
+    w.requires_grad_(True)
+    for mu in penalties:
+        opt = torch.optim.Adam([w], lr=0.02)
+        for _ in range(steps):
+            con, res = measure(w)
+            loss = (-con + mu * res).sum()  # restarts are independent: sum their losses
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+    w.requires_grad_(False)
 
 
 def g_for_strength(eta: float) -> float:
