@@ -72,7 +72,7 @@ lr); the per-D-tuned random start is in the table after this one.
 | HQMM | iid_quaternary | 3 (8) | see #6 | 0/10, 0.0018 | identity init, data `p_y`, lr 0.003 |
 | HQMM | markov1_quaternary | 4 (16) | 10/10, 0.0275 | 10/10, 0.0174 | identity init, data `p_y`, lr 0.003 (gap down, still fails) |
 | HQMM | markov1_quaternary | 3 (8) | see #6 | 5/10, 0.0092 | identity init, data `p_y`, lr 0.003 |
-UMPS_ROW
+| uMPS | iid_quaternary | χ = 16 | 10/10, 0.0170 | **0/10, 0.0009** | identity init, data `p_y`, lr 0.01 |
 RET_ROWS
 
 Things that did **not** help, each recorded as a cell in the summary:
@@ -133,7 +133,8 @@ grid, and early stopping at about 400 steps) limits it there; that wasn't separa
 - **Near-identity for the HQMM and uMPS: yes, at large D.** HQMM D = 16 on
   `iid_quaternary` goes from 10/10 failed to 0/10 (gap 0.0157 → 0.0023), and D = 8 is
   0/10. On `markov1_quaternary` the D = 16 gap falls from 0.0275 to 0.0174 but every seed
-  still fails; D = 8 fails 5/10. UMPS_INIT_SENTENCE
+  still fails; D = 8 fails 5/10. The uMPS at χ = 16 on `iid_quaternary` goes from 10/10
+  failed to 0/10 (0.0170 → 0.0009); that is the only uMPS cell run.
 - **Near-product for A: no, it is worse.** The product start begins close to the unigram
   (initial NLL 1.30–1.32 against 1.41–1.58 for the random circuit; history TV 0.013
   against 0.08–0.15) and its gradient variance does not fall with n. Yet it fails 9/10 and 10/10 on
@@ -209,7 +210,7 @@ RETENTION_SECTION
 | A, any | any | **not** `init = "product"` |
 | HQMM | ≤ 2 (D ≤ 4) | Phase 3a recipe (random Stiefel init) |
 | HQMM | ≥ 3 (D ≥ 8) | `init = "identity"`, `init_scale = 0.3`, `init_probs = "data"`, lr tuned with 0.003 in the grid |
-| uMPS | χ ≥ 8 | UMPS_RECIPE |
+| uMPS | χ ≥ 8 | `init = "identity"`, `init_scale = 0.3`, `init_probs = "data"`, lr tuned (0.01 chosen at χ = 16); tested on `iid_quaternary` only |
 
 The restart cost is 4 × 300 screening steps per run. Since the screened run then
 early-stops sooner (mean 670–730 steps against 935–1075), the total cost is about twice the
