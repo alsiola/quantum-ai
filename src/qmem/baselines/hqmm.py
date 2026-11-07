@@ -131,3 +131,78 @@ class StiefelInstrumentModel(QuantumMemoryModel):
             "flops_per_step": self.flops_per_step(),
             "n_kraus_per_outcome": 2**self.n_env,
         }
+
+
+class GeneratorInstrumentModel(QuantumMemoryModel):
+    """HQMM restricted to ``n_generators`` real parameters (Phase 4b, issue #13).
+
+    ``V(theta) = exp(i sum_k theta_k H_k) V_0``: ``V_0`` is a Haar-random isometry
+    (the same distribution as the full HQMM's start) and the ``H_k`` are fixed random
+    Hermitian generators on the ``D Y E``-dimensional row space (GUE, unit Frobenius
+    norm), both drawn from ``seed``. ``V`` stays on the Stiefel manifold for every
+    ``theta``, so every parameter value is a valid instrument, ordered as in
+    ``StiefelInstrumentModel``. ``theta`` starts at 0, so the start *is* a random full
+    HQMM; training moves only along a ``K``-dimensional submanifold of instruments.
+
+    The generators have no circuit structure (no locality, no qubit layout), so at
+    ``K`` equal to A's parameter count this separates "the instrument class at A's
+    parameter count" from "A's circuit".
+    """
+
+    family = "hqmm_gen"
+
+    def __init__(
+        self,
+        n_memory: int,
+        n_output: int,
+        n_generators: int,
+        n_env: int = 0,
+        seed: int = 0,
+    ):
+        super().__init__(n_memory, n_output, blocks=[], n_env=n_env, initial="zero")
+        gen = torch.Generator().manual_seed(seed)
+        d, dy, de = 2**n_memory, 2**n_output, 2**n_env
+        rows = d * dy * de
+        w = torch.complex(
+            torch.randn(rows, d, generator=gen, dtype=REAL_DTYPE),
+            torch.randn(rows, d, generator=gen, dtype=REAL_DTYPE),
+        )
+        self.register_buffer("v0", isometry_from_matrix(w))
+        a = torch.complex(
+            torch.randn(n_generators, rows, rows, generator=gen, dtype=REAL_DTYPE),
+            torch.randn(n_generators, rows, rows, generator=gen, dtype=REAL_DTYPE),
+        )
+        h = a + a.conj().transpose(-1, -2)
+        h = h / torch.linalg.matrix_norm(h)[:, None, None]
+        self.register_buffer("generators", h)
+        self.theta = nn.Parameter(torch.zeros(n_generators, dtype=REAL_DTYPE))
+
+    def isometry(self) -> torch.Tensor:
+        h = torch.einsum("k,kij->ij", self.theta.to(DTYPE), self.generators)
+        return torch.linalg.matrix_exp(1j * h) @ self.v0
+
+    def instrument(self) -> Instrument:
+        d, dy, de = self.memory_dim, self.n_symbols, 2**self.n_env
+        v = self.isometry().reshape(d, dy, de, d)
+        return Instrument(v.permute(1, 2, 0, 3))
+
+    def state_dim(self) -> int:
+        return self.memory_dim
+
+    def state_kind(self) -> str:
+        return "pure D-dim quantum state" if self.n_env == 0 else "D x D density matrix"
+
+    def flops_per_step(self) -> int:
+        d, e = self.memory_dim, 2**self.n_env
+        return 4 * (2 * e * d**3 + self.n_symbols * d**2)
+
+    def describe(self) -> dict[str, Any]:
+        return {
+            "family": self.family,
+            "n_symbols": self.n_symbols,
+            "n_parameters": self.n_parameters(),
+            "state_dim": self.state_dim(),
+            "state_kind": self.state_kind(),
+            "flops_per_step": self.flops_per_step(),
+            "n_kraus_per_outcome": 2**self.n_env,
+        }

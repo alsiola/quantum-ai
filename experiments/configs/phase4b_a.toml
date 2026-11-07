@@ -1,0 +1,334 @@
+# Phase 4b (issue #13), finding (a): is A parameter-efficient compared with D?
+# Run: uv run python experiments/phase4b.py --config experiments/configs/phase4b_a.toml
+#
+# Four falsification families:
+#   1. other D parameterisations at D_diss's parameter count (25 binary, 34 for 4 symbols):
+#      a deeper update with RY only, CZ entanglers, and a learnable ancilla coupling
+#      (memory HEA + a trainable partial SWAP of each memory qubit with a fresh ancilla:
+#      amplitude damping of learnable strength, qmem.circuits.PartialSwapBlock);
+#   2. budget: D, D_diss and the partial-SWAP D with 4x the steps and patience and a wider
+#      lr grid (A's Phase 2 lr 0.05 plus the Phase 3a/3f grid);
+#   3. an NLL-vs-parameters sweep for A, D_diss, uMPS, HQMM, HMM and GRU on two tasks where
+#      #11 separates the classes (nemo, probability_clock) plus markov1_quaternary;
+#   4. the HQMM restricted to A's parameter count: V = exp(i sum_k theta_k H_k) V_0 with
+#      K random generators (qmem.baselines.GeneratorInstrumentModel), K = A's count and 2x.
+#
+# Every gradient arm with `lrs` is tuned on validation (tuning seeds 100, 101; lowest median
+# validation NLL), then trained with seeds 0-9. The HMM is fitted by EM (one restart per
+# seed, as #11). Data: the Phase 2 / Phase 3c splits (data.seed = 0).
+
+[experiment]
+name = "phase4b_a"
+title = "Phase 4b (a): parameter efficiency of A against D, D_diss, the HQMM and classical models"
+workers = 4                   # shared machine (load average 50-90 on 8 cores when launched)
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+tuning_seeds = [100, 101]
+success_gap = 0.01
+summary_dir = "results/summaries/phase4b/a"
+
+[summary]
+gap_vs_params = true
+reach = true
+
+[analysis]
+subspace_restarts = 0
+
+[data]
+n_train = 512
+n_val = 256
+n_test = 512
+length = 32
+seed = 0
+
+[train]                       # A's budget (Phase 2/3a/3f); lr from the arm or its tuning
+optimizer = "adam"
+schedule = "constant"
+steps = 1500
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 30
+min_delta = 1e-4
+restore_best = true
+clip_grad_norm = 0.0
+
+# -- tasks ---------------------------------------------------------------------------
+[tasks.markov1_binary]
+spec = { kind = "markov", order = 1, probs = [[0.9, 0.1], [0.3, 0.7]] }
+[tasks.even]
+spec = { kind = "even", p = 0.5 }
+[tasks.markov1_quaternary]
+spec = { kind = "markov", order = 1, probs = [
+  [0.7, 0.1, 0.1, 0.1],
+  [0.1, 0.1, 0.7, 0.1],
+  [0.2, 0.2, 0.2, 0.4],
+  [0.5, 0.0, 0.0, 0.5],
+] }
+[tasks.nemo]
+spec = { kind = "nemo", p = 0.666 }
+[tasks.probability_clock]
+spec = { kind = "probability_clock" }
+
+# -- families ------------------------------------------------------------------------
+[a_model]                     # the Phase 2 recipe (general circuit, joint_depth = 2)
+variant = "A"
+n_memory = 2
+n_env = 0
+memory_depth = 2
+joint_depth = 2
+strength = 0.7853981633974483
+strength_trainable = true
+rotations = ["ry", "rz"]
+entangler = "cnot"
+pattern = "linear"
+initial = "zero"
+init_scale = 1.0
+
+[families.A]
+kind = "A"
+
+[families.D]                  # #7's unitary D: readout depth set to match A's count
+kind = "A"
+model = { variant = "D", memory_depth = 0, update_depth = 1 }
+by_n_output = { "1" = { joint_depth = 2 }, "2" = { joint_depth = 1 } }
+
+[families.D_diss]             # #7's D_diss: one HEA layer on memory + 1 traced-out ancilla
+kind = "A"
+model = { variant = "D", memory_depth = 0, update_depth = 1, update_env = 1 }
+by_n_output = { "1" = { joint_depth = 2 }, "2" = { joint_depth = 1 } }
+
+[families.D_pswap]            # learnable ancilla coupling (2 ancillas, one per memory qubit)
+kind = "A"
+model = { variant = "D", memory_depth = 0, update_depth = 1, update_env = 2, update_coupling = "pswap" }
+by_n_output = { "1" = { joint_depth = 2 }, "2" = { joint_depth = 1 } }
+
+[families.hqmm]
+kind = "hqmm"
+model = { n_env = 0, init_scale = 1.0 }
+
+[families.hqmm_gen]
+kind = "hqmm_gen"
+model = { n_env = 0 }
+
+[families.umps]
+kind = "umps"
+model = { purification = 1, fp_iters = 200, fp_grad_iters = 20, fp_tol = 1e-8 }
+
+[families.hmm]
+kind = "hmm"
+method = "em"
+model = { init_scale = 1.0 }
+fit = { max_iters = 500, patience = 20, min_delta = 1e-5 }
+
+[families.gru]
+kind = "gru"
+
+# -- 1 and 2: D parameterisations and budgets (Phase 2 tasks from #7) ----------------
+[[arms]]
+name = "A"
+label = "A (n=2, recipe)"
+family = "A"
+tasks = ["markov1_binary", "even", "markov1_quaternary", "nemo", "probability_clock"]
+lrs = [0.01, 0.03, 0.1]
+lr_by_task = { nemo = 0.1, probability_clock = 0.03 }   # #11 (phase3f tuning.csv)
+
+[[arms]]
+name = "D_diss"
+label = "D_diss (#7)"
+family = "D_diss"
+tasks = ["markov1_binary", "even", "markov1_quaternary", "nemo", "probability_clock"]
+lrs = [0.01, 0.03, 0.1]
+lr_by_task = { nemo = 0.01, probability_clock = 0.01 }   # #11 (phase3f tuning.csv)
+
+[[arms]]
+name = "D_diss_deep"
+label = "D_diss, 2 RY-only layers"
+family = "D_diss"
+model = { update_depth = 2, update_rotations = ["ry"] }
+tasks = ["markov1_binary", "even", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+
+[[arms]]
+name = "D_diss_cz"
+label = "D_diss, CZ entangler"
+family = "D_diss"
+model = { update_entangler = "cz" }
+tasks = ["markov1_binary", "even", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+
+[[arms]]
+name = "D_pswap"
+label = "D, learnable ancilla coupling"
+family = "D_pswap"
+tasks = ["markov1_binary", "even", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+
+[[arms]]
+name = "D_long"
+label = "D (unitary), 4x budget"
+family = "D"
+train = { steps = 6000, patience = 120 }
+tasks = ["markov1_binary", "even", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.05, 0.1]
+
+[[arms]]
+name = "D_diss_long"
+label = "D_diss, 4x budget"
+family = "D_diss"
+train = { steps = 6000, patience = 120 }
+tasks = ["markov1_binary", "even", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.05, 0.1]
+
+[[arms]]
+name = "D_pswap_long"
+label = "D, learnable coupling, 4x budget"
+family = "D_pswap"
+train = { steps = 6000, patience = 120 }
+tasks = ["markov1_binary", "even", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.05, 0.1]
+
+# -- 3: NLL against parameters (nemo, probability_clock, markov1_quaternary) ----------
+# Sizes per family (binary / 4-symbol parameter counts): A n=1 13/18, A n=2 small 11/14,
+# A n=2 21/26 (arm "A"); D_diss n=1 and n=2 (#7); uMPS chi=2,4; HQMM D=2,4; HMM 2,3,4,6
+# states; GRU H=1,2,4. Cells that #11 ran on nemo and probability_clock with the same data,
+# model and budget reuse its tuned lr (`lr_by_task`); every other cell is tuned here.
+# Pruned for compute (load average 90-120 on 8 cores): A with joint_depth 3, D_diss with two
+# update layers (#7's D_diss+ covers larger D_diss), uMPS chi=3, GRU H=3.
+[[arms]]
+name = "A_n1"
+label = "A (n=1)"
+family = "A"
+model = { n_memory = 1 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+lr_by_task = { nemo = 0.1, probability_clock = 0.03 }   # #11 (phase3f tuning.csv)
+
+[[arms]]
+name = "A_small"
+label = "A (n=2, 1+1 layers)"
+family = "A"
+model = { memory_depth = 1, joint_depth = 1 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+
+[[arms]]
+name = "D_diss_n1"
+label = "D_diss (n=1)"
+family = "D_diss"
+model = { n_memory = 1 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+lr_by_task = { nemo = 0.1, probability_clock = 0.1 }   # #11 (phase3f tuning.csv)
+
+[[arms]]
+name = "umps_2"
+label = "uMPS chi=2"
+family = "umps"
+model = { bond_dim = 2 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+lr_by_task = { nemo = 0.1, probability_clock = 0.1 }   # #11 (phase3f tuning.csv)
+
+[[arms]]
+name = "umps_4"
+label = "uMPS chi=4"
+family = "umps"
+model = { bond_dim = 4 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+lr_by_task = { nemo = 0.1, probability_clock = 0.1 }   # #11 (phase3f tuning.csv)
+
+[[arms]]
+name = "hqmm_2"
+label = "HQMM D=2"
+family = "hqmm"
+model = { n_memory = 1 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+lr_by_task = { nemo = 0.03, probability_clock = 0.1 }   # #11 (phase3f tuning.csv)
+
+[[arms]]
+name = "hqmm_4"
+label = "HQMM D=4"
+family = "hqmm"
+model = { n_memory = 2 }
+tasks = ["markov1_binary", "even", "nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+lr_by_task = { nemo = 0.1, probability_clock = 0.1 }   # #11 (phase3f tuning.csv)
+
+[[arms]]
+name = "hmm_2"
+label = "HMM 2 states"
+family = "hmm"
+model = { n_states = 2 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+
+[[arms]]
+name = "hmm_3"
+label = "HMM 3 states"
+family = "hmm"
+model = { n_states = 3 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+
+[[arms]]
+name = "hmm_4"
+label = "HMM 4 states"
+family = "hmm"
+model = { n_states = 4 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+
+[[arms]]
+name = "hmm_6"
+label = "HMM 6 states"
+family = "hmm"
+model = { n_states = 6 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+
+[[arms]]
+name = "gru_1"
+label = "GRU H=1"
+family = "gru"
+model = { hidden = 1 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+
+[[arms]]
+name = "gru_2"
+label = "GRU H=2"
+family = "gru"
+model = { hidden = 2 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+
+[[arms]]
+name = "gru_4"
+label = "GRU H=4"
+family = "gru"
+model = { hidden = 4 }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]
+
+# -- 4: the HQMM at A's parameter count -------------------------------------------------
+[[arms]]
+name = "hqmm_gen_A"
+label = "HQMM D=4, K = A's count"
+family = "hqmm_gen"
+model = { n_memory = 2, n_generators_by_symbols = { "2" = 21, "4" = 26 } }
+tasks = ["markov1_binary", "even", "markov1_quaternary", "nemo", "probability_clock"]
+lrs = [0.01, 0.03, 0.1]
+
+[[arms]]
+name = "hqmm_gen_2A"
+label = "HQMM D=4, K = 2x A's count"
+family = "hqmm_gen"
+model = { n_memory = 2, n_generators_by_symbols = { "2" = 42, "4" = 52 } }
+tasks = ["markov1_binary", "even", "markov1_quaternary", "nemo", "probability_clock"]
+lrs = [0.01, 0.03, 0.1]
+
+[[arms]]
+name = "hqmm_gen_A1"
+label = "HQMM D=2, K = A(n=1)'s count"
+family = "hqmm_gen"
+model = { n_memory = 1, n_generators_by_symbols = { "2" = 13, "4" = 18 } }
+tasks = ["nemo", "probability_clock", "markov1_quaternary"]
+lrs = [0.01, 0.03, 0.1]

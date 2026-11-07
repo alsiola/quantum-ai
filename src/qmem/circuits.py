@@ -246,3 +246,59 @@ class OutcomeConditionedBlock(Block):
         ws = self.outcome_unitaries()
         op = sum(torch.kron(ws[y], self.projectors[y]) for y in range(len(self.ws)))
         return embed(op, self.qubits, self.n_qubits)
+
+
+class PartialSwapBlock(Block):
+    """Trainable partial SWAP ``exp(i theta SWAP) = cos(theta) I + i sin(theta) SWAP`` per pair.
+
+    With the second qubit of a pair a fresh ancilla in ``|0>`` that is traced out
+    afterwards, the first qubit undergoes amplitude damping with ``gamma = sin^2 theta``
+    (Kraus ``diag(1, cos theta)`` and ``sin theta |0><1|``, up to phases; tested):
+    ``theta = 0`` leaves it alone and ``theta = pi/2`` resets it to ``|0>``. This is a
+    learnable ancilla coupling: the optimiser sets how strongly each memory qubit is
+    dissipated (Phase 4b, issue #13). Angles are drawn uniformly on
+    ``[0, pi/2 * init_scale]`` from ``generator``.
+    """
+
+    def __init__(
+        self,
+        pairs: Sequence[tuple[int, int]],
+        n_qubits: int,
+        init_scale: float = 1.0,
+        generator: torch.Generator | None = None,
+    ):
+        pairs = [tuple(p) for p in pairs]
+        super().__init__(sorted({q for p in pairs for q in p}), n_qubits)
+        self.pairs = pairs
+        u = torch.rand(len(pairs), generator=generator, dtype=REAL_DTYPE)
+        self.theta = nn.Parameter(u * (math.pi / 2) * init_scale)
+        swap = torch.zeros(4, 4, dtype=eye(1).dtype)
+        for a in range(2):
+            for b in range(2):
+                swap[2 * b + a, 2 * a + b] = 1.0
+        self.register_buffer("swap", swap, persistent=False)
+
+    def unitary(self) -> torch.Tensor:
+        u = eye(2**self.n_qubits)
+        i4 = eye(4)
+        for k, pair in enumerate(self.pairs):
+            t = self.theta[k]
+            op = torch.cos(t).to(i4.dtype) * i4 + 1j * torch.sin(t).to(i4.dtype) * self.swap
+            u = embed(op, pair, self.n_qubits) @ u
+        return u
+
+
+class SequenceBlock(Block):
+    """Several blocks on the same system applied in order, as one block."""
+
+    def __init__(self, blocks: Sequence[Block], n_qubits: int):
+        super().__init__(sorted({q for b in blocks for q in b.qubits}), n_qubits)
+        if any(b.n_qubits != n_qubits for b in blocks):
+            raise ValueError("all blocks must act on the same system size")
+        self.blocks = nn.ModuleList(blocks)
+
+    def unitary(self) -> torch.Tensor:
+        u = eye(2**self.n_qubits)
+        for b in self.blocks:
+            u = b.unitary() @ u
+        return u

@@ -1,0 +1,254 @@
+# Phase 4b (issue #13), finding (b): weak measurement beats projective readout for retention
+# in the feed-forward layout.
+# Run: uv run python experiments/phase4b.py --config experiments/configs/phase4b_b.toml
+#
+# Task: marked_recall (eps = 0.05, geometric timing) at tau = 4, the Phase 3e falsification
+# recipe: 4x the training data (2048 sequences of 64), 3000 steps, patience 60, lr 0.1 (the
+# best lr at every fixed eta in #10's falsification arm, so no further tuning here).
+#
+# 1. Can a weak eta be learned? Fixed eta = 0.6 (the best weak value of #10) and 0.9, a
+#    free eta (starts at g = pi/4), eta annealed (frozen at 0.6 for 1500 steps, then free),
+#    a quadratic prior lam (eta - 0.6)^2 on the operational strength (lam = 0.1 and 1), and
+#    a curriculum over tau (1 -> 2 -> 4, free eta). "Elsewhere": the same arms on
+#    markov1_quaternary (Phase 2 data), where the free feed-forward A reaches the optimum.
+# 2. Why it helps (wave 1 starts from wave 0's models, same seed):
+#    * soft targets: fixed eta 0.6 and 0.9 fitted to the source's exact predictive
+#      (the expected NLL, no sampling noise): what each strength can reach at all;
+#    * swaps: the trained eta = 0.6 model re-trained at eta = 0.9 and vice versa, and the
+#      eta = 0.6 model released to a free eta;
+#    * the disturbance metric (1 - corrected operation fidelity) of every trained model.
+# 3. The general layout (4 joint layers, unshared trainable g, n = 2), free and with a prior
+#    on eta pulling weak (0.3) or strong (0.9), at tau = 4 and tau = 16; and n = 3 in the
+#    feed-forward layout with #12's options (near-identity start, restarts).
+
+[experiment]
+name = "phase4b_b"
+title = "Phase 4b (b): weak measurement and retention"
+workers = 4
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+tuning_seeds = [100, 101]
+success_gap = 0.01
+summary_dir = "results/summaries/phase4b/b"
+
+[summary]
+recall_bars = true
+
+[analysis]
+max_lag = 40
+delay_bins = [0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48]
+holevo_threshold_bits = 0.1
+subspace_restarts = 0
+
+[data]
+n_train = 512
+n_val = 256
+n_test = 512
+length = 32
+seed = 0
+
+[train]                       # Phase 3e falsification recipe
+optimizer = "adam"
+lr = 0.1
+schedule = "constant"
+steps = 3000
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 60
+min_delta = 1e-4
+restore_best = true
+clip_grad_norm = 0.0
+
+[tasks.marked_recall_tau4]
+spec = { kind = "marked_recall", tau = 4, eps = 0.05 }
+data = { n_train = 2048, length = 64 }
+[tasks.marked_recall_tau16]   # Phase 3e's general-circuit arm: 512 sequences of 128
+spec = { kind = "marked_recall", tau = 16, eps = 0.05 }
+data = { length = 128 }
+[tasks.markov1_quaternary]
+spec = { kind = "markov", order = 1, probs = [
+  [0.7, 0.1, 0.1, 0.1],
+  [0.1, 0.1, 0.7, 0.1],
+  [0.2, 0.2, 0.2, 0.4],
+  [0.5, 0.0, 0.0, 0.5],
+] }
+
+[a_model]                     # Phase 3d/3e feed-forward layout, shared strength
+variant = "A"
+n_memory = 2
+n_env = 0
+memory_depth = 2
+joint_depth = 0
+feedforward_depth = 2
+strength = 0.7853981633974483
+strength_trainable = true
+strength_shared = true
+rotations = ["ry", "rz"]
+entangler = "cnot"
+pattern = "linear"
+initial = "zero"
+init_scale = 1.0
+
+[families.A_ff]
+kind = "A"
+
+[families.A_general]          # Phase 3e capacity check: 4 joint layers, unshared trainable g
+kind = "A"
+model = { joint_depth = 4, feedforward_depth = 0, strength_shared = false }
+
+# -- 1. can a weak eta be learned? -----------------------------------------------------
+[[arms]]
+name = "eta06"
+label = "eta = 0.6 fixed"
+family = "A_ff"
+eta = 0.6
+tasks = ["marked_recall_tau4", "markov1_quaternary"]
+
+[[arms]]
+name = "eta09"
+label = "eta = 0.9 fixed"
+family = "A_ff"
+eta = 0.9
+tasks = ["marked_recall_tau4", "markov1_quaternary"]
+
+[[arms]]
+name = "free"
+label = "eta free"
+family = "A_ff"
+tasks = ["marked_recall_tau4", "markov1_quaternary"]
+
+[[arms]]
+name = "anneal"
+label = "eta 0.6 frozen, then free"
+family = "A_ff"
+mode = "stages"
+stages = [
+  { label = "weak", eta = 0.6, frozen = ["strength"], train = { steps = 1500 } },
+  { label = "free", train = { steps = 1500 } },
+]
+tasks = ["marked_recall_tau4", "markov1_quaternary"]
+
+[[arms]]
+name = "prior01"
+label = "prior 0.1 (eta - 0.6)^2"
+family = "A_ff"
+mode = "penalty"
+penalty = { eta0 = 0.6, lam = 0.1 }
+tasks = ["marked_recall_tau4", "markov1_quaternary"]
+
+[[arms]]
+name = "prior1"
+label = "prior 1 (eta - 0.6)^2"
+family = "A_ff"
+mode = "penalty"
+penalty = { eta0 = 0.6, lam = 1.0 }
+tasks = ["marked_recall_tau4", "markov1_quaternary"]
+
+[[arms]]
+name = "curriculum"
+label = "curriculum tau 1 -> 2 -> 4, eta free"
+family = "A_ff"
+mode = "stages"
+stages = [
+  { label = "tau1", task = { tau = 1 }, train = { steps = 1000, patience = 30 } },
+  { label = "tau2", task = { tau = 2 }, train = { steps = 1000, patience = 30 } },
+  { label = "tau4" },
+]
+tasks = ["marked_recall_tau4"]
+
+# -- 2. why it helps ------------------------------------------------------------------
+[[arms]]
+name = "soft06"
+label = "eta = 0.6, soft targets (source)"
+family = "A_ff"
+eta = 0.6
+mode = "soft_source"
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "soft09"
+label = "eta = 0.9, soft targets (source)"
+family = "A_ff"
+eta = 0.9
+mode = "soft_source"
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "from06_to09"
+label = "eta 0.6 model, retrained at 0.9"
+family = "A_ff"
+eta = 0.9
+wave = 1
+mode = "warm"
+warm = { from = "eta06", eta = 0.9 }
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "from09_to06"
+label = "eta 0.9 model, retrained at 0.6"
+family = "A_ff"
+eta = 0.6
+wave = 1
+mode = "warm"
+warm = { from = "eta09", eta = 0.6 }
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "from06_free"
+label = "eta 0.6 model, released to free eta"
+family = "A_ff"
+wave = 1
+mode = "warm"
+warm = { from = "eta06", free_strength = true }
+tasks = ["marked_recall_tau4"]
+
+# -- 3. general layout and n = 3 -------------------------------------------------------
+[[arms]]
+name = "gen_free"
+label = "general, free"
+family = "A_general"
+tasks = ["marked_recall_tau4", "marked_recall_tau16"]
+
+[[arms]]
+name = "gen_weak"
+label = "general, prior 1 (eta - 0.3)^2"
+family = "A_general"
+mode = "penalty"
+penalty = { eta0 = 0.3, lam = 1.0 }
+tasks = ["marked_recall_tau4", "marked_recall_tau16"]
+
+[[arms]]
+name = "gen_strong"
+label = "general, prior 1 (eta - 0.9)^2"
+family = "A_general"
+mode = "penalty"
+penalty = { eta0 = 0.9, lam = 1.0 }
+tasks = ["marked_recall_tau4", "marked_recall_tau16"]
+
+# n = 3 with #12's options: a near-identity start (CZ entanglers; init = "product" makes V and
+# W_y near the identity in this layout) and 4 restarts screened for 300 steps on validation.
+[[arms]]
+name = "n3_eta06"
+label = "n=3, eta = 0.6 fixed, #12 init"
+family = "A_ff"
+eta = 0.6
+model = { n_memory = 3, entangler = "cz", init = "product", init_scale = 0.05, init_probs = "data" }
+train = { restarts = 4, restart_steps = 300 }
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "n3_eta09"
+label = "n=3, eta = 0.9 fixed, #12 init"
+family = "A_ff"
+eta = 0.9
+model = { n_memory = 3, entangler = "cz", init = "product", init_scale = 0.05, init_probs = "data" }
+train = { restarts = 4, restart_steps = 300 }
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "n3_free"
+label = "n=3, eta free, #12 init"
+family = "A_ff"
+model = { n_memory = 3, entangler = "cz", init = "product", init_scale = 0.05, init_probs = "data" }
+train = { restarts = 4, restart_steps = 300 }
+tasks = ["marked_recall_tau4"]

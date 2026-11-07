@@ -1,0 +1,165 @@
+# Phase 4b (issue #13), finding (c): a protected subspace forms only in the general layout.
+# Run: uv run python experiments/phase4b.py --config experiments/configs/phase4b_c.toml
+#
+# 1. Feed-forward variants that might protect, on marked_recall tau = 4 (the recipe of
+#    phase4b_b.toml): per-coupling strengths instead of one shared g (n = 2); a third memory
+#    qubit that no ancilla reads (n = 3; ancilla k reads qubit k mod 3), shared and unshared,
+#    with #12's near-identity start and restarts. The feed-forward A and the general circuit
+#    of phase4b_b.toml are the references (re-run here so this config stands alone).
+# 2. The protected-subspace diagnostic (#10's stored-bit alignment, and the subspace search
+#    below on each trained instrument) in other models: the HQMM at D = 2 and 4 and the
+#    uMPS at chi = 4 (their #11 learning rates on marked_recall_tau4).
+# 3. A training-free structural search (qmem.falsification.protected_subspace_search): for
+#    the bare coupling of each layout over a grid of strengths, is there a 2-dim subspace on
+#    which both distractor effects compress to multiples of I (at any level, or at the
+#    source's level (1 - q)/2), and how well can the cue effects read it?
+
+[experiment]
+name = "phase4b_c"
+title = "Phase 4b (c): the protected subspace"
+workers = 4
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+tuning_seeds = [100, 101]
+success_gap = 0.01
+summary_dir = "results/summaries/phase4b/c"
+
+[summary]
+recall_bars = true
+
+[analysis]
+max_lag = 40
+delay_bins = [0, 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48]
+holevo_threshold_bits = 0.1
+subspace_restarts = 8         # subspace search on every trained instrument
+
+[structural]
+layouts = [
+  { name = "feed-forward, shared g", n_memory = 2, shared = true },
+  { name = "feed-forward, per-coupling g", n_memory = 2, shared = false },
+  { name = "feed-forward, shared g, unread qubit", n_memory = 3, shared = true },
+]
+gs = [0.3, 0.6, 0.9, 1.2, 1.5]
+taus = [0, 4, 16]             # 0: distractor levels free; else fixed at (1 - q)/2
+restarts = 16
+steps = 150
+
+[data]
+n_train = 512
+n_val = 256
+n_test = 512
+length = 32
+seed = 0
+
+[train]
+optimizer = "adam"
+lr = 0.1
+schedule = "constant"
+steps = 3000
+batch_size = 128
+batch_seed = 0
+eval_every = 10
+patience = 60
+min_delta = 1e-4
+restore_best = true
+clip_grad_norm = 0.0
+
+[tasks.marked_recall_tau4]
+spec = { kind = "marked_recall", tau = 4, eps = 0.05 }
+data = { n_train = 2048, length = 64 }
+
+[a_model]
+variant = "A"
+n_memory = 2
+n_env = 0
+memory_depth = 2
+joint_depth = 0
+feedforward_depth = 2
+strength = 0.7853981633974483
+strength_trainable = true
+strength_shared = true
+rotations = ["ry", "rz"]
+entangler = "cnot"
+pattern = "linear"
+initial = "zero"
+init_scale = 1.0
+
+[families.A_ff]
+kind = "A"
+
+[families.A_general]
+kind = "A"
+model = { joint_depth = 4, feedforward_depth = 0, strength_shared = false }
+
+[families.hqmm]
+kind = "hqmm"
+model = { n_env = 0, init_scale = 1.0 }
+train = { steps = 1500, patience = 30 }   # the #11 budget its lrs were tuned at
+
+[families.umps]
+kind = "umps"
+model = { purification = 1, fp_iters = 200, fp_grad_iters = 20, fp_tol = 1e-8 }
+train = { steps = 1500, patience = 30 }
+
+[[arms]]
+name = "ff"
+label = "feed-forward, shared g (reference)"
+family = "A_ff"
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "general"
+label = "general circuit (reference)"
+family = "A_general"
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "ff_unshared"
+label = "feed-forward, per-coupling g"
+family = "A_ff"
+model = { strength_shared = false }
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "ff_n3"
+label = "feed-forward n=3 (qubit 2 unread), #12 init"
+family = "A_ff"
+model = { n_memory = 3, entangler = "cz", init = "product", init_scale = 0.05, init_probs = "data" }
+train = { restarts = 4, restart_steps = 300 }
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "ff_n3_unshared"
+label = "feed-forward n=3, per-coupling g, #12 init"
+family = "A_ff"
+model = { n_memory = 3, strength_shared = false, entangler = "cz", init = "product", init_scale = 0.05, init_probs = "data" }
+train = { restarts = 4, restart_steps = 300 }
+tasks = ["marked_recall_tau4"]
+
+# #11 tuned these on marked_recall_tau4 (results/summaries/phase3f/tuning.csv):
+# hqmm/D2 0.03, hqmm/D4 0.03, umps/D4 0.01. Phase 3f data for this task: 512 sequences of 64.
+[[arms]]
+name = "hqmm_2"
+label = "HQMM D=2"
+family = "hqmm"
+model = { n_memory = 1 }
+data = { n_train = 512 }
+lr = 0.03
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "hqmm_4"
+label = "HQMM D=4"
+family = "hqmm"
+model = { n_memory = 2 }
+data = { n_train = 512 }
+lr = 0.03
+tasks = ["marked_recall_tau4"]
+
+[[arms]]
+name = "umps_4"
+label = "uMPS chi=4"
+family = "umps"
+model = { bond_dim = 4 }
+data = { n_train = 512 }
+lr = 0.01
+tasks = ["marked_recall_tau4"]

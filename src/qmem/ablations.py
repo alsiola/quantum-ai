@@ -48,6 +48,8 @@ from .circuits import (
     FixedUnitaryBlock,
     HardwareEfficientBlock,
     OutcomeConditionedBlock,
+    PartialSwapBlock,
+    SequenceBlock,
 )
 from .gates import ry, rz
 from .instrument import kraus_from_unitary
@@ -55,6 +57,7 @@ from .linalg import REAL_DTYPE, eye, trace
 from .model import Memory, ModelConfig, QuantumMemoryModel, build_model
 
 VARIANTS = ("A", "B", "C", "D", "hybrid")
+UPDATE_COUPLINGS = ("hea", "pswap")
 
 
 @dataclass
@@ -345,6 +348,10 @@ class VariantConfig:
     update_depth: int = 1  # D: hardware-efficient layers per token unitary V_y
     update_env: int = 0  # D: ancillas traced out after each update (0: unitary update)
     feedback_lags: int = 2  # hybrid
+    # D update options (Phase 4b, issue #13); the defaults reproduce Phase 3b's D.
+    update_rotations: tuple[str, ...] | None = None  # None: the readout's rotations
+    update_entangler: str | None = None  # None: the readout's entangler
+    update_coupling: str = "hea"  # "hea": HEA on memory + ancillas; "pswap": see build_variant
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -354,6 +361,10 @@ def split_config(d: dict[str, Any]) -> tuple[VariantConfig, ModelConfig]:
     """Split a ``[model]`` dict into the variant settings and A's ``ModelConfig``."""
     vkeys = {f.name for f in fields(VariantConfig)}
     v = VariantConfig(**{k: x for k, x in d.items() if k in vkeys})
+    if v.update_rotations is not None:
+        v.update_rotations = tuple(v.update_rotations)
+    if v.update_coupling not in UPDATE_COUPLINGS:
+        raise ValueError(f"unknown update_coupling {v.update_coupling!r}: {UPDATE_COUPLINGS}")
     if v.variant not in VARIANTS:
         raise ValueError(f"unknown variant {v.variant!r}; choose from {VARIANTS}")
     return v, ModelConfig.from_dict({k: x for k, x in d.items() if k not in vkeys})
@@ -385,19 +396,32 @@ def build_variant(d: dict[str, Any]) -> QuantumMemoryModel:
         return ClassicalFeedbackModel(*args, feedback_lags=v.feedback_lags, **kw)
     gen = torch.Generator().manual_seed(update_seed(cfg.seed))
     n_upd = cfg.n_memory + v.update_env
-    update_blocks: list[Block] = [
-        HardwareEfficientBlock(
-            list(range(n_upd)),
+    hea = {
+        "rotations": v.update_rotations or cfg.rotations,
+        "entangler": v.update_entangler or cfg.entangler,
+        "pattern": cfg.pattern,
+        "init_scale": cfg.init_scale,
+        "generator": gen,
+    }
+
+    def update_block() -> Block:
+        if v.update_coupling == "hea":
+            return HardwareEfficientBlock(list(range(n_upd)), n_upd, v.update_depth, **hea)
+        # "pswap": HEA on the memory only, then a trainable partial SWAP of memory qubit i
+        # with its own fresh ancilla n_memory + i (amplitude damping of learnable strength).
+        if v.update_env != cfg.n_memory:
+            raise ValueError('update_coupling = "pswap" needs update_env = n_memory')
+        mem = list(range(cfg.n_memory))
+        pairs = [(i, cfg.n_memory + i) for i in mem]
+        return SequenceBlock(
+            [
+                HardwareEfficientBlock(mem, n_upd, v.update_depth, **hea),
+                PartialSwapBlock(pairs, n_upd, cfg.init_scale, gen),
+            ],
             n_upd,
-            v.update_depth,
-            rotations=cfg.rotations,
-            entangler=cfg.entangler,
-            pattern=cfg.pattern,
-            init_scale=cfg.init_scale,
-            generator=gen,
         )
-        for _ in range(2**cfg.n_output)
-    ]
+
+    update_blocks: list[Block] = [update_block() for _ in range(2**cfg.n_output)]
     return SeparateUpdateReadoutModel(
         *args, update_blocks=update_blocks, update_env=v.update_env, **kw
     )
@@ -429,6 +453,10 @@ def block_gates(block: Block) -> list[tuple[str, tuple[int, ...]]]:
         return [(f"ff_{n}", tuple(mem[q] for q in qs)) for n, qs in block_gates(block.ws[0])]
     if isinstance(block, FixedUnitaryBlock):
         return [("fixed", block.qubits)]
+    if isinstance(block, PartialSwapBlock):
+        return [("pswap", tuple(p)) for p in block.pairs]
+    if isinstance(block, SequenceBlock):
+        return [g for b in block.blocks for g in block_gates(b)]
     raise TypeError(f"no gate list for {type(block).__name__}")
 
 

@@ -8,7 +8,7 @@ plus ``describe()`` (state dimension and compute cost), so it trains with
 
 from .base import RecurrentModel, SequenceModel
 from .hmm import HMMModel, fit_em
-from .hqmm import StiefelInstrumentModel
+from .hqmm import GeneratorInstrumentModel, StiefelInstrumentModel
 from .ngram import NGramModel, fit_ngram
 from .rnn import RNNModel, matched_hidden_size, rnn_parameter_count
 from .runner import BaselineSpec, build_baseline, describe_model, run_baseline
@@ -16,6 +16,7 @@ from .umps import UMPSModel
 
 __all__ = [
     "BaselineSpec",
+    "GeneratorInstrumentModel",
     "HMMModel",
     "NGramModel",
     "RNNModel",

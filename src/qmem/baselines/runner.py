@@ -44,12 +44,12 @@ from ..tasks import make_task
 from ..train import TrainConfig, evaluate, strengths, train, train_with_restarts
 from ..trainability import resolve_init_probs, restart_seed, soft_target_loss, teacher_entropy
 from .hmm import HMMModel, fit_em
-from .hqmm import StiefelInstrumentModel
+from .hqmm import GeneratorInstrumentModel, StiefelInstrumentModel
 from .ngram import fit_ngram
 from .rnn import RNNModel
 from .umps import UMPSModel
 
-FAMILIES = ("A", "ngram", "hmm", "gru", "rnn", "umps", "hqmm")
+FAMILIES = ("A", "ngram", "hmm", "gru", "rnn", "umps", "hqmm", "hqmm_gen")
 
 
 @dataclass
@@ -115,6 +115,13 @@ def build_baseline(family: str, cfg: dict[str, Any], n_symbols: int, seed: int):
             init_scale=c.get("init_scale", 1.0), init=c.get("init", "random"),
             init_probs=c.get("init_probs", "uniform"),
         )  # fmt: skip
+    if family == "hqmm_gen":  # HQMM restricted to n_generators parameters (issue #13)
+        n_output = (n_symbols - 1).bit_length()
+        if 2**n_output != n_symbols:
+            raise ValueError("the HQMM reads outcomes from qubits: alphabet must be a power of 2")
+        return GeneratorInstrumentModel(
+            c["n_memory"], n_output, c["n_generators"], c.get("n_env", 0), seed=seed
+        )
     raise ValueError(f"unknown baseline family {family!r}; choose from {FAMILIES}")
 
 
