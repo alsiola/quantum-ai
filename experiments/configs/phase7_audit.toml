@@ -1,0 +1,84 @@
+# Phase 7 Stage 0 (issue #18): independent reproduction and statistical audit of the Phase 6
+# Hankel witness and held-out NLL claims. Local CPU only, no QPU of any kind.
+#
+# 1. (once, optional `hardware` group) export the calibrated / noiseless 1-qubit instruments
+#    from the committed Phase 6 step circuit and calibration snapshot:
+#    uv run --group hardware python experiments/phase7_audit.py --config experiments/configs/phase7_audit.toml --export-instruments
+# 2. the audit (numpy; about 25 min with 4 workers):
+#    uv run python experiments/phase7_audit.py --config experiments/configs/phase7_audit.toml
+
+[experiment]
+name = "phase7_audit"
+summary_dir = "results/summaries/phase7_audit"
+phase6_dir = "results/summaries/phase6"   # read-only inputs
+workers = 4
+
+[witness]                      # Phase 6's estimator settings (experiments/configs/phase6.toml)
+k_max = 7
+burn = 16
+offsets = [0, 1, 2, 3]
+bootstrap = 1000
+seed = 21                      # Phase 6's torch bootstrap seed (to reproduce its SEs exactly)
+
+[uncertainty]
+boot_sizes = [200, 500, 1000, 2000, 5000]
+boot_seeds = [0, 1, 2, 3, 4]
+ci_bootstrap = 5000            # resamples for the percentile / BCa intervals
+ci_seed = 7
+n_batches = 20                 # 20 batches of 1,000 shots
+batch_seed = 3                 # for the randomly assigned batches
+burns = [0, 4, 8, 12, 16, 24, 32]
+
+[null]
+# Stationary 2-state HMMs at the device's sizes, the same burn and estimator.
+length = 64
+sizes = { main = 20000, pilot = 200 }
+reps = { main = 1000, pilot = 2000 }
+bootstrap = 500
+seed = 1000
+chunk = 25                     # replicates per worker task
+# Families. "random": a fresh Dirichlet(1) 2-state HMM per replicate, stationary start.
+# "phase6_hmm2": Phase 6's EM fit to the device (summary.json), from its stationary state or
+# its fitted initial state. Explicit ones: T[i,i] = p_stay[i], P(1|i) = p_one[i]; the
+# transition eigenvalue is p_stay[0] + p_stay[1] - 1; start "stationary" or "state0".
+families = [
+  { name = "random", kind = "random" },
+  { name = "phase6_hmm2_stationary", kind = "phase6_hmm2", start = "stationary" },
+  { name = "phase6_hmm2_as_fitted", kind = "phase6_hmm2", start = "fitted" },
+  { name = "eig_near_0", kind = "explicit", p_stay = [0.52, 0.49], p_one = [0.35, 0.80], start = "stationary" },
+  { name = "eig_near_plus1", kind = "explicit", p_stay = [0.995, 0.99], p_one = [0.45, 0.75], start = "stationary" },
+  { name = "eig_near_minus1", kind = "explicit", p_stay = [0.02, 0.01], p_one = [0.35, 0.80], start = "stationary" },
+  { name = "eig_near_plus1_state0", kind = "explicit", p_stay = [0.995, 0.99], p_one = [0.45, 0.75], start = "state0" },
+]
+
+[hmm]
+# Classical HMMs refitted by (numpy) Baum-Welch to convergence, best by validation NLL.
+states = [2, 3, 4, 6]          # 6 is beyond the issue's 2-4, to qualify "any HMM"
+random_restarts = 8
+seed = 0
+max_iters = 1500
+tol = 1e-9                     # stop when the train NLL/symbol improves by less
+# Phase 6's own procedure (its torch initialisations, patience-20 early stopping on val):
+phase6_restarts = 8
+phase6_seed = 0
+phase6_max_iters = 500
+phase6_patience = 20
+# Splits of the 20,000 main shots: train / val / test.
+splits = [
+  { name = "returned_order", kind = "returned", train = 9000, val = 1000 },
+  { name = "random", kind = "random", train = 9000, val = 1000, seed = 1 },
+  { name = "interleaved", kind = "interleaved" },   # odd shots test; every 10th even shot val
+  # Phase 6's split with the episode (see [episode]) removed from train/val (10% val)
+  { name = "returned_clean_train", kind = "returned_clean_train" },
+]
+# Stage 1 note: 2-state HMMs fitted to each tenth of the shots, mixed.
+mixture_tenths = 10
+mixture_max_iters = 500
+
+[episode]
+# A contiguous stretch of shots (in returned order) whose process differs; found by a
+# two-change-point fit to g(1) - g(3) per shot on a grid of `grid` shots.
+grid = 100
+seed = 31
+rolling_window = 1000
+rolling_step = 250

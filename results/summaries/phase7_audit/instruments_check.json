@@ -1,0 +1,199 @@
+{
+  "checks": {
+    "calibrated": {
+      "device_main_nll": 0.6629264593582528,
+      "max_abs_g_diff": 1.6653345369377348e-16,
+      "max_abs_marginal_diff": 7.771561172376096e-16,
+      "phase6_device_main_nll": 0.6629264593582526
+    },
+    "calibrated_no_idle": {
+      "device_main_nll": 0.6634057291707797,
+      "max_abs_g_diff": 1.6653345369377348e-16,
+      "max_abs_marginal_diff": 2.1094237467877974e-15,
+      "phase6_device_main_nll": 0.6634057291707797
+    },
+    "noiseless": {
+      "device_main_nll": 0.6643788543264356,
+      "max_abs_g_diff": 4.052314039881821e-15,
+      "max_abs_marginal_diff": 3.552713678800501e-15,
+      "phase6_device_main_nll": 0.664378854326436
+    }
+  },
+  "meta": {
+    "config": {
+      "experiment": {
+        "name": "phase7_audit",
+        "phase6_dir": "results/summaries/phase6",
+        "summary_dir": "results/summaries/phase7_audit",
+        "workers": 4
+      },
+      "hmm": {
+        "max_iters": 1500,
+        "mixture_max_iters": 500,
+        "mixture_tenths": 10,
+        "phase6_max_iters": 500,
+        "phase6_patience": 20,
+        "phase6_restarts": 8,
+        "phase6_seed": 0,
+        "random_restarts": 8,
+        "seed": 0,
+        "splits": [
+          {
+            "kind": "returned",
+            "name": "returned_order",
+            "train": 9000,
+            "val": 1000
+          },
+          {
+            "kind": "random",
+            "name": "random",
+            "seed": 1,
+            "train": 9000,
+            "val": 1000
+          },
+          {
+            "kind": "interleaved",
+            "name": "interleaved"
+          }
+        ],
+        "states": [
+          2,
+          3,
+          4,
+          6
+        ],
+        "tol": 1e-09
+      },
+      "null": {
+        "bootstrap": 500,
+        "chunk": 25,
+        "families": [
+          {
+            "kind": "random",
+            "name": "random"
+          },
+          {
+            "kind": "phase6_hmm2",
+            "name": "phase6_hmm2_stationary",
+            "start": "stationary"
+          },
+          {
+            "kind": "phase6_hmm2",
+            "name": "phase6_hmm2_as_fitted",
+            "start": "fitted"
+          },
+          {
+            "kind": "explicit",
+            "name": "eig_near_0",
+            "p_one": [
+              0.35,
+              0.8
+            ],
+            "p_stay": [
+              0.52,
+              0.49
+            ],
+            "start": "stationary"
+          },
+          {
+            "kind": "explicit",
+            "name": "eig_near_plus1",
+            "p_one": [
+              0.45,
+              0.75
+            ],
+            "p_stay": [
+              0.995,
+              0.99
+            ],
+            "start": "stationary"
+          },
+          {
+            "kind": "explicit",
+            "name": "eig_near_minus1",
+            "p_one": [
+              0.35,
+              0.8
+            ],
+            "p_stay": [
+              0.02,
+              0.01
+            ],
+            "start": "stationary"
+          },
+          {
+            "kind": "explicit",
+            "name": "eig_near_plus1_state0",
+            "p_one": [
+              0.45,
+              0.75
+            ],
+            "p_stay": [
+              0.995,
+              0.99
+            ],
+            "start": "state0"
+          }
+        ],
+        "length": 64,
+        "reps": {
+          "main": 1000,
+          "pilot": 2000
+        },
+        "seed": 1000,
+        "sizes": {
+          "main": 20000,
+          "pilot": 200
+        }
+      },
+      "uncertainty": {
+        "batch_seed": 3,
+        "boot_seeds": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "boot_sizes": [
+          200,
+          500,
+          1000,
+          2000,
+          5000
+        ],
+        "burns": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          24,
+          32
+        ],
+        "ci_bootstrap": 5000,
+        "ci_seed": 7,
+        "n_batches": 20
+      },
+      "witness": {
+        "bootstrap": 1000,
+        "burn": 16,
+        "k_max": 7,
+        "offsets": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "seed": 21
+      }
+    },
+    "git_commit": "2ec9bb2175b416ccc5c729b63ba7a35b9291953c",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": null,
+    "timestamp_utc": "2026-11-08T00:56:03+00:00",
+    "torch": "2.15.0"
+  }
+}
