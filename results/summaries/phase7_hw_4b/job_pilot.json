@@ -1,0 +1,1732 @@
+{
+  "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6720604627",
+  "calibration_after": {
+    "gates": [
+      {
+        "gate": "id",
+        "name": "id59",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00017626376502095773
+          },
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "id",
+        "name": "id75",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00010024651053204046
+          },
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "rx",
+        "name": "rx59",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00017626376502095773
+          },
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "rx",
+        "name": "rx75",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00010024651053204046
+          },
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "rz",
+        "name": "rz59",
+        "parameters": [
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 0
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "rz",
+        "name": "rz75",
+        "parameters": [
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 0
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "sx",
+        "name": "sx59",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00017626376502095773
+          },
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "sx",
+        "name": "sx75",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00010024651053204046
+          },
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "x",
+        "name": "x59",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00017626376502095773
+          },
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "x",
+        "name": "x75",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00010024651053204046
+          },
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "xslow",
+        "name": "xslow59",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00017626376502095773
+          },
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1000
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "xslow",
+        "name": "xslow75",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00010024651053204046
+          },
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1000
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "cz",
+        "name": "cz59_75",
+        "parameters": [
+          {
+            "date": "2026-11-07T02:22:59+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.001114450685139462
+          },
+          {
+            "date": "2026-11-07T02:22:59+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 68
+          }
+        ],
+        "qubits": [
+          59,
+          75
+        ]
+      },
+      {
+        "gate": "cz",
+        "name": "cz75_59",
+        "parameters": [
+          {
+            "date": "2026-11-07T02:22:59+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.001114450685139462
+          },
+          {
+            "date": "2026-11-07T02:22:59+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 68
+          }
+        ],
+        "qubits": [
+          75,
+          59
+        ]
+      },
+      {
+        "gate": "rzz",
+        "name": "rzz59_75",
+        "parameters": [
+          {
+            "date": "2026-11-07T03:04:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.0010895676341275418
+          },
+          {
+            "date": "2026-11-07T03:04:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 68
+          }
+        ],
+        "qubits": [
+          59,
+          75
+        ]
+      },
+      {
+        "gate": "rzz",
+        "name": "rzz75_59",
+        "parameters": [
+          {
+            "date": "2026-11-07T03:04:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.0010895676341275418
+          },
+          {
+            "date": "2026-11-07T03:04:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 68
+          }
+        ],
+        "qubits": [
+          75,
+          59
+        ]
+      },
+      {
+        "gate": "reset",
+        "name": "reset59",
+        "parameters": [
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2212
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "reset",
+        "name": "reset75",
+        "parameters": [
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2212
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "reset_2",
+        "name": "reset_259",
+        "parameters": [
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1412
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "reset_2",
+        "name": "reset_275",
+        "parameters": [
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1412
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "measure",
+        "name": "measure59",
+        "parameters": [
+          {
+            "date": "2026-11-08T00:13:10+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.005859375
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2180
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": -2266837.1798806787
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "measure",
+        "name": "measure75",
+        "parameters": [
+          {
+            "date": "2026-11-08T00:13:11+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.0087890625
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2180
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": -6358708.142864078
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "measure_2",
+        "name": "measure_259",
+        "parameters": [
+          {
+            "date": "2026-11-04T23:16:38+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00341796875
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1380
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": 415372.5579159185
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "measure_2",
+        "name": "measure_275",
+        "parameters": [
+          {
+            "date": "2026-11-04T23:16:39+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.053466796875
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1380
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": 410117.1073982045
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "measure_reset",
+        "name": "measure_reset59",
+        "parameters": [
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2212
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": -2266837.1798806787
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "measure_reset",
+        "name": "measure_reset75",
+        "parameters": [
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2212
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": -6358708.142864078
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "measure_reset_2",
+        "name": "measure_reset_259",
+        "parameters": [
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1412
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": 415372.5579159185
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "measure_reset_2",
+        "name": "measure_reset_275",
+        "parameters": [
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1412
+          },
+          {
+            "date": "2026-11-08T14:13:26+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": 410117.1073982045
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      }
+    ],
+    "info": {
+      "backend": "ibm_kingston",
+      "feedforward_time_s": 1e-06,
+      "measure_time_s": 2.18e-06,
+      "physical_qubits": [
+        59,
+        75
+      ],
+      "readout_error": {
+        "59": 0.005859375,
+        "75": 0.0087890625
+      },
+      "reset_time_s": 2.212e-06,
+      "sx_error": {
+        "59": 0.00017626376502095773,
+        "75": 0.00010024651053204046
+      },
+      "t1_s": {
+        "59": 0.0002503809915381846,
+        "75": 0.00032101412958689644
+      },
+      "t2_s": {
+        "59": 0.0003712752510318846,
+        "75": 0.0001385003732286053
+      },
+      "two_qubit_error": {
+        "59-75": 0.001114450685139462,
+        "75-59": 0.001114450685139462
+      },
+      "two_qubit_gate": "cz",
+      "two_qubit_time_s": 6.8e-08
+    },
+    "last_update_date": "2026-11-08T14:13:26+00:00",
+    "noise": {
+      "feedforward_time": 1e-06,
+      "measure_time": 2.18e-06,
+      "p1": [
+        [
+          0,
+          0.00035252753004191546
+        ],
+        [
+          1,
+          0.00020049302106408092
+        ]
+      ],
+      "p2": [
+        [
+          [
+            0,
+            1
+          ],
+          0.001485934246852616
+        ],
+        [
+          [
+            1,
+            0
+          ],
+          0.001485934246852616
+        ]
+      ],
+      "readout": [
+        [
+          0,
+          0.005859375
+        ],
+        [
+          1,
+          0.0087890625
+        ]
+      ],
+      "reset": [
+        [
+          0,
+          0.005859375
+        ],
+        [
+          1,
+          0.0087890625
+        ]
+      ],
+      "reset_time": 2.212e-06,
+      "t1": [
+        [
+          0,
+          0.0002503809915381846
+        ],
+        [
+          1,
+          0.00032101412958689644
+        ]
+      ],
+      "t2": [
+        [
+          0,
+          0.0003712752510318846
+        ],
+        [
+          1,
+          0.0001385003732286053
+        ]
+      ],
+      "virtual_rz": true
+    },
+    "qubits": {
+      "59": [
+        {
+          "date": "2026-11-07T22:05:21+00:00",
+          "name": "T1",
+          "unit": "us",
+          "value": 250.3809915381846
+        },
+        {
+          "date": "2026-11-07T22:05:27+00:00",
+          "name": "T2",
+          "unit": "us",
+          "value": 371.2752510318846
+        },
+        {
+          "date": "2026-11-08T00:13:10+00:00",
+          "name": "readout_error",
+          "unit": "",
+          "value": 0.005859375
+        },
+        {
+          "date": "2026-11-08T11:11:23+00:00",
+          "name": "init_error",
+          "unit": "",
+          "value": 0.0009765625
+        },
+        {
+          "date": "2026-11-08T00:12:57+00:00",
+          "name": "prob_meas0_prep1",
+          "unit": "",
+          "value": 0.0107421875
+        },
+        {
+          "date": "2026-11-08T00:13:03+00:00",
+          "name": "prob_meas1_prep0",
+          "unit": "",
+          "value": 0.0009765625
+        },
+        {
+          "date": "2026-11-08T00:13:10+00:00",
+          "name": "readout_length",
+          "unit": "ns",
+          "value": 2180
+        }
+      ],
+      "75": [
+        {
+          "date": "2026-11-07T22:05:22+00:00",
+          "name": "T1",
+          "unit": "us",
+          "value": 321.01412958689644
+        },
+        {
+          "date": "2026-11-07T22:05:25+00:00",
+          "name": "T2",
+          "unit": "us",
+          "value": 138.5003732286053
+        },
+        {
+          "date": "2026-11-08T00:13:11+00:00",
+          "name": "readout_error",
+          "unit": "",
+          "value": 0.0087890625
+        },
+        {
+          "date": "2026-11-08T09:52:01+00:00",
+          "name": "init_error",
+          "unit": "",
+          "value": 0.009828930892210874
+        },
+        {
+          "date": "2026-11-08T00:12:58+00:00",
+          "name": "prob_meas0_prep1",
+          "unit": "",
+          "value": 0.013671875
+        },
+        {
+          "date": "2026-11-08T00:13:04+00:00",
+          "name": "prob_meas1_prep0",
+          "unit": "",
+          "value": 0.00390625
+        },
+        {
+          "date": "2026-11-08T00:13:11+00:00",
+          "name": "readout_length",
+          "unit": "ns",
+          "value": 2180
+        }
+      ]
+    },
+    "read_at": "2026-11-08T14:46:38.693106+00:00"
+  },
+  "calibration_before": {
+    "gates": [
+      {
+        "gate": "id",
+        "name": "id59",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00017626376502095773
+          },
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "id",
+        "name": "id75",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00010024651053204046
+          },
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "rx",
+        "name": "rx59",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00017626376502095773
+          },
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "rx",
+        "name": "rx75",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00010024651053204046
+          },
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "rz",
+        "name": "rz59",
+        "parameters": [
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 0
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "rz",
+        "name": "rz75",
+        "parameters": [
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 0
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "sx",
+        "name": "sx59",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00017626376502095773
+          },
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "sx",
+        "name": "sx75",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00010024651053204046
+          },
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "x",
+        "name": "x59",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00017626376502095773
+          },
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "x",
+        "name": "x75",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00010024651053204046
+          },
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 32
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "xslow",
+        "name": "xslow59",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00017626376502095773
+          },
+          {
+            "date": "2026-11-05T00:28:03+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1000
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "xslow",
+        "name": "xslow75",
+        "parameters": [
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00010024651053204046
+          },
+          {
+            "date": "2026-11-05T00:28:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1000
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "cz",
+        "name": "cz59_75",
+        "parameters": [
+          {
+            "date": "2026-11-07T02:22:59+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.001114450685139462
+          },
+          {
+            "date": "2026-11-07T02:22:59+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 68
+          }
+        ],
+        "qubits": [
+          59,
+          75
+        ]
+      },
+      {
+        "gate": "cz",
+        "name": "cz75_59",
+        "parameters": [
+          {
+            "date": "2026-11-07T02:22:59+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.001114450685139462
+          },
+          {
+            "date": "2026-11-07T02:22:59+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 68
+          }
+        ],
+        "qubits": [
+          75,
+          59
+        ]
+      },
+      {
+        "gate": "rzz",
+        "name": "rzz59_75",
+        "parameters": [
+          {
+            "date": "2026-11-07T03:04:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.0010895676341275418
+          },
+          {
+            "date": "2026-11-07T03:04:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 68
+          }
+        ],
+        "qubits": [
+          59,
+          75
+        ]
+      },
+      {
+        "gate": "rzz",
+        "name": "rzz75_59",
+        "parameters": [
+          {
+            "date": "2026-11-07T03:04:01+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.0010895676341275418
+          },
+          {
+            "date": "2026-11-07T03:04:01+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 68
+          }
+        ],
+        "qubits": [
+          75,
+          59
+        ]
+      },
+      {
+        "gate": "reset",
+        "name": "reset59",
+        "parameters": [
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2212
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "reset",
+        "name": "reset75",
+        "parameters": [
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2212
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "reset_2",
+        "name": "reset_259",
+        "parameters": [
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1412
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "reset_2",
+        "name": "reset_275",
+        "parameters": [
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1412
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "measure",
+        "name": "measure59",
+        "parameters": [
+          {
+            "date": "2026-11-08T00:13:10+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.005859375
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2180
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": -2266837.1798806787
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "measure",
+        "name": "measure75",
+        "parameters": [
+          {
+            "date": "2026-11-08T00:13:11+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.0087890625
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2180
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": -6358708.142864078
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "measure_2",
+        "name": "measure_259",
+        "parameters": [
+          {
+            "date": "2026-11-04T23:16:38+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.00341796875
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1380
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": 415372.5579159185
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "measure_2",
+        "name": "measure_275",
+        "parameters": [
+          {
+            "date": "2026-11-04T23:16:39+00:00",
+            "name": "gate_error",
+            "unit": "",
+            "value": 0.053466796875
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1380
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": 410117.1073982045
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "measure_reset",
+        "name": "measure_reset59",
+        "parameters": [
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2212
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": -2266837.1798806787
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "measure_reset",
+        "name": "measure_reset75",
+        "parameters": [
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 2212
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": -6358708.142864078
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      },
+      {
+        "gate": "measure_reset_2",
+        "name": "measure_reset_259",
+        "parameters": [
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1412
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": 415372.5579159185
+          }
+        ],
+        "qubits": [
+          59
+        ]
+      },
+      {
+        "gate": "measure_reset_2",
+        "name": "measure_reset_275",
+        "parameters": [
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "gate_length",
+            "unit": "ns",
+            "value": 1412
+          },
+          {
+            "date": "2026-11-08T12:42:42+00:00",
+            "name": "threshold",
+            "unit": "",
+            "value": 410117.1073982045
+          }
+        ],
+        "qubits": [
+          75
+        ]
+      }
+    ],
+    "info": {
+      "backend": "ibm_kingston",
+      "feedforward_time_s": 1e-06,
+      "measure_time_s": 2.18e-06,
+      "physical_qubits": [
+        59,
+        75
+      ],
+      "readout_error": {
+        "59": 0.005859375,
+        "75": 0.0087890625
+      },
+      "reset_time_s": 2.212e-06,
+      "sx_error": {
+        "59": 0.00017626376502095773,
+        "75": 0.00010024651053204046
+      },
+      "t1_s": {
+        "59": 0.0002503809915381846,
+        "75": 0.00032101412958689644
+      },
+      "t2_s": {
+        "59": 0.0003712752510318846,
+        "75": 0.0001385003732286053
+      },
+      "two_qubit_error": {
+        "59-75": 0.001114450685139462,
+        "75-59": 0.001114450685139462
+      },
+      "two_qubit_gate": "cz",
+      "two_qubit_time_s": 6.8e-08
+    },
+    "last_update_date": "2026-11-08T12:42:42+00:00",
+    "noise": {
+      "feedforward_time": 1e-06,
+      "measure_time": 2.18e-06,
+      "p1": [
+        [
+          0,
+          0.00035252753004191546
+        ],
+        [
+          1,
+          0.00020049302106408092
+        ]
+      ],
+      "p2": [
+        [
+          [
+            0,
+            1
+          ],
+          0.001485934246852616
+        ],
+        [
+          [
+            1,
+            0
+          ],
+          0.001485934246852616
+        ]
+      ],
+      "readout": [
+        [
+          0,
+          0.005859375
+        ],
+        [
+          1,
+          0.0087890625
+        ]
+      ],
+      "reset": [
+        [
+          0,
+          0.005859375
+        ],
+        [
+          1,
+          0.0087890625
+        ]
+      ],
+      "reset_time": 2.212e-06,
+      "t1": [
+        [
+          0,
+          0.0002503809915381846
+        ],
+        [
+          1,
+          0.00032101412958689644
+        ]
+      ],
+      "t2": [
+        [
+          0,
+          0.0003712752510318846
+        ],
+        [
+          1,
+          0.0001385003732286053
+        ]
+      ],
+      "virtual_rz": true
+    },
+    "qubits": {
+      "59": [
+        {
+          "date": "2026-11-07T22:05:21+00:00",
+          "name": "T1",
+          "unit": "us",
+          "value": 250.3809915381846
+        },
+        {
+          "date": "2026-11-07T22:05:27+00:00",
+          "name": "T2",
+          "unit": "us",
+          "value": 371.2752510318846
+        },
+        {
+          "date": "2026-11-08T00:13:10+00:00",
+          "name": "readout_error",
+          "unit": "",
+          "value": 0.005859375
+        },
+        {
+          "date": "2026-11-08T11:11:23+00:00",
+          "name": "init_error",
+          "unit": "",
+          "value": 0.0009765625
+        },
+        {
+          "date": "2026-11-08T00:12:57+00:00",
+          "name": "prob_meas0_prep1",
+          "unit": "",
+          "value": 0.0107421875
+        },
+        {
+          "date": "2026-11-08T00:13:03+00:00",
+          "name": "prob_meas1_prep0",
+          "unit": "",
+          "value": 0.0009765625
+        },
+        {
+          "date": "2026-11-08T00:13:10+00:00",
+          "name": "readout_length",
+          "unit": "ns",
+          "value": 2180
+        }
+      ],
+      "75": [
+        {
+          "date": "2026-11-07T22:05:22+00:00",
+          "name": "T1",
+          "unit": "us",
+          "value": 321.01412958689644
+        },
+        {
+          "date": "2026-11-07T22:05:25+00:00",
+          "name": "T2",
+          "unit": "us",
+          "value": 138.5003732286053
+        },
+        {
+          "date": "2026-11-08T00:13:11+00:00",
+          "name": "readout_error",
+          "unit": "",
+          "value": 0.0087890625
+        },
+        {
+          "date": "2026-11-08T09:52:01+00:00",
+          "name": "init_error",
+          "unit": "",
+          "value": 0.009828930892210874
+        },
+        {
+          "date": "2026-11-08T00:12:58+00:00",
+          "name": "prob_meas0_prep1",
+          "unit": "",
+          "value": 0.013671875
+        },
+        {
+          "date": "2026-11-08T00:13:04+00:00",
+          "name": "prob_meas1_prep0",
+          "unit": "",
+          "value": 0.00390625
+        },
+        {
+          "date": "2026-11-08T00:13:11+00:00",
+          "name": "readout_length",
+          "unit": "ns",
+          "value": 2180
+        }
+      ]
+    },
+    "read_at": "2026-11-08T13:42:30.486482+00:00"
+  },
+  "calibration_check": {
+    "live": {
+      "cz_59_75": {
+        "cz_error": 0.001114450685139462
+      },
+      "q59": {
+        "readout_error": 0.005859375,
+        "t1": 0.0002503809915381846,
+        "t2": 0.0003712752510318846
+      },
+      "q74": {
+        "readout_error": 0.0078125,
+        "t1": 0.0003319724975819964,
+        "t2": 0.000231706751579343
+      },
+      "q75": {
+        "readout_error": 0.0087890625,
+        "t1": 0.00032101412958689644,
+        "t2": 0.0001385003732286053
+      }
+    },
+    "reference": {
+      "cz_59_75": {
+        "cz_error": 0.001114450685139462
+      },
+      "q59": {
+        "readout_error": 0.00390625,
+        "t1": 0.0002503809915381846,
+        "t2": 0.0003712752510318846
+      },
+      "q75": {
+        "readout_error": 0.01513671875,
+        "t1": 0.00032101412958689644,
+        "t2": 0.0001385003732286053
+      }
+    },
+    "violations": []
+  },
+  "charge": {
+    "charged_s": 3.0,
+    "counted_s": 4.199257499999999,
+    "exceeded": false,
+    "readings": {
+      "account_delta": 3.0,
+      "job_metrics": 3.0,
+      "job_usage": 3.0
+    },
+    "stage": "pilot",
+    "status": "charged",
+    "upper_s": 4.199257499999999
+  },
+  "charge_read_at": "2026-11-08T14:46:39+0000",
+  "dry_run": false,
+  "estimate_s": 2.559405999999999,
+  "execution_seconds": 1.723158,
+  "execution_spans": "ExecutionSpans([DoubleSliceSpan(<start='2026-11-08 14:46:31', stop='2026-11-08 14:46:33', size=1000>)])",
+  "fetched_at": "2026-11-08T14:46:36.348032+00:00",
+  "job_id": "dbo7oi0qtr0c73ae4hk0",
+  "metrics": {
+    "caller": "qiskit_ibm_runtime~sampler.py",
+    "circuits_execution_time_ns": 567816704,
+    "qiskit_version": "qiskit_ibm_runtime-0.51.0,qiskit-2.6.2*,qiskit_aer-0.18.2",
+    "timestamps": {
+      "created": "2026-11-08T13:42:32.827896Z",
+      "finished": "2026-11-08T14:46:34.968223Z",
+      "running": "2026-11-08T14:15:30.362188Z"
+    },
+    "usage": {
+      "details": [
+        {
+          "metric": {
+            "id": "caffe3ca-729c-5750-8777-df63bbf8bfd9",
+            "value": 3
+          },
+          "unit": "resource_units",
+          "value": 0.037865
+        }
+      ],
+      "qpu_charge_time_seconds": 3,
+      "status": "complete",
+      "unit": "resource_units",
+      "value": 0.037865
+    }
+  },
+  "plan": "open",
+  "pub_metadata": [
+    {
+      "circuit_metadata": {},
+      "compilation": {
+        "scheduler_timing": null,
+        "stretch_values": null
+      }
+    },
+    {
+      "circuit_metadata": {},
+      "compilation": {
+        "scheduler_timing": null,
+        "stretch_values": null
+      }
+    }
+  ],
+  "pubs": [
+    "j0_p000_baseline_c0",
+    "j0_p001_A2_c0"
+  ],
+  "result_metadata": {
+    "execution": {
+      "execution_spans": "ExecutionSpans([DoubleSliceSpan(<start='2026-11-08 14:46:31', stop='2026-11-08 14:46:33', size=1000>)])"
+    },
+    "version": 2
+  },
+  "result_seconds_waited": 3843.341329707997,
+  "shot_s": 0.559405999999999,
+  "shots": 1000,
+  "stage": "pilot",
+  "status": "DONE",
+  "submitted_at": "2026-11-08T13:42:32.990410+00:00",
+  "upper_s": 4.199257499999999,
+  "usage": 3,
+  "usage_after": {
+    "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+    "usage_consumed_ru": 0.32344,
+    "usage_consumed_seconds": 22,
+    "usage_limit_reached": false,
+    "usage_limit_ru": 10,
+    "usage_limit_seconds": 600,
+    "usage_period": {
+      "end_time": "2026-11-08T14:46:36.947Z",
+      "start_time": "2026-10-11T14:46:36.947Z"
+    },
+    "usage_remaining_seconds": 578
+  },
+  "usage_before": {
+    "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+    "usage_consumed_ru": 0.285575,
+    "usage_consumed_seconds": 19,
+    "usage_limit_reached": false,
+    "usage_limit_ru": 10,
+    "usage_limit_seconds": 600,
+    "usage_period": {
+      "end_time": "2026-11-08T13:42:29.214Z",
+      "start_time": "2026-10-11T13:42:29.214Z"
+    },
+    "usage_remaining_seconds": 581
+  }
+}

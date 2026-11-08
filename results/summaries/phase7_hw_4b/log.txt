@@ -1,0 +1,16 @@
+[13:42:20] plan 'open'; usage {'plan_id': '850b21a7-71de-4e53-9441-1abdd202f35d', 'usage_consumed_seconds': 19, 'usage_consumed_ru': 0.285575, 'usage_period': {'start_time': '2026-10-11T13:42:20.157Z', 'end_time': '2026-11-08T13:42:20.157Z'}, 'usage_limit_seconds': 600, 'usage_limit_ru': 10, 'usage_limit_reached': False, 'usage_remaining_seconds': 581}
+2026-11-08T13:42:32.338745+00:00 [pilot] submitting 2 pub(s) {"shots": 1000, "shot_s": 0.559405999999999, "estimate_s": 2.559405999999999, "upper_s": 4.199257499999999, "pubs": ["j0_p000_baseline_c0", "j0_p001_A2_c0"], "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6720604627"}
+2026-11-08T13:42:32.991660+00:00 [pilot] job dbo7oi0qtr0c73ae4hk0 submitted
+[14:46:39] [pilot] saved 2 pubs; charge {'stage': 'pilot', 'upper_s': 4.199257499999999, 'readings': {'job_usage': 3.0, 'job_metrics': 3.0, 'account_delta': 3.0}, 'charged_s': 3.0, 'status': 'charged', 'counted_s': 4.199257499999999, 'exceeded': False}
+[14:46:39] FAILED: SystemExit("pilot gate failed: {'guard_flags': {'baseline': [], 'A2': []}, 'a_decoding_and_guards': True, 'b_p1': {'got': 0.5645833333333333, 'pred': 0.5809755596341454, 'ok': True, 'consistent': True, 'stop_at': 0.08}, 'c_pm1': {'got': 0.49270833333333336, 'pred': 0.41910298793704936, 'ok': False}, 'd_time': {'reference': 'circuits_execution_time', 'got_s_per_shot': 0.0005678167040000001, 'model_s_per_shot': 0.000559405999999999, 'ok': True}, 'go': False}; stop and report (no retry)")
+Traceback (most recent call last):
+  File "/Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-de6a37ec9ca21e40889e191b5e55fc1d/experiments/phase7_hw.py", line 1203, in stage4
+    run_jobs(cfg, out, ctx, built, cm, dur, lp, stop_after_pilot=args.stop_after_pilot)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-de6a37ec9ca21e40889e191b5e55fc1d/experiments/phase7_hw.py", line 1391, in run_jobs
+    if stage == "pilot" and pilot_gate_step(cfg, out, d, pubs, lp, cost, dur, stop_after_pilot):
+                            ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-de6a37ec9ca21e40889e191b5e55fc1d/experiments/phase7_hw.py", line 1408, in pilot_gate_step
+    raise SystemExit(f"pilot gate failed: {gate}; stop and report (no retry)")
+SystemExit: pilot gate failed: {'guard_flags': {'baseline': [], 'A2': []}, 'a_decoding_and_guards': True, 'b_p1': {'got': 0.5645833333333333, 'pred': 0.5809755596341454, 'ok': True, 'consistent': True, 'stop_at': 0.08}, 'c_pm1': {'got': 0.49270833333333336, 'pred': 0.41910298793704936, 'ok': False}, 'd_time': {'reference': 'circuits_execution_time', 'got_s_per_shot': 0.0005678167040000001, 'model_s_per_shot': 0.000559405999999999, 'ok': True}, 'go': False}; stop and report (no retry)
+

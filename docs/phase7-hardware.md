@@ -159,9 +159,82 @@ Outputs are in `results/summaries/phase7_hw_4b/`: `refit.json`, `refit_check.csv
   - (b) stops only beyond ±0.08; ±0.02 is now a recorded consistency flag.
   - (d) is `circuits_execution_time_ns / shots`, ± 25%.
 - **Unchanged:** the decision rule, the arms, the shots, the mapping and the analysis.
-- **Validation under the refit.** No wrong decisive call. A2's SE is about 8% larger. "A2 keeps
-  80% coherence" moves from *persists* to *ambiguous*.
+- **Validation under the refit.** No wrong decisive call. A2's SE is about 8% larger.
+  *Ambiguous* rates rise under q59 leakage (fit 22.5% → 33%, extreme 55.5% → 66%) and the
+  sticky record (10.5% → 16.5%). "A2 keeps 80% coherence" moves from *persists* to
+  *ambiguous*.
 
-## Hardware
+## Hardware: a clean stop at the amended gate
 
-Pending the coordinator's go on #26.
+**Outcome: the amended pilot failed gate (c).** The out-of-sample test of the refit failed, so
+the main jobs were **not submitted**. Nothing was retried or re-mapped, and there was no second
+pilot. The primary outcome and the secondary family were never computed. **Rung 4 stays
+unresolved.**
+
+**What ran** (after the coordinator's go on #26):
+1. **Local dry run.** It was run under the refit at 13:35Z (`dryrun/`), and all 68 hashes
+   match.
+2. **Live `--dry-run`** at 13:41Z (`live_dry_run.json`):
+   - plan `open`, with 581 s remaining;
+   - calibration identical to #25's snapshot, with no violations;
+   - every job within the guard.
+3. **Pilot** (`--submit --stop-after-pilot`): job `dbo7oi0qtr0c73ae4hk0`, 1,000 shots
+   (500 baseline, 500 A2).
+   - It was created 13:42Z and queued until 14:15Z. It ran 14:15–14:46Z, as IBM's timestamps
+     report.
+   - **Charged 3 s** (all three sources agree), counted 4.20 s.
+
+**Phase 7 Stage 4/4b QPU total:** 6 s charged and 8.40 s counted, against the 120 s cap; 578 s
+are left on the Open plan.
+
+| condition (amended, §9.3) | got | criterion | result |
+|---|---|---|---|
+| (a) decoding, integrity | both pubs 500 × 64, no flags | must pass | pass |
+| (b) baseline P(1), t ≥ 16 | **0.5646** ± 0.0039 | stop beyond 0.5810 ± 0.08; flag beyond ± 0.02 | pass, **consistent** (−0.016) |
+| (c) A2's P(m = 1), t ≥ 16 | **0.4927** ± 0.0041 | refit 0.4191 ± 0.021 | **fail** (+0.074, ≈ 18 SE) |
+| (d) `circuits_execution_time_ns` / shot | 0.568 ms | 0.559 ms ± 25% | pass (+1.5%) |
+
+**(c) failed in the opposite direction to #25.** The live calibration was identical to #25's,
+so the refit predicted the same value as on #25's record. Today the record matches the
+*original* calibrated model instead:
+- P(m = 1) after the burn-in is 0.4927 against 0.4925 calibrated;
+- step 0 is 0.800 against 0.830 calibrated, 0.788 refit;
+- both halves of the pilot give 0.493.
+
+Refitting this pilot, descriptively, gives a = 0 (decay_first: a0 = 0.037, a < 1e-10). On these
+data the refit is 298 nats worse than the calibrated model. The step-to-step transitions,
+which the refit missed on #25, are also close to the calibrated model today (`pilot_diagnostics.json`).
+A2's output P(1) is 0.393 ± 0.004 (calibrated 0.386).
+
+**Reading.** This is the null the issue named: *the refit is wrong, or A2 is unstable.* The
+data favour instability. About five and a half hours apart (08:46Z and 14:15Z), with the same reported calibration, q75 under
+repeated mid-circuit measurement behaved in two different ways:
+- on #25's run, about 12% extra decay per measurement;
+- today, none.
+
+The calibration snapshot does not show the change. So it is a time-varying property of the
+device, on the scale of hours, that IBM's calibration data do not track. A model fitted on one
+pilot therefore cannot be expected to predict the next one. This is a reading, not a
+pre-registered test.
+
+**What it implies.**
+- **For rung 4: nothing either way.** No ablation contrast was measured.
+- **For a future attempt:**
+  - The q75 record is not a stable calibration target, so a gate on its absolute level is
+    fragile. Today's pilot would have passed #24's *original* (b) and (c) (0.5646 against
+    0.5810 ± 0.02; 0.4927 against 0.4925 ± 0.03), and it fails only the refit.
+  - The decision rule does not use the q75 record at all. A2's witness is compared with the
+    concurrent baseline, and under every q75 model the predicted A2 witness is 0, whatever
+    the decay.
+  - A gate on decoding, timing and the baseline alone would have let today's pilot through.
+    Choosing that needs a new decision on #17. Stage 4b does not make it.
+- **For the device:** both baseline pilots (#25: 0.552; today: 0.565) sit below Phase 6's
+  0.579–0.581. Today's sits within the 0.02 consistency band.
+
+**Options for the owner** (each needs a new decision on #17):
+1. **Accept the stop** and publish with rung 4 unresolved.
+2. **Re-pilot under #24's original (b)/(c) with (d) fixed.** On today's evidence this would
+   pass, but its outcome depends on which q75 regime the device is in. About 3 s.
+3. **Drop (c) as a stop condition.** Keep it as a recorded diagnostic; A2's q75 record does
+   not enter the decision rule. Run the pilot and the main jobs. About 3 s + 54.6 s (upper
+   bounds) within the remaining 111.6 s of the cap.

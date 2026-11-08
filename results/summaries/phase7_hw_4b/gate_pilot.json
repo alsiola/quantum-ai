@@ -1,0 +1,26 @@
+{
+  "a_decoding_and_guards": true,
+  "b_p1": {
+    "consistent": true,
+    "got": 0.5645833333333333,
+    "ok": true,
+    "pred": 0.5809755596341454,
+    "stop_at": 0.08
+  },
+  "c_pm1": {
+    "got": 0.49270833333333336,
+    "ok": false,
+    "pred": 0.41910298793704936
+  },
+  "d_time": {
+    "got_s_per_shot": 0.0005678167040000001,
+    "model_s_per_shot": 0.000559405999999999,
+    "ok": true,
+    "reference": "circuits_execution_time"
+  },
+  "go": false,
+  "guard_flags": {
+    "A2": [],
+    "baseline": []
+  }
+}
