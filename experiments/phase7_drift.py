@@ -760,6 +760,11 @@ def physical_superops(sup: np.ndarray, model: str, x: np.ndarray) -> np.ndarray:
         a = _rz_super(x[0])
         rot = np.stack([a @ s for s in sup])
         return np.stack([(1 - x[1]) * rot[0], x[1] * rot[0] + rot[1]])
+    if model == "detuning_readout_asym":  # #21's comparator: q75 Z offset + both q59 errors
+        a = _rz_super(x[0])
+        rot = np.stack([a @ s for s in sup])
+        e01, e10 = x[1], x[2]
+        return np.stack([(1 - e01) * rot[0] + e10 * rot[1], e01 * rot[0] + (1 - e10) * rot[1]])
     if model == "readout":
         e01, e10 = x  # P(report 1 | would report 0), P(report 0 | would report 1)
         return np.stack([(1 - e01) * sup[0] + e10 * sup[1], e01 * sup[0] + (1 - e10) * sup[1]])
@@ -792,6 +797,7 @@ def _bounds(model: str) -> list[tuple[float, float]]:
         "dephasing_relaxation": [(0.0, 0.8), (0.0, 0.8)],
         "readout": [(0.0, 0.5), (0.0, 0.5)],
         "detuning_readout": [(-math.pi, math.pi), (0.0, 0.5)],
+        "detuning_readout_asym": [(-math.pi, math.pi), (0.0, 0.5), (0.0, 0.5)],
         "q59_reset": [(0.0, 0.5), (0.0, 0.5)],
         "detuning_q59_reset0": [(-math.pi, math.pi), (0.0, 0.5)],
     }[model]
@@ -852,9 +858,8 @@ def physics_task(task: dict[str, Any]) -> dict[str, Any]:
         return float(build(x).seq_nll(shots).sum() / shots.size)
 
     bnds = _bounds(model)
-    grids = [
-        np.linspace(lo, hi, ph["detuning_grid"] if lo < 0 else ph["prob_grid"]) for lo, hi in bnds
-    ]
+    n_prob = ph["prob_grid"] if len(bnds) <= 2 else ph["prob_grid_3d"]
+    grids = [np.linspace(lo, hi, ph["detuning_grid"] if lo < 0 else n_prob) for lo, hi in bnds]
     best, bx = math.inf, None
     for x in np.array(np.meshgrid(*grids, indexing="ij")).reshape(len(bnds), -1).T:
         v = nll(x)
@@ -1191,7 +1196,7 @@ def main() -> None:
         nu["positive_controls"] = [3]
         cfg["stationarity"]["n_perm"] = cfg["selection"]["n_perm"] = 19
         cfg["segments"]["n_boot"] = cfg["uncertainty"]["n_boot"] = 50
-        cfg["physics"].update(detuning_grid=7, prob_grid=3, nm_iters=3)
+        cfg["physics"].update(detuning_grid=7, prob_grid=3, prob_grid_3d=2, nm_iters=3)
     workers = args.workers or cfg["experiment"]["workers"]
     out = args.from_run.resolve() if args.from_run else new_run_dir(cfg["experiment"]["name"])
     clean = {k: v for k, v in cfg.items() if not k.startswith("_")}

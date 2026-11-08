@@ -118,9 +118,12 @@ em_tol = 1e-9
 [physics]
 # Calibrated 1-qubit instrument plus at most two extra parameters, fitted (max likelihood)
 # separately to the episode and to the rest: grid, then Nelder-Mead.
+# q59_reset and detuning_q59_reset0 use #20's joint (q75, q59) step pieces;
+# detuning_readout_asym is #21's comparator (q75 Z offset + readout asymmetry: 3 parameters).
 models = ["detuning", "detuning_dephasing", "dephasing_relaxation", "readout", "detuning_readout",
-          "q59_reset", "detuning_q59_reset0"]   # last two: joint (q75, q59) model of #20
+          "q59_reset", "detuning_q59_reset0", "detuning_readout_asym"]
 detuning_grid = 73            # delta in [-pi, pi] rad per step
+prob_grid_3d = 11             # per readout axis in the 3-parameter comparator
 prob_grid = 26                # dephasing p, relaxation gamma in [0, 0.8]; readout, reset in [0, 0.5]
 nm_iters = 120
 
