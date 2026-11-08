@@ -1,0 +1,443 @@
+{
+  "A2": {
+    "duplicate_shots": 0,
+    "p_m1_after_burn": 0.41904166666666665,
+    "p_m1_by_position": [
+      0.788,
+      0.488,
+      0.456,
+      0.466,
+      0.37,
+      0.388,
+      0.45,
+      0.42,
+      0.414,
+      0.394,
+      0.404,
+      0.424,
+      0.404,
+      0.392,
+      0.428,
+      0.426,
+      0.42,
+      0.4,
+      0.432,
+      0.416,
+      0.44,
+      0.396,
+      0.422,
+      0.434,
+      0.42,
+      0.46,
+      0.444,
+      0.398,
+      0.404,
+      0.392,
+      0.404,
+      0.408,
+      0.422,
+      0.412,
+      0.442,
+      0.452,
+      0.408,
+      0.434,
+      0.406,
+      0.384,
+      0.41,
+      0.406,
+      0.43,
+      0.46,
+      0.434,
+      0.41,
+      0.388,
+      0.42,
+      0.432,
+      0.44,
+      0.43,
+      0.444,
+      0.406,
+      0.42,
+      0.38,
+      0.414,
+      0.4,
+      0.402,
+      0.436,
+      0.422,
+      0.402,
+      0.436,
+      0.42,
+      0.422
+    ],
+    "p_m1_reversed_bit_order": 0.4275,
+    "p_m1_se": 0.005311970237643583,
+    "y_p1_after_burn": 0.3817083333333333,
+    "y_se": 0.003695645848205643
+  },
+  "baseline": {
+    "duplicate_shots": 0,
+    "p1_after_burn": 0.5517083333333334,
+    "p1_by_position": [
+      0.542,
+      0.524,
+      0.564,
+      0.522,
+      0.562,
+      0.542,
+      0.548,
+      0.576,
+      0.536,
+      0.542,
+      0.578,
+      0.554,
+      0.594,
+      0.58,
+      0.532,
+      0.554,
+      0.502,
+      0.588,
+      0.514,
+      0.576,
+      0.544,
+      0.55,
+      0.532,
+      0.546,
+      0.556,
+      0.55,
+      0.53,
+      0.55,
+      0.56,
+      0.578,
+      0.532,
+      0.518,
+      0.504,
+      0.576,
+      0.532,
+      0.574,
+      0.548,
+      0.52,
+      0.578,
+      0.576,
+      0.584,
+      0.576,
+      0.558,
+      0.552,
+      0.54,
+      0.588,
+      0.55,
+      0.534,
+      0.514,
+      0.54,
+      0.588,
+      0.554,
+      0.564,
+      0.578,
+      0.528,
+      0.548,
+      0.54,
+      0.536,
+      0.556,
+      0.578,
+      0.574,
+      0.566,
+      0.57,
+      0.532
+    ],
+    "p1_first_250": 0.5324166666666666,
+    "p1_last_250": 0.571,
+    "se": 0.0048206747342171485
+  },
+  "calibration_changed_during_job": false,
+  "charge": {
+    "charged_s": 3.0,
+    "counted_s": 4.199257499999999,
+    "exceeded": false,
+    "readings": {
+      "account_delta": 3.0,
+      "job_metrics": 3.0,
+      "job_usage": 3.0
+    },
+    "stage": "pilot",
+    "status": "charged",
+    "upper_s": 4.199257499999999
+  },
+  "job_id": "dbo3cttt7fqc73akg8dg",
+  "meta": {
+    "config": {
+      "analysis": {
+        "alpha_segment": 0.01,
+        "block": 500,
+        "burn": 16,
+        "const_block": 1000,
+        "cp_grid": 50,
+        "homog_block": 500,
+        "k_max": 7,
+        "n_boot": 1000,
+        "n_perm": 1000,
+        "offsets": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "seed": 24
+      },
+      "arms": {
+        "A1": {
+          "purpose": "reset q75 every step: the cheapest causal-path check",
+          "shots": 4000,
+          "source": "ablation",
+          "tier": 1
+        },
+        "A2": {
+          "purpose": "primary: rank > 2 with q75 measured in Z every step?",
+          "shots": 10000,
+          "source": "ablation",
+          "tier": 1
+        },
+        "A2s_spec": {
+          "purpose": "sham: delay on q75 + measure q74; readout crosstalk onto q75",
+          "shots": 15000,
+          "source": "ablation",
+          "tier": 1
+        },
+        "A3": {
+          "instances": 64,
+          "purpose": "random Pauli on q75: destroys its state without reset or readout",
+          "shots_per_instance": 64,
+          "source": "ablation",
+          "tier": 2
+        },
+        "D1": {
+          "file": "results/summaries/phase7_classical/d1.qasm",
+          "purpose": "memoryless step at q59's cadence: readout-chain stickiness, w = 0 null",
+          "shots": 10000,
+          "source": "qasm",
+          "tier": 2
+        },
+        "baseline": {
+          "purpose": "concurrent replication and reference",
+          "shots": 15000,
+          "source": "ablation",
+          "tier": 1
+        }
+      },
+      "budget": {
+        "allowance_after_16_s": 584,
+        "billing_round_s": 1.0,
+        "hard_cap_s": 60,
+        "margin": 0.25,
+        "max_qpu_seconds": 20.0,
+        "phase6_circuit_s": 0.000308316,
+        "rep_delay_s": 0.00025,
+        "sub_job_overhead_s": 2.0
+      },
+      "calibration": {
+        "abs_readout_max": 0.05,
+        "abs_t1_min_s": 5e-05,
+        "abs_t2_min_s": 3e-05,
+        "factor": 2.0,
+        "qubits": [
+          59,
+          75,
+          74
+        ]
+      },
+      "decision": {
+        "family_alpha": 0.01,
+        "gate_z": 5.0,
+        "persist_fraction": 0.25,
+        "persist_z": 5.0,
+        "vanish_fraction": 0.1
+      },
+      "experiment": {
+        "ablation_config": "experiments/configs/phase7_ablation.toml",
+        "ablation_dir": "results/summaries/phase7_ablation",
+        "ancilla_dir": "results/summaries/phase7_ancilla",
+        "audit_dir": "results/summaries/phase7_audit",
+        "classical_dir": "results/summaries/phase7_classical",
+        "drift_dir": "results/summaries/phase7_drift",
+        "name": "phase7_hw",
+        "phase6_dir": "results/summaries/phase6",
+        "spectator_dir": "results/summaries/phase7_spectator",
+        "summary_dir": "results/summaries/phase7_hw_dryrun",
+        "workers": 2
+      },
+      "hypotheses": [
+        {
+          "kind": "ablate",
+          "label": "H_q75, calibrated",
+          "name": "H_q75"
+        },
+        {
+          "episode": {
+            "e01": 0.05963039868669916,
+            "q75_phase": -0.49170087817951275,
+            "start": 0.4,
+            "weight": 0.135
+          },
+          "kind": "ablate",
+          "label": "drift: #19's episode regime (q75 -0.49 rad/step + q59 P(1|0) +0.060) in 13.5% of shots, contiguous",
+          "name": "H_drift_episode"
+        },
+        {
+          "kind": "hmm",
+          "label": "drift: #19's best K = 3 mixture of 2-state HMMs (rest), in every PMD-cadence arm",
+          "name": "H_drift_mixture",
+          "source": "drift_mixture_K3"
+        },
+        {
+          "kind": "ancilla",
+          "label": "q59 reset + leakage + readout, #21's (a)+(b)+(d) fit",
+          "name": "H_ancilla_fit",
+          "params": "fit_abd_all"
+        },
+        {
+          "kind": "ancilla",
+          "label": "q59 leakage at #21's extreme (5e-3 per readout, seep 0.02)",
+          "name": "H_ancilla_extreme",
+          "params": "max_leak"
+        },
+        {
+          "kind": "ablate",
+          "label": "spectators typical (#22): Stark 16 kHz, thermal q74 5% with ZZ -10 kHz, q74 readout dephases q75 5%",
+          "name": "H_spec_typical",
+          "spectator": {
+            "p_thermal": 0.05,
+            "spec_dephasing": 0.05,
+            "stark_hz": 16000.0,
+            "zz_hz": -10000.0
+          }
+        },
+        {
+          "kind": "ablate",
+          "label": "spectators upper (#22 all-upper): Stark 16 kHz, thermal q74 5% with ZZ -50 kHz, q74 readout dephases q75 25%",
+          "name": "H_spec_upper",
+          "spectator": {
+            "p_thermal": 0.05,
+            "spec_dephasing": 0.25,
+            "stark_hz": 16000.0,
+            "zz_hz": -50000.0
+          }
+        },
+        {
+          "kind": "ablate",
+          "label": "classical electronics: sticky q59 record, eps = 0.027 (#23's fit)",
+          "name": "H_sticky_fit",
+          "persistence": 0.027
+        },
+        {
+          "kind": "ablate",
+          "label": "classical electronics: sticky q59 record, eps = 0.01 (#23's generous bound)",
+          "name": "H_sticky_generous",
+          "persistence": 0.01
+        },
+        {
+          "kind": "hmm",
+          "label": "unmodelled 3-state memory outside q75: every PMD-cadence arm emits #19's 3-state HMM fit",
+          "name": "H_outside",
+          "source": "hmm_3state"
+        },
+        {
+          "kind": "ablate",
+          "label": "incomplete A2 dephasing: q75 keeps 50% of its coherence",
+          "name": "H_partial_c05",
+          "op_coherence": 0.5
+        },
+        {
+          "kind": "ablate",
+          "label": "incomplete A2 dephasing: q75 keeps 80% of its coherence",
+          "name": "H_partial_c08",
+          "op_coherence": 0.8
+        }
+      ],
+      "ibm": {
+        "allowed_plans": [
+          "open"
+        ],
+        "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6718778410",
+        "backend": "ibm_kingston",
+        "channel": "ibm_cloud",
+        "env_file": ".env"
+      },
+      "layout": {
+        "length": 64,
+        "memory": 75,
+        "output": 59,
+        "spectator": 74
+      },
+      "pilot": {
+        "arms": {
+          "A2": 500,
+          "baseline": 500
+        },
+        "p1_tolerance": 0.02,
+        "pm1_tolerance": 0.03,
+        "seed": 1,
+        "time_tolerance": 0.25
+      },
+      "sampler": {
+        "dynamical_decoupling": false,
+        "twirling_gates": false,
+        "twirling_measure": false
+      },
+      "schedule": {
+        "include_tiers": [
+          1,
+          2
+        ],
+        "max_chunk": 1000,
+        "n_jobs": 4,
+        "seed": 2024,
+        "tier1": [
+          "baseline",
+          "A2",
+          "A2s_spec",
+          "A1"
+        ]
+      },
+      "tier3": {
+        "B2": {
+          "file": "results/summaries/phase7_ancilla/qasm/circuit_B2.qasm",
+          "purpose": "reset then flag measurement of q59 (#21)",
+          "shots": 15000
+        },
+        "C3": {
+          "arms": 2,
+          "file": "results/summaries/phase7_spectator/qasm/c3_spectator1.qasm",
+          "purpose": "q74 reset vs reset + X at shot start, 20,000 per arm (#22)",
+          "shots": 40000
+        },
+        "D3": {
+          "file": "results/summaries/phase7_classical/d3.qasm",
+          "purpose": "classical positive control, w(0) = -0.065 (#23)",
+          "shots": 5000
+        }
+      },
+      "validation": {
+        "n_boot": 200,
+        "n_perm": 100,
+        "reps": 200,
+        "seed": 4242
+      }
+    },
+    "git_commit": "733d6ef4a8dd584d9ccc10d42ce7fcf66e7b1743",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 1,
+    "timestamp_utc": "2026-11-08T08:47:16+00:00",
+    "torch": "2.15.0"
+  },
+  "phase6_baseline_p1": {
+    "main": 0.58091875,
+    "pilot": 0.5790625
+  },
+  "run_dir": "results/phase7_hw/20261108T084425Z",
+  "timing": {
+    "circuits_execution_time_s": 0.5678164480000001,
+    "execution_span_s": 1.304256,
+    "model_s_per_shot": 0.000559406,
+    "phase6_main_circuits_execution_s_per_shot": 0.000567267648,
+    "shots": 1000
+  }
+}

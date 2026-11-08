@@ -1,0 +1,58 @@
+{
+  "budget": [
+    {
+      "estimate_s": 2.559405999999999,
+      "guard": "would pass",
+      "shot_s": 0.559405999999999,
+      "shots": 1000,
+      "stage": "pilot",
+      "upper_s": 4.199257499999999
+    },
+    {
+      "estimate_s": 10.124211351999987,
+      "guard": "would pass",
+      "shot_s": 8.124211351999987,
+      "shots": 14524,
+      "stage": "job0",
+      "upper_s": 13.655264189999984
+    },
+    {
+      "estimate_s": 10.124211351999987,
+      "guard": "would pass",
+      "shot_s": 8.124211351999987,
+      "shots": 14524,
+      "stage": "job1",
+      "upper_s": 13.655264189999984
+    },
+    {
+      "estimate_s": 10.124211351999987,
+      "guard": "would pass",
+      "shot_s": 8.124211351999987,
+      "shots": 14524,
+      "stage": "job2",
+      "upper_s": 13.655264189999984
+    },
+    {
+      "estimate_s": 10.124211351999987,
+      "guard": "would pass",
+      "shot_s": 8.124211351999987,
+      "shots": 14524,
+      "stage": "job3",
+      "upper_s": 13.655264189999984
+    }
+  ],
+  "plan": "open",
+  "usage": {
+    "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+    "usage_consumed_ru": 0.24771,
+    "usage_consumed_seconds": 16,
+    "usage_limit_reached": false,
+    "usage_limit_ru": 10,
+    "usage_limit_seconds": 600,
+    "usage_period": {
+      "end_time": "2026-11-08T08:41:46.470Z",
+      "start_time": "2026-10-11T08:41:46.470Z"
+    },
+    "usage_remaining_seconds": 584
+  }
+}

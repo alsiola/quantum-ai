@@ -1,0 +1,26 @@
+{
+  "a_decoding_and_guards": true,
+  "b_p1": {
+    "got": 0.5517083333333334,
+    "ok": false,
+    "pred": 0.5809755596341454
+  },
+  "c_pm1": {
+    "got": 0.41904166666666665,
+    "ok": false,
+    "pred": 0.49248908464129826
+  },
+  "d_time": {
+    "got_s_per_shot": 0.0013042560000000002,
+    "model_s_per_shot": 0.000559405999999999,
+    "ok": false
+  },
+  "go": false,
+  "guard_flags": {
+    "A2": [],
+    "baseline": [
+      "dispersion_p1",
+      "order_inflation_p1"
+    ]
+  }
+}
