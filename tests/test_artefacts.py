@@ -391,3 +391,14 @@ def test_product_and_matches_brute_force():
 def test_qpu_seconds_matches_phase6():
     # Phase 6's main job estimate: 20,000 shots of a 308.316 us circuit
     assert A.qpu_seconds(20000, 308.316e-6) == pytest.approx(13.16632, abs=1e-5)
+
+
+def test_lag1_excess_exact_and_data():
+    p = A.with_persistence(A.iid_process(0.58), A.persistence_kernel(0.05))
+    assert A.lag1_excess(p, BURN, 64) == pytest.approx(0.05, abs=1e-12)
+    assert A.lag1_excess(A.iid_process(0.58), BURN, 64) == pytest.approx(0.0, abs=1e-14)
+    y = (np.random.default_rng(1).random((5000, 64)) < 0.58).astype(np.uint8)
+    r = A.plant(y, {"kind": "persistence", "strength": 0.05}, 2)
+    assert A.lag1_excess_data(r, BURN) == pytest.approx(0.05, abs=0.006)
+    chained = A.plant(y, {"kind": "chain", "steps": [{"kind": "reorder", "mode": "reverse"}]}, 0)
+    assert np.array_equal(chained, y[::-1])

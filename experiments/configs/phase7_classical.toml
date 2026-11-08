@@ -1,0 +1,130 @@
+# Phase 7 Stage 2D (issue #23): classical readout, control and processing artefacts, and the
+# memoryless control circuits D1-D3. Local CPU only: no QPU and no IBM service of any kind.
+#
+# 1. (once, `hardware` group, FakeKingston only) export D1-D3 as QASM, padded to Phase 6's
+#    cadence:
+#    uv run --group hardware python experiments/phase7_classical.py --config experiments/configs/phase7_classical.toml --export-qasm
+# 2. the analysis (numpy; about 10 min with 2 workers; `--from-run <dir>` resumes):
+#    uv run python experiments/phase7_classical.py --config experiments/configs/phase7_classical.toml
+
+[experiment]
+name = "phase7_classical"
+summary_dir = "results/summaries/phase7_classical"
+phase6_dir = "results/summaries/phase6"        # read-only inputs
+audit_dir = "results/summaries/phase7_audit"   # instruments.npz (Stage 0)
+workers = 2
+
+[witness]                     # the Stage 0 pipeline (common start set for every k)
+k_max = 7
+burn = 16
+length = 64
+offsets = [0, 1, 2, 3]
+n_blocks = 20                 # contiguous blocks of shots: the primary SE
+bootstrap = 200
+seed = 0
+
+[reference]                   # #18's numbers
+episode = [5300, 8000]        # returned order
+device_w0_episode_free = -0.00587
+device_w0_episode_free_se = 0.00011
+shift_fraction = 0.10         # "shift the PMD witness by 10%" = 10% of the episode-free value
+
+[sources]
+iid_p1 = 0.58                 # (i) i.i.d. at about the device's P(1)
+# (ii) Phase 6's 2-state EM fit to the device (summary.json), from its fitted initial state
+# (iii) the calibrated 1-qubit PMD instrument (instruments.npz)
+
+# -- artefact grids for the exact expectations ------------------------------------------------
+[exact]
+n_shots = 20000
+persistence = { modes = ["sticky", "after_one", "after_zero"], strengths = [0.0, 0.001, 0.002, 0.005, 0.01, 0.02, 0.03, 0.05, 0.1, 0.2, 0.3, 0.5] }
+drift = { modes = ["ramp", "step", "sine", "oneside"], strengths = [0.0, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3], levels = 41 }
+burst = { modes = [["random", 0.5], ["assignment", 0.25]], strengths = [0.0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.135, 0.2, 0.3, 0.5], start = 5300 }
+# search ranges for the strength needed
+search = { persistence = [0.0, 0.5], drift = [0.0, 0.3], burst = [0.0, 0.5], n_grid = 26 }
+
+# Physically plausible strengths (sources and reasoning in docs/phase7-classical.md).
+# typical: comparable to q59's calibrated assignment errors (P(1|0) = 0.001, P(0|1) = 0.007);
+# generous: several times them.
+[plausible]
+persistence = { typical = 0.001, generous = 0.01 }
+drift = { typical = 0.002, generous = 0.01 }
+burst = { typical = 0.0, generous = 0.02 }    # a dead-readout run of 2% of the shots
+
+# worst case over random 2-state sources (Dirichlet(1)); "device-like": stationary P(1)
+# within `p1_window` of the device's 0.577
+[worstcase]
+n_random = 2000
+seed = 11
+p1_window = 0.05
+device_p1 = 0.577
+
+# -- end-to-end runs on sampled data (20,000 x 64, one dataset per row) -----------------------
+[sampled]
+n_shots = 20000
+seeds = [100]
+sources = ["iid", "hmm2", "calibrated"]
+specs = [
+  { kind = "none" },
+  { kind = "persistence", mode = "sticky", strength = 0.002 },
+  { kind = "persistence", mode = "sticky", strength = 0.01 },
+  { kind = "persistence", mode = "sticky", strength = 0.03 },
+  { kind = "persistence", mode = "after_one", strength = 0.01 },
+  { kind = "drift", mode = "ramp", strength = 0.01 },
+  { kind = "drift", mode = "ramp", strength = 0.05 },
+  { kind = "drift", mode = "step", strength = 0.01 },
+  { kind = "burst", mode = "random", param = 0.5, strength = 0.02, start = 5300 },
+  { kind = "burst", mode = "random", param = 0.5, strength = 0.07, start = 5300 },
+  { kind = "burst", mode = "assignment", param = 0.25, strength = 0.135, start = 5300 },
+  { kind = "reorder", mode = "random" },
+  { kind = "reorder", mode = "sort_p1" },
+  { kind = "packing", mode = "byte_reverse" },
+  { kind = "packing", mode = "swap16" },
+  { kind = "packing", mode = "bit_little" },
+  { kind = "drop", strength = 0.1 },
+  { kind = "duplicate", strength = 0.001 },
+  { kind = "duplicate", strength = 0.05 },
+  # a burst, then a random reordering: pooled g as the burst alone, block SEs as clean data
+  { kind = "chain", label = "burst_then_shuffle", steps = [
+      { kind = "burst", mode = "random", param = 0.5, strength = 0.07, start = 5300 },
+      { kind = "reorder", mode = "random" } ] },
+]
+
+# -- the device's own shots: guard rails and a persistence fit on a clean split ---------------
+[device]
+fit_modes = ["sticky", "after_one", "after_zero"]
+fit_grid = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.05, 0.06, 0.08]
+# even shots of the episode-free run fit, odd shots test (interleaved, never returned order)
+
+# -- the control circuits ---------------------------------------------------------------------
+[controls]
+d1 = { p1 = 0.58 }                       # reset every step; rx so that P(1) = 0.58
+d2 = { flip = 0.30 }                     # no reset; P(flip) per step
+d3 = { flip_a = 0.80, flip_b = 0.85 }    # two unreset qubits (q59, q75), analysed as AND:
+                                         # nearly alternating chains, w(0) = -0.065 (calibrated)
+# calibrated noise of q59 (and q75 for D3) from the committed snapshot
+# (results/summaries/phase6/job_main.json -> calibration_after); idle before the next step's
+# rotation: D1 idles in |0> after the reset (no decay); D2/D3 idle in the post-measurement
+# state for reset_time + pad.
+# Leakage (Stage 2B, #21, owns this physics): indicative values only.
+leak = [0.0, 0.001, 0.01]
+read2 = [1.0, 0.9]                       # P(|2> read as 1)
+seep_t1_ratio = 0.5                      # T1(2->1) = 0.5 T1(1->0)
+null_sizes = [1000, 2000, 5000, 10000, 20000]
+null_reps = 100
+null_seed = 500
+d3_reps = 20
+
+[hardware]
+# Ready but NOT submitted. Stage 3 asks the owner before anything runs (issue #17).
+submitted = false
+backend = "ibm_kingston"
+physical_qubits = { output = 59, partner = 75 }
+optimization_level = 3
+seed_transpiler = 0
+shots = { d1 = 20000, d2 = 20000, d3 = 5000 }
+sampler = { dynamical_decoupling = false, twirling_gates = false, twirling_measure = false, meas_type = "classified" }
+# Phase 6's usage model: 2 s per job + (rep_delay + circuit duration) per shot
+sub_job_overhead_s = 2.0
+rep_delay_s = 250e-6
+phase6_circuit_s = 308.316e-6            # live estimate (summary.json prepare); controls are padded to it

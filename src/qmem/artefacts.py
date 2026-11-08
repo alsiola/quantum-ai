@@ -324,6 +324,11 @@ def plant(shots: np.ndarray, spec: dict[str, Any], seed: int, n_shots_ref: int |
     k = spec["kind"]
     if k == "none":
         return np.array(shots, copy=True)
+    if k == "chain":  # several artefacts in order (e.g. a burst, then a reordering)
+        out = shots
+        for i, sub in enumerate(spec["steps"]):
+            out = plant(out, sub, seed + 1000 * i)
+        return out
     if k == "persistence":
         return apply_persistence(
             shots, persistence_kernel(spec["strength"], spec.get("mode", "sticky")), rng
@@ -381,6 +386,22 @@ def exact_windows(
         bp = burst_process(proc, spec.get("mode", "random"), spec.get("param", 0.5))
         return expected_mixture([proc, bp], [n_shots - m, m], k_max, burn, length)
     return None
+
+
+def lag1_excess(proc: W.LinearProcess, burn: int, length: int) -> float:
+    """Exact ``P(1 | previous 1) - P(1 | previous 0)``, pairs from ``burn`` to the end.
+
+    For a sticky record on an i.i.d. source it equals ``eps``.
+    """
+    b = proc.block_probs(range(burn, length - 1), 2)  # 00, 01, 10, 11
+    return float(b[3] / (b[2] + b[3]) - b[1] / (b[0] + b[1]))
+
+
+def lag1_excess_data(shots: np.ndarray, burn: int) -> float:
+    """Data form of ``lag1_excess``: pairs ``(t, t + 1)`` with ``t >= burn``."""
+    y = np.asarray(shots)[:, burn:]
+    prev, cur = y[:, :-1].ravel(), y[:, 1:].ravel()
+    return float(cur[prev == 1].mean() - cur[prev == 0].mean())
 
 
 # -- the pipeline and its guard rails --
@@ -470,13 +491,17 @@ def guard_rails(
       with within-block shot-level SEs;
     * ``order_inflation``: contiguous-block SE over random-block SE of ``w(0)`` and of P(1)
       (about 1 for exchangeable shots; its own sampling error is ~``1/sqrt(2(B-1))``);
-    * ``positional_chi2``: per-position P(1) against model ``marginals`` (bit order and
-      packing regressions), if given.
+    * ``positional_chi2``: the *shape* of the per-position P(1) against model ``marginals``
+      (a fitted constant offset removed, since that is model mismatch), which a bit-order or
+      packing error permutes; if given.
 
     ``flags`` lists the checks that fail their ``thresholds`` (p-value ``alpha``, inflation
-    ``max_inflation``, ``max_duplicates``).
+    ``max_inflation``, ``max_duplicates``). The dispersion tests are the primary drift checks;
+    the inflation ratios are a ratio of two noisy SDs (each ~16% at 20 blocks), so their
+    threshold is 2, and ``w0``'s is unreliable when the Hankel matrix is near rank 1 (an
+    i.i.d. source), where ``w`` is second order in the noise.
     """
-    th = {"alpha": 1e-3, "max_inflation": 1.5, "max_duplicates": 0}
+    th = {"alpha": 1e-3, "max_inflation": 2.0, "max_duplicates": 0}
     th.update(thresholds or {})
     y = np.asarray(shots)
     out: dict[str, Any] = {"n": len(y), "length": int(y.shape[1])}
@@ -513,10 +538,17 @@ def guard_rails(
         "expected_spread": 1 / math.sqrt(2 * (n_blocks - 1)),
     }
     if marginals is not None:
+        # shape only: a constant offset of P(1) is model mismatch, not a decoding error
         obs = y.mean(0)
         exp = np.asarray(marginals, dtype=np.float64)
         var = exp * (1 - exp) / len(y)
-        out["positional_chi2"] = {"chi2": float(np.sum((obs - exp) ** 2 / var)), "dof": len(exp)}
+        d = obs - exp
+        off = np.sum(d / var) / np.sum(1 / var)
+        out["positional_chi2"] = {
+            "chi2": float(np.sum((d - off) ** 2 / var)),
+            "dof": len(exp) - 1,
+            "offset": float(off),
+        }
     flags = []
     if not out["values_ok"]:
         flags.append("values")
