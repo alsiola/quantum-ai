@@ -32,7 +32,7 @@ backend = "ibm_kingston"
 allowed_plans = ["open"]       # never a paid plan: the code refuses anything else
 # The owner's approving comment on #17 (https://github.com/<owner>/<repo>/issues/17#issuecomment-<id>).
 # Empty: every submission is refused. Stage 4 sets it, in a commit, after the approval.
-approval_url = ""
+approval_url = "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6718778410"
 
 [layout]                       # ibm_kingston, Phase 6's pair; never re-mapped
 memory = 75
