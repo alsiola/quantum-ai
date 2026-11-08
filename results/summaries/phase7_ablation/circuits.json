@@ -1830,6 +1830,9 @@
   },
   "meta": {
     "config": {
+      "a2_record": {
+        "readout_error": 0.01513671875
+      },
       "a3": {
         "draws": 4000,
         "instances": 64,
@@ -1891,7 +1894,7 @@
         "workers": 2
       },
       "hardware": {
-        "a3_total_shots": 10000,
+        "a3_total_shots": 4096,
         "backend": "ibm_kingston",
         "sampler": {
           "dynamical_decoupling": false,
@@ -1899,10 +1902,10 @@
           "twirling_measure": false
         },
         "shots_per_circuit": {
-          "A1": 10000,
-          "A2": 20000,
-          "A2s_spec": 10000,
-          "baseline": 20000
+          "A1": 4000,
+          "A2": 10000,
+          "A2s_spec": 15000,
+          "baseline": 15000
         },
         "submit": false
       },
@@ -1963,6 +1966,40 @@
         ],
         "x3_factor": 3.0
       },
+      "scans": {
+        "a2_coherence": [
+          0.0,
+          0.01,
+          0.05,
+          0.1,
+          0.2,
+          0.5,
+          0.8,
+          1.0
+        ],
+        "q59_e0": 0.00098,
+        "q59_e1": [
+          0.0068,
+          0.02,
+          0.05,
+          0.1,
+          0.2,
+          0.3,
+          0.5,
+          0.7,
+          0.9
+        ],
+        "spec_dephasing": [
+          0.0,
+          0.01,
+          0.02,
+          0.05,
+          0.1,
+          0.25,
+          0.5,
+          1.0
+        ]
+      },
       "shots": {
         "bootstrap": 200,
         "device_w0": -0.00587,
@@ -1973,10 +2010,12 @@
         "persist_fractions": [
           1.0,
           0.5,
-          0.2
+          0.2,
+          0.05
         ],
         "se_inflation": 1.4,
         "seed": 7,
+        "sham_reduction": 0.2,
         "sim_shots": 20000,
         "z": 5.0
       },
@@ -1993,12 +2032,12 @@
         ]
       }
     },
-    "git_commit": "304b1136e0f940a4bbc3ceb2d734deea108c6995",
-    "git_dirty": true,
+    "git_commit": "ff6b0b73b034e665151f97085e002f64fa565760",
+    "git_dirty": false,
     "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
     "python": "3.13.6",
     "seed": 2020,
-    "timestamp_utc": "2026-11-08T02:27:47+00:00",
+    "timestamp_utc": "2026-11-08T02:37:03+00:00",
     "torch": "2.15.0"
   },
   "qasm_sha256": {
