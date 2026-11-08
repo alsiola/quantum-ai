@@ -169,7 +169,8 @@ through the same estimator and diagnostics (`nulls_adversarial.csv`,
 - **Regimes fitted separately.** EM 2-state fits to the episode and to the rest, mixed
   contiguously as in the data, give exact w(0) = +2.5e-5: the wrong sign, and 0.4% of the
   device. Simulated, they give z(0) = +0.7 on average. Mean shifts up to 3× the episode's
-  (ΔP(1) ≤ 0.08) at weight 0.135 or 0.5 stay at |w(0)| ≤ 3e-5 (`mean_shift.csv`).
+  (ΔP(1) ≤ 0.08) at weight 0.135 or 0.5 give w(0) between 0 and +1.4e-5, always the wrong sign
+  (`mean_shift.csv`).
 
 **Analytic note.**
 - **Across-shot mixtures.** For a 2-state HMM, O₀ = P(0, ·|·) is a non-negative 2 × 2 matrix,
@@ -192,7 +193,62 @@ through the same estimator and diagnostics (`nulls_adversarial.csv`,
 
 ## 6. Physical reading of the episode (item 6)
 
-PHYSICS
+**Fit method** (`physics.csv`, `episode.png`).
+- Maximum likelihood over every shot of each segment, starting from the calibrated 1-qubit
+  instrument (`instruments.npz`) with extra channels composed in numpy.
+- The q59 reset models use #20's joint (q75, q59) step pieces. With the calibrated reset they
+  reproduce the 1-qubit instrument to 3e-14 (tested).
+- #21's comparator, a q75 Z offset plus readout asymmetry, has 3 parameters. Every other model
+  has at most 2.
+- One phase step (δ) of 1 rad corresponds to 32.8 kHz, modulo 206 kHz.
+
+Columns: ΔNLL is in nats/symbol against the calibrated model, and LR = 2ΔlogL.
+
+| segment | model | parameters | ΔNLL | LR | g(1) | g(3) | P(1) | w(2) |
+|---|---|---|---|---|---|---|---|---|
+| rest | *data* | | | | 0.100 | 0.040 | 0.577 | −0.053 |
+| rest | q75 offset + readout asymmetry (#21) | δ = +0.041 (1.3 kHz), e₀₁ = 0.002, e₁₀ = 0.011 | −0.00024 | 527 | 0.104 | 0.041 | 0.578 | −0.052 |
+| rest | q75 detuning + dephasing | δ = +0.032, p = 0.028 | −0.00024 | 524 | 0.104 | 0.040 | 0.582 | −0.048 |
+| rest | q75 detuning | δ = +0.036 | −0.00016 | 354 | 0.104 | 0.042 | 0.583 | −0.056 |
+| rest | q59 reset only | e₀ = 0.008, e₁ = 0.018 | −0.00013 | 283 | 0.107 | 0.040 | 0.578 | −0.053 |
+| rest | q59 readout only | e₀₁ = 0.007, e₁₀ = 0.010 | −0.00006 | 124 | 0.108 | 0.040 | 0.579 | −0.054 |
+| episode | *data* | | | | 0.157 | 0.018 | 0.604 | −0.206 |
+| episode | **q75 detuning + q59 readout (0→1)** | δ = −0.49 (−16 kHz), e₀₁ = 0.060 | **−0.0189** | **6513** | 0.146 | 0.023 | 0.590 | −0.041 |
+| episode | #21's 3-parameter comparator | same; e₁₀ → 0 | −0.0189 | 6513 | | | | |
+| episode | q75 detuning + q59 reset | δ = −0.47, e₀ → 0 | −0.0179 | 6175 | 0.143 | 0.024 | 0.566 | −0.125 |
+| episode | q75 detuning | δ = −0.46 (−15 kHz) | −0.0177 | 6132 | 0.142 | 0.024 | 0.566 | −0.117 |
+| episode | q59 readout only | e₀₁ = 0.20, e₁₀ = 0.11 | −0.0060 | 2089 | 0.126 | 0.029 | 0.601 | −0.002 |
+| episode | q59 reset only | e₀ = 0.115, e₁ = 0 | −0.0044 | 1506 | 0.116 | 0.035 | 0.568 | −0.020 |
+| episode | q75 dephasing + relaxation | γ = 0.75 | −0.0034 | 1158 | 0.119 | 0.027 | 0.587 | ≈ 0 |
+
+- **The loss of the period-3 revival needs a change in the memory's per-step phase.** No
+  q59-only change produces it. Readout or reset changes on q59 alone gain only a third of the
+  likelihood. They leave g(3) at 0.029–0.035 against 0.018, and they drive the witness towards
+  0. Extra dephasing or relaxation on q75 destroys the witness instead of reshaping it.
+  - #22's χ² fit picked the +134 kHz branch (≈ −2.2 rad). My grid included it, but by
+    likelihood the −15 kHz branch fits better.
+- **The rise in P(1) needs the q59 term.** The detuning alone leaves P(1) at 0.566. Adding an
+  extra 0→1 assignment error of 6% raises it to 0.590.
+- **Same family or a separate mechanism?** The same family describes both segments: a q75 Z
+  offset plus a q59 readout term.
+  - The rest's best fit is #21's model, with an offset of +0.041 rad/step, matching #21's
+    0.042.
+  - The episode is that family with the offset moved by about −0.53 rad/step (about −17 kHz)
+    *and* an extra 6% 0→1 assignment error, both for about 1.5 s.
+  - The fit is incomplete, though. It still misses g(1) by 0.011, P(1) by 0.014 and w(2) by
+    5×, while a general 4-state classical HMM fits the episode within CIs (§5). Two
+    parameters of this family do not capture the episode.
+- **Consistency only, not proof.** A q75 frequency shift of about 17 kHz lasting about 1.5 s
+  (for example from a TLS) is *consistent with* the process running through q75's phase, and
+  it needs a simultaneous q59 readout change. It does not prove that the memory is held in q75.
+  Other explanations of the same effective phase:
+  - a drift of the CZs' conditional phase (coupler or flux);
+  - a q59 or readout-resonator frequency shift, which would also explain the readout term with
+    a single cause;
+  - a change in residual q59 coherence carried between steps;
+  - phase drift in the control electronics.
+
+  A spectator flip is excluded by #22, since q74's T1 is about 0.3 ms.
 
 ## 7. Uncertainty policy (item 7)
 
