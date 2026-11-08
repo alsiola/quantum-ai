@@ -118,7 +118,7 @@ em_tol = 1e-9
 [physics]
 # Calibrated 1-qubit instrument plus at most two extra parameters, fitted (max likelihood)
 # separately to the episode and to the rest: grid, then Nelder-Mead.
-models = ["detuning", "detuning_dephasing", "dephasing_relaxation", "readout"]
+models = ["detuning", "detuning_dephasing", "dephasing_relaxation", "readout", "detuning_readout"]
 detuning_grid = 73            # delta in [-pi, pi] rad per step
 prob_grid = 21                # dephasing p, relaxation gamma in [0, 0.4]; readout in [0, 0.2]
 nm_iters = 120

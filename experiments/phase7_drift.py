@@ -756,6 +756,10 @@ def physical_superops(sup: np.ndarray, model: str, x: np.ndarray) -> np.ndarray:
     if model == "dephasing_relaxation":
         a = _relax_super(x[1]) @ _dephase_super(x[0])
         return np.stack([a @ s for s in sup])
+    if model == "detuning_readout":  # q75 detuning and an extra 0 -> 1 assignment error on q59
+        a = _rz_super(x[0])
+        rot = np.stack([a @ s for s in sup])
+        return np.stack([(1 - x[1]) * rot[0], x[1] * rot[0] + rot[1]])
     if model == "readout":
         e01, e10 = x  # P(report 1 | would report 0), P(report 0 | would report 1)
         return np.stack([(1 - e01) * sup[0] + e10 * sup[1], e01 * sup[0] + (1 - e10) * sup[1]])
@@ -768,6 +772,7 @@ def _bounds(model: str) -> list[tuple[float, float]]:
         "detuning_dephasing": [(-math.pi, math.pi), (0.0, 0.4)],
         "dephasing_relaxation": [(0.0, 0.4), (0.0, 0.4)],
         "readout": [(0.0, 0.2), (0.0, 0.2)],
+        "detuning_readout": [(-math.pi, math.pi), (0.0, 0.2)],
     }[model]
 
 
