@@ -138,7 +138,7 @@ regime_b = { noise = "calibrated", q75_phase = 0.3 }
 backend = "ibm_kingston"
 submit = false
 # Sized in docs/phase7-ablation.md section 4: A2 resolves a witness of 9% of the device's at
-# 5 sigma; baseline vs A2s_spec resolves a 25% change; A1 and A3 are cross-checks. Optional
+# 5 sigma; baseline vs A2s_spec resolves a 20% change; A1 and A3 are cross-checks. Optional
 # pure-delay shams (A1s, A2s, A3s): 4,000 shots each if the owner wants them.
 shots_per_circuit = { baseline = 15000, A2 = 10000, A2s_spec = 15000, A1 = 4000 }
 a3_total_shots = 4096          # 64 shots on each of the 64 instances
