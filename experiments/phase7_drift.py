@@ -789,11 +789,11 @@ def _bounds(model: str) -> list[tuple[float, float]]:
     return {
         "detuning": [(-math.pi, math.pi)],
         "detuning_dephasing": [(-math.pi, math.pi), (0.0, 0.4)],
-        "dephasing_relaxation": [(0.0, 0.4), (0.0, 0.4)],
-        "readout": [(0.0, 0.2), (0.0, 0.2)],
-        "detuning_readout": [(-math.pi, math.pi), (0.0, 0.2)],
-        "q59_reset": [(0.0, 0.2), (0.0, 0.2)],
-        "detuning_q59_reset0": [(-math.pi, math.pi), (0.0, 0.2)],
+        "dephasing_relaxation": [(0.0, 0.8), (0.0, 0.8)],
+        "readout": [(0.0, 0.5), (0.0, 0.5)],
+        "detuning_readout": [(-math.pi, math.pi), (0.0, 0.5)],
+        "q59_reset": [(0.0, 0.5), (0.0, 0.5)],
+        "detuning_q59_reset0": [(-math.pi, math.pi), (0.0, 0.5)],
     }[model]
 
 
