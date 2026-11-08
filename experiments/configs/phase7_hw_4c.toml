@@ -181,8 +181,8 @@ commit = "daa49991a7abcc7a999ef2d0297055e1945335e1"
 doc = "docs/phase7-preregistration.md"
 heading = "## 10. Amendment of 2026-11-08 (post hoc, after #26's pilot; #27)"
 date = "2026-11-08"
-sha256 = ""                    # recorded after the amendment commit lands on main
-commit = ""
+sha256 = "2c1b5c541a4ee3983cb2efb477ded03bb36da2d5c0ba3edbdc2532138d408c34"   # of section 10 as committed
+commit = "0f78670bacdaaf4e97db7399413f9c240171e54e"   # the amendment commit on main
 
 # -- analysis (fixed in advance) -----------------------------------------------------------------
 [analysis]
