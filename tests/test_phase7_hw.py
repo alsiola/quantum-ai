@@ -572,3 +572,185 @@ def test_resume_evaluates_a_missing_pilot_gate(fake_run, monkeypatch):
     assert (
         not (out / "job0" / "job.json").exists() and (out / "pilot" / "gate_failed.json").exists()
     )
+
+
+# -- Stage 4b (#26): the refit, the amended gate, the cap and the amendment guard ----------------
+
+CFG4B_PATH = REPO_ROOT / "experiments" / "configs" / "phase7_hw_4b.toml"
+
+
+@pytest.fixture(scope="module")
+def cfg4b():
+    return H.load_config(CFG4B_PATH)
+
+
+def test_4b_config_changes_only_what_the_amendment_names(cfg, cfg4b):
+    same = ("layout", "sampler", "arms", "tier3", "schedule", "calibration", "analysis")
+    for k in (*same, "decision", "hypotheses", "validation"):
+        assert cfg4b[k] == cfg[k], k
+    assert cfg4b["pilot"]["arms"] == cfg["pilot"]["arms"]
+    assert cfg4b["ibm"]["approval_url"].endswith("#issuecomment-6720604627")
+    assert cfg4b["budget"]["hard_cap_s"] == 120
+    assert cfg4b["budget"]["prior_counted_s"] == pytest.approx(4.1992575, abs=1e-6)
+    b0 = {k: v for k, v in cfg["budget"].items() if k != "hard_cap_s"}
+    b1 = {k: v for k, v in cfg4b["budget"].items() if k not in ("hard_cap_s", "prior_counted_s")}
+    assert b0 == b1
+    assert 0 < cfg4b["refit"]["decay"] < 0.3
+
+
+def _amend_doc(body: str) -> str:
+    head = "# Pre-reg\n\n## 8. Data\n\ntext\n\n## 9. Amendment of 2026-11-08 (x)\n\n"
+    return f"{head}{body}\n\n### 9.1 sub\n\nmore\n"
+
+
+def test_amendment_section_hash_and_check():
+    h = "## 9. Amendment of 2026-11-08 (x)"
+    doc = _amend_doc("gate (c) = 0.42")
+    sec = F.amendment_section(doc, h)
+    assert sec.startswith(h) and "### 9.1 sub" in sec and "## 8." not in sec
+    sha = F.amendment_hash(sec)
+    F.amendment_check(doc, h, "2026-11-08", sha, doc)
+    with pytest.raises(F.Refused, match="no amendment"):
+        F.amendment_check(doc, h, "2026-11-08", "", doc)
+    with pytest.raises(F.Refused, match="date"):
+        F.amendment_check(doc, h, "2026-11-09", sha, doc)
+    with pytest.raises(F.Refused, match="not found"):
+        F.amendment_check("# none\n", h, "2026-11-08", sha, doc)
+    with pytest.raises(F.Refused, match="recorded hash"):  # edited after recording
+        F.amendment_check(_amend_doc("gate (c) = 0.43"), h, "2026-11-08", sha, doc)
+    with pytest.raises(F.Refused, match="not on main"):
+        F.amendment_check(doc, h, "2026-11-08", sha, None)
+    with pytest.raises(F.Refused, match="at its recorded commit"):  # committed text differs
+        F.amendment_check(doc, h, "2026-11-08", sha, _amend_doc("gate (c) = 0.40"))
+    # a later section after the amendment is not part of it
+    later = doc + "\n## 10. Later\n\nother\n"
+    assert F.amendment_section(later, h) == sec
+
+
+def test_4b_submit_refuses_without_recorded_amendment(cfg4b, monkeypatch, tmp_path):
+    def no_network(_cfg):
+        raise AssertionError("the live service must not be reached")
+
+    monkeypatch.setattr(H, "live", no_network)
+    args = SimpleNamespace(submit=True, from_run=tmp_path, stop_after_pilot=True)
+    bad = {**cfg4b, "amendment": {**cfg4b["amendment"], "sha256": "0" * 64}}
+    with pytest.raises(F.Refused, match="amendment"):
+        H.stage4(bad, args)
+    none = {**cfg4b, "amendment": {**cfg4b["amendment"], "sha256": "", "commit": ""}}
+    with pytest.raises(F.Refused, match="amendment"):
+        H.stage4(none, args)
+
+
+def test_4b_recorded_amendment_passes_the_guard(cfg4b):
+    """Once the amendment's hash and commit are recorded (after it lands on main), the
+    guard accepts the committed pre-registration as it stands."""
+    if not cfg4b["amendment"]["sha256"]:
+        pytest.skip("amendment not yet recorded in the config")
+    rec = H.amendment_guard(cfg4b)
+    assert rec["sha256"] == cfg4b["amendment"]["sha256"]
+
+
+def _gate_files(tmp_path, cfg, base_p1, pm1, seed=0):
+    rng = np.random.default_rng(seed)
+    lw = cfg["layout"]["length"]
+    pubs = H.pilot_schedule(cfg)
+    arrays = {}
+    for p in pubs:
+        n = p.shots
+        if p.arm == "baseline":
+            arrays[f"{p.key}__y"] = np.packbits((rng.random((n, lw)) < base_p1).astype(np.uint8), 1)
+        else:
+            arrays[f"{p.key}__y"] = np.packbits((rng.random((n, lw)) < 0.38).astype(np.uint8), 1)
+            arrays[f"{p.key}__m"] = np.packbits((rng.random((n, lw)) < pm1).astype(np.uint8), 1)
+    np.savez_compressed(tmp_path / "shots.npz", length=lw, **arrays)
+    return pubs
+
+
+def test_4b_amended_pilot_gate(cfg4b, tmp_path):
+    cm, dur = H.cost_model(cfg4b), H.durations(cfg4b)
+    lp = {"baseline_p1": 0.58, "A2_p_m1": 0.42}
+    pubs = _gate_files(tmp_path, cfg4b, base_p1=0.55, pm1=0.42)
+    cost = cm.job(pubs, dur)
+    per = cost["shot_s"] / cost["shots"]
+    rec = {"execution_seconds": 1.3, "metrics": {"circuits_execution_time_ns": per * 1.02e12}}
+    g = H.pilot_gate(cfg4b, tmp_path, pubs, lp, rec, cost, dur)
+    # (b): 0.03 off is inconsistent at 0.02 but within the 0.08 stop; (d) uses the metric
+    assert g["b_p1"]["ok"] and not g["b_p1"]["consistent"]
+    assert g["c_pm1"]["ok"]
+    assert g["d_time"]["reference"] == "circuits_execution_time" and g["d_time"]["ok"]
+    assert g["go"]
+    # the original gate (#24) on the same data stops at (b) and (d)
+    g0 = H.pilot_gate(H.load_config(CFG_PATH), tmp_path, pubs, lp, rec, cost, dur)
+    assert not g0["b_p1"]["ok"] and not g0["d_time"]["ok"] and not g0["go"]
+    # (b) beyond the stop, (c) outside its tolerance, (d) without the metric: each stops
+    pubs = _gate_files(tmp_path, cfg4b, base_p1=0.49, pm1=0.42)
+    assert not H.pilot_gate(cfg4b, tmp_path, pubs, lp, rec, cost, dur)["go"]
+    tol = cfg4b["pilot"]["pm1_tolerance"]
+    pubs = _gate_files(tmp_path, cfg4b, base_p1=0.58, pm1=0.42 + tol + 0.03)
+    g = H.pilot_gate(cfg4b, tmp_path, pubs, lp, rec, cost, dur)
+    assert not g["c_pm1"]["ok"] and not g["go"]
+    pubs = _gate_files(tmp_path, cfg4b, base_p1=0.58, pm1=0.42)
+    g = H.pilot_gate(cfg4b, tmp_path, pubs, lp, {"execution_seconds": 0.6}, cost, dur)
+    assert not g["d_time"]["ok"] and not g["go"]
+
+
+def test_4b_cap_counts_25s_pilot(cfg4b, monkeypatch, tmp_path):
+    """The hard cap is total for Stage 4/4b: #25's counted 4.2 s is spent before the first
+    new job; a cap one second short of the plan refuses the last main job."""
+    import phase6
+
+    monkeypatch.setattr(phase6, "make_sampler", lambda _cfg, mode: mode)
+    monkeypatch.setattr(phase6, "calibration", lambda *a: {"snapshot": True})
+    monkeypatch.setattr(H, "calibration_report", lambda *a: {"violations": []})
+    lw = cfg4b["layout"]["length"]
+    monkeypatch.setattr(H, "decode", lambda r, arm, length: {"y": np.zeros((2, lw), np.uint8)})
+    monkeypatch.setattr(H, "pilot_gate", lambda *a: {"go": True})
+    monkeypatch.setattr(H, "analyse_run", lambda *a: None)
+    cm, dur = H.cost_model(cfg4b), H.durations(cfg4b)
+    stages = ["pilot"] + [f"job{j}" for j in range(len(H.schedule(cfg4b)))]
+    plan_upper = cm.job(H.pilot_schedule(cfg4b), dur)["upper_s"] + sum(
+        cm.job(j, dur)["upper_s"] for j in H.schedule(cfg4b)
+    )
+    prior = cfg4b["budget"]["prior_counted_s"]
+    assert prior + plan_upper <= cfg4b["budget"]["hard_cap_s"]  # the plan fits in 120 s
+    short = {**cfg4b, "budget": {**cfg4b["budget"], "hard_cap_s": prior + plan_upper - 1.0}}
+    ibm = _FakeIBM({s: [3.0] for s in stages})
+    ctx = {"svc": ibm, "backend": ibm, "plan": "open"}
+    built = {"circuits": __import__("collections").defaultdict(object)}
+    with pytest.raises(F.Refused, match="hard cap"):
+        H.run_jobs(short, tmp_path, ctx, built, cm, dur, {}, source=ibm.source)
+    assert len(ibm.submitted) == len(stages) - 1  # every job but the last
+
+
+def test_4b_models_carry_the_refit(cfg, cfg4b):
+    """A2 under the refit: q75 is still a classical bit each step (w = 0 exactly, also in
+    #21's simulator) and A2's output moves by the decay; no other arm changes."""
+    h = next(h for h in cfg4b["hypotheses"] if h["name"] == "H_q75")
+    e1, e0 = H.exact_hypothesis(cfg4b, h), H.exact_hypothesis(cfg, h)
+    assert abs(e1["A2"]["w0"]) < 1e-12
+    assert abs(e1["A2"]["p1"] - e0["A2"]["p1"]) > 1e-3
+    for arm in ("baseline", "A2s_spec", "A1", "A3", "D1"):
+        assert e1[arm]["w0"] == e0[arm]["w0"] and e1[arm]["p1"] == e0[arm]["p1"], arm
+    m1 = H.ancilla_models(cfg4b, {})
+    a1 = H.ablate_models(cfg4b, H.A.Hypothesis())
+    assert np.allclose(m1.procs["A2"].marginals(64), a1.procs["A2"].marginals(64), atol=1e-4)
+    assert abs(W.witness(m1.procs["A2"].expected_windows(7, 16, 64, True), 0)) < 1e-12
+    assert H.without_refit(cfg4b).get("refit") is None and "refit" in cfg4b
+
+
+def test_4b_live_gate_prediction_reproduces_the_refit(cfg, cfg4b):
+    """The gate's live path (rebuilt pieces from a calibration) at #25's own calibration
+    gives the refit's (c) prediction, and without [refit] #25's original 0.4925."""
+    pytest.importorskip("qiskit")
+    import json
+
+    noise = json.loads(
+        (REPO_ROOT / "results/summaries/phase7_hw/calibration_before.json").read_text()
+    )["snapshot"]["noise"]
+    refit = json.loads((REPO_ROOT / "results/summaries/phase7_hw_4b/refit.json").read_text())
+    lp = H.live_pilot_predictions(cfg4b, noise)
+    want = refit["gate_c"][refit["primary"]]["pred_p_m1_at_pilot25_calibration"]
+    assert lp["A2_p_m1"] == pytest.approx(want, abs=1e-9)
+    assert lp["A2_p_m1_calibrated"] == pytest.approx(0.49248908464129826, abs=1e-9)
+    assert H.live_pilot_predictions(cfg, noise)["A2_p_m1"] == pytest.approx(0.4924890846, abs=1e-9)
+    assert lp["baseline_p1"] == pytest.approx(0.5809755596341454, abs=1e-9)  # unchanged
