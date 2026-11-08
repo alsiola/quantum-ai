@@ -385,3 +385,169 @@ Seeds:
   analysis uses 1,000 of each.
 - The spectator hypothesis is a reduced model (§5).
 - The hypotheses are exact models; none of them has been measured.
+
+## 9. Amendment of 2026-11-08 (post hoc, after #25's pilot; #26)
+
+**This section is post hoc.** It was written after #25's pilot (`results/summaries/phase7_hw/`,
+`docs/phase7-hardware.md`) stopped at the gate of §3, and it uses that pilot's data. It was
+committed to `main` before any new submission. `--submit` refuses unless the section's SHA-256
+and its commit, recorded in `experiments/configs/phase7_hw_4b.toml` `[amendment]`, match the
+section as committed on `main` (`phase7_hw.amendment_guard`). The owner approved this route
+and its budget on #17 (https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6720604627).
+
+### 9.1 Reason
+
+#25's pilot failed three of the four conditions of §3:
+- (b) baseline P(1) 0.5517 ± 0.0048 against 0.5810 ± 0.02;
+- (c) A2's q75 record P(m = 1) 0.4190 ± 0.0053 against 0.4925 ± 0.03;
+- (d) execution span per shot 1.304 ms against 0.559 ms ± 25%.
+
+(c) says the calibrated model of q75 under repeated mid-circuit measurement is incomplete.
+(b) is a shift of the device's output on the scale of a job, the kind #19 describes. (d) compared
+a span (with ≈ 0.7 s of fixed overhead) against a reference that is
+`circuits_execution_time_ns / shots`: a mis-specified condition.
+
+### 9.2 The refit (step 1 of #26)
+
+`experiments/phase7_refit.py` (`qmem.refit`; config `experiments/configs/phase7_refit.toml`;
+outputs in `results/summaries/phase7_hw_4b/refit*`). A2's joint record (q75's bit m_t and
+q59's output y_t in each of 64 steps, 500 shots) is a linear process with four symbols on the
+(q75, q59) memory, built from #20's pieces rebuilt under #25's live calibration. Families, fitted
+by maximum likelihood on whole shots:
+
+| family | parameters | ΔNLL vs calibrated | P(m=1) step 0 | P(m=1), t ≥ 16 | A2 P(1) |
+|---|---|---|---|---|---|
+| *#25's pilot* | | | 0.788 ± 0.018 | 0.4190 ± 0.0052 | 0.3817 ± 0.0036 |
+| calibrated | 0 | 0 | 0.830 | 0.4925 | 0.386 |
+| decay: q75 \|1⟩ → \|0⟩ in each measurement, recorded 0 | 1: a = 0.119 | −267.9 (LR 536) | 0.732 | 0.4211 | 0.380 |
+| **decay, first measurement separate** | **2: a = 0.123 ± 0.008, a0 = 0.051 ± 0.022** | **−272.3** (LR 8.8 vs 1 par., p = 0.003) | **0.788** | **0.4191** | **0.380** |
+| leakage \|1⟩ → \|2⟩ per measurement, \|2⟩ read 0, seeping back (`qmem.ancilla`) | 2: 0.079, seep 0.23 | −247.1 | 0.830 | 0.4210 | |
+
+(± are whole-shot bootstrap SDs, 500 resamples.) The refit is the 2-parameter family: in every
+mid-circuit measurement of q75 after the first, its |1⟩ decays to |0⟩ with probability
+a = 0.123 (95% CI 0.108–0.137) early enough to be recorded 0. The first measurement of a shot
+has a0 = 0.051 (0.011–0.095). a0 only shapes steps 0–2; it changes every statistic at t ≥ 16
+by < 1e-12, so the stationary arm models use a alone. Leakage fits worse with as many
+parameters and cannot move step 0.
+
+**Checks.**
+- The refit reproduces #25's q75 record within its bootstrap uncertainty: step 0 (z = 0.0),
+  step 1 (z = −0.1) and the mean over t ≥ 16 (z = 0.0). A2's output P(1) (0.380, z = 0.5),
+  P(y | m = 1) and P(y | m = 0) (|z| ≤ 1.0) also agree.
+- **It is not complete.** The step-to-step record transitions P(m_{t+1} = 1 | m_t, y_t) miss by
+  |z| = 3.0–3.4 (calibrated: 6–12). The device's q75 record is more persistent than either
+  model. Under every q75 model in §5, A2's q75 is a classical bit each step, so A2's output
+  is a 2-state process and its witness is 0 exactly whatever these transitions are. The
+  decision-relevant prediction does not depend on this misfit.
+- The term acts only on A2, the one arm that measures q75, so the baseline's prediction is
+  unchanged (0.5810 at #25's calibration). #25's baseline (0.5517) is not explained by q75
+  and is treated under (b).
+- The new term is tested against a closed-form Markov chain, enumeration of the joint record,
+  #20's record model at a = 0, #21's independent qutrit simulator (`StepConfig.memory_decay`),
+  and parameter recovery on simulated records (`tests/test_refit.py`).
+- At #16's snapshot calibration the refit gives P(m = 1) = 0.4201 (calibrated: 0.4925).
+
+**Gate (c) prediction.** The refit's P(m = 1) over t ≥ 16 at the live calibration
+(`live_pilot_predictions`, with a and a0 fixed from this fit and q75's live readout error).
+Its uncertainty at #25's calibration is 0.0045 (SD over the bootstrap refits). A 500-shot pilot
+adds 0.0052 (#25's whole-shot SE). The tolerance is 3 × √(0.0045² + 0.0052²) = 0.0206, fixed
+at **0.021**.
+
+### 9.3 Amended pilot conditions
+
+The pilot itself is unchanged (one job; 500 baseline and 500 A2 shots; seed 1). Go only if all
+of these hold:
+- (a) unchanged.
+- (b) **stop only if** the baseline's P(1) over positions ≥ 16 is more than **0.08** from the
+  live prediction. Within 0.08, a deviation beyond the original 0.02 is **recorded as a
+  consistency flag** and does not stop the run. Reasons:
+  - the primary rule compares A2 with the *concurrent* baseline, interleaved in every job,
+    and the replication gate (§4: baseline |w(0)| ≥ 5 SE) already refuses to interpret a
+    baseline that does not reproduce the witness. A level shift in P(1) is not by itself a
+    reason to stop;
+  - the observed job-scale excursions are 0.02–0.04: Phase 6's episode +0.022, #25's pilot
+    −0.029, and #25's two half-pilots 0.039 apart;
+  - #19 showed that mean shifts up to ΔP(1) = 0.08 (three times the episode's), at weights
+    0.135 or 0.5, give w(0) between 0 and +1.4e-5: they cannot produce the witness or hide its
+    loss. Beyond 0.08 the shift is outside what #19 checked, and a broken circuit, decoding or
+    mapping becomes the likelier reading, so the run stops.
+- (c) A2's q75 record has P(m = 1), positions ≥ 16, within **0.021** of the **refit**
+  prediction at the live calibration (§9.2: the record model with a0 and a fixed at #25's fit,
+  the rest from the live noise). This is the out-of-sample test of the refit.
+- (d) `circuits_execution_time_ns / shots` (IBM's job metric) is within **25%** of the cost
+  model's per-shot time (0.559 ms). #25's pilot gave 0.568 ms (+1.5%).
+
+On any failure the script writes `pilot/gate_failed.json` and stops: no retry, no re-mapping
+and no second pilot without a new decision on #17.
+
+### 9.4 Predictions and validation under the refit (step 2 of #26)
+
+The local dry run under the refit (`--dry-run-local` with `experiments/configs/phase7_hw_4b.toml`;
+outputs in `results/summaries/phase7_hw_4b/dryrun/`) re-checked all 68 circuit hashes of #20
+(match) and recomputed every prediction of §5 and the validation of §6. The settings were
+unchanged: 200 replicates per hypothesis, the planned schedule, 200 resamples and 100
+permutations. The refit adds q75's measurement decay (a = 0.123) to A2 in every hypothesis
+with a q75 model, both in #20's pieces and in #21's simulator. The hmm-kind hypotheses (#19's
+mixture, the memory outside q75) are output-level and unchanged. No other arm changes.
+
+**Predictions that move** (`predictions.csv`):
+- **H_q75:** A2's w(0) stays 0 exactly. A2's P(1) is 0.379 (was 0.385; #25 measured 0.382).
+  A2's median SE rises from 8.6e-5 to 9.3e-5. The A3 and D1 reference values are unchanged.
+- **A2 keeping 50% of the coherence:** w_A2 = −3.0e-4 (was −4.7e-4), 4.4% of the baseline.
+  It is now predicted *vanishes* (was *ambiguous*).
+- **A2 keeping 80% of the coherence:** w_A2 = −1.71e-3 (was −2.66e-3), 24.8% of the baseline,
+  just under the 25% persists threshold. It is now predicted *ambiguous* (was *persists*).
+  The decay damps whatever coherence A2's measurement leaves, by √(1 − a) per step, and it
+  moves population as well.
+- The q59-residue and sticky-record cases keep |w_A2| ≈ 1–4e-5, slightly smaller than before.
+
+**Validation** (error rate = the fraction of replicates whose outcome differs from the
+predicted one; was → now):
+
+| hypothesis | predicted | vanishes | persists | ambiguous | error rate |
+|---|---|---|---|---|---|
+| H_q75 (calibrated + refit) | vanishes | 100% | 0 | 0 | 0 → **0** |
+| drift: #19 episode regime | vanishes | 96.5% | 0 | 3.5% | 3.0% → **3.5%** |
+| drift: #19 best K = 3 mixture | persists | 0 | 100% | 0 | 0 → **0** |
+| q59 reset + leakage, #21 fit | vanishes | 67.0% | 0 | 33.0% | 22.5% → **33.0%** |
+| q59 leakage, #21 extreme | vanishes | 34.0% | 0 | 66.0% | 55.5% → **66.0%** |
+| spectators, typical | vanishes | 99.5% | 0 | 0.5% | 0 → **0.5%** |
+| spectators, upper | vanishes | 96.0% | 0 | 4.0% | 3.0% → **4.0%** |
+| sticky record, ε = 0.027 | vanishes | 83.5% | 0 | 16.5% | 10.5% → **16.5%** |
+| sticky record, ε = 0.01 | vanishes | 98.5% | 0 | 1.5% | 0 → **1.5%** |
+| 3-state memory outside q75 | persists | 0 | 100% | 0 | 0 → **0** |
+| A2 keeps 50% coherence | vanishes (was ambiguous) | 92.5% | 0 | 7.5% | 40% → **7.5%** |
+| A2 keeps 80% coherence | ambiguous (was persists) | 0 | 41.0% | 59.0% | 0 → **41.0%** |
+
+- **The decisive calls are unchanged in kind.** No replicate says *persists* where q75
+  carries the memory. No replicate says *vanishes* under the memory outside q75 or under A2
+  keeping 80% of the coherence. Every error is still an *ambiguous*, or, for the 80% case,
+  a *persists* that its prediction (just under the threshold) calls ambiguous.
+- **Power falls slightly.** A2's SE is ≈ 8% larger, so the cases near the vanish bound (q59
+  leakage, the sticky record) fall to *ambiguous* 6–11 points more often. The secondary
+  tests still identify them: D1's lag-1 excess rejects in 100% of those replicates. The gate
+  passes in 100% of the replicates of every hypothesis, and the secondary sizes are ≤ 2%,
+  as before.
+- **The reading of a persisting A2 shifts.** With the decay, 80% coherence kept by A2's
+  measurement gives 24.8% of the baseline's witness, at the persists threshold (it gave 39%
+  before). So "A2 persists while A1 and A3 vanish" now needs more than about 80% of the
+  coherence to survive. 50% kept now falls inside *vanishes* in 92.5% of the replicates (40%
+  before), so a vanishing A2 bounds the surviving coherence less tightly. These are model
+  statements under the refit. They do not change the rule.
+
+### 9.5 Budget
+
+The hard cap is **120 QPU seconds** in total for Phase 7 Stages 4 and 4b (#17). #25's pilot
+counts 4.20 s against it (max of its 3 s charge and its upper bound;
+`[budget] prior_counted_s`). The plan needs 4.20 s (pilot) + 54.6 s (four main jobs), as upper
+bounds, so 63.0 s with #25's pilot. Every other guard of §7 is unchanged.
+
+### 9.6 Unchanged
+
+The decision rule and thresholds (§4), the arms and circuits (§2), the shot counts (pilot, then
+tiers 1–2 with A2 at 10,000; no tier 3), the schedule and seeds (§3, §8), the mapping (q75 and
+q59 on `ibm_kingston`, never re-mapped), the calibration bounds, the analysis settings, the
+secondary family and its Holm correction, and the reading of A2 with the other arms. The
+analysis is also reported under the original, un-refit predictions as a sensitivity row; the
+decision uses the data alone, and the predictions only enter the positional χ² warning and
+the A3 and D1 reference values, which the refit does not change.

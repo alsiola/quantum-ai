@@ -133,3 +133,35 @@ re-mapping and no main job.
 
 Rerunning, changing a tolerance or changing the gate needs your decision. Stage 4 does not
 make it.
+
+# Stage 4b: refit, amended gate, re-pilot (#26)
+
+The owner chose option 3 above and approved a 120 s cap on #17
+(https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6720604627).
+
+## Refit and amendment (local, no QPU)
+
+The full account is the dated, post hoc amendment in `docs/phase7-preregistration.md` §9.
+Outputs are in `results/summaries/phase7_hw_4b/`: `refit.json`, `refit_check.csv`,
+`refit_bootstrap.npz`, `refit_m_by_position.png`, and `dryrun/`.
+
+- **Refit (2 parameters).** In each mid-circuit measurement of q75, |1⟩ decays to |0⟩ and is
+  recorded 0 with probability a = 0.123 ± 0.008; the first measurement of a shot has
+  a0 = 0.051 ± 0.022. Against #25's record:
+  - P(m = 1) at step 0: 0.788 against 0.788 observed;
+  - over t ≥ 16: 0.4191 against 0.4190;
+  - A2's P(1): 0.380 against 0.382.
+
+  The record's step-to-step transitions still miss at |z| ≈ 3, so the refit is not complete.
+  A2's witness prediction (0) does not depend on that. Leakage fits worse.
+- **Amended gate.**
+  - (c) is the refit's P(m = 1) at the live calibration, ± 0.021 (0.419 at #25's calibration).
+  - (b) stops only beyond ±0.08; ±0.02 is now a recorded consistency flag.
+  - (d) is `circuits_execution_time_ns / shots`, ± 25%.
+- **Unchanged:** the decision rule, the arms, the shots, the mapping and the analysis.
+- **Validation under the refit.** No wrong decisive call. A2's SE is about 8% larger. "A2 keeps
+  80% coherence" moves from *persists* to *ambiguous*.
+
+## Hardware
+
+Pending the coordinator's go on #26.

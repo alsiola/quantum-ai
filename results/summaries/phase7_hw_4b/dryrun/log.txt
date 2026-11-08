@@ -1,0 +1,33 @@
+[12:23:31] run dir /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-de6a37ec9ca21e40889e191b5e55fc1d/results/phase7_hw_4b_dryrun/20261108T122331Z (local dry run: no network)
+[12:23:31] schedule: {'problems': [], 'n_pubs': 124, 'pubs_per_job': [31, 31, 31, 31], 'shots_per_job': [14524, 14524, 14524, 14524], 'expected_job_execution_s': {0: 8.124561352000004, 1: 8.124561352000002, 2: 8.124561352000002, 3: 8.124561352000004}}
+[12:23:31] budget: {"durations_s": {"baseline": 0.000308316, "A1": 0.0003106280000000001, "A2": 0.00031059600000000006, "A2s_spec": 0.00031049600000000006, "A3": 0.00030834799999999996, "D1": 0.0003080600000000012, "D3": 0.00030806000000000203, "B2": 0.00045195600000000227, "C3": 0.0003107159999999999}, "tier_shot_s": {"1": 24.630652, "2": 7.867593408000013}, "max_job_estimate_s": 10.124561352000004, "max_qpu_seconds": 20.0, "every_job_within_max": true, "hard_cap_s": 120, "plan_upper_within_cap": true, "allowance_after_16_s": 584}
+[12:23:44] hashes all match: True; retimed changes: ['A2s_spec']
+[12:23:44] pilot predictions (snapshot noise): {'baseline_p1': 0.5819812117696012, 'A2_p_m1': 0.4200776438119778, 'A2_p_m1_calibrated': 0.4925318877296814, 'A2_p_m1_step0': 0.784240723260368, 'A2_y_p1': 0.3790541549213035, 'refit': {'decay': 0.1225210036278705, 'decay_first': 0.05108972973491628, 'source': 'results/summaries/phase7_hw_4b/refit.json'}}; FakeKingston calibration violations: []
+2026-11-08T12:23:47.354078+00:00 [aer_pilot] submitting 2 pub(s) {"shots": [50, 50], "arms": ["baseline", "A2"], "aer": true}
+2026-11-08T12:23:49.167682+00:00 [aer_pilot] job 34dbe9d7-66ea-4d28-99b2-f6f690a2b197 submitted
+[12:24:08] aer pilot: {'baseline': {'shots': 50, 'p1_after_burn': 0.59625, 'guard_flags': [], 'registers': ['y']}, 'A2': {'shots': 50, 'p1_after_burn': 0.4066666666666667, 'guard_flags': ['dispersion_p1', 'dispersion_g1_minus_g3'], 'registers': ['m', 'y'], 'p_m1': 0.49041666666666667}, 'seconds': 23.540807962417603}
+[12:24:11] exact predictions done
+[12:24:42] validation 10/2400 (30 s)
+[12:27:00] validation 110/2400 (169 s)
+[12:29:20] validation 210/2400 (308 s)
+[12:31:41] validation 310/2400 (450 s)
+[12:39:34] validation 410/2400 (923 s)
+[12:41:28] validation 510/2400 (1036 s)
+[12:43:26] validation 610/2400 (1154 s)
+[12:45:59] validation 710/2400 (1308 s)
+[12:48:27] validation 810/2400 (1456 s)
+[12:51:14] validation 910/2400 (1622 s)
+[12:53:36] validation 1010/2400 (1764 s)
+[12:56:44] validation 1110/2400 (1953 s)
+[12:59:45] validation 1210/2400 (2134 s)
+[13:02:54] validation 1310/2400 (2323 s)
+[13:05:54] validation 1410/2400 (2503 s)
+[13:08:48] validation 1510/2400 (2676 s)
+[13:11:47] validation 1610/2400 (2856 s)
+[13:15:44] validation 1710/2400 (3093 s)
+[13:20:16] validation 1810/2400 (3365 s)
+[13:22:28] validation 1910/2400 (3497 s)
+[13:24:32] validation 2010/2400 (3621 s)
+[13:26:54] validation 2110/2400 (3763 s)
+[13:29:18] validation 2210/2400 (3907 s)
+[13:31:49] validation 2310/2400 (4058 s)
