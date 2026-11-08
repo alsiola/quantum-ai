@@ -225,6 +225,7 @@ class StepConfig:
     memory_seep: float = 0.0  # |2> -> |1> of q75 per step
     memory_read2: float = 1.0
     memory_cz_phase: float = 0.0  # CZ phase of |2>_q75 |1>_ancilla
+    memory_decay: float = 0.0  # |1> -> |0> of q75 during its measurement, recorded as |0> (#26)
     relax_idle_ancillas: bool = False  # True: ancillas also relax while others are busy (B3)
     detuning: float = 0.0  # extra Z rotation of q75 per step (rad), a non-ancilla comparator
 
@@ -354,11 +355,14 @@ def _measure(
     assign: np.ndarray,
     leak: float,
     flips: tuple[float, float],
+    decay: float = 0.0,
 ) -> list[np.ndarray]:
     """Superoperators per recorded bit of a measurement of ``q``.
 
     ``assign[y, b]`` = P(record y | level b). After the projection on ``|b>``: non-QND flips
     (``flips = (0->1, 1->0)``) and leakage ``|1> -> |2>`` with probability ``leak``.
+    ``decay``: ``|1> -> |0>`` during the readout, early enough to be assigned as ``|0>``
+    (#26's measurement-induced relaxation of q75; ``qmem.ablate_hw.meas_kraus``).
     """
     site, dims = reg.site(q), reg.dims
     dq = dims[site]
@@ -370,8 +374,15 @@ def _measure(
         trans: list[tuple[int, float]] = [(b, 1.0)]
         if b == 0 and f01 > 0:
             trans = [(0, 1 - f01), (1, f01)]
+        if b == 1 and decay > 0:  # decayed during the readout: assigned as |0>
+            k = np.zeros((dq, dq), dtype=complex)
+            k[0, 1] = math.sqrt(decay)
+            dec = superop([embed(k, [site], dims)]) @ proj
+            for y in range(2):
+                if assign[y, 0] > 0:
+                    out[y] = out[y] + assign[y, 0] * dec
         if b == 1:
-            stay = 1 - f10 - (leak if dq == 3 else 0.0)
+            stay = 1 - decay - f10 - (leak if dq == 3 else 0.0)
             trans = [(1, stay)]
             if f10 > 0:
                 trans.append((0, f10))
@@ -484,7 +495,13 @@ def step_superops(
             dq = reg.dims[site]
             if q == cfg.memory:
                 ms = _measure(
-                    reg, q, cfg, _assign(cfg, q, dq, memory=True), cfg.memory_leak, (0.0, 0.0)
+                    reg,
+                    q,
+                    cfg,
+                    _assign(cfg, q, dq, memory=True),
+                    cfg.memory_leak,
+                    (0.0, 0.0),
+                    cfg.memory_decay,
                 )
             else:
                 p = cfg.params(q)

@@ -94,6 +94,29 @@ def dephase_kraus(p: float) -> list[np.ndarray]:
     return [math.sqrt(1 - q) * _I2, math.sqrt(q) * _Z]
 
 
+def amp_damp_kraus(g: float) -> list[np.ndarray]:
+    """Amplitude damping: ``|1> -> |0>`` with probability ``g``."""
+    return [
+        np.array([[1, 0], [0, math.sqrt(1 - g)]], dtype=complex),
+        math.sqrt(g) * np.array([[0, 1], [0, 0]], dtype=complex),
+    ]
+
+
+def meas_kraus(decay: float) -> tuple[list[np.ndarray], list[np.ndarray]]:
+    """Kraus sets per *physical* outcome (0, 1) of a Z measurement with decay during readout.
+
+    From ``|1>`` the qubit decays to ``|0>`` with probability ``decay`` early enough to be
+    recorded as 0 (#26's measurement-induced relaxation of q75); otherwise it is projected and
+    recorded faithfully. ``decay = 0`` is the projective measurement. The readout's symmetric
+    assignment error is applied on top, by the caller.
+    """
+    k0 = [np.diag([1.0, 0]).astype(complex)]
+    if decay > 0:
+        k0.append(math.sqrt(decay) * np.array([[0, 1], [0, 0]], dtype=complex))
+    k1 = [math.sqrt(1 - decay) * np.diag([0, 1.0]).astype(complex)]
+    return k0, k1
+
+
 def depol_kraus(p: float) -> list[np.ndarray]:
     """``rho -> (1 - p) rho + p I/2`` on one qubit."""
     w = [1 - 3 * p / 4, p / 4, p / 4, p / 4]
@@ -172,6 +195,9 @@ class Hypothesis:
     * ``op_coherence``: coherence of q75 kept by A2's measurement (0: projective).
     * ``spec_dephasing``: Z dephasing of q75 by the spectator measurement in ``A2s_spec``.
     * ``q75_phase``: an extra Z rotation of q75 per step (a detuning), in rad.
+    * ``meas_decay``: A2's measurement of q75 lets ``|1>`` decay to ``|0>`` with this
+      probability, recorded 0 (#26's refit; ``meas_kraus``). Summed over the record it is
+      amplitude damping after the dephasing.
     """
 
     name: str = "H_q75"
@@ -180,6 +206,7 @@ class Hypothesis:
     op_coherence: float = 0.0
     spec_dephasing: float = 0.0
     q75_phase: float = 0.0
+    meas_decay: float = 0.0
 
 
 def op_superop(variant: str, pieces: StepPieces, hyp: Hypothesis, pauli: str = "I") -> np.ndarray:
@@ -192,7 +219,10 @@ def op_superop(variant: str, pieces: StepPieces, hyp: Hypothesis, pauli: str = "
         e = hyp.q75_reset or (pieces.eps_q75, pieces.eps_q75)
         return superop(kraus_kron(reset_kraus(*e), pieces.relax_q59_reset))
     if variant == "A2":
-        return superop(kraus_kron(dephase_kraus(1 - hyp.op_coherence), pieces.relax_q59_measure))
+        q75 = dephase_kraus(1 - hyp.op_coherence)
+        if hyp.meas_decay:
+            q75 = [d @ k for d in amp_damp_kraus(hyp.meas_decay) for k in q75]
+        return superop(kraus_kron(q75, pieces.relax_q59_measure))
     if variant == "A3":
         u = _PAULI_M[pauli]
         if pauli in ("X", "Y"):  # one physical x gate (Y = x . rz(pi)), depolarised after
@@ -217,6 +247,25 @@ def step_superops(
     op = op_superop(variant, pieces, hyp, pauli)
     pre = op @ pieces.pre @ reset_superop(pieces, hyp)
     return np.stack([pieces.post[y] @ pre for y in range(2)])
+
+
+def a2_record_superops(
+    pieces: StepPieces, readout_error: float, decay: float = 0.0, hyp: Hypothesis | None = None
+) -> np.ndarray:
+    """A2's step resolved by both records: ``S[m, y]`` (2, 2, 16, 16).
+
+    ``m`` is q75's recorded bit (symmetric assignment error ``readout_error`` on top of
+    ``meas_kraus(decay)``), ``y`` q59's. ``S.sum(0)`` is ``step_superops("A2")`` with
+    ``meas_decay = decay`` (projective, so ``hyp.op_coherence`` must be 0).
+    """
+    hyp = hyp or Hypothesis()
+    if hyp.op_coherence:
+        raise ValueError("the record model is for a projective A2 measurement")
+    phys = [superop(kraus_kron(k, pieces.relax_q59_measure)) for k in meas_kraus(decay)]
+    r = readout_error
+    rec = [(1 - r) * phys[0] + r * phys[1], (1 - r) * phys[1] + r * phys[0]]
+    pre = pieces.pre @ reset_superop(pieces, hyp)
+    return np.stack([np.stack([pieces.post[y] @ rec[m] @ pre for y in (0, 1)]) for m in (0, 1)])
 
 
 RHO0_JOINT = np.diag([1.0, 0, 0, 0]).astype(complex)  # q75 = q59 = |0>
@@ -571,6 +620,8 @@ __all__ = [
     "Hypothesis",
     "Settings",
     "StepPieces",
+    "a2_record_superops",
+    "amp_damp_kraus",
     "build_variant",
     "dephase_kraus",
     "depol_kraus",
@@ -578,6 +629,7 @@ __all__ = [
     "finite_m_witness",
     "instance_windows",
     "instrument_superops",
+    "meas_kraus",
     "mixture",
     "op_superop",
     "paired_nll",
