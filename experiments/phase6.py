@@ -254,6 +254,65 @@ def shots_from_result(res: Any, length: int) -> np.ndarray:
     return np.stack(cols, axis=1).astype(np.uint8)
 
 
+def submit_or_fetch(
+    stage: str,
+    d: Path,
+    out_dir: Path,
+    svc: Any,
+    mode: Any,
+    pubs: list[Any],
+    sampler_cfg: dict[str, Any],
+    rec_extra: dict[str, Any],
+    guard: Any,
+    dry_run: bool,
+) -> tuple[Any, dict[str, Any]]:
+    """Submit ``pubs`` as one job, or re-fetch it by the id saved in ``d / job.json``.
+
+    A job id on disk is never resubmitted (a dry run always runs again, locally). Before a
+    real submission ``guard(rec)`` must return without raising; it sees the record (with
+    ``rec_extra``, e.g. the estimate) and may add to it. The id is saved before waiting.
+    """
+    job_path = d / "job.json"
+    rec: dict[str, Any] = json.loads(job_path.read_text()) if job_path.exists() else {}
+    if "job_id" in rec and not dry_run:
+        log(out_dir, f"[{stage}] re-fetching job {rec['job_id']}")
+        return svc.job(rec["job_id"]), rec
+    rec.update({"stage": stage, "dry_run": dry_run, **rec_extra})
+    if not dry_run:
+        guard(rec)
+    sampler = make_sampler(sampler_cfg, mode)
+    log(out_dir, f"[{stage}] submitting {len(pubs)} pub(s) {json.dumps(rec_extra, default=str)}")
+    job = sampler.run(pubs)
+    rec["job_id"] = job.job_id()
+    rec["submitted_at"] = now()
+    save_json(job_path, rec)  # the id is on disk before we wait
+    log(out_dir, f"[{stage}] job {rec['job_id']} submitted")
+    return job, rec
+
+
+def finish_job(job: Any, rec: dict[str, Any], d: Path, svc: Any, after: Any, dry_run: bool):
+    """Wait for ``job``; record its metadata, usage, metrics and status (and, for a real job,
+    the usage and ``after()`` calibration afterwards) in ``d / job.json``; return the result."""
+    t0 = time.perf_counter()
+    res = job.result()
+    rec["result_seconds_waited"] = time.perf_counter() - t0
+    rec["fetched_at"] = now()
+    rec["result_metadata"] = jsonable(dict(getattr(res, "metadata", {}) or {}))
+    pm = [jsonable(dict(getattr(r, "metadata", {}) or {})) for r in res]
+    rec["pub_metadata"] = pm[0] if len(pm) == 1 else pm  # one pub: as Phase 6 saved it
+    for attr in ("usage", "metrics", "status"):
+        try:
+            v = getattr(job, attr)()
+            rec[attr] = jsonable(v if not hasattr(v, "name") else v.name)
+        except Exception as e:
+            rec[f"{attr}_error"] = repr(e)
+    if not dry_run:
+        rec["usage_after"] = usage(svc)
+        rec["calibration_after"] = after()
+    save_json(d / "job.json", rec)
+    return res
+
+
 def run_job(stage: str, cfg, svc, backend, prep, out_dir: Path, dry_run: bool) -> np.ndarray:
     """Submit (or re-fetch) one job; save everything about it; return its shots."""
     from qiskit import qpy
@@ -270,8 +329,6 @@ def run_job(stage: str, cfg, svc, backend, prep, out_dir: Path, dry_run: bool) -
     length = cfg["circuit"]["length"]
     with open(out_dir / "circuit.qpy", "rb") as f:
         tq = qpy.load(f)[0]
-    job_path = d / "job.json"
-    rec: dict[str, Any] = json.loads(job_path.read_text()) if job_path.exists() else {}
     if dry_run:
         from qiskit_aer import AerSimulator
 
@@ -280,49 +337,26 @@ def run_job(stage: str, cfg, svc, backend, prep, out_dir: Path, dry_run: bool) -
             mode = AerSimulator.from_backend(backend)
     else:
         mode = backend
-    if "job_id" in rec and not dry_run:
-        log(out_dir, f"[{stage}] re-fetching job {rec['job_id']}")
-        job = svc.job(rec["job_id"])
-    else:
-        est = estimate_qpu_seconds(cfg, prep, shots)
-        rec.update({"stage": stage, "shots": shots, "estimated_qpu_s": est, "dry_run": dry_run})
-        if not dry_run:
-            u = usage(svc)
-            rec["usage_before"] = u
-            remaining = u.get("usage_remaining_seconds")
-            if est > cfg["budget"]["max_qpu_seconds"]:
-                raise SystemExit(f"[{stage}] estimated {est:.1f} s > max_qpu_seconds; not sent")
-            if remaining is not None and est > remaining:
-                raise SystemExit(f"[{stage}] estimated {est:.1f} s > remaining {remaining} s")
-        sampler = make_sampler(cfg, mode)
-        log(out_dir, f"[{stage}] submitting {shots} shots (estimated {est:.2f} s QPU)")
-        job = sampler.run([tq], shots=shots)
-        rec["job_id"] = job.job_id()
-        rec["submitted_at"] = now()
-        save_json(job_path, rec)  # the id is on disk before we wait
-        log(out_dir, f"[{stage}] job {rec['job_id']} submitted")
-    t0 = time.perf_counter()
-    res = job.result()
-    rec["result_seconds_waited"] = time.perf_counter() - t0
-    rec["fetched_at"] = now()
+    est = estimate_qpu_seconds(cfg, prep, shots)
+
+    def guard(rec: dict[str, Any]) -> None:
+        u = usage(svc)
+        rec["usage_before"] = u
+        remaining = u.get("usage_remaining_seconds")
+        if est > cfg["budget"]["max_qpu_seconds"]:
+            raise SystemExit(f"[{stage}] estimated {est:.1f} s > max_qpu_seconds; not sent")
+        if remaining is not None and est > remaining:
+            raise SystemExit(f"[{stage}] estimated {est:.1f} s > remaining {remaining} s")
+
+    extra = {"shots": shots, "estimated_qpu_s": est}
+    job, rec = submit_or_fetch(
+        stage, d, out_dir, svc, mode, [(tq, None, shots)], cfg, extra, guard, dry_run
+    )
+    ff = cfg["circuit"]["feedforward_latency_s"]
+    after = lambda: calibration(svc.backend(backend.name), prep["step_physical"], ff)  # noqa: E731
+    res = finish_job(job, rec, d, svc, after, dry_run)
     arr = shots_from_result(res, length)
     np.save(shots_path, arr)
-    rec["result_metadata"] = jsonable(dict(getattr(res, "metadata", {}) or {}))
-    rec["pub_metadata"] = jsonable(dict(getattr(res[0], "metadata", {}) or {}))
-    for attr in ("usage", "metrics", "status"):
-        try:
-            v = getattr(job, attr)()
-            rec[attr] = jsonable(v if not hasattr(v, "name") else v.name)
-        except Exception as e:
-            rec[f"{attr}_error"] = repr(e)
-    if not dry_run:
-        rec["usage_after"] = usage(svc)
-        rec["calibration_after"] = calibration(
-            svc.backend(backend.name),
-            prep["step_physical"],
-            cfg["circuit"]["feedforward_latency_s"],
-        )
-    save_json(job_path, rec)
     log(out_dir, f"[{stage}] {arr.shape[0]} shots saved; usage {rec.get('usage')}")
     return arr
 
