@@ -600,7 +600,7 @@ def test_4b_config_changes_only_what_the_amendment_names(cfg, cfg4b):
 
 def _amend_doc(body: str) -> str:
     head = "# Pre-reg\n\n## 8. Data\n\ntext\n\n## 9. Amendment of 2026-11-08 (x)\n\n"
-    return f"{head}{body}\n\n### 9.1 sub\n\nmore\n"
+    return f"{head}{body}\n#25's pilot starts a line\n\n### 9.1 sub\n\nmore\n"
 
 
 def test_amendment_section_hash_and_check():
@@ -608,6 +608,7 @@ def test_amendment_section_hash_and_check():
     doc = _amend_doc("gate (c) = 0.42")
     sec = F.amendment_section(doc, h)
     assert sec.startswith(h) and "### 9.1 sub" in sec and "## 8." not in sec
+    assert "#25's pilot starts a line" in sec
     sha = F.amendment_hash(sec)
     F.amendment_check(doc, h, "2026-11-08", sha, doc)
     with pytest.raises(F.Refused, match="no amendment"):

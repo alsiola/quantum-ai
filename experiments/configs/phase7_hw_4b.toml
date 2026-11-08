@@ -155,8 +155,8 @@ source = "results/summaries/phase7_hw_4b/refit.json"
 doc = "docs/phase7-preregistration.md"
 heading = "## 9. Amendment of 2026-11-08 (post hoc, after #25's pilot; #26)"
 date = "2026-11-08"
-sha256 = ""                    # recorded in a commit after the amendment's own commit
-commit = ""                    # the amendment's commit on main
+sha256 = "483731a22578d92987f8285d747d99a056b94f72f9b01680eeec67e7095c0af7"   # of section 9 as committed
+commit = "daa49991a7abcc7a999ef2d0297055e1945335e1"   # the amendment commit on main
 
 # -- analysis (fixed in advance) -----------------------------------------------------------------
 [analysis]

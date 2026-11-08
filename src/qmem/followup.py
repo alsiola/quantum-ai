@@ -305,8 +305,8 @@ def amendment_section(doc: str, heading: str) -> str | None:
         return None
     j = len(lines)
     for k in range(i + 1, len(lines)):
-        h = lines[k]
-        if h.startswith("#") and len(h) - len(h.lstrip("#")) <= level:
+        m = re.match(r"^(#+) ", lines[k])  # a heading; "#25's ..." is not one
+        if m and len(m.group(1)) <= level:
             j = k
             break
     return "\n".join(ln.rstrip() for ln in lines[i:j]).rstrip() + "\n"
