@@ -20,6 +20,11 @@ offsets = [0, 1, 2, 3]
 
 [segments]
 episode = [5300, 8000]        # #18's boundaries, in returned order (re-examined in [selection])
+# Sensitivity only (chosen from these data by the change-point profile in [selection], so not
+# predeclared): the refined episode, and the widest exclusion over the three statistics' CIs.
+refined_episode = [5270, 7960]
+refined_exclusion = [5250, 8000]
+test_segments = ["rest", "episode", "rest_refined", "episode_refined"]
 rolling_window = 1000
 rolling_step = 250
 n_boot = 500
@@ -117,3 +122,17 @@ models = ["detuning", "detuning_dephasing", "dephasing_relaxation", "readout"]
 detuning_grid = 73            # delta in [-pi, pi] rad per step
 prob_grid = 21                # dephasing p, relaxation gamma in [0, 0.4]; readout in [0, 0.2]
 nm_iters = 120
+
+[stage3_order_control]
+# Ready but NOT submitted (Stage 3 asks the owner first). Shot order inside one execution span
+# is not documented, so time-label every hardware run instead: split each 20,000-shot run into
+# `jobs` jobs, and each job into `pubs_per_job` identical pubs (free: verifies order further only
+# if the server reports one span per pub). Analyse per job and per 1,000-shot block, with the
+# segment policy of docs/phase7-drift.md. Cost (Phase 6 model): jobs * 2 s + shots * 558 us.
+submitted = false
+circuit = "results/summaries/phase6/circuit.qasm"   # Phase 6's PMD N = 3 circuit, unchanged
+backend = "ibm_kingston"
+jobs = 4
+shots_per_job = 5000
+pubs_per_job = 5
+estimated_qpu_s = 19.2        # vs 13.2 s for one 20,000-shot job: +6 s for time labels

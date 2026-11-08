@@ -93,6 +93,16 @@ class Data:
             "episode": self.episode,
             "rest": ~self.episode,
         }
+        sg = cfg["segments"]
+        if "refined_episode" in sg:
+            a, b = sg["refined_episode"]
+            m = np.zeros(self.n, bool)
+            m[a:b] = True
+            self.masks["episode_refined"] = m
+            a, b = sg["refined_exclusion"]
+            m = np.ones(self.n, bool)
+            m[a:b] = False
+            self.masks["rest_refined"] = m
         for label, parts in (("half", 2), ("quarter", 4), ("decile", 10)):
             for i, idx in enumerate(np.array_split(np.arange(self.n), parts)):
                 m = np.zeros(self.n, bool)
@@ -262,7 +272,7 @@ def segment_stage(cfg, data: Data, cal: W.LinearProcess, out: Path) -> dict[str,
     blocks_w.sort(key=lambda r: r["start"])
     # pre-specified stationarity tests within the episode-free run and within the episode
     tests = {}
-    for lab in ("rest", "episode"):
+    for lab in cfg["segments"].get("test_segments", ["rest", "episode"]):
         m = data.masks[lab]
         per = data.per[m]
         # blocks in local coordinates that do not straddle the gap the episode leaves
@@ -273,7 +283,7 @@ def segment_stage(cfg, data: Data, cal: W.LinearProcess, out: Path) -> dict[str,
         wb = [pos[b] for b in D.blocks_within(gap_mask, st_cfg["w_block"])]
         t: dict[str, Any] = {"homogeneity_g": D.homogeneity_chi2(per, hb)}
         t["constancy_w"] = {j: D.block_witness_constancy(per, wb, j) for j in w["offsets"]}
-        grid = st_cfg["cp_grid"] if lab == "rest" else st_cfg["cp_grid_episode"]
+        grid = st_cfg["cp_grid"] if lab.startswith("rest") else st_cfg["cp_grid_episode"]
         t["changepoint"] = {}
         for i, s in enumerate(st_cfg["statistics"]):
             x = per_shot_statistic(s, per, data.arr[m])
@@ -688,24 +698,27 @@ def fitted_regimes_stage(cfg, data: Data) -> dict[str, Any]:
         **{f"mixture_w{j}": W.witness(gmix, j) for j in w["offsets"]},
         "mixture_p1_post_burn": float(mix.marginals(64)[w["burn"] :].mean()),
     }
-    # mean shifts: the rest's fit plus a copy with P(1 | state) raised by delta
+    # mean shifts: the rest's fit plus a copy in which a fraction s of every 0-emission becomes
+    # a 1-emission (L2[1] = L[1] + s L[0], L2[0] = (1 - s) L[0]): transitions are unchanged and
+    # P(1) rises by s * P(0); s is set so that the shift in P(1) is delta.
     lab = np.array(fits["rest"]["labelled"])
-    t = lab.sum(0)
-    e1 = lab[1].sum(1)  # P(1 | i)
-    pr = procs["rest"].stationary()
+    p0 = 1 - float(procs["rest"].marginals(64)[w["burn"] :].mean())
     shift = []
     for wgt in nu["shift_weights"]:
         for dl in nu["shift_deltas"]:
-            e1s = np.clip(e1 + dl, 0, 1)
-            lab2 = np.stack([(1 - e1s)[:, None] * t, e1s[:, None] * t])
+            sfr = dl / p0
+            lab2 = np.stack([(1 - sfr) * lab[0], lab[1] + sfr * lab[0]])
             p2 = W.LinearProcess.hmm(lab2, np.array(fits["rest"]["initial"]))
             mx = D.mixture([procs["rest"], p2], [1 - wgt, wgt])
             g = mx.expected_windows(w["k_max"], w["burn"], 64, common=True)
             shift.append(
                 {
                     "weight": wgt,
-                    "delta_p_one": dl,
-                    "p1_shift": float(pr @ (e1s - e1)),
+                    "delta_p1": dl,
+                    "p1_shift": float(p2.marginals(64)[w["burn"] :].mean() - (1 - p0)),
+                    "shifted_w0_alone": W.witness(
+                        p2.expected_windows(w["k_max"], w["burn"], 64, common=True), 0
+                    ),
                     **{f"w{j}": W.witness(g, j) for j in w["offsets"]},
                 }
             )
