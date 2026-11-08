@@ -332,3 +332,57 @@ def test_mixture_family_can_produce_nonzero_witness(k):
 
 def test_chi2_ppf_inverts_sf():
     assert abs(D.chi2_ppf(0.99, 15) - 30.577914166892494) < 1e-8
+
+
+# -- step 6: physical modifications of the calibrated instrument (experiments/phase7_drift.py) --
+
+
+def _p7():
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / "experiments" / "phase7_drift.py"
+    spec = importlib.util.spec_from_file_location("phase7_drift", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_physical_superops_analytic():
+    p7 = _p7()
+    rho = np.array([[0.6, 0.2 - 0.1j], [0.2 + 0.1j, 0.4]])
+    vec = rho.reshape(-1, order="F")
+    unvec = lambda v: v.reshape(2, 2, order="F")  # noqa: E731
+    u = np.diag([np.exp(-0.35j), np.exp(0.35j)])
+    np.testing.assert_allclose(unvec(p7._rz_super(0.7) @ vec), u @ rho @ u.conj().T, atol=1e-15)
+    d = unvec(p7._dephase_super(0.3) @ vec)
+    np.testing.assert_allclose(d, [[0.6, 0.7 * rho[0, 1]], [0.7 * rho[1, 0], 0.4]], atol=1e-15)
+    r = unvec(p7._relax_super(0.25) @ vec)
+    assert abs(r[1, 1] - 0.3) < 1e-15 and abs(r[0, 1] - np.sqrt(0.75) * rho[0, 1]) < 1e-15
+    z = np.load(_root() / "results/summaries/phase7_audit/instruments.npz")
+    sup = z["calibrated"]
+    for model, x0 in (("detuning", [0.0]), ("readout", [0.0, 0.0]), ("detuning_readout", [0, 0])):
+        np.testing.assert_allclose(p7.physical_superops(sup, model, np.array(x0, float)), sup)
+    ro = p7.physical_superops(sup, "readout", np.array([0.1, 0.05]))
+    np.testing.assert_allclose(ro.sum(0), sup.sum(0), atol=1e-15)  # same channel
+
+
+def test_joint_q59_model_reduces_to_calibrated():
+    p7 = _p7()
+    z = np.load(_root() / "results/summaries/phase7_audit/instruments.npz")
+    cal = W.LinearProcess.instrument(z["calibrated"], z["rho0"])
+    eps = float(
+        np.load(_root() / "results/summaries/phase7_ablation/pieces.npz")["calibrated__eps_q59"]
+    )
+    j = p7.joint_process("q59_reset", np.array([eps, eps]))
+    np.testing.assert_allclose(
+        j.expected_windows(K_MAX, BURN, L, common=True),
+        cal.expected_windows(K_MAX, BURN, L, common=True),
+        atol=1e-12,
+    )
+
+
+def _root():
+    from pathlib import Path
+
+    return Path(__file__).resolve().parents[1]

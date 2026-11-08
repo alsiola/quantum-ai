@@ -766,6 +766,25 @@ def physical_superops(sup: np.ndarray, model: str, x: np.ndarray) -> np.ndarray:
     raise ValueError(model)
 
 
+JOINT_MODELS = ("q59_reset", "detuning_q59_reset0")
+
+
+def joint_process(model: str, x: np.ndarray) -> W.LinearProcess:
+    """q59-reset models on the joint (q75, q59) memory, from #20's committed step pieces
+    (``qmem.ablate_hw``; with the calibrated symmetric reset it is Phase 6's instrument)."""
+    from qmem import ablate_hw as A
+
+    z = np.load(REPO_ROOT / "results/summaries/phase7_ablation/pieces.npz")
+    pieces = A.StepPieces.from_npz(z, "calibrated")
+    if model == "q59_reset":  # (e0, e1): P(q59 left in |1> | it held 0 / 1)
+        hyp = A.Hypothesis(name=model, q59_reset=(float(x[0]), float(x[1])))
+    else:  # q75 detuning and q59's reset leaving |1> from |0> with probability e0
+        hyp = A.Hypothesis(
+            name=model, q59_reset=(float(x[1]), pieces.eps_q59), q75_phase=float(x[0])
+        )
+    return A.process(A.step_superops("baseline", pieces, hyp))
+
+
 def _bounds(model: str) -> list[tuple[float, float]]:
     return {
         "detuning": [(-math.pi, math.pi)],
@@ -773,6 +792,8 @@ def _bounds(model: str) -> list[tuple[float, float]]:
         "dephasing_relaxation": [(0.0, 0.4), (0.0, 0.4)],
         "readout": [(0.0, 0.2), (0.0, 0.2)],
         "detuning_readout": [(-math.pi, math.pi), (0.0, 0.2)],
+        "q59_reset": [(0.0, 0.2), (0.0, 0.2)],
+        "detuning_q59_reset0": [(-math.pi, math.pi), (0.0, 0.2)],
     }[model]
 
 
@@ -822,9 +843,13 @@ def physics_task(task: dict[str, Any]) -> dict[str, Any]:
     shots = data.arr[data.masks[task["segment"]]]
     model = task["model"]
 
+    def build(x) -> W.LinearProcess:
+        if model in JOINT_MODELS:
+            return joint_process(model, np.asarray(x))
+        return W.LinearProcess.instrument(physical_superops(sup, model, np.asarray(x)), rho0)
+
     def nll(x):
-        p = W.LinearProcess.instrument(physical_superops(sup, model, np.asarray(x)), rho0)
-        return float(p.seq_nll(shots).sum() / shots.size)
+        return float(build(x).seq_nll(shots).sum() / shots.size)
 
     bnds = _bounds(model)
     grids = [
@@ -836,7 +861,7 @@ def physics_task(task: dict[str, Any]) -> dict[str, Any]:
         if v < best:
             best, bx = v, x
     x, v = nelder_mead(nll, bx, bnds, ph["nm_iters"])
-    p = W.LinearProcess.instrument(physical_superops(sup, model, x), rho0)
+    p = build(x)
     g = p.expected_windows(w["k_max"], w["burn"], 64, common=True)
     base = W.LinearProcess.instrument(sup, rho0)
     nll0 = float(base.seq_nll(shots).sum() / shots.size)
