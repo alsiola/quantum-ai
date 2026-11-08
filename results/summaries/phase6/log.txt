@@ -1,0 +1,56 @@
+2026-11-07T23:07:43.048709+00:00 run dir /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-2c9b7302d4790327a987aeb94e465410/results/phase6/20261107T230742Z stages ['train', 'prepare', 'pilot', 'main', 'analyse'] dry_run=False
+2026-11-07T23:08:04.140041+00:00 [train] reproduction {'val_nll': {'now': 0.6536773314117355, 'reference': 0.6536773314117355, 'abs_diff': 0.0}}
+2026-11-07T23:08:11.712928+00:00 [prepare] {"backend": "ibm_kingston", "length": 64, "layout_memory_output": [75, 59], "final_layout_memory_output": [75, 59], "step_physical": [59, 75], "step_memory_in": [1], "step_memory_out": [1], "ops": {"rz": 771, "sx": 770, "cz": 192, "measure": 64, "reset": 63}, "two_qubit_gates": 192, "depth": 1343, "step_duration_s": 4.851999999999999e-06}
+2026-11-07T23:08:11.963940+00:00 [pilot] submitting 200 shots (estimated 2.11 s QPU)
+2026-11-07T23:08:13.328503+00:00 [pilot] job dbnqundt7fqc73ak2b8g submitted
+2026-11-07T23:32:29.403516+00:00 run dir results/phase6/20261107T230742Z stages ['train', 'prepare', 'pilot', 'main', 'analyse'] dry_run=False
+2026-11-07T23:32:29.499011+00:00 [train] reproduction {'val_nll': {'now': 0.6536773314117355, 'reference': 0.6536773314117355, 'abs_diff': 0.0}}
+2026-11-07T23:32:33.422250+00:00 [pilot] re-fetching job dbnqundt7fqc73ak2b8g
+2026-11-07T23:36:45.662621+00:00 [pilot] 200 shots saved; usage 0
+2026-11-07T23:36:45.728675+00:00 [analyse] pilot: 200 shots
+2026-11-07T23:36:46.508346+00:00 [analyse] pilot: P(1)=0.5791 max|z|=5.82 z_j0=-5.82 z_j1=-3.50 z_j2=-2.87 z_j3=-1.31
+2026-11-07T23:36:47.311558+00:00 [analyse] simulated source: max|z|=8.05
+2026-11-07T23:36:47.485388+00:00 [analyse] simulated noiseless: max|z|=7.18
+2026-11-07T23:36:48.607977+00:00 [analyse] simulated calibrated: max|z|=5.95
+2026-11-07T23:36:48.751049+00:00 [analyse] simulated calibrated_no_idle: max|z|=6.27
+2026-11-07T23:36:48.874010+00:00 [analyse] simulated control_2state_hmm: max|z|=0.73
+2026-11-07T23:36:48.875019+00:00 [pilot] P(1) 0.5791 vs 0.5819 (z~-0.65); positional chi2 80.4 (64 dof); ok=True
+2026-11-07T23:36:49.104812+00:00 [main] submitting 20000 shots (estimated 13.17 s QPU)
+2026-11-07T23:36:50.471652+00:00 [main] job dbnrc4gqtr0c73adh8g0 submitted
+2026-11-08T00:07:18.264935+00:00 [main] 20000 shots saved; usage 14
+2026-11-08T00:07:18.387679+00:00 [analyse] pilot: 200 shots
+2026-11-08T00:07:19.593082+00:00 [analyse] pilot: P(1)=0.5791 max|z|=5.82 z_j0=-5.82 z_j1=-3.50 z_j2=-2.87 z_j3=-1.31
+2026-11-08T00:07:19.594594+00:00 [analyse] main: 20000 shots
+2026-11-08T00:07:23.848129+00:00 [analyse] main: P(1)=0.5809 max|z|=54.25 z_j0=-54.25 z_j1=-33.44 z_j2=-27.56 z_j3=-15.13
+2026-11-08T00:07:28.556220+00:00 [analyse] simulated source: max|z|=79.97
+2026-11-08T00:07:30.098081+00:00 [analyse] simulated noiseless: max|z|=73.60
+2026-11-08T00:07:34.948462+00:00 [analyse] simulated calibrated: max|z|=63.49
+2026-11-08T00:07:36.342838+00:00 [analyse] simulated calibrated_no_idle: max|z|=68.36
+2026-11-08T00:07:37.872134+00:00 [analyse] simulated calibrated_after_job: max|z|=63.49
+2026-11-08T00:07:39.771767+00:00 [analyse] simulated control_2state_hmm: max|z|=1.23
+2026-11-08T00:09:00.006095+00:00 [hmm] D=2 best restart 2 val NLL 0.668278
+2026-11-08T00:13:32.113602+00:00 [hmm] D=3 best restart 4 val NLL 0.663985
+2026-11-08T00:18:46.858014+00:00 [hmm] D=4 best restart 7 val NLL 0.664022
+2026-11-08T00:18:52.603693+00:00 FAILED: ValueError("'results/phase6/20261107T230742Z' is not in the subpath of '/Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-2c9b7302d4790327a987aeb94e465410'")
+Traceback (most recent call last):
+  File "/Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-2c9b7302d4790327a987aeb94e465410/experiments/phase6.py", line 796, in main
+    save_summary(cfg, results, shots, out_dir)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-2c9b7302d4790327a987aeb94e465410/experiments/phase6.py", line 675, in save_summary
+    meta["run_dir"] = str(out_dir.relative_to(REPO_ROOT))
+                          ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/alexyoung/.local/share/uv/python/cpython-3.13.6-macos-aarch64-none/lib/python3.13/pathlib/_local.py", line 385, in relative_to
+    raise ValueError(f"{str(self)!r} is not in the subpath of {str(other)!r}")
+ValueError: 'results/phase6/20261107T230742Z' is not in the subpath of '/Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-2c9b7302d4790327a987aeb94e465410'
+
+2026-11-08T00:19:12.793583+00:00 run dir /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-2c9b7302d4790327a987aeb94e465410/results/phase6/20261107T230742Z stages ['analyse'] dry_run=False
+2026-11-08T00:19:12.807825+00:00 [train] reproduction {'val_nll': {'now': 0.6536773314117355, 'reference': 0.6536773314117355, 'abs_diff': 0.0}}
+2026-11-08T00:19:17.591974+00:00 [pilot] shots already saved; skipping
+2026-11-08T00:19:17.592669+00:00 [main] shots already saved; skipping
+2026-11-08T00:19:17.595439+00:00 [analyse] analysis.json already saved; reusing it
+2026-11-08T00:21:00.024042+00:00 run dir /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-2c9b7302d4790327a987aeb94e465410/results/phase6/20261107T230742Z stages ['analyse'] dry_run=False
+2026-11-08T00:21:00.063262+00:00 [train] reproduction {'val_nll': {'now': 0.6536773314117355, 'reference': 0.6536773314117355, 'abs_diff': 0.0}}
+2026-11-08T00:21:04.366032+00:00 [pilot] shots already saved; skipping
+2026-11-08T00:21:04.369359+00:00 [main] shots already saved; skipping
+2026-11-08T00:21:04.379769+00:00 [analyse] analysis.json already saved; reusing it
+2026-11-08T00:21:04.757523+00:00 [analyse] paired {"test_shots": 10000, "nll": {"calibrated": 0.6614589597472994, "noiseless": 0.6627978187952387, "source": 0.6628855681915753, "hmm2_fit": 0.6674532084028778, "hmm3_fit": 0.6632305944558168, "hmm4_fit": 0.663300230317826}, "minus_calibrated": {"calibrated": {"mean": 0.0, "se": 0.0}, "noiseless": {"mean": 0.0013388590479392465, "se": 4.9725448490872664e-05}, "source": {"mean": 0.001426608444275858, "se": 5.914536777520653e-05}, "hmm2_fit": {"mean": 0.00599424865557833, "se": 0.00016347374877383712}, "hmm3_fit": {"mean": 0.001771634708517303, "se": 6.820491372945207e-05}, "hmm4_fit": {"mean": 0.0018412705705266002, "se": 6.899415951846785e-05}}, "drift": {"first_minus_second_half": 0.008671874999999996, "se": 0.001051024580066284, "z": 8.250877443278343, "p1_by_tenth": [0.5778515625, 0.57765625, 0.5884765625, 0.6043671875, 0.577921875, 0.574390625, 0.5763828125, 0.5750625, 0.5760859375, 0.5809921875]}}

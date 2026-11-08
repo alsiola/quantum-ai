@@ -385,6 +385,10 @@ class Proc:
 
     def nll(self, seqs: torch.Tensor) -> float:
         """Mean ``-log p(y_t | y_<t)`` per symbol over ``seqs`` (forward algorithm)."""
+        return float(self.seq_nll(seqs).sum() / seqs.numel())
+
+    def seq_nll(self, seqs: torch.Tensor) -> torch.Tensor:
+        """``-log p(y_1..y_T)`` of each sequence, shape ``(B,)``."""
         s = (
             self.rho0.expand(len(seqs), -1, -1)
             if self.inst is not None
@@ -403,7 +407,7 @@ class Proc:
                 z = nb.sum(-1)
                 s = nb / z[:, None]
             total -= torch.log(z)
-        return float(total.sum() / seqs.numel())
+        return total
 
 
 def sample_proc(p: Proc, n: int, length: int, seed: int) -> torch.Tensor:
@@ -622,6 +626,67 @@ def analyse(cfg, base, trained, prep, shots: dict[str, np.ndarray], out_dir: Pat
     return res
 
 
+@torch.no_grad()
+def paired_nll(cfg, trained, prep, results, shots, out_dir: Path) -> dict[str, Any]:
+    """Held-out per-symbol NLL differences against the calibrated model, paired over shots.
+
+    Cheap (no refitting): rebuilds the predictions and the saved HMM fits and scores the
+    held-out main-run shots per shot, so the standard errors account for within-shot
+    correlation. Also the drift of P(1) between the first and second half of the shots.
+    """
+    from qiskit import qpy
+
+    from qmem import hardware as hw
+
+    a = cfg["analysis"]
+    t = trained[cfg["experiment"]["model"]]
+    m, task = t["model"], t["task"]
+    with open(out_dir / "step.qpy", "rb") as f:
+        cq = qpy.load(f)[0]
+    noise = noise_from_json(prep["calibration"]["noise"])
+    inst = hw.noisy_instrument(
+        cq, 1, 1, noise, prep["step_memory_in"], memory_qubits_out=prep["step_memory_out"]
+    )
+    procs = [
+        Proc("calibrated", inst, m.rho0),
+        Proc("noiseless", m.instrument(), m.rho0),
+        Proc.hmm("source", task.labelled, task.initial),
+    ]
+    for f in results["analysis"]["hmm_fits"]:
+        procs.append(
+            Proc.hmm(
+                f"hmm{f['states']}_fit",
+                torch.tensor(f["labelled"], dtype=torch.float64),
+                torch.tensor(f["initial"], dtype=torch.float64),
+            )
+        )
+    arr = shots["main"]
+    n_tr = int(len(arr) * a["hmm"]["train_fraction"])
+    test = torch.as_tensor(arr[n_tr:], dtype=torch.long)
+    length = test.shape[1]
+    per = {p.name: p.seq_nll(test).numpy() / length for p in procs}
+    out: dict[str, Any] = {"test_shots": len(test), "nll": {}, "minus_calibrated": {}}
+    for name, v in per.items():
+        out["nll"][name] = float(v.mean())
+        d = v - per["calibrated"]
+        out["minus_calibrated"][name] = {
+            "mean": float(d.mean()),
+            "se": float(d.std(ddof=1) / math.sqrt(len(d))),
+        }
+    pm = arr.mean(1)
+    h = len(pm) // 2
+    diff = float(pm[:h].mean() - pm[h:].mean())
+    se = float(math.sqrt(pm[:h].var(ddof=1) / h + pm[h:].var(ddof=1) / (len(pm) - h)))
+    tenths = np.array_split(pm, 10)
+    out["drift"] = {
+        "first_minus_second_half": diff,
+        "se": se,
+        "z": diff / se,
+        "p1_by_tenth": [float(x.mean()) for x in tenths],
+    }
+    return out
+
+
 # -- output -----------------------------------------------------------------------------------
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     if not rows:
@@ -758,7 +823,7 @@ def main() -> None:
     if set(stages) - set(STAGES):
         raise SystemExit(f"unknown stages; choose from {STAGES}")
     name = cfg["experiment"]["name"] + ("_dryrun" if args.dry_run else "")
-    out_dir = args.from_run or new_run_dir(name)
+    out_dir = (args.from_run or new_run_dir(name)).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     save_json(out_dir / "config_meta.json", run_metadata(cfg, None) | {"dry_run": args.dry_run})
     log(out_dir, f"run dir {out_dir} stages {stages} dry_run={args.dry_run}")
@@ -788,10 +853,19 @@ def main() -> None:
                 save_json(out_dir / "pilot_analysis.json", an)
                 if not pilot_ok(an, out_dir):
                     raise SystemExit("pilot check failed; main run not submitted")
+        an_path = out_dir / "analysis.json"
         if "analyse" in stages and shots:
-            an = analyse(cfg, base, trained, prep, shots, out_dir)
-            results = {"prepare": prep, "reproduction": t["repro"], "analysis": an}
-            save_json(out_dir / "analysis.json", results)
+            results = json.loads(an_path.read_text()) if an_path.exists() else None
+            if results is None or set(results["analysis"]["device"]) != set(shots):
+                an = analyse(cfg, base, trained, prep, shots, out_dir)
+                results = {"prepare": prep, "reproduction": t["repro"], "analysis": an}
+                save_json(an_path, results)
+            else:
+                log(out_dir, "[analyse] analysis.json already saved; reusing it")
+            if "main" in shots and "paired" not in results:
+                results["paired"] = paired_nll(cfg, trained, prep, results, shots, out_dir)
+                save_json(an_path, results)
+                log(out_dir, f"[analyse] paired {json.dumps(results['paired'])}")
             if not args.dry_run:
                 save_summary(cfg, results, shots, out_dir)
     except BaseException as e:

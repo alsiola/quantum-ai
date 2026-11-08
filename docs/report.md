@@ -8,8 +8,9 @@ note that holds its evidence: [literature review](literature-review.md),
 [3c benchmarks](benchmarks.md), [3d strength](phase3d-strength.md),
 [3e retention](phase3e-retention.md), [3f grid](phase3f-grid.md),
 [4a trainability](phase4a-trainability.md), [4b falsification](phase4b-falsification.md) and
-[5a hardware](phase5a-hardware.md). Everything here is simulation, apart from a desk study of
-IBM hardware. No job was sent to any quantum cloud service.
+[5a hardware](phase5a-hardware.md) and [6 hardware run](phase6-hardware-run.md). Everything
+here is simulation, apart from a desk study of IBM hardware (#14) and one run on an IBM
+device, PMD N = 3 on `ibm_kingston` (#16, section 6.1).
 
 Figures are in `docs/figures/` and come from committed summaries only (section 5).
 
@@ -333,7 +334,7 @@ only.
 - **Not feasible now:** training on hardware, teacher-forced likelihoods, the
   `markov1_quaternary` model and the n = 2 weak-η model (both lose what made them
   interesting), and the coherent feed-forward.
-- **Proposed, not run** (needs the owner's approval on #2): the six PMD models and the
+- **Proposed** (N = 3 has since run, section 6.1): the six PMD models and the
   n = 3 retention model as generators on one Heron r2 device, 20,000 × 64 symbols each.
   About 101 s of QPU time, about 160 USD at Pay-As-You-Go list price, or 17% of the free
   plan's monthly 10 minutes. It would show that a device produces a process no 2-state
@@ -341,6 +342,30 @@ only.
   qubit of memory, because leaky resets and spectator qubits can carry information.
 
 ![predicted dimension witness](figures/witness.png)
+
+### 6.1 The run on `ibm_kingston` (#16)
+
+Details: [phase6-hardware-run.md](phase6-hardware-run.md).
+
+**Setup.**
+- The trained 1-qubit PMD N = 3 model ran as a generator on two physical qubits: 75 as
+  memory, 59 as output, 3 CZ per symbol.
+- A 200-shot pilot, then 20,000 shots of 64 symbols.
+- No error mitigation.
+- 16 s of QPU time on the free Open plan.
+
+**Results.**
+- **Witness.** It is −0.00494 ± 0.00009, so |z| = 54. Every 2-state HMM gives exactly 0,
+  and data simulated from the 2-state HMM fitted to the device give |z| ≤ 1.7. The device's
+  output therefore has classical dimension above 2.
+- **Prediction without fitting.** The noisy 1-qubit model built from the device's own
+  calibration, fitted to nothing from the device, predicts 10,000 held-out shots better
+  than HMMs fitted to the other shots: by 0.0060 nats/symbol against 2 states, and 0.0018
+  against 3 and 4.
+- **Extra noise.** The device is noisier than its calibration says. The witness is 58–76%
+  of the calibrated prediction, and P(1) has a transient drift (z = 8).
+- **Not shown.** The run does not show that the device uses one qubit of memory, nor any
+  quantum advantage: a 3-state HMM matches the device's witness.
 
 ## 7. Limitations
 
@@ -394,10 +419,10 @@ it.
 
 **Questions, and the experiment that would settle each.**
 
-1. **Does a real device produce a process no 2-state classical model can?**
-   Experiment: #14's minimal run (PMD N = 3–8 as generators, 20,000 × 64 symbols, Hankel
-   witness and block KL; about 101 s of QPU time). The witness at |z| > 3 at N = 3–6
-   decides it. It needs the owner's approval: nothing has been run.
+1. **Does a real device produce a process no 2-state classical model can?** For N = 3,
+   yes: #16 ran it on `ibm_kingston` (|z| = 54, section 6.1). Still open: N = 4–8, where
+   Phase 5a predicts |z| ≈ 6.6–46, and the retention model's generative recall. That is
+   about 87 s more of QPU time.
 2. **Is the PMD gap to general 2-state HMMs a true lower bound?** Experiment: a
    non-unifilar bound, for example by semidefinite relaxation over 2-state HMMs, or an exact
    global search at N = 3. A bound above the 1-qubit KL rate turns the empirical gap into
@@ -446,4 +471,5 @@ machine.
 | Phase 4b (b): weak measurement | `uv run python experiments/phase4b.py --config experiments/configs/phase4b_b.toml` | 5.5 h, 4 workers (shared) | [phase4b-falsification](phase4b-falsification.md) |
 | Phase 4b (c): protected subspace | `uv run python experiments/phase4b.py --config experiments/configs/phase4b_c.toml` | 5.9 h, 4 workers (shared) | [phase4b-falsification](phase4b-falsification.md) |
 | Phase 5a: hardware feasibility | `uv run --group hardware python experiments/phase5a.py --config experiments/configs/phase5a.toml` | ~1 h, 4 workers (shared) | [phase5a-hardware](phase5a-hardware.md) |
+| Phase 6: IBM hardware run (spends QPU time) | `uv run --group hardware python experiments/phase6.py --config experiments/configs/phase6.toml` (`--dry-run` first) | ~1 h wall, 16 s QPU | [phase6-hardware-run](phase6-hardware-run.md) |
 | this report's figures | `uv run python experiments/report_figures.py` | seconds | section 5 |
