@@ -1396,7 +1396,11 @@ def curate(res, cfg, data, cal, out: Path, adv_rows) -> None:
             row[f"{key}_sd"] = float(v.std(ddof=1)) if len(v) > 1 else 0.0
         sim_sum.append(row)
     res["simulation_summary"] = sim_sum
-    small = {k: v for k, v in res.items() if k not in ("adversarial", "simulations")}
+    # tables that have their own CSV are left out of the curated JSON
+    drop = ("adversarial", "simulations", "uncertainty", "adversarial_summary")
+    small = {k: v for k, v in res.items() if k not in drop}
+    small["segments"] = {"tests": res["segments"]["tests"]}
+    small["selection"] = {k: v for k, v in res["selection"].items() if not k.startswith("profile")}
     small["adversarial_best"] = [
         {
             k: r[k]
