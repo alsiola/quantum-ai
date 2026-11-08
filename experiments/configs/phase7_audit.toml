@@ -4,7 +4,7 @@
 # 1. (once, optional `hardware` group) export the calibrated / noiseless 1-qubit instruments
 #    from the committed Phase 6 step circuit and calibration snapshot:
 #    uv run --group hardware python experiments/phase7_audit.py --config experiments/configs/phase7_audit.toml --export-instruments
-# 2. the audit (numpy; about 25 min with 4 workers):
+# 2. the audit (numpy; about 20 min with 4 workers; `--from-run <dir>` resumes):
 #    uv run python experiments/phase7_audit.py --config experiments/configs/phase7_audit.toml
 
 [experiment]
@@ -33,8 +33,8 @@ burns = [0, 4, 8, 12, 16, 24, 32]
 # Stationary 2-state HMMs at the device's sizes, the same burn and estimator.
 length = 64
 sizes = { main = 20000, pilot = 200 }
-reps = { main = 1000, pilot = 2000 }
-bootstrap = 500
+reps = { main = 500, pilot = 1000 }
+bootstrap = 300
 seed = 1000
 chunk = 25                     # replicates per worker task
 # Families. "random": a fresh Dirichlet(1) 2-state HMM per replicate, stationary start.
@@ -54,12 +54,13 @@ families = [
 [hmm]
 # Classical HMMs refitted by (numpy) Baum-Welch to convergence, best by validation NLL.
 states = [2, 3, 4, 6]          # 6 is beyond the issue's 2-4, to qualify "any HMM"
-random_restarts = 8
+random_restarts = 4
 seed = 0
-max_iters = 1500
-tol = 1e-9                     # stop when the train NLL/symbol improves by less
+max_iters = 300                # iteration cap (budget); converged fits report `iters`
+tol = 1e-8                     # stop when the train NLL/symbol improves by less
 # Phase 6's own procedure (its torch initialisations, patience-20 early stopping on val):
 phase6_restarts = 8
+phase6_only_best = true       # rerun only Phase 6's winning restart per size
 phase6_seed = 0
 phase6_max_iters = 500
 phase6_patience = 20

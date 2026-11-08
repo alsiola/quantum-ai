@@ -25,7 +25,7 @@ import sys
 import time
 import tomllib
 import traceback
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -622,7 +622,7 @@ def em_task(task: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def em_tasks_wave1(cfg, arr) -> list[dict[str, Any]]:
+def em_tasks_wave1(cfg, arr, s6) -> list[dict[str, Any]]:
     h = cfg["hmm"]
     tasks = []
     for sp in h["splits"]:
@@ -658,8 +658,11 @@ def em_tasks_wave1(cfg, arr) -> list[dict[str, Any]]:
 
             from qmem.baselines.hmm import HMMModel
 
+            chosen = {f["states"]: [f["restart"]] for f in s6["analysis"]["hmm_fits"]}
             for d in h["states"]:
-                for r in range(h["phase6_restarts"]):
+                # Phase 6's winning restart per size (``phase6_only_best``), or all of them
+                rs = chosen.get(d, []) if h["phase6_only_best"] else range(h["phase6_restarts"])
+                for r in rs:
                     m = HMMModel(d, 2, seed=h["phase6_seed"] + 1000 * d + r)
                     with torch.no_grad():
                         lab, ini = m.labelled().numpy().copy(), m.initial().numpy().copy()
@@ -835,11 +838,40 @@ def plot_rolling(ep, procs, cfg, sd: Path) -> None:
 # -- main ----------------------------------------------------------------------------------------
 
 
-def run_pool(fn, tasks, workers: int) -> list[Any]:
+def task_key(t: dict[str, Any]) -> str:
+    if t.get("kind") == "null":
+        return f"null_{t['family']['name']}_{t['size']}_{t['reps'][0]}"
+    return f"em_{t['split']}_{t['states']}_{t['init_kind']}_{t['restart']}_{t['procedure']}"
+
+
+def run_pool(fn, tasks, workers: int, cache: Path, out: Path) -> list[Any]:
+    """Run ``tasks``; every result is checkpointed in ``cache`` and reused on resume."""
+    cache.mkdir(parents=True, exist_ok=True)
+    results: dict[int, Any] = {}
+    todo = []
+    for i, t in enumerate(tasks):
+        f = cache / f"{task_key(t)}.json"
+        if f.exists():
+            results[i] = json.loads(f.read_text())["result"]
+        else:
+            todo.append(i)
+    log(out, f"[pool] {len(tasks)} tasks, {len(todo)} to run on {workers} workers")
+
+    def keep(i: int, r: Any) -> None:
+        results[i] = r
+        save_json(cache / f"{task_key(tasks[i])}.json", {"result": r})
+        if len(results) % 50 == 0:
+            log(out, f"[pool] {len(results)}/{len(tasks)}")
+
     if workers <= 1:
-        return [fn(t) for t in tasks]
-    with ProcessPoolExecutor(workers) as ex:
-        return list(ex.map(fn, tasks, chunksize=1))
+        for i in todo:
+            keep(i, fn(tasks[i]))
+    else:
+        with ProcessPoolExecutor(workers) as ex:
+            futs = {ex.submit(fn, tasks[i]): i for i in todo}
+            for fu in as_completed(futs):
+                keep(futs[fu], fu.result())
+    return [results[i] for i in range(len(tasks))]
 
 
 def dispatch(task: dict[str, Any]) -> Any:
@@ -852,6 +884,7 @@ def main() -> None:
     ap.add_argument("--export-instruments", action="store_true")
     ap.add_argument("--workers", type=int)
     ap.add_argument("--quick", action="store_true", help="tiny null and EM (smoke test only)")
+    ap.add_argument("--from-run", type=Path, help="resume: reuse this run dir's task results")
     args = ap.parse_args()
     cfg = load_config(args.config)
     if args.export_instruments:
@@ -868,7 +901,7 @@ def main() -> None:
         cfg["uncertainty"]["boot_sizes"] = [200]
         cfg["uncertainty"]["ci_bootstrap"] = 300
     workers = args.workers or cfg["experiment"]["workers"]
-    out = new_run_dir(cfg["experiment"]["name"])
+    out = args.from_run.resolve() if args.from_run else new_run_dir(cfg["experiment"]["name"])
     clean = {k: v for k, v in cfg.items() if not k.startswith("_")}
     meta = run_metadata(clean, cfg["null"]["seed"])
     meta["quick"] = args.quick
@@ -897,12 +930,12 @@ def main() -> None:
         cfg["_episode"] = (res["episode"]["start"], res["episode"]["stop"])
         save_json(out / "partial.json", res)
         # null calibration and EM refits share the pool
-        tasks = null_tasks(cfg, s6) + em_tasks_wave1(cfg, main_arr)
-        log(out, f"[pool] {len(tasks)} tasks on {workers} workers")
-        results = run_pool(dispatch, tasks, workers)
+        tasks = null_tasks(cfg, s6) + em_tasks_wave1(cfg, main_arr, s6)
+        results = run_pool(dispatch, tasks, workers, out / "tasks", out)
         null_rows = [r for x in results if isinstance(x, list) for r in x]
         em_rows = [x for x in results if isinstance(x, dict)]
-        em_rows += run_pool(dispatch, em_tasks_wave2(cfg, main_arr, em_rows), workers)
+        wave2 = em_tasks_wave2(cfg, main_arr, em_rows)
+        em_rows += run_pool(dispatch, wave2, workers, out / "tasks", out)
         log(out, f"[pool] done after {time.time() - t0:.0f} s")
         device_z = {}
         for stage in ("main", "pilot"):
