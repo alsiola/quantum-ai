@@ -311,6 +311,17 @@ class LinearProcess:
             out[k] = np.mean(gs)
         return out
 
+    def block_probs(self, starts: Sequence[int], size: int) -> np.ndarray:
+        """Distribution of the ``size``-block (big-endian index), averaged over ``starts``."""
+        out = np.zeros(2**size)
+        for t0 in starts:
+            states = self.state_after(t0)[None, :]
+            for _ in range(size):
+                states = np.stack([states @ self.ops[0], states @ self.ops[1]], axis=1)
+                states = states.reshape(-1, states.shape[-1])
+            out += (states @ self.final).real
+        return out / len(starts)
+
     def sample(self, n: int, length: int, seed: int) -> np.ndarray:
         """``(n, length)`` uint8 samples by sequential conditioning (real or complex ops)."""
         rng = np.random.default_rng(seed)
@@ -374,6 +385,18 @@ def two_state_hmm(
     else:
         pi = np.array([1.0, 0.0])
     return lab, pi
+
+
+def block_kl(shots: np.ndarray, proc: LinearProcess, size: int, burn: int) -> float:
+    """``D(empirical || proc) / size`` of aligned ``size``-blocks from position ``burn``."""
+    length = shots.shape[1]
+    starts = list(range(burn, length - size + 1, size))
+    weights = 1 << np.arange(size - 1, -1, -1)
+    idx = np.concatenate([shots[:, t : t + size].astype(np.int64) @ weights for t in starts])
+    emp = np.bincount(idx, minlength=2**size) / len(idx)
+    q = proc.block_probs(starts, size)
+    m = emp > 0
+    return float(np.sum(emp[m] * np.log(emp[m] / q[m])) / size)
 
 
 # -- Baum-Welch (numpy, independent of qmem.baselines.hmm) -------------------------------------

@@ -82,3 +82,4 @@ grid = 100
 seed = 31
 rolling_window = 1000
 rolling_step = 250
+block_sizes = [4, 8]           # block KL vs the calibrated model per segment (Phase 6 sec. 4)

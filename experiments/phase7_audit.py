@@ -526,6 +526,10 @@ def episode_analysis(cfg, procs, out: Path) -> dict[str, Any]:
             "g": r.g.tolist(),
             "nll_calibrated": float(procs["calibrated"].seq_nll(test).sum() / test.size),
         }
+        for size in ep["block_sizes"]:
+            row[f"block_kl_L{size}"] = W.block_kl(test, procs["calibrated"], size, w["burn"])
+            sim = procs["calibrated"].sample(int(mask.sum()), arr.shape[1], ep["seed"] + size)
+            row[f"block_kl_L{size}_null"] = W.block_kl(sim, procs["calibrated"], size, w["burn"])
         for j in w["offsets"]:
             row |= {
                 f"w_j{j}": r.w[j],

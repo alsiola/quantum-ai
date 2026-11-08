@@ -290,3 +290,13 @@ def test_moment_inits_are_valid_hmms():
     for lab, pi in inits:
         assert np.allclose(lab.sum(axis=(0, 2)), 1) and np.isclose(pi.sum(), 1)
         assert lab.min() > 0
+
+
+def test_block_probs_and_kl():
+    q = qubit_instrument(1.1, 0.4, 0.7)
+    p = q.block_probs([16, 20], 3)
+    assert np.isclose(p.sum(), 1) and p.min() >= 0
+    m = q.marginals(24)
+    assert np.isclose(p[[1, 3, 5, 7]].sum(), (m[18] + m[22]) / 2)  # last bit of the block
+    shots = q.sample(30000, 24, seed=9)
+    assert W.block_kl(shots, q, 3, 16) < 2e-3
