@@ -647,8 +647,19 @@ def test_4b_recorded_amendment_passes_the_guard(cfg4b):
     guard accepts the committed pre-registration as it stands."""
     if not cfg4b["amendment"]["sha256"]:
         pytest.skip("amendment not yet recorded in the config")
-    rec = H.amendment_guard(cfg4b)
-    assert rec["sha256"] == cfg4b["amendment"]["sha256"]
+    import subprocess
+
+    am = cfg4b["amendment"]
+
+    def git(*a):
+        return subprocess.run(["git", *a], cwd=REPO_ROOT, capture_output=True, text=True)
+
+    if git("cat-file", "-e", am["commit"]).returncode != 0:
+        pytest.skip("the amendment commit is not in this clone")
+    assert git("merge-base", "--is-ancestor", am["commit"], "HEAD").returncode == 0
+    committed = git("show", f"{am['commit']}:{am['doc']}").stdout
+    doc = (REPO_ROOT / am["doc"]).read_text()
+    F.amendment_check(doc, am["heading"], am["date"], am["sha256"], committed)
 
 
 def _gate_files(tmp_path, cfg, base_p1, pm1, seed=0):
