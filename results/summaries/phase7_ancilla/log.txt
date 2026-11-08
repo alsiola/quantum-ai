@@ -1,0 +1,25 @@
+[02:52:26] run dir /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-c4f20425341d9df91a703dbda1c7d46e/results/phase7_ancilla/20261108T025226Z
+[02:52:26] device (episode-free): {"w0": -0.005846889844878612, "w1": -0.031122896456544917, "w2": -0.05254550638882232, "w3": -0.0056899254592285035, "p1": 0.5773843930635838, "n_shots": 17300}
+[02:54:40] run dir results/phase7_ancilla/20261108T025226Z
+[02:54:40] device (episode-free): {"w0": -0.005846889844878612, "w1": -0.031122896456544917, "w2": -0.05254550638882232, "w3": -0.0056899254592285035, "p1": 0.5773843930635838, "n_shots": 17300}
+[03:02:11] 24 fits
+[03:02:12] scans and A2 leakage done
+[03:02:40] 49 control predictions
+[03:02:40] wrote /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-c4f20425341d9df91a703dbda1c7d46e/results/summaries/phase7_ancilla
+[03:03:50] run dir results/phase7_ancilla/20261108T025226Z
+[03:03:51] device (episode-free): {"w0": -0.005846889844878612, "w1": -0.031122896456544917, "w2": -0.05254550638882232, "w3": -0.0056899254592285035, "p1": 0.5773843930635838, "n_shots": 17300}
+[03:03:51] 24 fits
+[03:03:51] scans and A2 leakage done
+[03:04:19] 49 control predictions
+[03:04:19] wrote /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-c4f20425341d9df91a703dbda1c7d46e/results/summaries/phase7_ancilla
+[03:04:54] run dir results/phase7_ancilla/20261108T025226Z
+[03:04:54] device (episode-free): {"w0": -0.005846889844878612, "w1": -0.031122896456544917, "w2": -0.05254550638882232, "w3": -0.0056899254592285035, "p1": 0.5773843930635838, "n_shots": 17300}
+[03:04:54] 24 fits
+[03:04:54] scans and A2 leakage done
+[03:05:22] 49 control predictions
+[03:05:22] wrote /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-c4f20425341d9df91a703dbda1c7d46e/results/summaries/phase7_ancilla
+[03:05:56] run dir results/phase7_ancilla/20261108T025226Z
+[03:05:56] device (episode-free): {"w0": -0.005846889844878612, "w1": -0.031122896456544917, "w2": -0.05254550638882232, "w3": -0.0056899254592285035, "p1": 0.5773843930635838, "n_shots": 17300}
+[03:05:56] 24 fits
+[03:05:56] scans and A2 leakage done
+[03:06:25] 49 control predictions

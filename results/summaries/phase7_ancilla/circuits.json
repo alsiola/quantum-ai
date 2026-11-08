@@ -1,0 +1,347 @@
+{
+  "B1": {
+    "baseline_duration_fakekingston_s": 0.0003210159999999986,
+    "duration_fakekingston_s": 0.00046667199999999963,
+    "n_unsupported": 0,
+    "num_clbits": 64,
+    "ops": {
+      "cz": 192,
+      "measure": 64,
+      "reset": 126,
+      "rz": 771,
+      "sx": 770
+    },
+    "unsupported": []
+  },
+  "B2": {
+    "baseline_duration_fakekingston_s": 0.0003210159999999986,
+    "duration_fakekingston_s": 0.00046465600000000095,
+    "n_unsupported": 0,
+    "num_clbits": 127,
+    "ops": {
+      "cz": 192,
+      "measure": 127,
+      "reset": 63,
+      "rz": 771,
+      "sx": 770
+    },
+    "unsupported": []
+  },
+  "B3": {
+    "baseline_duration_fakekingston_s": 0.0003210159999999986,
+    "duration_fakekingston_s": 0.00016166399999999938,
+    "n_unsupported": 0,
+    "num_clbits": 64,
+    "ops": {
+      "cz": 192,
+      "measure": 64,
+      "reset": 63,
+      "rz": 771,
+      "sx": 770
+    },
+    "unsupported": []
+  },
+  "B4m": {
+    "baseline_duration_fakekingston_s": 0.0003210159999999986,
+    "duration_fakekingston_s": 0.00045835600000000085,
+    "n_unsupported": 0,
+    "num_clbits": 64,
+    "ops": {
+      "cz": 192,
+      "delay": 63,
+      "measure": 64,
+      "reset": 63,
+      "rz": 771,
+      "sx": 770
+    },
+    "unsupported": []
+  },
+  "B4r": {
+    "baseline_duration_fakekingston_s": 0.0003210159999999986,
+    "duration_fakekingston_s": 0.00046037200000000115,
+    "n_unsupported": 0,
+    "num_clbits": 64,
+    "ops": {
+      "cz": 192,
+      "delay": 63,
+      "measure": 64,
+      "reset": 63,
+      "rz": 771,
+      "sx": 770
+    },
+    "unsupported": []
+  },
+  "coupling_74_75": true,
+  "meta": {
+    "config": {
+      "a2_leak": {
+        "cz_phase": [
+          0.0,
+          3.141592653589793
+        ],
+        "leak": [
+          0.0,
+          0.0001,
+          0.001,
+          0.005,
+          0.01,
+          0.03
+        ],
+        "seep": [
+          0.03,
+          0.2
+        ]
+      },
+      "budget": {
+        "phase6_circuit_duration_s": 0.000308316,
+        "rep_delay_s": 0.00025,
+        "step_duration_s": 4.852e-06,
+        "sub_job_overhead_s": 2.0
+      },
+      "controls": {
+        "alt_output": 74,
+        "bootstrap": 300,
+        "sd_seed": 5,
+        "se_inflation": 1.4,
+        "sim_shots": 20000,
+        "variants": [
+          "baseline",
+          "B1",
+          "B2",
+          "B2_post",
+          "B3",
+          "B4r",
+          "B4m"
+        ]
+      },
+      "episode": {
+        "device_w0_clean": -0.00587,
+        "device_w0_clean_se": 0.00011,
+        "start": 5300,
+        "stop": 8000
+      },
+      "experiment": {
+        "audit_dir": "results/summaries/phase7_audit",
+        "name": "phase7_ancilla",
+        "phase6_dir": "results/summaries/phase6",
+        "seed": 2121,
+        "spectator_dir": "results/summaries/phase7_spectator",
+        "summary_dir": "results/summaries/phase7_ancilla",
+        "workers": 2
+      },
+      "fit": {
+        "init": {
+          "detuning": 0.0,
+          "leak": 0.0005,
+          "read01": 0.006,
+          "read10": 0.002,
+          "reset_e0": 0.002,
+          "reset_e1": 0.005,
+          "seep": 0.04
+        },
+        "max_evals": 500
+      },
+      "fits": [
+        {
+          "free": [],
+          "name": "calibrated"
+        },
+        {
+          "fixed": {
+            "read01": 0.0068359375,
+            "read10": 0.0009765625,
+            "reset_e0": 0.0009828921731320737,
+            "reset_e1": 0.0068359375
+          },
+          "free": [],
+          "name": "snapshot_physical"
+        },
+        {
+          "free": [
+            "reset_e0",
+            "reset_e1"
+          ],
+          "name": "a_reset"
+        },
+        {
+          "free": [
+            "read10",
+            "read01"
+          ],
+          "name": "d_readout"
+        },
+        {
+          "free": [
+            "reset_e0",
+            "reset_e1",
+            "read10",
+            "read01"
+          ],
+          "name": "ad_reset_readout"
+        },
+        {
+          "free": [
+            "leak",
+            "seep"
+          ],
+          "name": "b_leak"
+        },
+        {
+          "free": [
+            "leak",
+            "seep",
+            "read10",
+            "read01"
+          ],
+          "name": "bd_leak_readout"
+        },
+        {
+          "free": [
+            "reset_e0",
+            "reset_e1",
+            "leak",
+            "seep",
+            "read10",
+            "read01"
+          ],
+          "name": "abd_all"
+        },
+        {
+          "free": [
+            "detuning",
+            "read10",
+            "read01"
+          ],
+          "name": "q75_detuning_readout"
+        }
+      ],
+      "hardware": {
+        "backend": "ibm_kingston",
+        "layout": {
+          "alt_output": 74,
+          "memory": 75,
+          "output": 59
+        },
+        "sampler": {
+          "dynamical_decoupling": false,
+          "twirling_gates": false,
+          "twirling_measure": false
+        },
+        "shots_per_circuit": {
+          "B2": 10000,
+          "B4m": 10000,
+          "baseline": 10000
+        },
+        "submit": false
+      },
+      "hmm": {
+        "max_iters": 300,
+        "random_starts": 2,
+        "seed": 7,
+        "sizes": [
+          2,
+          3,
+          4
+        ],
+        "tol": 1e-08
+      },
+      "null": {
+        "replicates": 10,
+        "seed": 99
+      },
+      "plausible": {
+        "flip": [
+          0.0,
+          0.002
+        ],
+        "leak": [
+          1e-05,
+          0.005
+        ],
+        "read2": [
+          0.5,
+          1.0
+        ],
+        "reset_e0": [
+          0.0005,
+          0.005
+        ],
+        "reset_e1": [
+          0.0,
+          0.0068
+        ],
+        "seep": [
+          0.02,
+          0.2
+        ]
+      },
+      "scan": {
+        "flip01": [
+          0.0,
+          0.002,
+          0.01
+        ],
+        "leak": [
+          0.0001,
+          0.001,
+          0.005,
+          0.01,
+          0.03
+        ],
+        "leak_cz_phase": [
+          0.0,
+          3.141592653589793
+        ],
+        "read2": [
+          1.0,
+          0.5
+        ],
+        "reset_e0": [
+          0.0005,
+          0.001,
+          0.005,
+          0.02
+        ],
+        "reset_e1": [
+          0.0,
+          0.0068,
+          0.02,
+          0.05,
+          0.1
+        ],
+        "seep": [
+          0.038,
+          0.2
+        ]
+      },
+      "splits": {
+        "kinds": [
+          "interleaved",
+          "random"
+        ],
+        "random_seed": 21
+      },
+      "witness": {
+        "block_sizes": [
+          4,
+          8
+        ],
+        "burn": 16,
+        "k_max": 7,
+        "offsets": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    "git_commit": "b6be203523402c1a73d588352d519697137ca628",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 2121,
+    "timestamp_utc": "2026-11-08T03:05:39+00:00",
+    "torch": "2.15.0"
+  }
+}

@@ -708,7 +708,10 @@ def _logit(p: float) -> float:
 
 
 def _sigmoid(x: float) -> float:
-    return 1 / (1 + math.exp(-x))
+    if x >= 0:
+        return 1 / (1 + math.exp(-x))
+    e = math.exp(x)
+    return e / (1 + e)
 
 
 def nelder_mead(
@@ -716,8 +719,8 @@ def nelder_mead(
     x0: np.ndarray,
     step: float = 0.5,
     max_evals: int = 400,
-    xtol: float = 1e-4,
-    ftol: float = 1e-6,
+    xtol: float = 1e-3,
+    ftol: float = 1e-10,
 ) -> tuple[np.ndarray, float, int]:
     """Minimal Nelder–Mead (numpy; scipy is not a dependency). Returns (x, f(x), evals)."""
     n = len(x0)
@@ -915,3 +918,140 @@ __all__ = [
     "to_process",
     "variant_step",
 ]
+
+
+# -- multi-outcome sequences, flags and control circuits ---------------------------------------
+
+
+def sample_outcomes(
+    init: np.ndarray, ops: Sequence[np.ndarray], final: np.ndarray, n: int, seed: int
+) -> np.ndarray:
+    """``(n, L)`` outcome indices of a per-step instrument ``ops[t]`` (``(Y, D, D)``, row
+    convention, trace preserving in total), by sequential conditioning."""
+    rng = np.random.default_rng(seed)
+    s = np.tile(init, (n, 1))
+    out = np.zeros((n, len(ops)), dtype=np.int64)
+    for t, o in enumerate(ops):
+        nb = np.einsum("nd,yde->nye", s, o)
+        p = (nb @ final).real
+        p = p / p.sum(1, keepdims=True)
+        c = (rng.random(n)[:, None] > np.cumsum(p, 1)).sum(1)
+        c = np.minimum(c, o.shape[0] - 1)
+        out[:, t] = c
+        s = nb[np.arange(n), c]
+        s = s / (s @ final).real[:, None]
+    return out
+
+
+def flag_stats(init, ops: np.ndarray, final, length: int, burn: int) -> dict[str, float]:
+    """B2's flag: ``ops`` is ``(4, D, D)`` with outcome ``2 f + y``. Returns P(f = 1),
+    P(f_t = 1 | y_{t-1} = b) and P(y_t = 1 | f_t), averaged over ``t in [burn, length)``.
+
+    A physical residue (q59 really left in ``|1>``) changes the same step's output, so
+    P(y_t | f_t) separates it from a record-only artefact such as readout persistence."""
+    chan = ops.sum(0)
+    f1 = ops[2] + ops[3]
+    yb = [ops[0] + ops[2], ops[1] + ops[3]]
+    s = init
+    for _ in range(burn - 1):
+        s = s @ chan
+    pf, joint, py = 0.0, np.zeros(2), np.zeros(2)
+    fy = np.zeros((2, 2))  # P(f_t, y_t) in the same step
+    n = 0
+    for _ in range(burn, length):
+        for b in range(2):
+            a = s @ yb[b]
+            py[b] += (a @ final).real
+            joint[b] += (a @ f1 @ final).real
+        s = s @ chan
+        pf += (s @ f1 @ final).real
+        for f in range(2):
+            for y in range(2):
+                fy[f, y] += (s @ ops[2 * f + y] @ final).real
+        n += 1
+    return {
+        "p_flag": pf / n,
+        "p_flag_given_y0": joint[0] / py[0],
+        "p_flag_given_y1": joint[1] / py[1],
+        "p_y1": py[1] / n,
+        "p_y1_given_flag0": fy[0, 1] / fy[0].sum(),
+        "p_y1_given_flag1": fy[1, 1] / fy[1].sum() if fy[1].sum() > 0 else float("nan"),
+    }
+
+
+def control_qasm(
+    circuit: str,
+    variant: str,
+    output: int = 59,
+    alt: int = 74,
+    reset_ns: int = 2212,
+    measure_ns: int = 2180,
+    dt_ns: float = 4.0,
+) -> str:
+    """Phase 6's transpiled ``circuit.qasm`` text edited into control ``variant``.
+
+    * ``B1``: every ``reset $59`` becomes ``reset; reset``;
+    * ``B2``: every ``reset $59`` is followed by ``f<t>[0] = measure $59`` (a flag bit);
+    * ``B3``: odd steps use ``$74`` as the output (reset, gates, CZ partner, measure);
+    * ``B4r`` / ``B4m``: a ``delay`` on ``$59`` after every reset, matched to B1 / B2.
+
+    Steps are delimited by the output measurements ``y<t>[0] = measure $59``.
+    """
+    lines = circuit.splitlines()
+    out: list[str] = []
+    t = 0
+    o = f"${output}"
+    decl_done = False
+    n_steps = sum(1 for ln in lines if ln.strip().startswith("y") and "measure" in ln)
+    for ln in lines:
+        s = ln.strip()
+        if variant == "B2" and not decl_done and s.startswith("bit[1] y") and s == "bit[1] y0;":
+            out.extend(f"bit[1] f{k};" for k in range(1, n_steps))  # steps with a reset
+            decl_done = True
+        cur = ln
+        if variant == "B3" and t % 2 == 1 and not s.startswith(("bit", "OPENQASM", "include")):
+            cur = cur.replace(o + ";", f"${alt};").replace(o + ",", f"${alt},")
+        out.append(cur)
+        if s == f"reset {o};":
+            if variant == "B1":
+                out.append(f"reset {o};")
+            elif variant == "B2":
+                out.append(f"f{t}[0] = measure {o};")
+            elif variant == "B4r":
+                out.append(f"delay[{round(reset_ns / dt_ns)}dt] {o};")
+            elif variant == "B4m":
+                out.append(f"delay[{round(measure_ns / dt_ns)}dt] {o};")
+        if s.startswith(f"y{t}[0] = measure"):
+            t += 1
+    return "\n".join(out) + "\n"
+
+
+def control_step(
+    base: Sequence[Instr], variant: str, cfg: StepConfig, output: int = 59
+) -> list[Instr]:
+    """The numpy step of a control (B3's odd step is ``relabel_output(base, 59, 74)``)."""
+    out: list[Instr] = []
+    for i in base:
+        out.append(i)
+        if i.name == "reset" and i.qubits == (output,):
+            if variant == "B1":
+                out.append(Instr("reset", (output,)))
+            elif variant in ("B2", "B2_post"):
+                out.append(Instr("measure", (output,)))
+            elif variant == "B4r":
+                out.append(Instr("delay", (output,), cfg.reset_time))
+            elif variant == "B4m":
+                out.append(Instr("delay", (output,), cfg.measure_time))
+    return out
+
+
+def a2_step(base: Sequence[Instr], memory: int = 75) -> list[Instr]:
+    """Stage 2A's A2: a Z measurement of the memory before the step's first CZ."""
+    out: list[Instr] = []
+    done = False
+    for i in base:
+        if i.name == "cz" and not done:
+            out.append(Instr("measure", (memory,)))
+            done = True
+        out.append(i)
+    return out

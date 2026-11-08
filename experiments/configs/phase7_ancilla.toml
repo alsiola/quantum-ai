@@ -1,0 +1,135 @@
+# Phase 7 Stage 2B (#21): output-ancilla (q59) reset infidelity, leakage and residual memory.
+# Local simulation only: no QPU, no IBM service. The [hardware] section is ready but unsubmitted.
+
+[experiment]
+name = "phase7_ancilla"
+phase6_dir = "results/summaries/phase6"
+audit_dir = "results/summaries/phase7_audit"
+spectator_dir = "results/summaries/phase7_spectator"
+summary_dir = "results/summaries/phase7_ancilla"
+workers = 2
+seed = 2121
+
+[witness]          # #18's estimator: common start set, burn 16, k <= 7
+burn = 16
+k_max = 7
+offsets = [0, 1, 2, 3]
+block_sizes = [4, 8]
+
+[episode]          # #18: shots [5300, 8000) in returned order are a different process
+start = 5300
+stop = 8000
+device_w0_clean = -0.00587
+device_w0_clean_se = 0.00011
+
+[splits]           # train / test halves of the episode-free shots; never returned order
+kinds = ["interleaved", "random"]
+random_seed = 21
+
+# Model families fitted on the train half (all probabilities; logit coordinates).
+# Free parameters start from `init`; the rest keep the calibrated value unless in `fixed`.
+[[fits]]
+name = "calibrated"
+free = []
+
+[[fits]]
+name = "snapshot_physical"       # no fit: the snapshot's own asymmetric numbers
+free = []
+fixed = { read10 = 0.0009765625, read01 = 0.0068359375, reset_e0 = 0.0009828921731320737, reset_e1 = 0.0068359375 }
+
+[[fits]]
+name = "a_reset"                 # (a) state-dependent reset residue
+free = ["reset_e0", "reset_e1"]
+
+[[fits]]
+name = "d_readout"               # (d) assignment asymmetry alone (memoryless; a nuisance)
+free = ["read10", "read01"]
+
+[[fits]]
+name = "ad_reset_readout"        # (a) + (d)
+free = ["reset_e0", "reset_e1", "read10", "read01"]
+
+[[fits]]
+name = "b_leak"                  # (b) leakage per readout, seepage per step, |2> read as 1
+free = ["leak", "seep"]
+
+[[fits]]
+name = "bd_leak_readout"         # (b) + (d)
+free = ["leak", "seep", "read10", "read01"]
+
+[[fits]]
+name = "abd_all"                 # (a) + (b) + (d)
+free = ["reset_e0", "reset_e1", "leak", "seep", "read10", "read01"]
+
+[[fits]]
+name = "q75_detuning_readout"    # non-ancilla comparator: a q75 Z offset per step + (d)
+free = ["detuning", "read10", "read01"]
+
+[fit]
+max_evals = 500
+[fit.init]
+reset_e0 = 0.002
+reset_e1 = 0.005
+read10 = 0.002
+read01 = 0.006
+leak = 0.0005
+seep = 0.04
+detuning = 0.0
+
+[hmm]              # classical comparators fitted by Baum-Welch on the same train half
+sizes = [2, 3, 4]
+random_starts = 2
+max_iters = 300
+tol = 1e-8
+seed = 7
+
+[null]             # block-KL sampling null: shots drawn from each model at the test size
+replicates = 10
+seed = 99
+
+# Physically plausible ranges (sources in docs/phase7-ancilla.md). "max" is the largest
+# plausible value of each, used for the controls' "largest plausible" hypothesis.
+[plausible]
+reset_e0 = [0.0005, 0.005]       # snapshot init_error 0.00098; P(1|0) 0.00098; thermal
+reset_e1 = [0.0, 0.0068]         # <= P(0|1) = 0.0068 (the decay part of it is a success)
+leak = [1e-5, 5e-3]              # per readout; 5e-3 = Miao 2023 (Google measure qubits), an extreme
+seep = [0.02, 0.2]               # per 4.85 us step; T1(2->1) ~ T1/2 = 125 us gives 0.038
+read2 = [0.5, 1.0]               # binary discriminator: |2> mostly read as 1
+flip = [0.0, 0.002]              # non-QND flip per readout (Govia 2023: 1.7e-3 +- 1.0e-3)
+
+[scan]             # one parameter at a time, the rest calibrated; w(0) vs the device
+reset_e1 = [0.0, 0.0068, 0.02, 0.05, 0.1]
+reset_e0 = [0.0005, 0.001, 0.005, 0.02]
+leak = [1e-4, 1e-3, 5e-3, 1e-2, 3e-2]
+seep = [0.038, 0.2]
+leak_cz_phase = [0.0, 3.141592653589793]
+read2 = [1.0, 0.5]
+flip01 = [0.0, 0.002, 0.01]
+
+[a2_leak]          # coordinator's request: Stage 2A's A2 with q75 leaking per measurement
+leak = [0.0, 1e-4, 1e-3, 5e-3, 1e-2, 3e-2]
+seep = [0.03, 0.2]               # T1(2->1) ~ T1/2 = 160 us for q75 gives 0.03 per step
+cz_phase = [0.0, 3.141592653589793]
+
+[controls]
+variants = ["baseline", "B1", "B2", "B2_post", "B3", "B4r", "B4m"]
+alt_output = 74                  # B3's second ancilla (q75's other neighbour; #22)
+sim_shots = 20000                # per-shot SD of w(0) from simulated shots
+bootstrap = 300
+sd_seed = 5
+se_inflation = 1.4               # #18's contiguous-block inflation at w(0)
+
+[budget]           # Phase 6's cost model
+sub_job_overhead_s = 2.0
+rep_delay_s = 0.00025
+phase6_circuit_duration_s = 0.000308316
+step_duration_s = 4.852e-06
+
+[hardware]         # Stage 3 only, after the owner approves. Nothing here submits.
+submit = false
+backend = "ibm_kingston"
+layout = { memory = 75, output = 59, alt_output = 74 }
+sampler = { dynamical_decoupling = false, twirling_gates = false, twirling_measure = false }
+# Phase 6's baseline is shared with Stage 2A's plan (#20), so it is not repeated here.
+# B3 (alternating ancillas) only if B2's flags look like leakage: 8,100 shots per arm.
+shots_per_circuit = { B2 = 15000, B4m = 10000 }
