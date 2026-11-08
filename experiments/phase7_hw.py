@@ -1168,25 +1168,109 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
         raise
 
 
-def spent_upper(out: Path) -> float:
-    tot = 0.0
-    for p in out.glob("*/job.json"):
+def _seconds(v: Any) -> float | None:
+    """A usage value as seconds, or ``None`` when nothing is reported yet."""
+    if v is None:
+        return None
+    return float(v)
+
+
+def account_delta(rec: dict[str, Any]) -> Any:
+    """The instance's consumed seconds after the job minus before (``{"error"}`` if either
+    snapshot is missing: the job never finished in this run, or the read failed)."""
+    try:
+        return float(rec["usage_after"]["usage_consumed_seconds"]) - float(
+            rec["usage_before"]["usage_consumed_seconds"]
+        )
+    except Exception as e:
+        return {"error": f"account delta unavailable: {e!r}"}
+
+
+def live_usage_source(svc: Any):
+    """Read a job's IBM-reported charge three ways (network: Stage 4 only): the job's
+    ``usage()``, its ``metrics()['usage']['qpu_charge_time_seconds']``, and the instance's
+    consumed-seconds delta across the job. A failed read is ``{"error": ...}``."""
+
+    def read(rec: dict[str, Any]) -> dict[str, Any]:
+        out: dict[str, Any] = {}
+        try:
+            job = svc.job(rec["job_id"])
+        except Exception as e:
+            job, err = None, {"error": repr(e)}
+            out["job_usage"] = out["job_metrics"] = err
+        if job is not None:
+            try:
+                out["job_usage"] = _seconds(job.usage())
+            except Exception as e:
+                out["job_usage"] = {"error": repr(e)}
+            try:
+                m = job.metrics() or {}
+                out["job_metrics"] = _seconds((m.get("usage") or {}).get("qpu_charge_time_seconds"))
+            except Exception as e:
+                out["job_metrics"] = {"error": repr(e)}
+        out["account_delta"] = account_delta(rec)
+        return out
+
+    return read
+
+
+def charge_of(rec: dict[str, Any], source) -> F.Charge:
+    """One job's charge, saved into its record (``charge``, ``charge_read_at``)."""
+    import dataclasses
+
+    c = F.job_charge(rec["stage"], float(rec["upper_s"]), source(rec))
+    rec["charge"] = dataclasses.asdict(c)
+    rec["charge_read_at"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    return c
+
+
+def ledger(out: Path, source) -> list[F.Charge]:
+    """Re-read the charge of every job submitted in this run (re-saved in its record)."""
+    charges = []
+    for p in sorted(out.glob("*/job.json")):
         rec = json.loads(p.read_text())
         if "job_id" in rec and not rec.get("dry_run"):
-            tot += rec.get("upper_s", 0.0)
-    return tot
+            charges.append(charge_of(rec, source))
+            save_json(p, rec)
+    return charges
 
 
-def run_jobs(cfg, out: Path, ctx, built, cm: F.CostModel, dur, lp) -> None:
-    """Pilot (with its gate), then the main jobs; each guarded; idempotent by job id."""
+def usage_stop(out: Path, e: F.UsageExceeded, charges: list[F.Charge]) -> None:
+    import dataclasses
+
+    save_json(
+        out / "usage_stop.json",
+        {"reason": str(e), "charges": [dataclasses.asdict(c) for c in charges]},
+    )
+    log(out, f"USAGE GUARD: {e}; no further submissions; report to #17")
+
+
+def spent_counted(out: Path, source) -> float:
+    """Seconds counted against the hard cap before the next submission: max(charged, upper
+    bound) per submitted job. Stops on a job charged above its upper bound; refuses if any
+    job's usage can't be read at all."""
+    charges = ledger(out, source)
+    try:
+        return F.usage_guard(charges)
+    except F.UsageExceeded as e:
+        usage_stop(out, e, charges)
+        raise
+
+
+def run_jobs(cfg, out: Path, ctx, built, cm: F.CostModel, dur, lp, source=None) -> None:
+    """Pilot (with its gate), then the main jobs; each guarded; idempotent by job id.
+    ``source(rec)`` reads a job's reported usage (``live_usage_source`` by default)."""
     import phase6
 
     svc, backend = ctx["svc"], ctx["backend"]
+    source = source or live_usage_source(svc)
     lw = cfg["layout"]["length"]
     b = cfg["budget"]
     phys = [cfg["layout"]["output"], cfg["layout"]["memory"]]
     if (out / "pilot" / "gate_failed.json").exists():
         raise SystemExit("the pilot gate failed in this run: stop; never retried automatically")
+    if (out / "usage_stop.json").exists():
+        raise SystemExit("the usage guard stopped this run: no further submissions")
     stages = [("pilot", pilot_schedule(cfg))] + [
         (f"job{j}", job) for j, job in enumerate(schedule(cfg))
     ]
@@ -1213,7 +1297,7 @@ def run_jobs(cfg, out: Path, ctx, built, cm: F.CostModel, dur, lp) -> None:
                 b["max_qpu_seconds"],
                 u.get("usage_remaining_seconds"),
                 ctx["plan"],
-                spent_upper(out),
+                spent_counted(out, source),
                 b["hard_cap_s"],
                 cfg["ibm"]["allowed_plans"],
             )
@@ -1232,7 +1316,13 @@ def run_jobs(cfg, out: Path, ctx, built, cm: F.CostModel, dur, lp) -> None:
             for k, v in decode(r, p.arm, lw).items():
                 arrays[f"{p.key}__{k}"] = np.packbits(v, axis=1)
         np.savez_compressed(d / "shots.npz", length=lw, **arrays)
-        log(out, f"[{stage}] saved {len(pubs)} pubs; usage {rec.get('usage')}")
+        c = charge_of(rec, source)
+        save_json(d / "job.json", rec)
+        log(out, f"[{stage}] saved {len(pubs)} pubs; charge {rec['charge']}")
+        if c.exceeded:
+            e = F.UsageExceeded(f"{stage} charged {c.charged_s} s > upper bound {c.upper_s:.2f} s")
+            usage_stop(out, e, [c])
+            raise SystemExit(f"{e}: stop and report (no further submissions)")
         if stage == "pilot":
             gate = pilot_gate(cfg, d, pubs, lp, rec, cost, dur)
             save_json(d / "gate.json", gate)

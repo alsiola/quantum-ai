@@ -310,9 +310,10 @@ rejection rate, which is its size where its null holds and its power otherwise
     gives runs of all-ones shots. Duplicates are therefore a warning to inspect, not an
     invalidation; only malformed values invalidate a dataset.
 - **A known bias.** For the near-i.i.d. arms (A1, D1), the mean of ŵ(0) lies 10 standard
-  errors of the mean from the exact 0. This is second-order bias at rank ≈ 1, about 1e-6
-  for D1 and 1e-5 for A1. It is far below one SE, so no test is affected (rejection rates
-  of 0–0.5%).
+  errors of the mean from the exact 0. This is second-order bias at rank ≈ 1, about 1.5e-6
+  for D1 (0.5 SE) and 4.6e-5 for A1 (0.45 of A1's SE, 1.0e-4; corrected in #25 from an
+  earlier "about 1e-5"). It is below half an SE, so no test is affected (rejection rates of
+  0–0.5%).
 
 ## 7. Budget
 
@@ -339,7 +340,13 @@ is 1.25 × the estimate + 1 s billing rounding per job; Phase 6 was billed 14 s 
 - Before each submission the code refuses unless all of these hold:
   - the instance's plan is `open` (**never a paid plan**);
   - the live remaining allowance is known and at least the job's upper bound;
-  - the cumulative upper bound stays within the hard cap;
+  - the seconds counted for the jobs already submitted, plus this job's upper bound, stay
+    within the hard cap. Each submitted job counts max(IBM-reported charge, its upper bound);
+    a charge not yet reported counts as the upper bound (added in #25);
+  - no submitted job was charged more than its upper bound: if one was, the run stops for
+    good (`usage_stop.json`) and is reported on #17; if any job's usage can't be read at all,
+    the next job is refused (#25). The charge is re-read before every submission, from
+    `job.usage()`, the job's metrics and the instance's usage delta, taking the largest;
   - the job's estimate is ≤ 20 s;
   - the calibration is within its bounds;
   - `approval_url` names the owner's comment, and `--submit` is given.
@@ -348,7 +355,8 @@ is 1.25 × the estimate + 1 s billing rounding per job; Phase 6 was billed 14 s 
 ## 8. Data preservation and reproducibility
 
 Stage 4 writes `results/phase7_hw/<timestamp>/`, one directory per job. Each directory holds:
-- `job.json`: id, pubs, estimate and upper bound, usage before and after, the live
+- `job.json`: id, pubs, estimate and upper bound, usage before and after, the reported
+  charge and what it counts against the cap (`charge`), the live
   calibration before and after, the calibration check, metrics, status, and the execution
   spans;
 - `shots.npz`: every pub's bit-packed `y`, plus `m` (A2) and `s_0` (A2s_spec), in returned

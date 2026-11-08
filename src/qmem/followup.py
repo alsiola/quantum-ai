@@ -10,7 +10,10 @@ Everything here is fixed before any data exist and is importable without Qiskit:
   Phase 6's cost model (overhead per job + shots x (rep_delay + duration)), an upper bound
   (25% on the estimate, plus whole-second billing), the per-job ``max_qpu_seconds``, the
   remaining allowance, the Open plan, the owner's hard cap, and the approval URL plus the
-  explicit ``--submit`` flag. Each refusal raises ``Refused``.
+  explicit ``--submit`` flag. Each refusal raises ``Refused``. The usage guard (Stage 4,
+  ``job_charge``, ``usage_guard``) reads each job's IBM-reported charge, counts
+  max(charged, upper bound) against the cap, and stops (``UsageExceeded``) if a job was
+  charged more than its upper bound.
 * **Analysis** (``analyse_arm``, ``segment_policy``): the primary statistic w(0) with a
   common start set; the primary SE = max(shot bootstrap, circular block bootstrap at
   ``b`` shots), each within job and stratified by job when pooled (#19's policy); per-job
@@ -215,6 +218,69 @@ def budget_check(
         raise Refused(
             f"cumulative upper bound {spent_upper_s + upper_s:.2f} s > hard cap {hard_cap_s} s"
         )
+
+
+class UsageExceeded(Refused):
+    """A completed job was charged more than its upper bound: stop, report to the owner."""
+
+
+@dataclass
+class Charge:
+    """What one completed (or submitted) job counts against the hard cap.
+
+    ``readings`` maps each usage source to a number of QPU seconds (read), ``None`` (read but
+    no value yet) or ``{"error": ...}`` (the read failed). ``charged_s`` is the largest
+    positive reading (the most conservative source); ``status`` is ``charged``, ``unknown``
+    (readable but nothing positive reported) or ``unreadable`` (every source failed).
+    ``counted_s = max(charged_s, upper_s)``; an unknown or unreadable charge counts as
+    ``upper_s``. ``exceeded``: the charge is above the job's upper bound.
+    """
+
+    stage: str
+    upper_s: float
+    readings: dict[str, Any]
+    charged_s: float | None
+    status: str
+    counted_s: float
+    exceeded: bool
+
+
+def job_charge(stage: str, upper_s: float, readings: dict[str, Any]) -> Charge:
+    """Classify one job's usage readings (see ``Charge``)."""
+    nums = [
+        float(v)
+        for v in readings.values()
+        if isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+    ]
+    pos = [v for v in nums if v > 0]
+    readable = any(not isinstance(v, dict) for v in readings.values())
+    if pos:
+        charged, status = max(pos), "charged"
+    elif readable:
+        charged, status = None, "unknown"
+    else:
+        charged, status = None, "unreadable"
+    counted = upper_s if charged is None else max(charged, upper_s)
+    exceeded = charged is not None and charged > upper_s
+    return Charge(stage, float(upper_s), dict(readings), charged, status, counted, exceeded)
+
+
+def usage_guard(charges: Sequence[Charge]) -> float:
+    """The seconds counted against the hard cap by the jobs already submitted.
+
+    Raises ``UsageExceeded`` if any job was charged more than its upper bound (no further
+    submissions), and ``Refused`` if any job's usage could not be read at all.
+    """
+    over = [c for c in charges if c.exceeded]
+    if over:
+        raise UsageExceeded(
+            "reported usage above the job's upper bound, stop and report: "
+            + ", ".join(f"{c.stage} charged {c.charged_s} s > {c.upper_s:.2f} s" for c in over)
+        )
+    blind = [c.stage for c in charges if c.status == "unreadable"]
+    if blind:
+        raise Refused(f"usage of {blind} could not be read: refusing the next job")
+    return float(sum(c.counted_s for c in charges))
 
 
 APPROVAL_RE = re.compile(r"^https://github\.com/[\w.-]+/[\w.-]+/issues/\d+#issuecomment-\d+$")
@@ -647,12 +713,14 @@ def expected_outcome(
 __all__ = [
     "AnalysisSettings",
     "CalibrationBounds",
+    "Charge",
     "CostModel",
     "Decision",
     "DecisionRule",
     "Pub",
     "Refused",
     "Secondary",
+    "UsageExceeded",
     "analyse_arm",
     "boot_g",
     "budget_check",
@@ -663,6 +731,7 @@ __all__ = [
     "gate",
     "guard",
     "holm",
+    "job_charge",
     "make_schedule",
     "primary_outcome",
     "schedule_rows",
@@ -670,4 +739,5 @@ __all__ = [
     "segment_policy",
     "split_even",
     "submission_check",
+    "usage_guard",
 ]
