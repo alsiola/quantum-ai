@@ -1,0 +1,71 @@
+# Phase 7 Stage 2C (issue #22): spectators, couplers, crosstalk and alternative-pair
+# replication design. Local CPU only. No QPU and no IBM service calls.
+#
+# 1. (once, `hardware` group) export FakeKingston's coupling map, stale calibration and timing,
+#    and check the control QASM against its target:
+#    uv run --group hardware python experiments/phase7_spectator.py --config experiments/configs/phase7_spectator.toml --export-device
+# 2. the analysis (numpy; about 3 min with 1 worker):
+#    uv run python experiments/phase7_spectator.py --config experiments/configs/phase7_spectator.toml
+
+[experiment]
+name = "phase7_spectator"
+summary_dir = "results/summaries/phase7_spectator"
+phase6_dir = "results/summaries/phase6"        # read-only inputs (step.qasm, circuit.qasm, shots)
+audit_dir = "results/summaries/phase7_audit"   # read-only (instruments.npz: exact-recovery check)
+
+[witness]                     # the #18 estimator: common start set for all k
+k_max = 7
+burn = 16
+length = 64
+offsets = [0, 1, 2, 3]
+episode = [5300, 8000]        # #18, returned order
+bootstrap = 1000
+seed = 22
+se_inflation = 1.4            # contiguous-block SE / bootstrap SE at w(0) (#18); Stage 1 may revise
+z_target = 5.0
+
+[layout]
+memory = 75
+output = 59
+spectator_memory = 74         # the neighbour of q75 other than q59
+spectator_output = 55         # the neighbour of q59 other than q75
+
+# Published strengths (sources in docs/phase7-spectator.md).
+[literature]
+zz_coupler_off_hz = 10e3      # Stehlik et al. PRL 127, 080505 (2021): ZZ < 10 kHz, coupler off
+zz_upper_hz = 50e3            # secondary report for Heron r2 (unconfirmed); taken as an upper case
+thermal_population = 0.05     # IBM transmons: 3-9 % (Haupt et al. 2025); 5 % used
+stark_meas_hz = 16e3          # Govia et al. NJP 2023: 1.7e-3 neighbour error per readout, as a Z phase
+tls_shift_hz = [5e3, 140e3]   # Schlor et al. PRL 123, 190502 (2019): telegraphic frequency shifts
+
+[sweep]
+zz_hz = [-100e3, -30e3, -10e3, -3e3, -1e3, 1e3, 3e3, 10e3, 30e3, 100e3]
+populations = [0.01, 0.03, 0.05, 0.1, 0.2, 0.5, 1.0]
+pair_zz_hz = [-100e3, -30e3, -10e3, -3e3, -1e3, 1e3, 3e3, 10e3, 30e3, 100e3]
+stark_hz = [-100e3, -30e3, -10e3, -3e3, 3e3, 10e3, 30e3, 100e3]
+meas_dephasing_rate = [1e3, 3e3, 1e4, 3e4, 1e5]      # 1/s, extra, during q59 readout + reset
+tls_loss_t1 = [1000e-6, 300e-6, 100e-6, 30e-6]        # extra T1 of q75 while the TLS is on
+own_zz_hz = [10e3, 50e3, 100e3]
+
+[fit]                          # episode / rest fits of one or two physical parameters
+detuning_hz = [-200e3, 200e3]
+grid = 401
+loss_rate = [0.0, 2e4]         # 1/s
+
+[controls]
+shots_per_arm = 20000          # the Phase 6 main-job size
+sd_samples = 20000             # model samples for the per-shot SD of w(0)
+sd_seed = 5
+c2_min_distance = 3            # hops from {q59, q75} and between chosen pairs
+c2_n_pairs = 3
+c2_max_readout = 0.02
+dd_grid_s = 4e-9               # FakeKingston dt (timing granularity 1 dt)
+
+# Ready but UNSUBMITTED. Stage 3 asks the owner, re-reads live calibration and redoes the C2
+# ranking before anything runs. Costs follow Phase 6's model (2 s per job + (rep_delay +
+# circuit duration) per shot).
+[hardware]
+submitted = false
+backend = "ibm_kingston"
+rep_delay_s = 250e-6
+job_overhead_s = 2.0

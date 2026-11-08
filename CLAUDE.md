@@ -31,6 +31,9 @@ and keep within the plan's allowance. Credentials live in `.env` (gitignored; ne
 - Phase 7 Stage 2A q75 ablation controls (no QPU; `--export` once with the `hardware` group,
   then about 30 s with 2 workers; `--plan` prints the unsubmitted Stage 3 job):
   `uv run python experiments/phase7_ablation.py --config experiments/configs/phase7_ablation.toml`
+- Phase 7 Stage 2C spectators/crosstalk and control design (no QPU; about 30 s; the
+  `--export-device` step, run once, needs the `hardware` group):
+  `uv run python experiments/phase7_spectator.py --config experiments/configs/phase7_spectator.toml`
 - Phase 6 hardware run (PMD N = 3 on `ibm_kingston`; spends QPU time, see above):
   `uv run --group hardware python experiments/phase6.py --config experiments/configs/phase6.toml --dry-run`,
   then without `--dry-run`. `--from-run <dir>` resumes; a submitted job is re-fetched by id.
@@ -53,12 +56,12 @@ and keep within the plan's allowance. Credentials live in `.env` (gitignored; ne
   `diagnostics` (stationary memory, retention curves, reference purification for any
   `Instrument`), `witness` (independent numpy Hankel-witness estimator, its uncertainty, linear processes, Baum-Welch), `ablate_hw` (Phase 7 q75 destruction/dephasing controls: circuits built from
   Phase 6's, step pieces on the joint (q75, q59) memory, predictions; numpy except the circuit
-  builders), `hardware` (Qiskit export of A as a dynamic circuit, exact branch
+  builders), `spectator` (numpy time-resolved step simulator with spectators, static ZZ, readout Stark shift and TLS; control circuits C1-C4), `hardware` (Qiskit export of A as a dynamic circuit, exact branch
   simulation, noisy instruments from transpiled steps; needs the `hardware` group and is
   imported by nothing else).
 - `tests/`: pytest. Every new physics feature gets a test against an analytic case or an
   independent brute-force computation.
-- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings), `phase5a-hardware.md` (QPU feasibility, cost), `phase6-hardware-run.md` (the IBM run), `phase7-audit.md` (independent audit of the Phase 6 statistics), `phase7-ablation.md` (q75 ablation controls for Stage 3); `benchmarks.md` (the task suite); `report.md` (the campaign report; figures in `docs/figures/` from `experiments/report_figures.py`). Don't edit `docs/literature-review.md`
+- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings), `phase5a-hardware.md` (QPU feasibility, cost), `phase6-hardware-run.md` (the IBM run), `phase7-audit.md` (independent audit of the Phase 6 statistics), `phase7-ablation.md` (q75 ablation controls for Stage 3), `phase7-spectator.md` (spectators, crosstalk, replication design); `benchmarks.md` (the task suite); `report.md` (the campaign report; figures in `docs/figures/` from `experiments/report_figures.py`). Don't edit `docs/literature-review.md`
   unless your issue is the literature review.
 - `experiments/`: scripts, plus `experiments/configs/*.toml` (one config per run family).
 - `results/`: raw outputs in `results/<experiment>/<timestamp>/` (gitignored); small curated
