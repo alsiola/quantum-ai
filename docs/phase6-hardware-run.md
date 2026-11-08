@@ -33,12 +33,29 @@ never resubmitted, and a saved analysis is reused.
 
 ## Verdict
 
+> **Corrected after the Phase 7 audit (#18, [phase7-audit.md](phase7-audit.md)).** The
+> numbers below reproduce exactly, and the witness stands. Three readings were wrong:
+> - **Uncertainty.** The bootstrap ignores a change in the process across shots 5,300–8,000.
+>   Contiguous-batch SEs are 1.4–11× larger, giving z(0..3) = −39, −8.5, −4.7, −1.3.
+> - **"Noisier than its calibration."** For the witness, this comes from that episode.
+> - **"Better than any classical HMM."** This comes from the order-confounded split; on
+>   clean splits, 3+ state HMMs win.
+>
+> The corrected statements are marked "Corrected (#18)".
+
 - **The device produces a process that no 2-state classical model can produce exactly.**
   The Hankel witness is −0.00494 ± 0.00009 at offset 0, so |z| = 54. It is exactly zero for
   every 2-state HMM, and the 2-state HMM fitted to the device's own shots gives |z| ≤ 1.7.
   The other offsets give |z| = 33, 28 and 15. The 200-shot pilot alone gives |z| = 5.8.
-- **The 1-qubit model predicts the device better than any classical HMM fitted to the
-  device.** On 10,000 held-out shots, the noisy 1-qubit model built from the calibration,
+  *Corrected (#18):* these z use an SE that assumes identically distributed shots. With SEs
+  from contiguous blocks of 1,000 shots, z(0..3) = −39, −8.5, −4.7 and −1.3. w(0) is
+  strongly negative in every block, and outside the episode it is −0.0059 ± 0.0001.
+- ~~**The 1-qubit model predicts the device better than any classical HMM fitted to the
+  device.**~~ *Corrected (#18):* this holds against 2-state HMMs only. The split below
+  trains on shots that contain the episode. With a random split, an interleaved split, or the
+  episode removed from training, 3-, 4- and 6-state HMMs beat the calibrated model by
+  0.0004–0.0005 nats/symbol (|z| = 9–15). 2-state HMMs stay 0.0048–0.0052 worse. As
+  originally reported: on 10,000 held-out shots, the noisy 1-qubit model built from the calibration,
   with no parameter fitted to the device data, has a lower negative log-likelihood (NLL)
   than every model below. Differences are in nats/symbol, paired over shots:
 
@@ -50,15 +67,18 @@ never resubmitted, and a saved analysis is reused.
   | the PMD source itself | 0.0014 ± 0.0001 |
   | the noiseless trained model | 0.0013 ± 0.0000 |
 
-- **The device is noisier than its calibration predicts.**
+- **The device is noisier than its calibration predicts**, in its block statistics.
   - *The witness is smaller.* Its magnitude is 58–76% of the calibrated prediction, depending
     on the offset: |z| = 54 against 63 predicted for 20,000 shots, and w(1) = −0.018 against
-    −0.032.
+    −0.032. *Corrected (#18):* this is mostly the episode in shots 5,300–8,000. Without it,
+    the witness is 85%, 98%, 91% and 94% of the calibrated prediction at offsets 0–3.
   - *Long blocks deviate beyond sampling.* For blocks of 8, D(device ‖ calibrated)/8 is
     0.00042 ± 0.00003 nats/symbol, against 0.00013 for data sampled from the calibrated
-    model itself.
+    model itself. *(#18: this survives, and is larger without the episode.)*
   - *The symbol rate drifts.* P(1) moves across the run: from 0.578 to 0.604 and back, by
-    tenth of the shots (z = 8.3 between the halves).
+    tenth of the shots (z = 8.3 between the halves). *Corrected (#18):* it is more than a
+    rate. In shots 5,300–8,000 the process itself changes: g(1) rises from 0.100 to 0.158
+    and g(3) falls from 0.040 to 0.018.
 - **Cost.** 16 s of QPU time (2 s pilot, 14 s main), against the 15.3 s estimated. That is
   2.7% of the free plan's 600 s per 28 days, and 584 s remain. On the Open plan it cost
   nothing; at Pay-As-You-Go list price (96 USD/min) it would be about 26 USD.
@@ -185,8 +205,12 @@ is exactly 0. Standard errors come from 1,000 bootstrap resamples over shots.
 - **The 2-state null holds where it should.** Data simulated from the random 2-state
   control, and from the 2-state HMM fitted to the device, give |z| ≤ 1.7, as they must.
   The bootstrap errors are therefore calibrated, and |z| = 54 is far outside the null.
+  *Corrected (#18):* against stationary 2-state HMMs, z(0) is calibrated (SD 0.95–1.07 over
+  3,500 simulated datasets) and the other offsets are conservative. Against the change across
+  shots, it is not; see the corrected verdict.
 - **The amplitude falls short of the calibration.** It is 72% of the calibrated w(0) and
-  58% of its w(1). Each layer of noise (calibrated, then device) moves the witness towards 0,
+  58% of its w(1). *Corrected (#18):* without shots 5,300–8,000 it is 85% and 98%. The
+  shortfall is mostly that episode, not a steady extra dephasing. Each layer of noise (calibrated, then device) moves the witness towards 0,
   the classical value, so the device is more dephased than its calibration says.
 - **The 3- and 4-state HMMs fitted to the device** reproduce the device's witness
   (w(0) = −0.0045) about as well as anything here. Above 2 states, the witness alone does
@@ -224,7 +248,10 @@ At every block length, the calibrated 1-qubit model is the closest prediction to
 The fitted HMMs are farther, although they were fitted to these shots. The 2-state fit is
 9–17× farther than the calibrated model at L ≥ 4. At L = 8 the device is still 0.0003
 nats/symbol farther from the calibrated model than sampling explains. That is the extra
-dephasing seen in the witness.
+dephasing seen in the witness. *Corrected (#18):* the witness shortfall is mostly the
+episode, but this block excess is not. Without the episode the device is farther from the
+calibrated model (0.00054 at L = 8, 0.00024 at L = 4), because the pool's P(1) agreement
+is a cancellation between the two regimes.
 
 **Held-out NLL** (`summary.json` → `paired`). The HMMs were fitted by Baum-Welch EM:
 - 8 random restarts per size;
@@ -245,6 +272,11 @@ dephasing seen in the witness.
 - **2 states are not enough.** On the device's own data, the best 2-state HMM EM found is
   0.0060 nats/symbol worse than the 1-qubit prediction (37 SE). For scale, #11's gap between the
   best 2-state classical model and the source itself was 0.0137.
+- *Corrected (#18): on splits not confounded with shot order, they do.* With random,
+  interleaved or episode-free training, 3–6 state HMMs beat the calibrated model by
+  0.0004–0.0005 (phase7-audit.md §4). More EM starts and running to convergence do not change
+  the returned-order numbers. The returned-order training set holds the whole episode.
+  As originally written:
 - **More classical states don't catch up.** 3- and 4-state HMMs close most of that gap but
   stay 0.0018 worse (26 SE), and 4 states are no better than 3. Possible causes:
   - EM is stuck in local optima (8 restarts);
@@ -274,8 +306,10 @@ The shot order in the result is assumed to be time order; IBM does not document 
   example a fluctuating two-level defect moving a T1 or a frequency.
 - **What it costs:** a little in every statistic above. A stationary model cannot follow
   it, which is part of the excess block KL.
-- **What it doesn't change:** the witness. Its bootstrap is over shots, so it is robust to
-  slow drift, and 2,000 shots (one tenth) would still give |z| of about 54/√10 ≈ 17.
+- ~~**What it doesn't change:** the witness.~~ *Corrected (#18):* it does change the witness.
+  w(1..3) move 4–10× inside the episode, and the shot bootstrap understates the SE by
+  1.4–11× (phase7-audit.md §3). As originally written: "Its bootstrap is over shots, so it is
+  robust to slow drift, and 2,000 shots (one tenth) would still give |z| of about 54/√10 ≈ 17."
 
 ## 6. What this shows and what it does not
 
@@ -286,7 +320,9 @@ The shot order in the result is assumed to be time order; IBM does not document 
   for N = 3, run.
 - **Prediction without fitting.** Training in simulation plus a noise model from the
   public calibration predicted the device's process better than any classical HMM with up to
-  4 states fitted to the device's own data.
+  4 states fitted to the device's own data. *Corrected (#18):* better than any fitted 2-state
+  HMM only; on order-unconfounded splits a 3-state HMM is better by about 0.0005
+  nats/symbol.
 
 **It does not show:**
 - **That the device uses one qubit of memory.** Imperfect resets, leakage, the second

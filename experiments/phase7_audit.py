@@ -969,7 +969,11 @@ def main() -> None:
             write_csv(sd / "null_summary.csv", res["null"])
             keep = ["family", "size", "rep", "seed", "p1", "max_abs_z"]
             keep += [f"{a}_j{j}" for j in cfg["witness"]["offsets"] for a in ("w", "se", "z")]
-            write_csv(sd / "null_replicates.csv", [{k: r[k] for k in keep} for r in null_rows])
+            short = [  # 6 significant figures keep the curated file small
+                {k: float(f"{r[k]:.6g}") if isinstance(r[k], float) else r[k] for k in keep}
+                for r in null_rows
+            ]
+            write_csv(sd / "null_replicates.csv", short)
             write_csv(sd / "nll.csv", nll)
             write_csv(
                 sd / "em_fits.csv",

@@ -25,6 +25,9 @@ and keep within the plan's allowance. Credentials live in `.env` (gitignored; ne
   about 1 h with 4 workers on a shared machine):
   `uv run --group hardware python experiments/phase5a.py --config experiments/configs/phase5a.toml`.
   The main check does not need the group; `tests/test_hardware.py` skips without it.
+- Phase 7 Stage 0 audit of the Phase 6 statistics (no QPU; about 15 min with 4 workers; the
+  `--export-instruments` step, run once, needs the `hardware` group):
+  `uv run python experiments/phase7_audit.py --config experiments/configs/phase7_audit.toml`
 - Phase 6 hardware run (PMD N = 3 on `ibm_kingston`; spends QPU time, see above):
   `uv run --group hardware python experiments/phase6.py --config experiments/configs/phase6.toml --dry-run`,
   then without `--dry-run`. `--from-run <dir>` resumes; a submitted job is re-fetched by id.
@@ -45,12 +48,12 @@ and keep within the plan's allowance. Credentials live in `.env` (gitignored; ne
   (causal states, `C_mu`, `C_q`, exact quantum models of a source), `benchmarks` (the Phase 3
   suite: literature numbers with sources, recall scoring, noise `eps` and strength floors),
   `diagnostics` (stationary memory, retention curves, reference purification for any
-  `Instrument`), `hardware` (Qiskit export of A as a dynamic circuit, exact branch
+  `Instrument`), `witness` (independent numpy Hankel-witness estimator, its uncertainty, linear processes, Baum-Welch), `hardware` (Qiskit export of A as a dynamic circuit, exact branch
   simulation, noisy instruments from transpiled steps; needs the `hardware` group and is
   imported by nothing else).
 - `tests/`: pytest. Every new physics feature gets a test against an analytic case or an
   independent brute-force computation.
-- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings), `phase5a-hardware.md` (QPU feasibility, cost), `phase6-hardware-run.md` (the IBM run); `benchmarks.md` (the task suite); `report.md` (the campaign report; figures in `docs/figures/` from `experiments/report_figures.py`). Don't edit `docs/literature-review.md`
+- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings), `phase5a-hardware.md` (QPU feasibility, cost), `phase6-hardware-run.md` (the IBM run), `phase7-audit.md` (independent audit of the Phase 6 statistics); `benchmarks.md` (the task suite); `report.md` (the campaign report; figures in `docs/figures/` from `experiments/report_figures.py`). Don't edit `docs/literature-review.md`
   unless your issue is the literature review.
 - `experiments/`: scripts, plus `experiments/configs/*.toml` (one config per run family).
 - `results/`: raw outputs in `results/<experiment>/<timestamp>/` (gitignored); small curated

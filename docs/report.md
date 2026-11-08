@@ -355,15 +355,23 @@ Details: [phase6-hardware-run.md](phase6-hardware-run.md).
 - 16 s of QPU time on the free Open plan.
 
 **Results.**
-- **Witness.** It is −0.00494 ± 0.00009, so |z| = 54. Every 2-state HMM gives exactly 0,
+- **Witness.** It is −0.00494 ± 0.00009, so |z| = 54. The independent audit (#18,
+  [phase7-audit.md](phase7-audit.md)) reproduces it exactly. With SEs from contiguous blocks
+  of shots, which account for a change in the device during shots 5,300–8,000, the
+  significance is lower but still overwhelming: |z| = 39 for w(0). Every 2-state HMM gives exactly 0,
   and data simulated from the 2-state HMM fitted to the device give |z| ≤ 1.7. The device's
   output therefore has classical dimension above 2.
 - **Prediction without fitting.** The noisy 1-qubit model built from the device's own
-  calibration, fitted to nothing from the device, predicts 10,000 held-out shots better
-  than HMMs fitted to the other shots: by 0.0060 nats/symbol against 2 states, and 0.0018
-  against 3 and 4.
-- **Extra noise.** The device is noisier than its calibration says. The witness is 58–76%
-  of the calibrated prediction, and P(1) has a transient drift (z = 8).
+  calibration, fitted to nothing from the device, predicts held-out shots better than any
+  2-state HMM fitted to the device, by about 0.005 nats/symbol. The Phase 6 claim that it
+  also beats 3- and 4-state HMMs (by 0.0018) was an artefact of training on the first
+  shots, which contain the episode (#18). On random or interleaved splits, 3–6 state HMMs
+  beat it by about 0.0005.
+- **Extra noise.** The device departs from its calibration in two ways. First, for 13% of
+  the run (shots 5,300–8,000) its process changes: the period-3 revival largely disappears
+  and P(1) rises. That episode is most of why the pooled witness is only 58–76% of the
+  calibrated prediction; without it, the witness is 85–98% (#18). Second, outside the
+  episode, block statistics still deviate from the calibrated model well beyond sampling.
 - **Not shown.** The run does not show that the device uses one qubit of memory, nor any
   quantum advantage: a 3-state HMM matches the device's witness.
 
