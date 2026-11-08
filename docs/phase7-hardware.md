@@ -238,3 +238,38 @@ pre-registered test.
 3. **Drop (c) as a stop condition.** Keep it as a recorded diagnostic; A2's q75 record does
    not enter the decision rule. Run the pilot and the main jobs. About 3 s + 54.6 s (upper
    bounds) within the remaining 111.6 s of the cap.
+
+# Stage 4c: gate (c) as a recorded diagnostic, the pilot's own q75 refit (#27)
+
+The owner chose option 3 above on #17
+(https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6723526792). The full account is
+the dated, post hoc amendment in `docs/phase7-preregistration.md` §10. The config is
+`experiments/configs/phase7_hw_4c.toml`; outputs are in `results/summaries/phase7_hw_4c/`.
+
+## Amendment and validation (local, no QPU)
+
+- **Gate.** (a), (b) and (d) stop the run exactly as in Stage 4b. (c) is recorded against
+  the calibrated model and #26's refit (± 0.021 each) and never stops it.
+- **q75 model.** After the gate, q75's decay is refitted on the pilot's own A2 record and
+  fixed in `pilot/refit_pilot.json` before any main job is submitted. It is the analysis's
+  q75 model (A2's predicted P(1) and marginals, the partial-coherence reading). The calibrated
+  model and #26's refit are sensitivity rows. The decision uses the data alone, so it is the
+  same under all three.
+- **Guard.** `--submit` checks both §9 and §10 against their recorded hashes at their commits
+  on `main`.
+- **Unchanged:** the decision rule, the arms, the shots, the schedule, the mapping, the
+  analysis, the secondary family and the replication gate.
+- **A simulated 500-shot pilot recovers a**: 0.0023 ± 0.0033 at a = 0, 0.1234 ± 0.0051 at
+  a = 0.1225. It separates the two regimes in every replicate.
+- **Validation** (`dryrun/validation.csv`): 12 hypotheses × 2 q75 decays (0 and #26's 0.1225)
+  × 200 replicates, each analysed with its own simulated pilot's fit. **No wrong decisive call
+  in any of the 4,800 replicates.** The replication gate passes in all of them. Every error is
+  an *ambiguous*, except the 80%-coherence case at a = 0.1225, which sits at the persists
+  threshold (43% *persists*, 57% *ambiguous*). *Ambiguous* rates under q59 leakage and the
+  sticky record are 14–69%, as before. D1's lag-1 excess flags those cases in every replicate.
+  All 68 circuit hashes match.
+
+## Hardware
+
+Not yet run: waiting for the coordinator's go on #27. The plan is 4.20 s (pilot) + 54.6 s (main
+jobs), as upper bounds, with 8.4 s already counted against the 120 s cap.

@@ -551,3 +551,156 @@ secondary family and its Holm correction, and the reading of A2 with the other a
 analysis is also reported under the original, un-refit predictions as a sensitivity row; the
 decision uses the data alone, and the predictions only enter the positional χ² warning and
 the A3 and D1 reference values, which the refit does not change.
+
+## 10. Amendment of 2026-11-08 (post hoc, after #26's pilot; #27)
+
+**This section is post hoc.** It was written after #26's pilot (`results/summaries/phase7_hw_4b/`,
+`docs/phase7-hardware.md`, Stage 4b) stopped at the amended gate (c) of §9.3, and it uses that
+pilot's data. It amends §9, which otherwise stands. It was committed to `main` before any new
+submission. `--submit` refuses unless both this section and §9 match the SHA-256 and commit
+recorded for them in `experiments/configs/phase7_hw_4c.toml` `[[amendment]]`, at commits on
+`main` (`phase7_hw.amendment_guard`). The owner approved this route on #17
+(https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6723526792, "Go ahead" to option 3
+of https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6723282987). The cap is unchanged
+(https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6720604627).
+
+### 10.1 Reason
+
+#26's pilot passed (a), (b) and (d) and failed (c): A2's q75 record gave P(m = 1) = 0.4927 ±
+0.0041 over t ≥ 16, against the refit's 0.4191 ± 0.021. It matched the original calibrated
+model (0.4925). #25's pilot, five and a half hours earlier under an identical reported
+calibration, had matched the refit (0.4190). So q75's behaviour under repeated mid-circuit
+measurement changes on the scale of hours, and IBM's calibration data do not show it. A gate on
+the record's absolute level cannot be passed reliably by any fixed model.
+
+The decision rule (§4) never uses the q75 record. It compares A2's w(0) with the concurrent,
+interleaved baseline. Under every q75 model considered (calibrated, #26's refit, any decay a
+in [0, 0.2]), A2's q75 is a classical bit at each step, so A2's output is a 2-state process and
+its predicted witness is 0 exactly (`tests/test_phase7_hw.py::test_4c_a2_witness_zero_for_any_decay`).
+The rule's output is a function of the data alone, whatever q75 model is used
+(`test_4c_decision_does_not_depend_on_the_q75_model`). The level of the q75 record is
+therefore not needed to interpret the primary outcome.
+
+### 10.2 Amended pilot conditions
+
+The pilot itself is unchanged (one job; 500 baseline and 500 A2 shots; seed 1). Go only if
+(a), (b) and (d) hold, **exactly as in §9.3**.
+
+**(c) is a recorded, non-stopping diagnostic** (`[pilot] c_stops = false`). The pilot's A2
+P(m = 1) over t ≥ 16 is reported against two predictions at the live calibration, each with
+§9.2's tolerance of 0.021:
+- the calibrated model (a = 0);
+- #26's refit (a = 0.123, a0 = 0.051).
+
+Whether it falls within either is recorded in `pilot/gate.json`. Neither stops the run.
+
+On a failure of (a), (b) or (d), or a live calibration outside the bounds of §3, the script
+writes `pilot/gate_failed.json` and stops. There is no retry, no re-mapping and no second pilot
+without a new decision on #17.
+
+### 10.3 The q75 model of the analysis: the pilot's own fit
+
+Once (a) passes, q75's decay is refitted on the pilot's joint A2 record (500 shots × 64 steps).
+The fit uses #26's primary family (`decay_first`: a, plus a0 for the first measurement;
+`qmem.refit`) and #20's pieces at the gate's own live calibration. Its whole-shot bootstrap
+(200 resamples, seed 27) is reported. It is written once to `pilot/refit_pilot.json` before any
+main job is submitted, and is never refitted on a resume. `run_jobs` refuses to submit a main
+job without it. Its fitted a is **the q75 model of the analysis**, used for:
+- A2's predicted P(1) and positional marginals (the guard rail's positional χ² warning);
+- the *partial-coherence* reading (below).
+
+The calibrated model (a = 0) and #26's refit (a = 0.123) are reported as **sensitivity rows**:
+the analysis is run under all three. The decision is the same in all three by construction,
+since it uses the data alone.
+
+**The partial-coherence reading** (descriptive, not part of the rule). Under each q75 model,
+the exact w(0) of the baseline and of A2 are computed when A2's measurement keeps a fraction c
+of q75's coherence (c on a grid of 0, 0.05, …, 1). The observed ratio |w_A2| / |w_base|, with
+A2's ± 1.96 SE (the baseline's SE is not propagated), gives the interval of c consistent with
+the data. The predictions of H_partial_c05 and H_partial_c08 are reported beside it.
+
+### 10.4 Recovery of a on a simulated pilot
+
+`--dry-run-local` with `phase7_hw_4c.toml` (outputs in `results/summaries/phase7_hw_4c/dryrun/`,
+`pilot_study*.csv`) simulated 200 pilots of A2's joint record at each of two decays and refitted
+each one:
+
+| true a | fitted a, mean ± SD | 95% range | pilot P(m = 1) | (c) within #26's refit | (c) within calibrated |
+|---|---|---|---|---|---|
+| 0 (calibrated) | 0.0023 ± 0.0033 | 0.000–0.011 | 0.4925 | 0% | 100% |
+| 0.1225 (#26's refit) | 0.1234 ± 0.0051 | 0.114–0.133 | 0.4195 | 100% | 0% |
+
+A 500-shot pilot recovers a without bias to within 0.005. It tells the two regimes apart in
+every replicate: (c) would have been a perfect classifier of which regime the device was in,
+and a poor gate, because the regime is not stable between pilots.
+
+### 10.5 Validation (step 2 of #27)
+
+The synthetic validation of §6 was re-run with (c) non-stopping, under the settings of §6
+and §9.4 (planned schedule, 200 replicates per cell, 200 resamples, 100 permutations). The
+data of every hypothesis are drawn at **both** q75 decays (strata a = 0 and a = 0.1225), 12
+hypotheses × 2 strata × 200 replicates = 4,800 datasets. Each replicate is analysed with the
+q75 model fitted on a simulated pilot from its own stratum (replicate r of every hypothesis in
+a stratum shares pilot r), as Stage 4c would analyse the device. The circuit hashes of #20 were
+re-checked (all 68 match). The hmm-kind hypotheses (#19's mixture, the memory outside q75) are
+output-level, so their two strata differ only in Monte Carlo draws.
+
+The predicted outcome is the rule on the stratum's exact w(0) values and median SEs. The
+**error rate** is the fraction of replicates whose outcome differs from it; the **wrong
+decisive call** rate is the fraction that say *vanishes* where *persists* is predicted, or the
+reverse (`validation.csv`, column `opposite_call_rate`). Per stratum (a = 0 / a = 0.1225):
+
+| hypothesis | predicted | vanishes | persists | ambiguous | error rate | **wrong decisive** | D1 lag-1 |
+|---|---|---|---|---|---|---|---|
+| H_q75 | vanishes / vanishes | 99.5 / 100% | 0 / 0 | 0.5 / 0% | 0.5 / 0% | **0 / 0** | 0 / 0 |
+| drift: #19 episode regime | vanishes / vanishes | 96.5 / 95.5% | 0 / 0 | 3.5 / 4.5% | 3.5 / 4.5% | **0 / 0** | 0 / 0.5% |
+| drift: #19 best K = 3 mixture | persists / persists | 0 / 0 | 100 / 100% | 0 / 0 | 0 / 0 | **0 / 0** | 0 / 0.5% |
+| q59 reset + leakage, #21 fit | vanishes / vanishes | 85.0 / 78.0% | 0 / 0 | 15.0 / 22.0% | 15.0 / 22.0% | **0 / 0** | 100 / 100% |
+| q59 leakage, #21 extreme | vanishes / vanishes | 37.5 / 31.0% | 0 / 0 | 62.5 / 69.0% | 62.5 / 69.0% | **0 / 0** | 100 / 100% |
+| spectators, typical | vanishes / vanishes | 100 / 100% | 0 / 0 | 0 / 0 | 0 / 0 | **0 / 0** | 0 / 0 |
+| spectators, upper | vanishes / vanishes | 99.5 / 95.5% | 0 / 0 | 0.5 / 4.5% | 0.5 / 4.5% | **0 / 0** | 0.5 / 0.5% |
+| sticky record, ε = 0.027 | vanishes / vanishes | 86.5 / 86.0% | 0 / 0 | 13.5 / 14.0% | 13.5 / 14.0% | **0 / 0** | 100 / 100% |
+| sticky record, ε = 0.01 | vanishes / vanishes | 98.5 / 97.0% | 0 / 0 | 1.5 / 3.0% | 1.5 / 3.0% | **0 / 0** | 100 / 100% |
+| 3-state memory outside q75 | persists / persists | 0 / 0 | 100 / 100% | 0 / 0 | 0 / 0 | **0 / 0** | 0.5 / 0 |
+| A2 keeps 50% coherence | ambiguous / vanishes | 46.5 / 92.5% | 0 / 0 | 53.5 / 7.5% | 46.5 / 7.5% | **0 / 0** | 0 / 0 |
+| A2 keeps 80% coherence | persists / ambiguous | 0 / 0 | 100 / 43.0% | 0 / 57.0% | 0 / 43.0% | **0 / 0** | 1.5 / 0.5% |
+
+- **No wrong decisive call.** In none of the 4,800 replicates does the rule say *persists*
+  where q75 carries the memory, or *vanishes* where the memory is outside q75 or A2 keeps 80%
+  of the coherence. As under #24 (§6) and #26 (§9.4), every error is an *ambiguous*, or, for
+  the 80% case at a = 0.1225, a *persists* where the prediction (24.8% of the baseline, just
+  under the 25% threshold) is *ambiguous*.
+- **The replication gate** passes in 100% of the replicates of every cell, as predicted.
+- **Power** is as in §6 at a = 0 and as in §9.4 at a = 0.1225. A2's median SE is 8.8e-5 and
+  9.4e-5 under H_q75. The cases near the vanish bound (q59 leakage, the sticky record) fall to
+  *ambiguous* in 14–69% of the replicates, a few points more often at a = 0.1225. D1's lag-1
+  excess identifies them in 100% of their replicates. With 200 replicates a rate carries about
+  ±3 points of Monte Carlo error; the differences from §6 and §9.4 (for example the #21 fit,
+  22.5% and 33.0% there, 15.0% and 22.0% here) are of that order or a little above it, with
+  new draws.
+- **Secondary sizes.** Under H_q75 every secondary test rejects in ≤ 0.5% of the replicates;
+  elsewhere, where its null holds, ≤ 1.5%. A3 ≠ prediction rejects in 3–4.5% under the q59
+  and sticky-record hypotheses, as in §6: its reference value is H_q75's, which those
+  hypotheses shift slightly. A1 ≠ 0 and A3 ≠ prediction reject in 100% of the
+  replicates under the memory outside q75 and the drift mixture; the sham rejects in 100% under
+  both spectator hypotheses.
+- **What the decay changes.** It moves only the predictions of the partial-coherence cases:
+  under a decay, a given surviving coherence gives a smaller A2 witness (§9.4). The pilot's
+  own fit therefore sets how a *persists* or *vanishes* is read in terms of c, not the call.
+
+### 10.6 Budget and guards
+
+The hard cap stays **120 QPU seconds** in total for Phase 7 Stages 4, 4b and 4c (#17). #25's
+and #26's pilots count 4.20 s each against it, 8.4 s together (`[budget] prior_counted_s`).
+The plan needs 4.20 s (pilot) + 54.6 s (four main jobs), as upper bounds, so 67.2 s counted in
+total. Open plan only, `ibm_kingston` only. The usage guard, the per-job limit and every other
+guard of §7 are unchanged. Calibration snapshots are taken before and after each job.
+
+### 10.7 Unchanged
+
+The decision rule and thresholds (§4), the arms and circuits (§2), the shot counts (pilot, then
+tiers 1–2 with A2 at 10,000; no tier 3), the interleaving, schedule and seeds (§3, §8), the
+mapping (q75 and q59 on `ibm_kingston`, never re-mapped), the calibration bounds, the analysis
+settings, the secondary family (A2s_spec, A1, A3, D1's lag-1 excess) with its Holm correction
+at α = 0.01, the replication gate, and conditions (a), (b) and (d) of §9.3. If the replication
+gate fails, the ablation arms are uninterpretable and are reported as such.
