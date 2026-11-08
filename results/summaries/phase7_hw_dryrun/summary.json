@@ -2,11 +2,10 @@
   "aer_pilot": {
     "A2": {
       "guard_flags": [
-        "dispersion_p1",
-        "dispersion_g1_minus_g3"
+        "dispersion_p1"
       ],
-      "p1_after_burn": 0.37916666666666665,
-      "p_m1": 0.4608333333333333,
+      "p1_after_burn": 0.37625,
+      "p_m1": 0.4766666666666667,
       "registers": [
         "m",
         "y"
@@ -15,15 +14,17 @@
     },
     "baseline": {
       "guard_flags": [
-        "dispersion_p1"
+        "dispersion_p1",
+        "dispersion_repeat",
+        "dispersion_g1_minus_g3"
       ],
-      "p1_after_burn": 0.58625,
+      "p1_after_burn": 0.5670833333333334,
       "registers": [
         "y"
       ],
       "shots": 50
     },
-    "seconds": 3.961894989013672
+    "seconds": 4.293974161148071
   },
   "budget": {
     "allowance_after_16_s": 584,
@@ -667,7 +668,7 @@
         "allowed_plans": [
           "open"
         ],
-        "approval_url": "",
+        "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6718778410",
         "backend": "ibm_kingston",
         "channel": "ibm_cloud",
         "env_file": ".env"
@@ -733,15 +734,15 @@
         "seed": 4242
       }
     },
-    "git_commit": "356586e256ce75e62ff5ceed6917faecacc84ead",
+    "git_commit": "1bb65134114499a599c05933650bc3257b338efd",
     "git_dirty": true,
     "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
     "python": "3.13.6",
     "seed": 2024,
-    "timestamp_utc": "2026-11-08T03:59:34+00:00",
+    "timestamp_utc": "2026-11-08T08:38:32+00:00",
     "torch": "2.15.0"
   },
-  "run_dir": "results/phase7_hw_dryrun/20261108T035934Z",
+  "run_dir": "results/phase7_hw_dryrun/20261108T073633Z",
   "schedule": {
     "expected_job_execution_s": {
       "0": 8.124561352000004,
@@ -993,7 +994,7 @@
       "flagged_job_rate": 0.36,
       "gate_rate": 1.0,
       "guard_drift_flag_rate": 0.05,
-      "guard_integrity_fail_rate": 1.0,
+      "guard_integrity_fail_rate": 0.0,
       "hypothesis": "H_ancilla_extreme",
       "median_se0_A2": 0.00018107801531402256,
       "median_se0_baseline": 0.00010330785308278301,

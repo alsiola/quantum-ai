@@ -1,33 +1,40 @@
-[03:59:34] run dir /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-fa282dcbbf093e371638bc5e4e5e6bff/results/phase7_hw_dryrun/20261108T035934Z (local dry run: no network)
-[03:59:34] schedule: {'problems': [], 'n_pubs': 124, 'pubs_per_job': [31, 31, 31, 31], 'shots_per_job': [14524, 14524, 14524, 14524], 'expected_job_execution_s': {0: 8.124561352000004, 1: 8.124561352000002, 2: 8.124561352000002, 3: 8.124561352000004}}
-[03:59:34] budget: {"durations_s": {"baseline": 0.000308316, "A1": 0.0003106280000000001, "A2": 0.00031059600000000006, "A2s_spec": 0.00031049600000000006, "A3": 0.00030834799999999996, "D1": 0.0003080600000000012, "D3": 0.00030806000000000203, "B2": 0.00045195600000000227, "C3": 0.0003107159999999999}, "tier_shot_s": {"1": 24.630652, "2": 7.867593408000013}, "max_job_estimate_s": 10.124561352000004, "max_qpu_seconds": 20.0, "every_job_within_max": true, "hard_cap_s": 60, "plan_upper_within_cap": true, "allowance_after_16_s": 584}
-[03:59:39] hashes all match: True; retimed changes: ['A2s_spec']
-[03:59:39] pilot predictions (snapshot noise): {'baseline_p1': 0.5819812117696012, 'A2_p_m1': 0.4925318877296814}; FakeKingston calibration violations: []
-2026-11-08T03:59:41.523097+00:00 [aer_pilot] submitting 2 pub(s) {"shots": [50, 50], "arms": ["baseline", "A2"], "aer": true}
-2026-11-08T03:59:42.581879+00:00 [aer_pilot] job 26e2c1ca-2bd2-4c5e-a51e-a1018783bfa5 submitted
-[03:59:43] aer pilot: {'baseline': {'shots': 50, 'p1_after_burn': 0.58625, 'guard_flags': ['dispersion_p1'], 'registers': ['y']}, 'A2': {'shots': 50, 'p1_after_burn': 0.37916666666666665, 'guard_flags': ['dispersion_p1', 'dispersion_g1_minus_g3'], 'registers': ['m', 'y'], 'p_m1': 0.4608333333333333}, 'seconds': 3.961894989013672}
-[03:59:46] exact predictions done
-[04:00:03] validation 10/2400 (17 s)
-[04:01:29] validation 110/2400 (103 s)
-[04:02:52] validation 210/2400 (186 s)
-[04:04:14] validation 310/2400 (268 s)
-[04:05:32] validation 410/2400 (346 s)
-[04:06:32] validation 510/2400 (406 s)
-[04:07:35] validation 610/2400 (469 s)
-[04:08:50] validation 710/2400 (544 s)
-[04:10:05] validation 810/2400 (619 s)
-[04:11:20] validation 910/2400 (694 s)
-[04:12:43] validation 1010/2400 (777 s)
-[04:14:35] validation 1110/2400 (889 s)
-[04:16:28] validation 1210/2400 (1002 s)
-[04:18:19] validation 1310/2400 (1113 s)
-[04:20:10] validation 1410/2400 (1224 s)
-[04:22:03] validation 1510/2400 (1337 s)
-[04:23:55] validation 1610/2400 (1449 s)
-[04:25:47] validation 1710/2400 (1561 s)
-[04:27:29] validation 1810/2400 (1662 s)
-[04:28:29] validation 1910/2400 (1723 s)
-[04:29:32] validation 2010/2400 (1786 s)
-[04:30:54] validation 2110/2400 (1867 s)
-[04:32:15] validation 2210/2400 (1949 s)
-[04:33:36] validation 2310/2400 (2030 s)
+[07:36:33] run dir /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-31b235c31e5c98127f713d6ecdec0f96/results/phase7_hw_dryrun/20261108T073633Z (local dry run: no network)
+[07:36:33] schedule: {'problems': [], 'n_pubs': 124, 'pubs_per_job': [31, 31, 31, 31], 'shots_per_job': [14524, 14524, 14524, 14524], 'expected_job_execution_s': {0: 8.124561352000004, 1: 8.124561352000002, 2: 8.124561352000002, 3: 8.124561352000004}}
+[07:36:33] budget: {"durations_s": {"baseline": 0.000308316, "A1": 0.0003106280000000001, "A2": 0.00031059600000000006, "A2s_spec": 0.00031049600000000006, "A3": 0.00030834799999999996, "D1": 0.0003080600000000012, "D3": 0.00030806000000000203, "B2": 0.00045195600000000227, "C3": 0.0003107159999999999}, "tier_shot_s": {"1": 24.630652, "2": 7.867593408000013}, "max_job_estimate_s": 10.124561352000004, "max_qpu_seconds": 20.0, "every_job_within_max": true, "hard_cap_s": 60, "plan_upper_within_cap": true, "allowance_after_16_s": 584}
+[07:36:46] hashes all match: True; retimed changes: ['A2s_spec']
+[07:36:46] pilot predictions (snapshot noise): {'baseline_p1': 0.5819812117696012, 'A2_p_m1': 0.4925318877296814}; FakeKingston calibration violations: []
+[07:36:49] exact predictions done
+[07:37:07] validation 10/2400 (18 s)
+[07:38:30] validation 110/2400 (101 s)
+[07:39:52] validation 210/2400 (183 s)
+[07:41:15] validation 310/2400 (266 s)
+[07:42:34] validation 410/2400 (345 s)
+[07:43:34] validation 510/2400 (405 s)
+[07:44:38] validation 610/2400 (469 s)
+[07:45:54] validation 710/2400 (544 s)
+[07:47:11] validation 810/2400 (622 s)
+[07:48:28] validation 910/2400 (698 s)
+[07:49:51] validation 1010/2400 (782 s)
+[07:51:46] validation 1110/2400 (897 s)
+[07:53:45] validation 1210/2400 (1016 s)
+[07:56:13] validation 1310/2400 (1164 s)
+[07:58:13] validation 1410/2400 (1284 s)
+[08:00:08] validation 1510/2400 (1399 s)
+[08:02:06] validation 1610/2400 (1517 s)
+[08:04:03] validation 1710/2400 (1633 s)
+[08:06:02] validation 1810/2400 (1753 s)
+[08:07:26] validation 1910/2400 (1837 s)
+[08:08:54] validation 2010/2400 (1924 s)
+[08:10:19] validation 2110/2400 (2010 s)
+[08:11:42] validation 2210/2400 (2092 s)
+[08:13:08] validation 2310/2400 (2179 s)
+[08:14:16] done
+[08:38:32] run dir /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-31b235c31e5c98127f713d6ecdec0f96/results/phase7_hw_dryrun/20261108T073633Z (local dry run: no network)
+[08:38:32] schedule: {'problems': [], 'n_pubs': 124, 'pubs_per_job': [31, 31, 31, 31], 'shots_per_job': [14524, 14524, 14524, 14524], 'expected_job_execution_s': {0: 8.124561352000004, 1: 8.124561352000002, 2: 8.124561352000002, 3: 8.124561352000004}}
+[08:38:32] budget: {"durations_s": {"baseline": 0.000308316, "A1": 0.0003106280000000001, "A2": 0.00031059600000000006, "A2s_spec": 0.00031049600000000006, "A3": 0.00030834799999999996, "D1": 0.0003080600000000012, "D3": 0.00030806000000000203, "B2": 0.00045195600000000227, "C3": 0.0003107159999999999}, "tier_shot_s": {"1": 24.630652, "2": 7.867593408000013}, "max_job_estimate_s": 10.124561352000004, "max_qpu_seconds": 20.0, "every_job_within_max": true, "hard_cap_s": 60, "plan_upper_within_cap": true, "allowance_after_16_s": 584}
+[08:38:37] hashes all match: True; retimed changes: ['A2s_spec']
+[08:38:37] pilot predictions (snapshot noise): {'baseline_p1': 0.5819812117696012, 'A2_p_m1': 0.4925318877296814}; FakeKingston calibration violations: []
+2026-11-08T08:38:39.884433+00:00 [aer_pilot] submitting 2 pub(s) {"shots": [50, 50], "arms": ["baseline", "A2"], "aer": true}
+2026-11-08T08:38:41.118216+00:00 [aer_pilot] job d1716184-4d11-40b8-a50c-5db5c505444d submitted
+[08:38:42] aer pilot: {'baseline': {'shots': 50, 'p1_after_burn': 0.5670833333333334, 'guard_flags': ['dispersion_p1', 'dispersion_repeat', 'dispersion_g1_minus_g3'], 'registers': ['y']}, 'A2': {'shots': 50, 'p1_after_burn': 0.37625, 'guard_flags': ['dispersion_p1'], 'registers': ['m', 'y'], 'p_m1': 0.4766666666666667}, 'seconds': 4.293974161148071}
+[08:38:45] exact predictions done
