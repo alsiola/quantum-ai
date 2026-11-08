@@ -458,8 +458,11 @@ def segment_policy(
 def guard(shots: np.ndarray, marginals: np.ndarray | None, s: AnalysisSettings, seed: int):
     """#23's guard rails on an arm's shots (nominal time order); integrity failures separated."""
     g = AR.guard_rails(shots, s.k_max, s.burn, seed=seed, marginals=marginals)
-    g["integrity_fail"] = [f for f in g["flags"] if f in ("values", "duplicates")]
-    g["decoding_warn"] = [f for f in g["flags"] if f == "positional_chi2"]
+    # Only malformed values invalidate a dataset. Duplicate shots are a warning to inspect: a
+    # re-read buffer or resubmitted chunk duplicates whole pubs, but leaked q59 also produces
+    # repeated all-ones shots (the validation saw both).
+    g["integrity_fail"] = [f for f in g["flags"] if f == "values"]
+    g["decoding_warn"] = [f for f in g["flags"] if f in ("positional_chi2", "duplicates")]
     g["drift_flags"] = [f for f in g["flags"] if f.startswith(("dispersion", "order"))]
     for k in ("block_p1", "block_repeat", "block_g1_minus_g3"):
         g.pop(k, None)

@@ -84,9 +84,9 @@ mitigation, as Phase 6. In the dry-run Aer pilot, A2's `m` register decodes with
 | A1s, A2s, A3s (pure-delay shams) | predicted identical to the baseline, with the delay inside an idle window. A2s_spec already carries A2's delay |
 
 **Power.** The decision needs the SE of A2's w(0) to be well below 10% of |w(0)|. At the
-planned sizes, the primary SE under H_q75 is VAL_SE_LINE. "Vanishes" therefore holds for any
-|w_A2(0)| below VAL_VANISH_LIMIT (VAL_VANISH_PCT of the calibrated baseline). "Persists" at
-25% sits at ≈ VAL_PERSIST_Z SE. Moving shots between arms would buy nothing decisive, so the
+planned sizes, the primary SE under H_q75 is 1.30e-4 for the baseline, 8.6e-5 for A2, 1.29e-4 for A2s_spec, 1.0e-4 for A1, 1.4e-4 for A3 and 3e-6 for D1 (medians over the validation replicates). "Vanishes" therefore holds for any
+|w_A2(0)| below ≈ 5.2e-4 (7.5% of the calibrated baseline). "Persists" at
+25% sits at ≈ 20 SE. Moving shots between arms would buy nothing decisive, so the
 issue's sizes are kept.
 
 ## 3. Schedule, pilot gate and calibration bounds
@@ -122,7 +122,7 @@ replications of every contrast. Per-pub spans, if reported, are saved and used.
 **Pilot (one job, before anything else).** 500 baseline shots and 500 A2 shots, 1,000 shots
 in total (2.6 s estimated). Go only if all of these hold:
 - (a) the job completes, every pub decodes to (shots × 64) 0/1 arrays, and #23's integrity
-  rails (values, duplicates) pass;
+  rail (values) passes. Any duplicate shots are inspected before going on;
 - (b) the baseline's P(1) over positions ≥ 16 is within **0.02** (absolute) of the prediction
   from the live calibration. Stage 4 rebuilds #20's pieces from the live noise; the snapshot
   noise gives 0.5820. Phase 6's own episode moved P(1) by 0.027;
@@ -165,7 +165,7 @@ primary outcome is *ambiguous (segment-sensitive)*. Per-job and per-chunk w(0) a
 always reported.
 
 **Guard rails (#23).** These run on every arm:
-- integrity failures (values, duplicates) invalidate the dataset;
+- malformed values invalidate the dataset; duplicate shots are a warning to inspect (§6);
 - a positional χ² against the H_q75 marginals is a decoding warning;
 - dispersion and order-inflation flags are reported with the segment results.
 
@@ -214,12 +214,25 @@ w(0), w(1), w(2), w(3), P(1) and lag-1 excess for every arm and hypothesis are i
   typical strengths it costs 10% of the baseline, against #22's full 5.5%, so it is
   conservative.
 
-VAL_PRED_TABLE
+| hypothesis | baseline w(0) | A2 w(0) (ratio) | A2s_spec ratio | A1 w(0) | A3 w(0) | D1 lag-1 | P(1) base / A2 | predicted |
+|---|---|---|---|---|---|---|---|---|
+| H_q75 (calibrated) | -0.00690 | 0 (0.00) | 1.00 | 0 | -7.10e-5 | -0.0009 | 0.582 / 0.385 | vanishes |
+| drift: #19 episode regime, 13.5% | -0.00593 | +8.32e-7 (-0.00) | 1.00 | 0 | -5.23e-5 | -0.0006 | 0.583 / 0.390 | vanishes |
+| drift: #19 best K = 3 mixture | -0.00123 | -1.23e-3 (1.00) | 1.00 | -1.23e-3 | -1.23e-3 | -0.0009 | 0.582 / 0.582 | persists |
+| q59 reset + leakage, #21 fit | -0.00579 | +3.35e-5 (-0.01) | 1.00 | 0 | +1.73e-4 | +0.0174 | 0.580 / 0.390 | vanishes |
+| q59 leakage, #21 extreme | -0.00501 | +4.70e-5 (-0.01) | 1.00 | 0 | +2.79e-4 | +0.0499 | 0.612 / 0.415 | vanishes |
+| spectators, typical (#22) | -0.00624 | 0 (-0.00) | 0.78 | 0 | -1.33e-5 | -0.0009 | 0.567 / 0.386 | vanishes |
+| spectators, upper (#22) | -0.00467 | +5.19e-6 (-0.00) | 0.27 | 0 | -1.62e-5 | -0.0009 | 0.568 / 0.387 | vanishes |
+| sticky record, eps = 0.027 | -0.00612 | +2.96e-5 (-0.00) | 1.00 | 0 | +1.49e-4 | +0.0261 | 0.582 / 0.385 | vanishes |
+| sticky record, eps = 0.01 | -0.00660 | +1.31e-5 (-0.00) | 1.00 | 0 | +2.41e-5 | +0.0091 | 0.582 / 0.385 | vanishes |
+| 3-state memory outside q75 | -0.00600 | -6.00e-3 (1.00) | 1.00 | -6.00e-3 | -6.00e-3 | -0.0009 | 0.579 / 0.579 | persists |
+| A2 keeps 50% coherence | -0.00690 | -4.68e-4 (0.07) | 1.00 | 0 | -7.10e-5 | -0.0009 | 0.582 / 0.483 | ambiguous |
+| A2 keeps 80% coherence | -0.00690 | -2.66e-3 (0.39) | 1.00 | 0 | -7.10e-5 | -0.0009 | 0.582 / 0.542 | persists |
 
 The hypotheses map to these outcomes:
 - **Vanishes:** H_q75; drift by episode; q59 residue and leakage, fitted or extreme;
   spectators, typical and upper; the sticky record. These differ in the secondary tests:
-  - A2s_spec's ratio is 1.0 except under spectators (0.79 typical, 0.27 upper);
+  - A2s_spec's ratio is 1.0 except under spectators (0.78 typical, 0.27 upper);
   - D1's lag-1 excess is −0.0009 except under the sticky record (+0.026, +0.009) and q59
     leakage (+0.017, +0.050);
   - A3 shifts by +1e-4 to +3e-4 under leakage and stickiness (1–4 SE).
@@ -227,10 +240,10 @@ The hypotheses map to these outcomes:
   keeping 80% of q75's coherence (A1 and A3 vanish).
 - **Ambiguous or uncertain cells:**
   - **A2 keeping 50% of the coherence** gives w_A2 = −4.7e-4, 6.8% of the baseline, at the
-    vanish bound. VAL_C05. The rule cannot tell coherence kept at ≤ 50% from complete
+    vanish bound. In the validation the rule called it *vanishes* in 40% of the replicates and *ambiguous* in 60%. The rule cannot tell coherence kept at ≤ 50% from complete
     dephasing. A vanishing A2 therefore bounds the surviving coherence, not "none".
-  - **#19's best drift mixture** keeps 18% of the device witness in every arm. In the
-    replicates the gate passes, VAL_MIX_GATE, and A2 persists, VAL_MIX_PRIMARY. This null is
+  - **#19's best drift mixture** gives w(0) = −0.00123 (21% of the episode-free device witness) in every PMD-cadence arm. In the
+    replicates the gate passes, in 100% of the replicates (SE 6.9e-5), and A2 persists, in 100%. This null is
     already excluded by its shape (g misses by |z| ≈ 55, #19). Its w(1..3) ≈ 0 will also
     show it in the baseline's own data.
 
@@ -247,11 +260,59 @@ The hypotheses map to these outcomes:
 
 ## 6. Validation on synthetic data
 
-VAL_INTRO
+For each hypothesis, 200 synthetic datasets were drawn from its exact models (2,400 in
+total). Each used the planned sizes and the exact schedule: 4 jobs, 124 pubs, pubs in their
+seeded order, and the drift episode contiguous in time. Each dataset went through the full
+pipeline: guard rails, per-arm statistics with the stratified shot and block bootstraps, the
+segment policy per job, the segment sensitivity, the decision and the Holm family. The
+validation used 200 resamples and 100 permutations per replicate. The *predicted* outcome is
+the rule applied to the exact w(0) values with the median SEs. The error rate is the fraction
+of replicates whose outcome differs from it. The secondary columns give each test's Holm
+rejection rate, which is its size where its null holds and its power otherwise
+(`validation.csv`, `validation_replicates.csv`).
 
-VAL_TABLE
+| hypothesis | predicted | gate passed | vanishes | persists | ambiguous | **error rate** | segment-sensitive | spec ≠ base | A1 ≠ 0 | A3 ≠ pred | D1 w ≠ 0 | D1 lag-1 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| H_q75 (calibrated) | vanishes | 100.0% | 100.0% | 0 | 0 | **0** | 0 | 0.5% | 0 | 0 | 0 | 0 |
+| drift: #19 episode regime, 13.5% | vanishes | 100.0% | 97.0% | 0 | 3.0% | **3.0%** | 3.0% | 2.0% | 0 | 0 | 0 | 0.5% |
+| drift: #19 best K = 3 mixture | persists | 100.0% | 0 | 100.0% | 0 | **0** | 0 | 0 | 100.0% | 100.0% | 0 | 0.5% |
+| q59 reset + leakage, #21 fit | vanishes | 100.0% | 77.5% | 0 | 22.5% | **22.5%** | 12.5% | 0 | 0 | 3.5% | 0.5% | 100.0% |
+| q59 leakage, #21 extreme | vanishes | 100.0% | 44.5% | 0 | 55.5% | **55.5%** | 10.0% | 0.5% | 0 | 4.0% | 0.5% | 100.0% |
+| spectators, typical (#22) | vanishes | 100.0% | 100.0% | 0 | 0 | **0** | 0 | 100.0% | 0 | 0 | 0 | 0.5% |
+| spectators, upper (#22) | vanishes | 100.0% | 97.0% | 0 | 3.0% | **3.0%** | 2.5% | 100.0% | 0 | 0 | 0 | 0.5% |
+| sticky record, eps = 0.027 | vanishes | 100.0% | 89.5% | 0 | 10.5% | **10.5%** | 3.5% | 0 | 0 | 3.0% | 0.5% | 100.0% |
+| sticky record, eps = 0.01 | vanishes | 100.0% | 100.0% | 0 | 0 | **0** | 0 | 1.5% | 0 | 0 | 0 | 100.0% |
+| 3-state memory outside q75 | persists | 100.0% | 0 | 100.0% | 0 | **0** | 0 | 0.5% | 100.0% | 100.0% | 0 | 0.5% |
+| A2 keeps 50% coherence | ambiguous | 100.0% | 40.0% | 0 | 60.0% | **40.0%** | 3.0% | 0.5% | 0 | 0 | 0 | 0 |
+| A2 keeps 80% coherence | persists | 100.0% | 0 | 100.0% | 0 | **0** | 0 | 0 | 0 | 0 | 0 | 0.5% |
 
-VAL_NOTES
+- **The rule never gives the wrong decisive call.** No replicate says *persists* under any
+  hypothesis where q75 carries the memory. No replicate says *vanishes* under the memory
+  outside q75, or under A2 keeping 80% of the coherence. Every error is an *ambiguous*,
+  which is conservative.
+- **Where the power is short.**
+  - Under q59 leakage, the fit (22.5%) and the extreme (55.5%), and under the ε = 0.027
+    sticky record (10.5%), A2's SE about doubles (1.6–1.8e-4) and the baseline shrinks.
+  - The vanish bound is then within 2 SE, so these cases fall to *ambiguous*.
+  - The secondary tests still identify them: D1's lag-1 excess rejects in 100% of the
+    replicates under every leakage and stickiness hypothesis.
+  - Doubling A2 to 20,000 shots (+5.6 s estimated) would recover most of this power. That
+    is an option for the owner; it is not in the default plan.
+- **Size of the secondary tests under H_q75:** ≤ 0.5% for every test. Elsewhere it reaches 2% at most, for the
+  sham under drift, where the episode hits arms unevenly.
+- **Segment policy.** At least one job is flagged in 24% of the H_q75 replicates (5 tests ×
+  2 arms × 4 jobs). It never changed the outcome. Under drift every replicate flags the
+  episode jobs, and 3% become *ambiguous (segment-sensitive)*.
+- **Guard rails.**
+  - Drift flags fire in 11% of the H_q75 replicates. Under drift they fire in every
+    replicate.
+  - Under extreme leakage, the duplicates rail fired in every replicate, because leaked q59
+    gives runs of all-ones shots. Duplicates are therefore a warning to inspect, not an
+    invalidation; only malformed values invalidate a dataset.
+- **A known bias.** For the near-i.i.d. arms (A1, D1), the mean of ŵ(0) lies 10 standard
+  errors of the mean from the exact 0. This is second-order bias at rank ≈ 1, about 1e-6
+  for D1 and 1e-5 for A1. It is far below one SE, so no test is affected (rejection rates
+  of 0–0.5%).
 
 ## 7. Budget
 

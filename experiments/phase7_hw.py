@@ -1314,6 +1314,7 @@ def pilot_gate(cfg, d: Path, pubs, lp, rec, cost, dur) -> dict[str, Any]:
             by.setdefault("A2_m", []).append(W.unpack_shots(z[f"{pub.key}__m"], lw))
     y = {k: np.concatenate(v) for k, v in by.items()}
     flags = {a: F.guard(y[a], None, s, 0) for a in ("baseline", "A2")}
+    out["guard_flags"] = {a: f["flags"] for a, f in flags.items()}
     out["a_decoding_and_guards"] = all(not f["integrity_fail"] for f in flags.values()) and all(
         y[a].shape == (p["arms"][a], lw) for a in ("baseline", "A2")
     )
