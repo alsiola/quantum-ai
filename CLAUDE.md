@@ -1,9 +1,10 @@
 # Project rules for agents
 
 Research campaign: measurement-induced memory in quantum-native sequence models
-(brief: issue #2). Simulation only: never call quantum cloud services. The one exception is
-`experiments/phase6.py` (IBM hardware run, approved by the owner on #16, free Open plan):
-never submit a job outside an issue where the owner asks for one, always `--dry-run` first,
+(brief: issue #2). Simulation only: never call quantum cloud services. The exceptions are
+`experiments/phase6.py` (IBM hardware run, approved by the owner on #16, free Open plan) and
+`experiments/phase7_hw.py` (its pre-registered follow-up, #24; it submits only with the owner's
+approving comment on #17 in its config): never submit a job outside an issue where the owner asks for one, always `--dry-run` first,
 and keep within the plan's allowance. Credentials live in `.env` (gitignored; never commit it).
 
 ## Setup and checks
@@ -45,6 +46,12 @@ and keep within the plan's allowance. Credentials live in `.env` (gitignored; ne
 - Phase 7 Stage 1 drift and nonstationary-mixture nulls for the Phase 6 witness (no QPU; about
   50 min with 2 workers; `--from-run <dir>` resumes):
   `uv run python experiments/phase7_drift.py --config experiments/configs/phase7_drift.toml`
+- Phase 7 Stage 3 pre-registered hardware follow-up (#24; q75 ablation on `ibm_kingston`):
+  the local dry run, no network (about 40 min with 2 workers; the circuit and hash checks need
+  the `hardware` group and are skipped without it):
+  `uv run --group hardware python experiments/phase7_hw.py --config experiments/configs/phase7_hw.toml --dry-run-local`.
+  Stage 4 only, after the owner approves on #17: `--dry-run` (live target, submits nothing),
+  then `--submit`, which refuses unless `[ibm] approval_url` is set; `--from-run <dir>` resumes.
 - Phase 6 hardware run (PMD N = 3 on `ibm_kingston`; spends QPU time, see above):
   `uv run --group hardware python experiments/phase6.py --config experiments/configs/phase6.toml --dry-run`,
   then without `--dry-run`. `--from-run <dir>` resumes; a submitted job is re-fetched by id.
@@ -67,12 +74,12 @@ and keep within the plan's allowance. Credentials live in `.env` (gitignored; ne
   `diagnostics` (stationary memory, retention curves, reference purification for any
   `Instrument`), `witness` (independent numpy Hankel-witness estimator, its uncertainty, linear processes, Baum-Welch), `drift` (drift nulls as exact linear processes: across-shot mixtures, telegraph-modulated and within-shot-drifting 2-state HMMs; block and stratified bootstraps, segment statistics, stationarity and change-point tests, adversarial null search), `artefacts` (classical readout/processing artefacts, exact and planted into shots; pipeline guard rails; exact models of the D1–D3 controls), `ablate_hw` (Phase 7 q75 destruction/dephasing controls: circuits built from
   Phase 6's, step pieces on the joint (q75, q59) memory, predictions; numpy except the circuit
-  builders), `ancilla` (numpy step simulator with a qutrit q59: state-dependent reset, leakage, non-QND and asymmetric readout; device fits; post-selected and alternating-ancilla statistics; B1–B4 QASM), `spectator` (numpy time-resolved step simulator with spectators, static ZZ, readout Stark shift and TLS; control circuits C1-C4), `hardware` (Qiskit export of A as a dynamic circuit, exact branch
+  builders), `ancilla` (numpy step simulator with a qutrit q59: state-dependent reset, leakage, non-QND and asymmetric readout; device fits; post-selected and alternating-ancilla statistics; B1–B4 QASM), `spectator` (numpy time-resolved step simulator with spectators, static ZZ, readout Stark shift and TLS; control circuits C1-C4), `followup` (Phase 7 Stage 3: the pre-registered schedule, cost model, budget, calibration and submission guards, analysis pipeline and decision rule; numpy), `hardware` (Qiskit export of A as a dynamic circuit, exact branch
   simulation, noisy instruments from transpiled steps; needs the `hardware` group and is
   imported by nothing else).
 - `tests/`: pytest. Every new physics feature gets a test against an analytic case or an
   independent brute-force computation.
-- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings), `phase5a-hardware.md` (QPU feasibility, cost), `phase6-hardware-run.md` (the IBM run), `phase7-audit.md` (independent audit of the Phase 6 statistics), `phase7-classical.md` (classical artefacts, D1–D3 controls), `phase7-ablation.md` (q75 ablation controls for Stage 3), `phase7-ancilla.md` (q59 reset, leakage and residual memory; B1–B4 controls), `phase7-spectator.md` (spectators, crosstalk, replication design), `phase7-drift.md` (drift nulls, segment and SE policy); `benchmarks.md` (the task suite); `report.md` (the campaign report; figures in `docs/figures/` from `experiments/report_figures.py`). Don't edit `docs/literature-review.md`
+- `docs/`: `architecture.md` (maths ↔ code); results notes `phase2-results.md`, `phase3d-strength.md`, `phase3e-retention.md`, `phase3f-grid.md` (cross-model grid, dimensional test), `phase4b-falsification.md` (verdicts on the candidate findings), `phase5a-hardware.md` (QPU feasibility, cost), `phase6-hardware-run.md` (the IBM run), `phase7-audit.md` (independent audit of the Phase 6 statistics), `phase7-classical.md` (classical artefacts, D1–D3 controls), `phase7-ablation.md` (q75 ablation controls for Stage 3), `phase7-ancilla.md` (q59 reset, leakage and residual memory; B1–B4 controls), `phase7-spectator.md` (spectators, crosstalk, replication design), `phase7-drift.md` (drift nulls, segment and SE policy), `phase7-preregistration.md` (the Stage 3 hardware follow-up, fixed before any data); `benchmarks.md` (the task suite); `report.md` (the campaign report; figures in `docs/figures/` from `experiments/report_figures.py`). Don't edit `docs/literature-review.md`
   unless your issue is the literature review.
 - `experiments/`: scripts, plus `experiments/configs/*.toml` (one config per run family).
 - `results/`: raw outputs in `results/<experiment>/<timestamp>/` (gitignored); small curated

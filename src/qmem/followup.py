@@ -595,6 +595,7 @@ class Decision:
     flagged_jobs: list[int]
     ratio_a2: float
     secondary: dict[str, Any] = field(default_factory=dict)
+    descriptive: dict[str, str] = field(default_factory=dict)  # A1, A3 under A2's thresholds
 
     @property
     def reported(self) -> str:
@@ -629,6 +630,7 @@ def decide(
         flagged_jobs=list(flagged_jobs),
         ratio_a2=a2["w0"] / base["w0"] if base["w0"] else math.nan,
         secondary=secondary_tests(arms, tests, rule, ref_values),
+        descriptive={a: primary_outcome(base, arms[a], rule) for a in ("A1", "A3") if a in arms},
     )
 
 

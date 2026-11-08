@@ -1133,7 +1133,34 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
                 dur[arm] = built["duration_s"][arm]
         dur["A3"] = max(v for k, v in built["duration_s"].items() if k.startswith("A3_"))
         if not args.submit:
-            log(out, f"live dry run: {lp}; durations {dur}; nothing submitted")
+            b = cfg["budget"]
+            checks, spent = [], 0.0
+            jobs = [("pilot", pilot_schedule(cfg))] + [
+                (f"job{j}", job) for j, job in enumerate(schedule(cfg))
+            ]
+            for stage, pubs in jobs:
+                c = cm.job(pubs, dur)
+                try:
+                    F.budget_check(
+                        c["estimate_s"],
+                        c["upper_s"],
+                        b["max_qpu_seconds"],
+                        ctx["usage"].get("usage_remaining_seconds"),
+                        ctx["plan"],
+                        spent,
+                        b["hard_cap_s"],
+                        cfg["ibm"]["allowed_plans"],
+                    )
+                    verdict = "would pass"
+                except F.Refused as e:
+                    verdict = f"would be refused: {e}"
+                spent += c["upper_s"]
+                checks.append({"stage": stage, **c, "guard": verdict})
+            save_json(
+                out / "live_dry_run.json",
+                {"budget": checks, "plan": ctx["plan"], "usage": ctx["usage"]},
+            )
+            log(out, f"live dry run: {lp}; budget {checks}; nothing submitted")
             return
         run_jobs(cfg, out, ctx, built, cm, dur, lp)
     except BaseException as e:
@@ -1212,7 +1239,64 @@ def run_jobs(cfg, out: Path, ctx, built, cm: F.CostModel, dur, lp) -> None:
             if not gate["go"]:
                 save_json(d / "gate_failed.json", gate)
                 raise SystemExit(f"pilot gate failed: {gate}; stop and report (no retry)")
-    log(out, "all jobs done; analyse with --analyse-run")
+    log(out, "all jobs done")
+    analyse_run(cfg, out)
+
+
+def load_run(cfg: dict[str, Any], out: Path) -> dict[str, dict[str, np.ndarray]]:
+    """The main jobs' shots per arm in nominal time order (job, then pub position), with job
+    and pub labels, and A2's q75 record ``m`` and A2s_spec's q74 record ``s_0``."""
+    lw = cfg["layout"]["length"]
+    data: dict[str, dict[str, list]] = {}
+    for j, job in enumerate(schedule(cfg)):
+        z = np.load(out / f"job{j}" / "shots.npz")
+        for p in job:
+            d = data.setdefault(p.arm, {"shots": [], "jobs": [], "pubs": []})
+            y = W.unpack_shots(z[f"{p.key}__y"], lw)
+            d["shots"].append(y)
+            d["jobs"].append(np.full(len(y), p.job))
+            d["pubs"].append(np.full(len(y), p.position))
+            for reg in ("m", "s_0"):
+                if f"{p.key}__{reg}" in z:
+                    d.setdefault(reg, []).append(W.unpack_shots(z[f"{p.key}__{reg}"], lw))
+    return {a: {k: np.concatenate(v) for k, v in d.items()} for a, d in data.items()}
+
+
+def analyse_run(cfg: dict[str, Any], out: Path) -> dict[str, Any]:
+    """The pre-registered analysis of a completed run (section 5 of the pre-registration):
+    guard rails, per-arm statistics, segment policy, the decision; saved with every shot,
+    job record and calibration to ``results/summaries/phase7_hw/``."""
+    q75 = exact_hypothesis(cfg, next(h for h in cfg["hypotheses"] if h["name"] == "H_q75"))
+    marg = {a: np.asarray(q75[a]["marginals"]) if "marginals" in q75[a] else None for a in ARMS}
+    refs = {"A3_vs_prediction": q75["A3"]["w0"], "D1_lag1_vs_prediction": q75["D1"]["lag1"]}
+    data = load_run(cfg, out)
+    s = analysis_settings(cfg)
+    res = analyse_dataset(cfg, data, marg, s, refs, cfg["analysis"]["seed"])
+    dec: F.Decision = res["decision"]
+    summary = {
+        "meta": run_metadata(plain(cfg), cfg["analysis"]["seed"]),
+        "run_dir": str(out.relative_to(REPO_ROOT)),
+        "decision": {**dec.__dict__, "reported": dec.reported, "ladder": LADDER[dec.reported]},
+        "arms": res["arms"],
+        "guards": res["guards"],
+        "segments": res["segments"],
+        "h_q75": {a: {k: v for k, v in q75[a].items() if k != "marginals"} for a in ARMS},
+    }
+    if "m" in data.get("A2", {}):
+        summary["A2_p_m1"] = float(data["A2"]["m"][:, s.burn :].mean())
+    save_json(out / "analysis.json", summary)
+    sd = REPO_ROOT / "results" / "summaries" / cfg["experiment"]["name"]
+    sd.mkdir(parents=True, exist_ok=True)
+    save_json(sd / "summary.json", summary)
+    for p in sorted(out.glob("*/job.json")):
+        shutil.copy(p, sd / f"job_{p.parent.name}.json")
+    for p in sorted(out.glob("*/shots.npz")):
+        shutil.copy(p, sd / f"shots_{p.parent.name}.npz")
+    for name in ("calibration_before.json", "circuits.json", "pilot_predictions.json", "log.txt"):
+        if (out / name).exists():
+            shutil.copy(out / name, sd / name)
+    log(out, f"decision: {summary['decision']['reported']} (gate {dec.gate})")
+    return summary
 
 
 def pilot_gate(cfg, d: Path, pubs, lp, rec, cost, dur) -> dict[str, Any]:
