@@ -1,0 +1,21 @@
+model,control,variant,hidden_states,p1,lag1_excess,w0,w1,w2,w3
+D1_noiseless,D1,noiseless,3,0.58,-4.44089e-16,-2.95211e-34,2.35333e-35,2.54254e-35,-6.34754e-35
+D1_calibrated,D1,calibrated,3,0.575751,-0.000920829,3.4156e-21,3.04521e-25,7.26093e-31,-8.69539e-34
+D2_noiseless,D2,noiseless,3,0.5,0.4,2.21397e-20,-9.8075e-34,-8.08454e-34,-3.83945e-33
+D2_calibrated,D2,calibrated,3,0.493667,0.389738,2.14396e-19,-2.45123e-19,8.72176e-22,1.95315e-23
+D1_leak0.001_read2_1,D1,"calibrated + leakage 0.001/step, |2> read 1 w.p. 1",3,0.580403,0.00716083,-4.39103e-16,-1.78942e-26,-1.46336e-32,9.25575e-35
+D2_leak0.001_read2_1,D2,"calibrated + leakage 0.001/step, |2> read 1 w.p. 1",3,0.498349,0.39557,1.28323e-08,8.92642e-19,1.91381e-21,-2.35829e-23
+D1_leak0.001_read2_0.9,D1,"calibrated + leakage 0.001/step, |2> read 1 w.p. 0.9",3,0.579307,0.00387258,-1.64584e-08,1.39826e-13,-1.14858e-18,1.75005e-22
+D2_leak0.001_read2_0.9,D2,"calibrated + leakage 0.001/step, |2> read 1 w.p. 0.9",3,0.497417,0.392224,4.892e-06,5.11615e-07,4.32179e-10,3.29164e-13
+D1_leak0.01_read2_1,D1,"calibrated + leakage 0.01/step, |2> read 1 w.p. 1",3,0.618958,0.0694387,1.25295e-14,2.55047e-25,2.1703e-29,1.41447e-33
+D2_leak0.01_read2_1,D2,"calibrated + leakage 0.01/step, |2> read 1 w.p. 1",3,0.537612,0.44043,6.8488e-08,-4.71558e-19,3.01711e-21,-2.7992e-23
+D1_leak0.01_read2_0.9,D1,"calibrated + leakage 0.01/step, |2> read 1 w.p. 0.9",3,0.608774,0.0404878,-8.82092e-08,1.19869e-12,-1.10023e-17,-5.16225e-22
+D2_leak0.01_read2_0.9,D2,"calibrated + leakage 0.01/step, |2> read 1 w.p. 0.9",3,0.528864,0.41036,2.89621e-05,3.43777e-06,4.04975e-09,3.22142e-12
+D1_persistence_typical,D1,calibrated + sticky persistence 0.001 (typical),6,0.575751,8.10121e-05,-1.60997e-13,1.36451e-23,8.82259e-28,1.6732e-32
+D2_persistence_typical,D2,calibrated + sticky persistence 0.001 (typical),6,0.493667,0.390113,7.74222e-08,1.28028e-19,8.77443e-22,-5.58535e-24
+D1_persistence_generous,D1,calibrated + sticky persistence 0.01 (generous),6,0.575751,0.0090975,-1.49688e-11,9.12055e-23,8.5921e-27,5.71784e-31
+D2_persistence_generous,D2,calibrated + sticky persistence 0.01 (generous),6,0.493667,0.393501,5.00543e-07,-4.39968e-19,2.63886e-21,8.77734e-23
+D1_persistence_device_fit,D1,calibrated + sticky persistence 0.0271249 (device_fit),6,0.575751,0.0262534,-9.99809e-11,-1.41865e-22,3.17496e-27,3.75166e-30
+D2_persistence_device_fit,D2,calibrated + sticky persistence 0.0271249 (device_fit),6,0.493667,0.400011,7.48885e-08,-3.22577e-20,9.46477e-22,-1.84248e-23
+D3_noiseless,D3,noiseless,9,0.250008,-0.293329,-0.0665662,0.000981096,0.00167778,3.03782e-05
+D3_calibrated,D3,calibrated,9,0.250562,-0.285624,-0.0651356,0.00117455,0.0009411,0.000229466

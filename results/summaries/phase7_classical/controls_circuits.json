@@ -1,0 +1,412 @@
+{
+  "alignment_dt": 1,
+  "backend": "fake_kingston",
+  "controls": {
+    "d1": {
+      "control_flow": false,
+      "duration_minus_phase6_s_fake": -2.559999999987724e-07,
+      "duration_s_fake": 0.00032075999999999985,
+      "duration_unpadded_s_fake": 0.000295672,
+      "ops": {
+        "delay": 64,
+        "measure": 64,
+        "reset": 63,
+        "rz": 192,
+        "sx": 128
+      },
+      "pad_dt_per_step": 98,
+      "pad_s_per_step": 3.92e-07,
+      "physical_qubits": [
+        59
+      ],
+      "qpu_s": 13.161200000000026
+    },
+    "d2": {
+      "control_flow": false,
+      "duration_minus_phase6_s_fake": -2.5599999999795925e-07,
+      "duration_s_fake": 0.00032076000000000066,
+      "duration_unpadded_s_fake": 0.000295672,
+      "ops": {
+        "delay": 64,
+        "measure": 64,
+        "rz": 192,
+        "sx": 128
+      },
+      "pad_dt_per_step": 98,
+      "pad_s_per_step": 3.92e-07,
+      "physical_qubits": [
+        59
+      ],
+      "qpu_s": 13.16120000000004
+    },
+    "d3": {
+      "control_flow": false,
+      "duration_minus_phase6_s_fake": -2.5599999999795925e-07,
+      "duration_s_fake": 0.00032076000000000066,
+      "duration_unpadded_s_fake": 0.000295672,
+      "ops": {
+        "delay": 128,
+        "measure": 128,
+        "rz": 384,
+        "sx": 256
+      },
+      "pad_dt_per_step": 98,
+      "pad_s_per_step": 3.92e-07,
+      "physical_qubits": [
+        59,
+        75
+      ],
+      "qpu_s": 4.79030000000001
+    }
+  },
+  "dt_s": 4e-09,
+  "meta": {
+    "config": {
+      "controls": {
+        "d1": {
+          "p1": 0.58
+        },
+        "d2": {
+          "flip": 0.3
+        },
+        "d3": {
+          "flip_a": 0.8,
+          "flip_b": 0.85
+        },
+        "d3_reps": 20,
+        "leak": [
+          0.0,
+          0.001,
+          0.01
+        ],
+        "null_reps": 100,
+        "null_seed": 500,
+        "null_sizes": [
+          1000,
+          2000,
+          5000,
+          10000,
+          20000
+        ],
+        "read2": [
+          1.0,
+          0.9
+        ],
+        "seep_t1_ratio": 0.5
+      },
+      "device": {
+        "fit_grid": [
+          0.0,
+          0.005,
+          0.01,
+          0.015,
+          0.02,
+          0.025,
+          0.03,
+          0.035,
+          0.04,
+          0.05,
+          0.06,
+          0.08
+        ],
+        "fit_modes": [
+          "sticky",
+          "after_one",
+          "after_zero"
+        ]
+      },
+      "exact": {
+        "burst": {
+          "modes": [
+            [
+              "random",
+              0.5
+            ],
+            [
+              "assignment",
+              0.25
+            ]
+          ],
+          "start": 5300,
+          "strengths": [
+            0.0,
+            0.005,
+            0.01,
+            0.02,
+            0.05,
+            0.1,
+            0.135,
+            0.2,
+            0.3,
+            0.5
+          ]
+        },
+        "drift": {
+          "levels": 41,
+          "modes": [
+            "ramp",
+            "step",
+            "sine",
+            "oneside"
+          ],
+          "strengths": [
+            0.0,
+            0.001,
+            0.002,
+            0.005,
+            0.01,
+            0.02,
+            0.05,
+            0.1,
+            0.2,
+            0.3
+          ]
+        },
+        "n_shots": 20000,
+        "persistence": {
+          "modes": [
+            "sticky",
+            "after_one",
+            "after_zero"
+          ],
+          "strengths": [
+            0.0,
+            0.001,
+            0.002,
+            0.005,
+            0.01,
+            0.02,
+            0.03,
+            0.05,
+            0.1,
+            0.2,
+            0.3,
+            0.5
+          ]
+        },
+        "search": {
+          "burst": [
+            0.0,
+            0.5
+          ],
+          "drift": [
+            0.0,
+            0.3
+          ],
+          "n_grid": 26,
+          "persistence": [
+            0.0,
+            0.5
+          ]
+        }
+      },
+      "experiment": {
+        "audit_dir": "results/summaries/phase7_audit",
+        "name": "phase7_classical",
+        "phase6_dir": "results/summaries/phase6",
+        "summary_dir": "results/summaries/phase7_classical",
+        "workers": 2
+      },
+      "hardware": {
+        "backend": "ibm_kingston",
+        "optimization_level": 3,
+        "phase6_circuit_s": 0.000308316,
+        "physical_qubits": {
+          "output": 59,
+          "partner": 75
+        },
+        "rep_delay_s": 0.00025,
+        "sampler": {
+          "dynamical_decoupling": false,
+          "meas_type": "classified",
+          "twirling_gates": false,
+          "twirling_measure": false
+        },
+        "seed_transpiler": 0,
+        "shots": {
+          "d1": 20000,
+          "d2": 20000,
+          "d3": 5000
+        },
+        "sub_job_overhead_s": 2.0,
+        "submitted": false
+      },
+      "plausible": {
+        "burst": {
+          "generous": 0.02,
+          "typical": 0.0
+        },
+        "drift": {
+          "generous": 0.01,
+          "typical": 0.002
+        },
+        "persistence": {
+          "generous": 0.01,
+          "typical": 0.001
+        }
+      },
+      "reference": {
+        "device_w0_episode_free": -0.00587,
+        "device_w0_episode_free_se": 0.00011,
+        "episode": [
+          5300,
+          8000
+        ],
+        "shift_fraction": 0.1
+      },
+      "sampled": {
+        "n_shots": 20000,
+        "seeds": [
+          100
+        ],
+        "sources": [
+          "iid",
+          "hmm2",
+          "calibrated"
+        ],
+        "specs": [
+          {
+            "kind": "none"
+          },
+          {
+            "kind": "persistence",
+            "mode": "sticky",
+            "strength": 0.002
+          },
+          {
+            "kind": "persistence",
+            "mode": "sticky",
+            "strength": 0.01
+          },
+          {
+            "kind": "persistence",
+            "mode": "sticky",
+            "strength": 0.03
+          },
+          {
+            "kind": "persistence",
+            "mode": "after_one",
+            "strength": 0.01
+          },
+          {
+            "kind": "drift",
+            "mode": "ramp",
+            "strength": 0.01
+          },
+          {
+            "kind": "drift",
+            "mode": "ramp",
+            "strength": 0.05
+          },
+          {
+            "kind": "drift",
+            "mode": "step",
+            "strength": 0.01
+          },
+          {
+            "kind": "burst",
+            "mode": "random",
+            "param": 0.5,
+            "start": 5300,
+            "strength": 0.02
+          },
+          {
+            "kind": "burst",
+            "mode": "random",
+            "param": 0.5,
+            "start": 5300,
+            "strength": 0.07
+          },
+          {
+            "kind": "burst",
+            "mode": "assignment",
+            "param": 0.25,
+            "start": 5300,
+            "strength": 0.135
+          },
+          {
+            "kind": "reorder",
+            "mode": "random"
+          },
+          {
+            "kind": "reorder",
+            "mode": "sort_p1"
+          },
+          {
+            "kind": "packing",
+            "mode": "byte_reverse"
+          },
+          {
+            "kind": "packing",
+            "mode": "swap16"
+          },
+          {
+            "kind": "packing",
+            "mode": "bit_little"
+          },
+          {
+            "kind": "drop",
+            "strength": 0.1
+          },
+          {
+            "kind": "duplicate",
+            "strength": 0.001
+          },
+          {
+            "kind": "duplicate",
+            "strength": 0.05
+          },
+          {
+            "kind": "chain",
+            "label": "burst_then_shuffle",
+            "steps": [
+              {
+                "kind": "burst",
+                "mode": "random",
+                "param": 0.5,
+                "start": 5300,
+                "strength": 0.07
+              },
+              {
+                "kind": "reorder",
+                "mode": "random"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": {
+        "iid_p1": 0.58
+      },
+      "witness": {
+        "bootstrap": 200,
+        "burn": 16,
+        "k_max": 7,
+        "length": 64,
+        "n_blocks": 20,
+        "offsets": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "seed": 0
+      },
+      "worstcase": {
+        "device_p1": 0.577,
+        "n_random": 2000,
+        "p1_window": 0.05,
+        "seed": 11
+      }
+    },
+    "git_commit": "220839948ca6c75980e4bf43f756ad5e61bb8305",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 0,
+    "timestamp_utc": "2026-11-08T02:36:33+00:00",
+    "torch": "2.15.0"
+  },
+  "phase6_circuit_s_fake": 0.0003210159999999986,
+  "phase6_circuit_s_live": 0.000308316
+}
