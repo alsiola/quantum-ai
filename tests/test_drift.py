@@ -36,7 +36,9 @@ def test_mixture_components_zero_and_mixture_equals_block_process():
     mix = D.mixture(COMPS, wts)
     assert mix.ops.shape == (2, 6, 6)
     g_mix = mix.expected_windows(K_MAX, BURN, L, common=True)
-    g_avg = sum(w * p.expected_windows(K_MAX, BURN, L, common=True) for w, p in zip(wts, COMPS))
+    g_avg = sum(
+        w * p.expected_windows(K_MAX, BURN, L, common=True) for w, p in zip(wts, COMPS, strict=True)
+    )
     np.testing.assert_allclose(g_mix, g_avg, rtol=0, atol=1e-15)
     w_mix = W.witness(g_mix, 0)
     assert abs(w_mix) > 1e-6  # mixing breaks rank 2
@@ -47,7 +49,7 @@ def test_mixture_components_zero_and_mixture_equals_block_process():
             p = p @ mix.ops[y]
         direct = sum(
             w * np.linalg.multi_dot([c.init, *[c.ops[y] for y in seq], c.final])
-            for w, c in zip(wts, COMPS)
+            for w, c in zip(wts, COMPS, strict=True)
         )
         assert abs(p @ mix.final - direct) < 1e-15
 
@@ -280,7 +282,7 @@ def test_epidemic_gain_is_lr_of_a_segment():
     x = np.zeros(400)
     x[100:200] = 1.0
     t, a, b = D.epidemic_gain(x, 50)
-    assert (a, b) in ((100, 200), (0, 100), (200, 400)) or (a, b) == (100, 200)
+    assert t > 0
     assert (a, b) == (100, 200)
     prof = D.boundary_profile(x, 100, 200, "start", 10)
     assert prof[np.argmax(prof[:, 1]), 0] == 100
@@ -326,3 +328,7 @@ def test_mixture_family_can_produce_nonzero_witness(k):
         [[3.0, 3.0, -2.0, 2.0, 0.0, -3.0, -3.0, -2.0, 2.0, 0.0, 0.0, 0.0]], dtype=torch.float64
     )
     assert abs(float(D.witness_t(fam.stats(th)["g"], 0)[0])) > 1e-6
+
+
+def test_chi2_ppf_inverts_sf():
+    assert abs(D.chi2_ppf(0.99, 15) - 30.577914166892494) < 1e-8

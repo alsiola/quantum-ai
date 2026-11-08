@@ -1,0 +1,119 @@
+# Phase 7 Stage 1 (issue #19): drift and nonstationary-mixture nulls for the Phase 6 witness.
+# Existing data and simulation only: no QPU, no IBM service calls.
+#
+#   uv run python experiments/phase7_drift.py --config experiments/configs/phase7_drift.toml
+#
+# About 40 min with 2 workers; `--from-run <dir>` resumes (searches and simulations are
+# checkpointed under <dir>/tasks/). `--quick` is a smoke test (nothing curated).
+
+[experiment]
+name = "phase7_drift"
+summary_dir = "results/summaries/phase7_drift"
+phase6_dir = "results/summaries/phase6"        # read-only inputs (shots, job records)
+audit_dir = "results/summaries/phase7_audit"   # read-only (instruments.npz)
+workers = 2
+
+[witness]                     # #18's primary statistic: common start set for every k
+k_max = 7
+burn = 16
+offsets = [0, 1, 2, 3]
+
+[segments]
+episode = [5300, 8000]        # #18's boundaries, in returned order (re-examined in [selection])
+rolling_window = 1000
+rolling_step = 250
+n_boot = 500
+seed = 11
+block_sizes = [4, 8]          # block KL against the calibrated model
+
+[uncertainty]
+# Predeclared primary SE (for this and all later stages): within each predeclared segment,
+# the larger of the whole-shot bootstrap SE and the circular moving-block bootstrap SE with
+# blocks of `primary_b` shots; pooled statistics use the bootstrap stratified by segment.
+block_sizes = [1, 100, 250, 500, 1000, 2000]
+primary_b = 500
+n_boot = 500
+seed = 17
+
+[stationarity]
+# Pre-specified (before running): within the episode-free run and within the episode,
+#  (1) chi2 homogeneity of g(0..7) across contiguous 500-shot blocks (per k and joint);
+#  (2) per-1000-shot-block constancy of w(0..3) (chi2 against one constant);
+#  (3) an epidemic change-point scan with a permutation null, for each per-shot statistic:
+#      d = g(1) - g(3) (#18's), the per-shot ones fraction, and the delta-method influence
+#      of w(0). alpha = 0.01 for each test. No block straddles the gap the episode leaves.
+chi2_block = 500
+w_block = 1000
+cp_grid = 100
+cp_grid_episode = 50
+n_perm = 1000
+seed = 23
+statistics = ["d13", "p1", "w0_influence"]
+
+[selection]
+# Is the episode selected from the data? Whole-run scan with a permutation null, held-out
+# boundaries (find on even shots, test on odd shots; find on positions 16-39, test on 40-63),
+# boundary profiles, and abrupt-vs-ramp fits at each edge.
+profile_step = 10
+ramp_widths = [0, 25, 50, 100, 200, 400, 800]
+ramp_half = 1500
+n_perm = 1000
+seed = 29
+
+[timing]
+step_s = 4.85e-6              # ASAP schedule per step (docs/phase6-hardware-run.md)
+shot_s = 308e-6               # one 64-step shot
+# shot period in the run: circuits_execution_time_ns / shots, read from job_main.json
+
+[cost]                        # Phase 6's cost model, for the order-verification design
+job_overhead_s = 2.0
+rep_delay_s = 250e-6
+circuit_s = 308e-6
+
+[within_shot]
+early = [16, 39]
+late = [40, 63]
+transient = [0, 15]
+
+[nulls]
+targets = ["rest", "episode", "all"]
+# A null is data-consistent when, for the target segment, every |z| of g(0..7) <= z_max
+# (primary SEs), and the chi2 of the per-position marginals (positions 16-63) and of the
+# aligned L = 4 block frequencies are within their `chi2_quantile` quantiles. Generous to
+# the null on purpose (|z| <= 3 per g, 99% for the chi2s).
+z_max = 3.0
+chi2_quantile = 0.99
+restarts = 64
+steps = [1500, 1500]
+lr = 0.05
+seed = 41
+# K-mixtures of 2-state HMMs; a continuous family along a line; within-shot linear drift;
+# telegraph-modulated 2-state HMMs (fluctuator correlation time tau, 10 us to 1 s).
+mixtures = [1, 2, 3]
+continuous_grid = 16
+taus_s = [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 1e-2, 1e-1, 1.0]
+positive_controls = [3, 4]    # general stationary d-state HMMs (not drift nulls)
+# Relaxed constraints for the episode-free target: how large can |w(0)| get when the null
+# may miss the data by up to z (chi2 bounds scaled by (z / z_max)^2)?
+ladder_z = [10.0, 30.0, 100.0]
+ladder_families = ["mixture_K2", "mixture_K3", "within_shot_drift", "telegraph_tau3e-05"]
+# Simulation at 20,000 x 64 of each family's most data-consistent adversarial member
+# (pooled target), with run-order structure, through the same estimator and diagnostics.
+sim_reps = 20
+sim_perm = 200
+sim_boot = 200
+sim_seed = 4000
+# Mean-shift sweep: the rest's 2-state fit plus a copy with P(1|state) shifted by delta,
+# with weight `shift_weights`; delta up to 3x the episode's shift in P(1).
+shift_deltas = [0.0, 0.01, 0.02, 0.027, 0.04, 0.06, 0.08]
+shift_weights = [0.135, 0.5]
+em_max_iters = 500
+em_tol = 1e-9
+
+[physics]
+# Calibrated 1-qubit instrument plus at most two extra parameters, fitted (max likelihood)
+# separately to the episode and to the rest: grid, then Nelder-Mead.
+models = ["detuning", "detuning_dephasing", "dephasing_relaxation", "readout"]
+detuning_grid = 73            # delta in [-pi, pi] rad per step
+prob_grid = 21                # dephasing p, relaxation gamma in [0, 0.4]; readout in [0, 0.2]
+nm_iters = 120

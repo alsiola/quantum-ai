@@ -453,6 +453,15 @@ def chi2_sf(x: float, dof: float) -> float:
     return float(torch.special.gammaincc(torch.tensor(dof / 2.0, dtype=torch.float64), xt))
 
 
+def chi2_ppf(q: float, dof: float) -> float:
+    """Quantile of chi-squared (bisection on ``chi2_sf``)."""
+    lo, hi = 0.0, 10.0 * dof + 100.0
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if chi2_sf(mid, dof) > 1 - q else (lo, mid)
+    return 0.5 * (lo + hi)
+
+
 def homogeneity_chi2(per: np.ndarray, blocks: Sequence[np.ndarray]) -> dict[str, float]:
     """Chi-squared test that every block has the same mean of each column of ``per``.
 
@@ -653,6 +662,7 @@ def adversarial_search(
         fit = {k: v.numpy().copy() for k, v in violations_t(st, tgt, burn).items()}
         fit["w0"] = witness_t(st["g"], 0).numpy().copy()
         fit["penalty"] = penalty_t(violations_t(st, tgt, burn), tgt).numpy().copy()
+        fit["theta"] = theta.detach().numpy().copy()
     opt = torch.optim.Adam([theta], lr=lr / 2)
     n2 = steps[1]
     for s in range(n2):
@@ -711,8 +721,12 @@ class Family:
     sampler: Callable[[np.ndarray, int, int], np.ndarray]
 
 
-def mixture_family(k: int, length: int, k_max: int, burn: int, block: int = 4) -> Family:
-    """``k`` 2-state HMMs (each with its own initial state), one drawn per shot at random."""
+def mixture_family(
+    k: int, length: int, k_max: int, burn: int, block: int = 4, contiguous: bool = False
+) -> Family:
+    """``k`` 2-state HMMs (each with its own initial state), one drawn per shot at random, or
+    (``contiguous``, for sampling only) in ``k`` contiguous runs of shots in proportion to the
+    weights. The exact per-shot statistics are the same either way."""
 
     def stats(theta: torch.Tensor) -> dict[str, torch.Tensor]:
         b = theta.shape[0]
@@ -737,10 +751,15 @@ def mixture_family(k: int, length: int, k_max: int, burn: int, block: int = 4) -
 
     def sampler(th: np.ndarray, n: int, seed: int) -> np.ndarray:
         comps, wts = parts(th)
-        labels = np.random.default_rng(seed).choice(k, size=n, p=wts)
+        if contiguous:
+            labels = np.searchsorted(np.cumsum(wts) * n, np.arange(n), side="right")
+            labels = np.minimum(labels, k - 1)
+        else:
+            labels = np.random.default_rng(seed).choice(k, size=n, p=wts)
         return sample_mixture(comps, labels, length, seed + 1)
 
-    return Family(f"mixture_K{k}", 6 * k, stats, process, sampler)
+    name = f"mixture_K{k}" + ("_contiguous" if contiguous else "")
+    return Family(name, 6 * k, stats, process, sampler)
 
 
 def continuous_family(
