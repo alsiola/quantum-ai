@@ -1,4 +1,4 @@
-"""Phase 7 Stage 3 (issue #24): the pre-registered hardware follow-up (q75 ablation on ibm_kingston).
+"""Phase 7 Stage 3 (issue #24): the pre-registered hardware follow-up on ibm_kingston.
 
 Three modes (``docs/phase7-preregistration.md``):
 
@@ -484,7 +484,7 @@ def sample_plan(
     total = sum(p.shots for job in jobs for p in job)
     lo = hi = -1
     if models.episode is not None:
-        b_models, w, start = models.episode
+        _, w, start = models.episode
         lo, hi = int(start * total), int((start + w) * total)
     out: dict[str, dict[str, list]] = {}
     t = 0
@@ -549,7 +549,7 @@ def analyse_dataset(
     return {"arms": arms, "guards": guards, "segments": segs, "decision": dec}
 
 
-# -- validation (numpy; parallel over replicates) ---------------------------------------------------
+# -- validation (numpy; parallel over replicates) ------------------------------------------
 
 
 def _replicate(task: dict[str, Any]) -> dict[str, Any]:
@@ -675,7 +675,7 @@ def summarise_validation(cfg, exact, rows) -> list[dict[str, Any]]:
     return out
 
 
-# -- outcome map ---------------------------------------------------------------------------------------
+# -- outcome map ------------------------------------------------------------------------------
 
 LADDER = {
     "vanishes": "Rung 4 supported (A2 with A2s_spec persisting): the rank > 2 statistics need "
@@ -766,6 +766,8 @@ def build_circuits(cfg: dict[str, Any], backend: Any, delays: str = "snapshot") 
         if a.get("source") == "qasm" and name in arms:
             text = (REPO_ROOT / a["file"]).read_text()
             tq = PA.isa(qasm3.loads(text), backend, acfg)
+            if delays == "target" and "baseline" in circuits:
+                tq = repad(tq, target, circuits["baseline"].estimate_duration(target, unit="s"))
             put(name, tq)
             hashes[f"{name}_committed_file"] = hashlib.sha256(text.encode()).hexdigest()
     return {
@@ -775,6 +777,28 @@ def build_circuits(cfg: dict[str, Any], backend: Any, delays: str = "snapshot") 
         "signature": sigs,
         "delays_s": {"reset": dur.reset, "measure": dur.measure, "x": dur.x, "dt": dur.dt},
     }
+
+
+def repad(tq: Any, target: Any, t_ref: float) -> Any:
+    """#23's per-step pad of a memoryless control, recomputed on ``target`` so that the circuit
+    lasts as long as the baseline ``t_ref`` (every ``delay`` in it is the pad; #23's rule:
+    floor to the timing alignment)."""
+    from qiskit.circuit import Delay
+
+    delays = [i for i in tq.data if i.operation.name == "delay"]
+    if not delays:
+        return tq
+    old = int(delays[0].operation.duration)
+    n = len(delays)
+    tc = target.timing_constraints()
+    align = max(tc.granularity, tc.pulse_alignment)
+    t0 = tq.estimate_duration(target, unit="s") - n * old * target.dt
+    new = max(0, math.floor((t_ref - t0) / n / target.dt / align) * align)
+    out = tq.copy_empty_like()
+    for i in tq.data:
+        op = Delay(new, unit="dt") if i.operation.name == "delay" else i.operation
+        out.append(op, i.qubits, i.clbits)
+    return out
 
 
 def check_hashes(cfg: dict[str, Any], built: dict[str, Any]) -> dict[str, Any]:
@@ -920,7 +944,7 @@ def aer_pilot(cfg: dict[str, Any], built: dict[str, Any], out: Path, shots: int)
         dec = decode(r, p.arm, lw)
         y = dec["y"]
         summ[p.arm] = {
-            "shots": int(len(y)),
+            "shots": len(y),
             "p1_after_burn": float(y[:, s.burn :].mean()),
             "guard_flags": F.guard(y, None, s, 0)["flags"],
             "registers": sorted(dec),
@@ -1016,11 +1040,13 @@ def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
             }
             log(
                 out,
-                f"hashes all match: {hc['all_match']}; retimed changes: {summary['circuits']['retimed_on_fakekingston_target']['changed']}",
+                f"hashes all match: {hc['all_match']}; retimed changes: "
+                f"{summary['circuits']['retimed_on_fakekingston_target']['changed']}",
             )
             log(
                 out,
-                f"pilot predictions (snapshot noise): {lp}; FakeKingston calibration violations: {cal['violations']}",
+                f"pilot predictions (snapshot noise): {lp}; "
+                f"FakeKingston calibration violations: {cal['violations']}",
             )
             if args.aer_shots:
                 t0 = time.time()
@@ -1080,7 +1106,7 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
     save_json(out / "config_meta.json", run_metadata(plain(cfg), cfg["schedule"]["seed"]))
     try:
         ctx = live(cfg)
-        backend, svc = ctx["backend"], ctx["svc"]
+        backend = ctx["backend"]
         log(out, f"plan {ctx['plan']!r}; usage {ctx['usage']}")
         ff = 1e-6
         phys = [cfg["layout"]["output"], cfg["layout"]["memory"]]
