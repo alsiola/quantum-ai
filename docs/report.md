@@ -375,6 +375,24 @@ Details: [phase6-hardware-run.md](phase6-hardware-run.md).
 - **Not shown.** The run does not show that the device uses one qubit of memory, nor any
   quantum advantage: a 3-state HMM matches the device's witness.
 
+### 6.2 Is the witness memory in q75? (Phase 7, #17)
+
+Details: [phase7-memory-confounders.md](phase7-memory-confounders.md), with the child notes
+it links.
+
+Phase 7 tried to destroy the Phase 6 result. Its claim ladder:
+- **Higher-rank output statistics: supported.** The audit reproduces the witness at |z| = 39.
+- **A stationary 2-state HMM is excluded: supported.** This holds within segments and
+  against adversarial drift and mixture nulls.
+- **Drift and control artefacts are excluded: supported in models, not measured.**
+  Classical readout artefacts, q59 residue and spectators each give < 10% of the witness at
+  plausible parameters.
+- **q75 is causally necessary: unresolved.** The pre-registered q75 ablation stopped at its
+  pilot gate twice (#25, #26), for 6 s of QPU time. q75's record under repeated mid-circuit
+  measurement changed between the two jobs while the reported calibration didn't.
+- **One-qubit memory dimension: not supported.** A 3-state classical HMM reproduces the
+  statistics.
+
 ## 7. Limitations
 
 - **Task and model sizes.** Memory registers of 1–3 qubits (n = 4 only in initialisation
