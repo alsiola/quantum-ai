@@ -51,7 +51,7 @@ and keep within the plan's allowance. Credentials live in `.env` (gitignored; ne
   the `hardware` group and are skipped without it):
   `uv run --group hardware python experiments/phase7_hw.py --config experiments/configs/phase7_hw.toml --dry-run-local`.
   Stage 4 only, after the owner approves on #17: `--dry-run` (live target, submits nothing),
-  then `--submit`, which refuses unless `[ibm] approval_url` is set; `--from-run <dir>` resumes.
+  then `--submit`, which refuses unless `[ibm] approval_url` is set (`--stop-after-pilot` stops after the pilot gate for inspection); `--from-run <dir>` resumes.
 - Phase 6 hardware run (PMD N = 3 on `ibm_kingston`; spends QPU time, see above):
   `uv run --group hardware python experiments/phase6.py --config experiments/configs/phase6.toml --dry-run`,
   then without `--dry-run`. `--from-run <dir>` resumes; a submitted job is re-fetched by id.

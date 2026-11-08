@@ -1103,7 +1103,9 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
     name = cfg["experiment"]["name"] + ("" if args.submit else "_livedry")
     out = (args.from_run or new_run_dir(name)).resolve()
     out.mkdir(parents=True, exist_ok=True)
-    save_json(out / "config_meta.json", run_metadata(plain(cfg), cfg["schedule"]["seed"]))
+    save_json(
+        keep_first(out / "config_meta.json"), run_metadata(plain(cfg), cfg["schedule"]["seed"])
+    )
     try:
         ctx = live(cfg)
         backend = ctx["backend"]
@@ -1112,7 +1114,7 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
         phys = [cfg["layout"]["output"], cfg["layout"]["memory"]]
         cal0 = phase6.calibration(backend, phys, ff)
         rep = calibration_report(cfg, backend.target)
-        save_json(out / "calibration_before.json", {"snapshot": cal0, "check": rep})
+        save_json(keep_first(out / "calibration_before.json"), {"snapshot": cal0, "check": rep})
         if rep["violations"]:
             raise SystemExit(f"calibration outside the bounds, ask the owner: {rep['violations']}")
         built = build_circuits(cfg, backend, "target")
@@ -1122,10 +1124,15 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
         if not hc["all_match"] or not all(v["differs_only_in_delays"] for v in cmp.values()):
             raise SystemExit("circuit check failed: rebuilt ISA circuits differ from #20's")
         save_json(
-            out / "circuits.json", {"hash_check": hc, "retimed": cmp, "sha256": built["sha256"]}
+            keep_first(out / "circuits.json"),
+            {"hash_check": hc, "retimed": cmp, "sha256": built["sha256"]},
         )
         lp = live_pilot_predictions(cfg, cal0["noise"])
-        save_json(out / "pilot_predictions.json", lp)
+        if (out / "pilot_predictions.json").exists():  # a resume: the gate's own predictions
+            save_json(keep_first(out / "pilot_predictions.json"), lp)
+            lp = json.loads((out / "pilot_predictions.json").read_text())
+        else:
+            save_json(out / "pilot_predictions.json", lp)
         cm = cost_model(cfg)
         dur = {k: v for k, v in durations(cfg).items()}
         for arm in ("baseline", "A1", "A2", "A2s_spec", "D1"):
@@ -1162,7 +1169,7 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
             )
             log(out, f"live dry run: {lp}; budget {checks}; nothing submitted")
             return
-        run_jobs(cfg, out, ctx, built, cm, dur, lp)
+        run_jobs(cfg, out, ctx, built, cm, dur, lp, stop_after_pilot=args.stop_after_pilot)
     except BaseException as e:
         log(out, f"FAILED: {e!r}\n{traceback.format_exc()}")
         raise
@@ -1257,7 +1264,9 @@ def spent_counted(out: Path, source) -> float:
         raise
 
 
-def run_jobs(cfg, out: Path, ctx, built, cm: F.CostModel, dur, lp, source=None) -> None:
+def run_jobs(
+    cfg, out: Path, ctx, built, cm: F.CostModel, dur, lp, source=None, stop_after_pilot=False
+) -> None:
     """Pilot (with its gate), then the main jobs; each guarded; idempotent by job id.
     ``source(rec)`` reads a job's reported usage (``live_usage_source`` by default)."""
     import phase6
@@ -1277,10 +1286,14 @@ def run_jobs(cfg, out: Path, ctx, built, cm: F.CostModel, dur, lp, source=None) 
     for stage, pubs in stages:
         d = out / stage
         d.mkdir(exist_ok=True)
+        cost = cm.job(pubs, dur)
         if (d / "shots.npz").exists():
             log(out, f"[{stage}] shots saved; skipping")
+            if stage == "pilot" and pilot_gate_step(
+                cfg, out, d, pubs, lp, cost, dur, stop_after_pilot
+            ):
+                return
             continue
-        cost = cm.job(pubs, dur)
 
         def guard(rec: dict[str, Any], cost=cost, stage=stage) -> None:
             u = phase6.usage(svc)
@@ -1323,14 +1336,35 @@ def run_jobs(cfg, out: Path, ctx, built, cm: F.CostModel, dur, lp, source=None) 
             e = F.UsageExceeded(f"{stage} charged {c.charged_s} s > upper bound {c.upper_s:.2f} s")
             usage_stop(out, e, [c])
             raise SystemExit(f"{e}: stop and report (no further submissions)")
-        if stage == "pilot":
-            gate = pilot_gate(cfg, d, pubs, lp, rec, cost, dur)
-            save_json(d / "gate.json", gate)
-            if not gate["go"]:
-                save_json(d / "gate_failed.json", gate)
-                raise SystemExit(f"pilot gate failed: {gate}; stop and report (no retry)")
+        if stage == "pilot" and pilot_gate_step(cfg, out, d, pubs, lp, cost, dur, stop_after_pilot):
+            return
     log(out, "all jobs done")
     analyse_run(cfg, out)
+
+
+def pilot_gate_step(cfg, out: Path, d: Path, pubs, lp, cost, dur, stop_after_pilot) -> bool:
+    """Evaluate the pilot gate once (a resume reuses ``gate.json``); stop on failure. Returns
+    True if the run should stop here (``--stop-after-pilot``)."""
+    if (d / "gate.json").exists():
+        gate = json.loads((d / "gate.json").read_text())
+    else:
+        rec = json.loads((d / "job.json").read_text())
+        gate = pilot_gate(cfg, d, pubs, lp, rec, cost, dur)
+        save_json(d / "gate.json", gate)
+    if not gate["go"]:
+        save_json(d / "gate_failed.json", gate)
+        raise SystemExit(f"pilot gate failed: {gate}; stop and report (no retry)")
+    if stop_after_pilot:
+        log(out, f"pilot gate passed; stopping as asked (resume with --from-run {out})")
+        return True
+    return False
+
+
+def keep_first(path: Path) -> Path:
+    """``path``, or a timestamped sibling if a resumed run already wrote it (the first stays)."""
+    if not path.exists():
+        return path
+    return path.with_name(f"{path.stem}_{time.strftime('%Y%m%dT%H%M%S')}{path.suffix}")
 
 
 def load_run(cfg: dict[str, Any], out: Path) -> dict[str, dict[str, np.ndarray]]:
@@ -1447,6 +1481,11 @@ def main() -> None:
     ap.add_argument("--from-run", type=Path)
     ap.add_argument("--aer-shots", type=int, default=0, help="local Aer pilot, shots per arm")
     ap.add_argument("--skip-circuits", action="store_true")
+    ap.add_argument(
+        "--stop-after-pilot",
+        action="store_true",
+        help="--submit: stop after the pilot and its gate (inspect, then resume with --from-run)",
+    )
     ap.add_argument("--reps", type=int, default=None, help="override validation replicates")
     args = ap.parse_args()
     cfg = load_config(args.config)

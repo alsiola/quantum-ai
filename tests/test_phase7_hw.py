@@ -245,11 +245,11 @@ def fake_run(cfg, monkeypatch, tmp_path):
     cm, dur = H.cost_model(cfg), H.durations(cfg)
     stages = ["pilot"] + [f"job{j}" for j in range(len(H.schedule(cfg)))]
 
-    def run(charges):
+    def run(charges, **kw):
         ibm = _FakeIBM(charges)
         ctx = {"svc": ibm, "backend": ibm, "plan": "open"}
         built = {"circuits": __import__("collections").defaultdict(object)}
-        H.run_jobs(cfg, tmp_path, ctx, built, cm, dur, {}, source=ibm.source)
+        H.run_jobs(cfg, tmp_path, ctx, built, cm, dur, {}, source=ibm.source, **kw)
         return ibm
 
     return run, stages, tmp_path
@@ -550,3 +550,25 @@ def test_load_run_reassembles_time_order(cfg, tmp_path):
         assert np.array_equal(data[arm]["shots"], np.concatenate(parts))
         assert np.all(np.diff(data[arm]["jobs"]) >= 0)
     assert np.array_equal(data["A2"]["m"], 1 - data["A2"]["shots"])
+
+
+def test_stop_after_pilot_then_resume(fake_run, monkeypatch):
+    run, stages, out = fake_run
+    ibm = run({s: [3.0] for s in stages}, stop_after_pilot=True)
+    assert ibm.submitted == ["job-0"] and (out / "pilot" / "gate.json").exists()
+    calls = []
+    monkeypatch.setattr(H, "pilot_gate", lambda *a: calls.append(1) or {"go": True})
+    ibm = run({s: [3.0] for s in stages})  # resume: the pilot is not resubmitted
+    assert len(ibm.submitted) == len(stages) - 1 and calls == []  # gate.json reused
+
+
+def test_resume_evaluates_a_missing_pilot_gate(fake_run, monkeypatch):
+    run, stages, out = fake_run
+    run({s: [3.0] for s in stages}, stop_after_pilot=True)
+    (out / "pilot" / "gate.json").unlink()  # as if the run died before the gate
+    monkeypatch.setattr(H, "pilot_gate", lambda *a: {"go": False})
+    with pytest.raises(SystemExit, match="pilot gate failed"):
+        run({s: [3.0] for s in stages})
+    assert (
+        not (out / "job0" / "job.json").exists() and (out / "pilot" / "gate_failed.json").exists()
+    )
