@@ -766,3 +766,269 @@ def test_4b_live_gate_prediction_reproduces_the_refit(cfg, cfg4b):
     assert lp["A2_p_m1_calibrated"] == pytest.approx(0.49248908464129826, abs=1e-9)
     assert H.live_pilot_predictions(cfg, noise)["A2_p_m1"] == pytest.approx(0.4924890846, abs=1e-9)
     assert lp["baseline_p1"] == pytest.approx(0.5809755596341454, abs=1e-9)  # unchanged
+
+
+# -- Stage 4c (#27): (c) as a diagnostic, the pilot's own refit, decay strata ---------------------
+
+CFG4C_PATH = REPO_ROOT / "experiments" / "configs" / "phase7_hw_4c.toml"
+
+
+@pytest.fixture(scope="module")
+def cfg4c():
+    return H.load_config(CFG4C_PATH)
+
+
+def test_4c_config_changes_only_what_the_amendment_names(cfg4b, cfg4c):
+    same = ("layout", "sampler", "arms", "tier3", "schedule", "calibration", "analysis")
+    for k in (*same, "decision", "hypotheses", "refit"):
+        assert cfg4c[k] == cfg4b[k], k
+    assert {k: v for k, v in cfg4c["pilot"].items() if k != "c_stops"} == cfg4b["pilot"]
+    assert cfg4c["pilot"]["c_stops"] is False
+    assert cfg4c["ibm"]["approval_url"].endswith("#issuecomment-6723526792")
+    assert {k: v for k, v in cfg4c["ibm"].items() if k != "approval_url"} == {
+        k: v for k, v in cfg4b["ibm"].items() if k != "approval_url"
+    }
+    b0 = {k: v for k, v in cfg4b["budget"].items() if k != "prior_counted_s"}
+    b1 = {k: v for k, v in cfg4c["budget"].items() if k != "prior_counted_s"}
+    assert b0 == b1 and b1["hard_cap_s"] == 120
+    assert cfg4c["budget"]["prior_counted_s"] >= 2 * cfg4b["budget"]["prior_counted_s"]
+    assert cfg4c["budget"]["prior_counted_s"] == pytest.approx(8.4)
+    v0 = {k: v for k, v in cfg4b["validation"].items()}
+    v1 = {k: v for k, v in cfg4c["validation"].items() if k not in ("decay_strata", "pilot_fit")}
+    assert v0 == v1
+    assert [s["decay"] for s in cfg4c["validation"]["decay_strata"]] == [
+        0.0,
+        cfg4b["refit"]["decay"],
+    ]
+    am = cfg4c["amendment"]
+    assert isinstance(am, list) and am[0] == {**cfg4b["amendment"]}
+    assert am[1]["heading"].startswith("## 10. Amendment of 2026-11-08")
+
+
+def test_4c_plan_fits_the_cap(cfg4c):
+    cm, dur = H.cost_model(cfg4c), H.durations(cfg4c)
+    plan = cm.job(H.pilot_schedule(cfg4c), dur)["upper_s"] + sum(
+        cm.job(j, dur)["upper_s"] for j in H.schedule(cfg4c)
+    )
+    assert plan == pytest.approx(58.8, abs=0.1)
+    assert cfg4c["budget"]["prior_counted_s"] + plan <= cfg4c["budget"]["hard_cap_s"]
+
+
+def test_4c_gate_c_is_a_diagnostic(cfg4c, tmp_path):
+    """(c) far from both models no longer stops the run, and is recorded against #26's refit
+    and the calibrated model; (b) beyond its stop and (d) still stop."""
+    cm, dur = H.cost_model(cfg4c), H.durations(cfg4c)
+    lp = {"baseline_p1": 0.58, "A2_p_m1": 0.42, "A2_p_m1_calibrated": 0.4925}
+    pubs = _gate_files(tmp_path, cfg4c, base_p1=0.58, pm1=0.60)
+    cost = cm.job(pubs, dur)
+    per = cost["shot_s"] / cost["shots"]
+    rec = {"metrics": {"circuits_execution_time_ns": per * 1e12}}
+    g = H.pilot_gate(cfg4c, tmp_path, pubs, lp, rec, cost, dur)
+    c = g["c_pm1"]
+    assert not c["ok"] and c["stops"] is False and g["go"]
+    assert c["pred_refit26"] == 0.42 and c["pred_calibrated"] == 0.4925
+    assert not c["within_refit26"] and not c["within_calibrated"]
+    pubs = _gate_files(tmp_path, cfg4c, base_p1=0.58, pm1=0.49)
+    c = H.pilot_gate(cfg4c, tmp_path, pubs, lp, rec, cost, dur)["c_pm1"]
+    assert c["within_calibrated"] and not c["within_refit26"]
+    pubs = _gate_files(tmp_path, cfg4c, base_p1=0.49, pm1=0.42)
+    assert not H.pilot_gate(cfg4c, tmp_path, pubs, lp, rec, cost, dur)["go"]
+    pubs = _gate_files(tmp_path, cfg4c, base_p1=0.58, pm1=0.42)
+    assert not H.pilot_gate(cfg4c, tmp_path, pubs, lp, {"metrics": {}}, cost, dur)["go"]
+    # #26's config on the same (c)-failing data still stops
+    pubs = _gate_files(tmp_path, cfg4c, base_p1=0.58, pm1=0.60)
+    assert not H.pilot_gate(cfg4b_cfg(), tmp_path, pubs, lp, rec, cost, dur)["go"]
+
+
+def cfg4b_cfg():
+    return H.load_config(CFG4B_PATH)
+
+
+def test_4c_submit_checks_every_amendment(cfg4c, monkeypatch, tmp_path):
+    """--submit refuses (before any network call) unless sections 9 and 10 both match."""
+
+    def no_network(_cfg):
+        raise AssertionError("the live service must not be reached")
+
+    monkeypatch.setattr(H, "live", no_network)
+    args = SimpleNamespace(submit=True, from_run=tmp_path, stop_after_pilot=True)
+    am = cfg4c["amendment"]
+    for i in range(2):
+        bad = [dict(a) for a in am]
+        bad[i]["sha256"] = "0" * 64
+        with pytest.raises(F.Refused, match="amendment"):
+            H.stage4({**cfg4c, "amendment": bad}, args)
+    with pytest.raises(F.Refused, match="amendment"):
+        H.stage4({**cfg4c, "amendment": []}, args)
+    if not am[1]["sha256"]:  # before section 10 is recorded, the real config refuses too
+        with pytest.raises(F.Refused, match="amendment"):
+            H.stage4(cfg4c, args)
+
+
+def test_4c_recorded_amendments_pass_the_guard(cfg4c):
+    import subprocess
+
+    def git(*a):
+        return subprocess.run(["git", *a], cwd=REPO_ROOT, capture_output=True, text=True)
+
+    for am in cfg4c["amendment"]:
+        if not am["sha256"]:
+            pytest.skip("section 10 not yet recorded in the config")
+        if git("cat-file", "-e", am["commit"]).returncode != 0:
+            pytest.skip("the amendment commit is not in this clone")
+        assert git("merge-base", "--is-ancestor", am["commit"], "HEAD").returncode == 0
+        committed = git("show", f"{am['commit']}:{am['doc']}").stdout
+        doc = (REPO_ROOT / am["doc"]).read_text()
+        F.amendment_check(doc, am["heading"], am["date"], am["sha256"], committed)
+
+
+def test_4c_a2_witness_zero_for_any_decay(cfg):
+    """The issue's premise: under H_q75, A2's q75 is a classical bit each step for every decay
+    a in [0, 0.2], so A2's output is a 2-state process and w(0) = 0 exactly; only A2's P(1)
+    moves. Also in #21's independent qutrit simulator."""
+    p = H.pieces(cfg)
+    base = H.A.process(H.A.step_superops("baseline", p)).expected_windows(7, 16, 64, True)
+    p1 = []
+    for a in (0.0, 0.05, 0.1, 0.1225, 0.15, 0.2):
+        proc = H.A.process(H.A.step_superops("A2", p, H.A.Hypothesis(meas_decay=a)))
+        assert abs(W.witness(proc.expected_windows(7, 16, 64, True), 0)) < 1e-12, a
+        p1.append(float(proc.marginals(64)[16:].mean()))
+        m = H.ancilla_models(H.with_decay(cfg, a), {})
+        assert abs(W.witness(m.procs["A2"].expected_windows(7, 16, 64, True), 0)) < 1e-12, a
+    assert np.all(np.diff(p1) < 0)  # the decay moves A2's output only
+    assert W.witness(base, 0) == pytest.approx(-0.006899, abs=2e-6)
+
+
+def test_4c_pilot_decay_fit_recovers_a(cfg):
+    """A simulated 500-shot pilot at #26's refit is refitted to within 3 bootstrap SDs of #26's
+    (0.008 at 500 shots); at a = 0 the fit stays near the boundary."""
+    pc, r = H.pieces(cfg), H.snapshot_readout_q75(cfg)
+    for a, a0, seed in ((0.1225, 0.051, 3), (0.0, 0.0, 4)):
+        m, y = H.R.RecordModel.build(pc, r, a, a0).sample(500, 64, seed)
+        f = H.fit_pilot_decay(cfg, m, y, pc, r)
+        assert abs(f["decay"] - a) < 0.03, (a, f["params"])
+        assert f["nll"] <= f["nll_calibrated"] + 1e-6
+        assert f["pred_p_m1"] == pytest.approx(
+            H.R.predicted_p_m1(pc, r, f["decay"], f["decay_first"], 64, 16)
+        )
+
+
+def test_4c_decision_does_not_depend_on_the_q75_model(cfg):
+    """The analysis's q75 model only enters A2's guard-rail marginals: the decision and every
+    secondary test are identical under a = 0 and a = #26's refit."""
+    h = next(x for x in cfg["hypotheses"] if x["name"] == "H_q75")
+    e = H.exact_hypothesis(cfg, h)
+    refs = {"A3_vs_prediction": e["A3"]["w0"], "D1_lag1_vs_prediction": e["D1"]["lag1"]}
+    s = H.analysis_settings(cfg, validation=True)
+    s.n_boot, s.n_perm = 50, 10
+    c12 = H.with_decay(cfg, 0.1225)
+    data = H.sample_plan(c12, H.build_models(c12, h), H.schedule(cfg), 3)
+    decs = []
+    for a in (0.0, 0.1225):
+        marg = {x: np.asarray(e[x]["marginals"]) if "marginals" in e[x] else None for x in H.ARMS}
+        marg["A2"] = H.a2_marginals(cfg, a)
+        decs.append(H.analyse_dataset(c12, data, marg, s, refs, 5)["decision"])
+    assert decs[0].__dict__ == decs[1].__dict__
+
+
+def test_4c_strata_and_summary(cfg4c):
+    st = H.strata(cfg4c)
+    assert [x["label"] for x in st] == ["calibrated", "refit26"]
+    assert H.meas_decay(st[0]["cfg"]) == 0.0
+    assert H.meas_decay(st[1]["cfg"]) == cfg4c["refit"]["decay"]
+    assert H.strata(H.load_config(CFG_PATH))[0]["label"] == "config"
+    assert H.opposite_call("vanishes", "persists") and H.opposite_call("persists", "vanishes")
+    assert not H.opposite_call("ambiguous", "persists") and not H.opposite_call(
+        "vanishes", "ambiguous"
+    )
+
+
+def test_4c_coherence_interval():
+    curve = [{"c": c, "ratio": -(c**2)} for c in (0.0, 0.5, 1.0)]
+    r = H.coherence_interval(curve, 0.0, 0.25)
+    assert r["monotone"] and r["c_min"] == 0.0 and r["c_max"] == pytest.approx(0.5)
+    r = H.coherence_interval(curve, 0.25, 2.0)
+    assert r["c_min"] == pytest.approx(0.5) and r["c_max"] == 1.0
+    bumpy = [{"c": 0.0, "ratio": 0.0}, {"c": 0.5, "ratio": 0.3}, {"c": 1.0, "ratio": 0.2}]
+    assert H.coherence_interval(bumpy, 0.1, 0.25)["grid_points"] == [1.0]
+
+
+def test_4c_partial_coherence_curve_under_the_decay(cfg, cfg4c):
+    """The coherence curve reproduces #26's H_partial predictions under its refit (prereg
+    section 9.4: c = 0.5 gives 4.4% of the baseline, c = 0.8 gives 24.8%) and #24's at a = 0."""
+    c26 = H.coherence_curve(cfg4c, [0.0, 0.5, 0.8])
+    assert abs(c26[0]["ratio"]) < 1e-9
+    assert c26[1]["ratio"] == pytest.approx(0.044, abs=0.001)
+    assert c26[2]["ratio"] == pytest.approx(0.248, abs=0.001)
+    c0 = H.coherence_curve(H.without_refit(cfg4c), [0.5, 0.8])
+    assert c0[0]["ratio"] == pytest.approx(0.068, abs=0.001)
+    assert c0[1]["ratio"] == pytest.approx(0.386, abs=0.005)
+
+
+def _fake_pilot_run(cfg, monkeypatch, tmp_path, gate):
+    import phase6
+
+    monkeypatch.setattr(phase6, "make_sampler", lambda _cfg, mode: mode)
+    monkeypatch.setattr(phase6, "calibration", lambda *a: {"snapshot": True})
+    monkeypatch.setattr(H, "calibration_report", lambda *a: {"violations": []})
+    lw = cfg["layout"]["length"]
+    monkeypatch.setattr(H, "decode", lambda r, arm, length: {"y": np.zeros((2, lw), np.uint8)})
+    monkeypatch.setattr(H, "pilot_gate", lambda *a: gate)
+    monkeypatch.setattr(H, "analyse_run", lambda *a: None)
+    cm, dur = H.cost_model(cfg), H.durations(cfg)
+    stages = ["pilot"] + [f"job{j}" for j in range(len(H.schedule(cfg)))]
+    ibm = _FakeIBM({s: [3.0] for s in stages})
+    ctx = {"svc": ibm, "backend": ibm, "plan": "open"}
+    built = {"circuits": __import__("collections").defaultdict(object)}
+    return ibm, lambda **kw: H.run_jobs(
+        cfg, tmp_path, ctx, built, cm, dur, {}, source=ibm.source, **kw
+    )
+
+
+def test_4c_no_main_job_without_the_pilot_refit(cfg4c, monkeypatch, tmp_path):
+    """A gate that passes without a fixed pilot refit (here: no decoding verdict) never
+    reaches a main job."""
+    ibm, run = _fake_pilot_run(cfg4c, monkeypatch, tmp_path, {"go": True})
+    with pytest.raises(SystemExit, match="refit is not fixed"):
+        run()
+    assert ibm.submitted == ["job-0"]
+
+
+def test_4c_pilot_refit_fixed_once_before_main_jobs(cfg, cfg4c, monkeypatch, tmp_path):
+    """The pilot refit is written once (with the gate's live pieces) before job 0, and a
+    resume reuses it; the analysis's q75 model is its decay."""
+    import json
+
+    pc, r = H.pieces(cfg), H.snapshot_readout_q75(cfg)
+    H.save_live_pieces(tmp_path / H.PIECES_LIVE, pc, r)
+    calls = []
+    real = H.pilot_refit_step
+
+    def spy(c, out, d, pubs):
+        calls.append((d / H.PILOT_REFIT).exists())
+        # the pilot's shots are fakes here: write a refit by hand on simulated records
+        if not (d / H.PILOT_REFIT).exists():
+            m, y = H.R.RecordModel.build(pc, r, 0.1225, 0.051).sample(500, 64, 9)
+            monkeypatch.setattr(H, "pilot_records", lambda *a: {"A2_m": m, "A2_y": y})
+        return real(c, out, d, pubs)
+
+    monkeypatch.setattr(H, "pilot_refit_step", spy)
+    small = {**cfg4c, "pilot_refit": {**cfg4c["pilot_refit"], "n_boot": 0}}
+    ibm, run = _fake_pilot_run(
+        small, monkeypatch, tmp_path, {"go": True, "a_decoding_and_guards": True}
+    )
+    run(stop_after_pilot=True)
+    assert ibm.submitted == ["job-0"] and calls == [False]
+    fit = json.loads((tmp_path / "pilot" / H.PILOT_REFIT).read_text())
+    assert abs(fit["decay"] - 0.1225) < 0.03
+    assert fit["pred_p_m1_calibrated"] > fit["pred_p_m1"]
+    assert "pred_p_m1_refit26" in fit and "meta" in fit
+    first = (tmp_path / "pilot" / H.PILOT_REFIT).read_text()
+    run(stop_after_pilot=False)  # resume: the refit is reused, then the main jobs run
+    assert (tmp_path / "pilot" / H.PILOT_REFIT).read_text() == first
+    assert len(ibm.submitted) == 1 + len(H.schedule(cfg4c))
+    assert H.pilot_decay(tmp_path) == fit["decay"]
+    labels = [lab for lab, _ in H.analysis_models(cfg4c, tmp_path)]
+    assert labels == ["pilot_fit", "calibrated", "refit26"]
+    pf = H.analysis_models(cfg4c, tmp_path)[0][1]
+    assert H.meas_decay(pf) == fit["decay"]

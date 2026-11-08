@@ -322,6 +322,70 @@ def without_refit(cfg: dict[str, Any]) -> dict[str, Any]:
     return c
 
 
+def with_decay(cfg: dict[str, Any], a: float) -> dict[str, Any]:
+    """``cfg`` with q75's stationary measurement decay set to ``a`` in every q75 model (#27:
+    the pilot's own fit, a validation stratum or a sensitivity row). ``a = 0`` is the
+    calibrated model."""
+    c = copy.deepcopy(cfg)
+    c["refit"] = {**c.get("refit", {}), "decay": float(a)}
+    return c
+
+
+def snapshot_readout_q75(cfg: dict[str, Any]) -> float:
+    """q75's readout error in #16's snapshot (#20's ``[a2_record]``)."""
+    return float(ablation_cfg(cfg)["a2_record"]["readout_error"])
+
+
+def a2_marginals(cfg: dict[str, Any], a: float) -> np.ndarray:
+    """A2's exact output marginals under H_q75 with decay ``a`` (the guard rail's reference)."""
+    hyp = A.Hypothesis(meas_decay=float(a))
+    return A.process(A.step_superops("A2", pieces(cfg), hyp)).marginals(cfg["layout"]["length"])
+
+
+def fit_pilot_decay(
+    cfg: dict[str, Any],
+    m: np.ndarray,
+    y: np.ndarray,
+    pc: A.StepPieces,
+    r: float,
+    n_boot: int = 0,
+    seed: int = 0,
+) -> dict[str, Any]:
+    """#27: q75's measurement decay fitted on a pilot's joint A2 record (``qmem.refit``, the
+    family of ``[pilot_refit]``, #26's primary by default), with its predictions of the gate
+    (c) statistic and, if ``n_boot``, a whole-shot bootstrap SD of ``a``."""
+    pr = cfg.get("pilot_refit", {})
+    fam = pr.get("family", "decay_first")
+    x0 = pr.get("x0", [0.05, 0.12] if fam == "decay_first" else [0.12])
+    lw, burn = m.shape[1], cfg["analysis"]["burn"]
+    f = R.fit(m, y, pc, r, fam, x0)
+    a, a0 = f.params["decay"], f.params.get("decay_first")
+    out: dict[str, Any] = {
+        "family": fam,
+        "params": f.params,
+        "decay": a,
+        "decay_first": a0,
+        "nll": f.nll,
+        "nll_calibrated": R.fit(m, y, pc, r, "calibrated").nll,
+        "observed": R.record_stats(m, y, burn),
+        "pred_p_m1": R.predicted_p_m1(pc, r, a, a0, lw, burn),
+        "shots": len(m),
+    }
+    if n_boot:
+        b = R.bootstrap_fits(m, y, pc, r, fam, n_boot, seed, x0)
+        names = list(R.FAMILIES[fam])
+        out["bootstrap"] = {
+            "n_boot": n_boot,
+            "seed": seed,
+            **{f"{k}_sd": float(b[:, i].std(ddof=1)) for i, k in enumerate(names)},
+            **{
+                f"{k}_ci95": [float(np.quantile(b[:, i], q)) for q in (0.025, 0.975)]
+                for i, k in enumerate(names)
+            },
+        }
+    return out
+
+
 def ablate_models(cfg: dict[str, Any], hyp: A.Hypothesis) -> Models:
     p = pieces(cfg)
     if not hyp.meas_decay:
@@ -571,23 +635,130 @@ def analyse_dataset(
 # -- validation (numpy; parallel over replicates) ------------------------------------------
 
 
+def strata(cfg: dict[str, Any]) -> list[dict[str, Any]]:
+    """The validation's q75 decay strata (#27: ``[validation] decay_strata``), each with the
+    config its data are drawn from. Without strata: the config itself, one stratum."""
+    v = cfg["validation"]
+    if "decay_strata" not in v:
+        return [{"label": "config", "index": None, "decay": meas_decay(cfg), "cfg": cfg}]
+    out = []
+    for i, st in enumerate(v["decay_strata"]):
+        a = float(st["decay"])
+        a0 = float(st.get("decay_first", a))
+        out.append(
+            {
+                "label": st["label"],
+                "index": i,
+                "decay": a,
+                "decay_first": a0,
+                "cfg": with_decay(cfg, a),
+            }
+        )
+    return out
+
+
+def _seed(*parts: int) -> int:
+    return int(np.random.SeedSequence(list(parts)).generate_state(1)[0] % 2**31)
+
+
+def _pilot_fit(task: dict[str, Any]) -> dict[str, Any]:
+    """#27: one simulated pilot of A2's joint record under a stratum's q75 decay (#20's
+    snapshot pieces), refitted as Stage 4c refits the real pilot."""
+    cfg, st, rep = task["cfg"], task["stratum"], task["rep"]
+    pc, r = pieces(cfg), snapshot_readout_q75(cfg)
+    lw, burn = cfg["layout"]["length"], cfg["analysis"]["burn"]
+    n = cfg["pilot"]["arms"]["A2"]
+    seed = _seed(cfg["validation"]["seed"], 27, st["index"], rep)
+    m, y = R.RecordModel.build(pc, r, st["decay"], st["decay_first"]).sample(n, lw, seed)
+    f = fit_pilot_decay(cfg, m, y, pc, r)
+    tol = cfg["pilot"]["pm1_tolerance"]
+    pm = f["observed"]["p_m1"]
+    rf = cfg.get("refit", {})
+    pred26 = R.predicted_p_m1(pc, r, rf.get("decay", 0.0), rf.get("decay_first"), lw, burn)
+    pred0 = R.predicted_p_m1(pc, r, 0.0, None, lw, burn)
+    return {
+        "stratum": st["label"],
+        "rep": rep,
+        "decay_true": st["decay"],
+        "decay_first_true": st["decay_first"],
+        "decay_fit": f["decay"],
+        "decay_first_fit": f["decay_first"],
+        "p_m1": pm,
+        "c_within_refit26": abs(pm - pred26) <= tol,
+        "c_within_calibrated": abs(pm - pred0) <= tol,
+    }
+
+
+def _pilot_fits(tasks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [_pilot_fit(t) for t in tasks]
+
+
+def pilot_study(cfg: dict[str, Any], out: Path, reps: int, workers: int) -> list[dict]:
+    """#27: ``reps`` simulated pilots per decay stratum, each refitted; replicate ``rep`` of
+    every hypothesis in a stratum is analysed with that pilot's fitted decay."""
+    tasks = [
+        {"cfg": cfg, "stratum": {k: v for k, v in st.items() if k != "cfg"}, "rep": rep}
+        for st in strata(cfg)
+        for rep in range(reps)
+    ]
+    batches = [tasks[i : i + 10] for i in range(0, len(tasks), 10)]
+    rows: list[dict[str, Any]] = []
+    t0 = time.time()
+    if workers <= 1:
+        for b in batches:
+            rows += _pilot_fits(b)
+    else:
+        with ProcessPoolExecutor(workers) as ex:
+            for i, r in enumerate(ex.map(_pilot_fits, batches)):
+                rows += r
+                if i % 10 == 0:
+                    log(out, f"pilot study {len(rows)}/{len(tasks)} ({time.time() - t0:.0f} s)")
+    return rows
+
+
+def summarise_pilot_study(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out = []
+    for lab in dict.fromkeys(r["stratum"] for r in rows):
+        rs = [r for r in rows if r["stratum"] == lab]
+        a = np.array([r["decay_fit"] for r in rs])
+        out.append(
+            {
+                "stratum": lab,
+                "reps": len(rs),
+                "decay_true": rs[0]["decay_true"],
+                "decay_fit_mean": float(a.mean()),
+                "decay_fit_sd": float(a.std(ddof=1)),
+                "decay_fit_q025": float(np.quantile(a, 0.025)),
+                "decay_fit_q975": float(np.quantile(a, 0.975)),
+                "p_m1_mean": float(np.mean([r["p_m1"] for r in rs])),
+                "c_within_refit26_rate": float(np.mean([r["c_within_refit26"] for r in rs])),
+                "c_within_calibrated_rate": float(np.mean([r["c_within_calibrated"] for r in rs])),
+            }
+        )
+    return out
+
+
 def _replicate(task: dict[str, Any]) -> dict[str, Any]:
     cfg, h, rep = task["cfg"], task["hyp"], task["rep"]
     models = task.get("_models") or build_models(cfg, h)
     jobs = schedule(cfg)
-    seed = int(
-        np.random.SeedSequence([cfg["validation"]["seed"], task["h_index"], rep]).generate_state(1)[
-            0
-        ]
-        % 2**31
-    )
+    si = task.get("stratum_index")
+    parts = [cfg["validation"]["seed"], task["h_index"], rep]
+    seed = _seed(*parts) if si is None else _seed(*parts, 1 + si)
     data = sample_plan(cfg, models, jobs, seed)
     s = analysis_settings(cfg, validation=True)
-    res = analyse_dataset(cfg, data, task["marginals"], s, task["ref_values"], seed)
+    marginals = task["marginals"]
+    a_an = task.get("decay_analysis")
+    if a_an is not None:  # #27: the analysis's q75 model is this replicate's pilot fit
+        marginals = {**marginals, "A2": a2_marginals(cfg, a_an)}
+    res = analyse_dataset(cfg, data, marginals, s, task["ref_values"], seed)
     dec: F.Decision = res["decision"]
     out = {
         "hypothesis": h["name"],
         "rep": rep,
+        "stratum": task.get("stratum", "config"),
+        "decay_true": meas_decay(cfg),
+        "decay_analysis": meas_decay(cfg) if a_an is None else a_an,
         "gate": dec.gate,
         "primary": dec.primary,
         "primary_all_jobs": dec.primary_all_jobs,
@@ -596,6 +767,7 @@ def _replicate(task: dict[str, Any]) -> dict[str, Any]:
         "ratio_a2": dec.ratio_a2,
         "integrity_fail": sum(len(g["integrity_fail"]) for g in res["guards"].values()),
         "decoding_warn": sum(len(g["decoding_warn"]) for g in res["guards"].values()),
+        "A2_decoding_warn": len(res["guards"]["A2"]["decoding_warn"]),
         "drift_flags": sum(len(g["drift_flags"]) for g in res["guards"].values()),
     }
     for arm, r in res["arms"].items():
@@ -610,27 +782,59 @@ def _replicate(task: dict[str, Any]) -> dict[str, Any]:
 
 
 def _replicates(tasks: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Several replicates of one hypothesis in one worker (its models built once)."""
+    """Several replicates of one hypothesis (and stratum) in one worker (models built once)."""
+    key = (tasks[0]["hyp"]["name"], tasks[0].get("stratum"))
+    assert all((t["hyp"]["name"], t.get("stratum")) == key for t in tasks)
     models = build_models(tasks[0]["cfg"], tasks[0]["hyp"])
     return [_replicate({**t, "_models": models}) for t in tasks]
 
 
-def validation(cfg, exact: dict[str, dict], out: Path, reps: int, workers: int) -> list[dict]:
-    q75 = exact["H_q75"]
-    marginals = {
-        a: np.asarray(q75[a]["marginals"]) if "marginals" in q75[a] else None for a in ARMS
-    }
-    ref_values = {"A3_vs_prediction": q75["A3"]["w0"], "D1_lag1_vs_prediction": q75["D1"]["lag1"]}
+def validation(
+    cfg, exact_by: dict[str, dict], out: Path, reps: int, workers: int, pilots=None
+) -> list[dict]:
+    """Every hypothesis x stratum, ``reps`` replicates. ``exact_by[stratum][hypothesis]``;
+    ``pilots`` (#27): the pilot study's rows, whose fitted decay sets each replicate's
+    analysis model."""
     tasks = []
-    for hi, h in enumerate(cfg["hypotheses"]):
-        for rep in range(reps):
-            tasks.append(
-                dict(
-                    cfg=cfg, hyp=h, h_index=hi, rep=rep, marginals=marginals, ref_values=ref_values
+    fits = {(r["stratum"], r["rep"]): r["decay_fit"] for r in pilots or []}
+    for st in strata(cfg):
+        q75 = exact_by[st["label"]]["H_q75"]
+        marginals = {
+            a: np.asarray(q75[a]["marginals"]) if "marginals" in q75[a] else None for a in ARMS
+        }
+        ref_values = {
+            "A3_vs_prediction": q75["A3"]["w0"],
+            "D1_lag1_vs_prediction": q75["D1"]["lag1"],
+        }
+        for hi, h in enumerate(st["cfg"]["hypotheses"]):
+            for rep in range(reps):
+                t = dict(
+                    cfg=st["cfg"],
+                    hyp=h,
+                    h_index=hi,
+                    rep=rep,
+                    marginals=marginals,
+                    ref_values=ref_values,
                 )
-            )
+                if st["index"] is not None:
+                    t.update(stratum=st["label"], stratum_index=st["index"])
+                if pilots is not None:
+                    t["decay_analysis"] = fits[(st["label"], rep)]
+                tasks.append(t)
     per = 10
-    batches = [tasks[i : i + per] for i in range(0, len(tasks), per)]
+    batches = []
+    for i in range(0, len(tasks), per):  # never mix hypotheses or strata in a batch
+        chunk = tasks[i : i + per]
+        cur: list[dict[str, Any]] = []
+        for t in chunk:
+            if cur and (t["hyp"]["name"], t.get("stratum")) != (
+                cur[0]["hyp"]["name"],
+                cur[0].get("stratum"),
+            ):
+                batches.append(cur)
+                cur = []
+            cur.append(t)
+        batches.append(cur)
     rows: list[dict[str, Any]] = []
     t0 = time.time()
     if workers <= 1:
@@ -645,53 +849,88 @@ def validation(cfg, exact: dict[str, dict], out: Path, reps: int, workers: int) 
     return rows
 
 
-def summarise_validation(cfg, exact, rows) -> list[dict[str, Any]]:
-    """Per hypothesis: the predicted outcome (rule on exact values and the median SEs), the
-    replicate frequencies of each outcome, the error rate, and the secondary rejection rates."""
+def opposite_call(outcome: str, predicted: str) -> bool:
+    """A wrong decisive call: *vanishes* where *persists* is predicted, or the reverse."""
+    return {outcome, predicted} == {"vanishes", "persists"}
+
+
+def summarise_validation(cfg, exact_by, rows) -> list[dict[str, Any]]:
+    """Per hypothesis and stratum: the predicted outcome (rule on exact values and the median
+    SEs), the replicate frequencies of each outcome, the error rate, the rate of wrong
+    decisive calls, and the secondary rejection rates. With strata (#27), a ``pooled`` row
+    per hypothesis averages the strata (equal replicates)."""
     rl = rule(cfg)
     out = []
+    labels = [st["label"] for st in strata(cfg)]
     for h in cfg["hypotheses"]:
-        rs = [r for r in rows if r["hypothesis"] == h["name"]]
-        if not rs:
-            continue
-        ex = exact[h["name"]]
-        se_b = float(np.median([r["baseline_se0"] for r in rs]))
-        se_a = float(np.median([r["A2_se0"] for r in rs]))
-        pred = F.expected_outcome(ex["baseline"]["w0"], ex["A2"]["w0"], se_b, se_a, rl)
-        pred_gate = ex["baseline"]["w0"] < 0 and abs(ex["baseline"]["w0"]) >= rl.gate_z * se_b
-        n = len(rs)
-        row: dict[str, Any] = {
-            "hypothesis": h["name"],
-            "reps": n,
-            "exact_w0_baseline": ex["baseline"]["w0"],
-            "exact_w0_A2": ex["A2"]["w0"],
-            "median_se0_baseline": se_b,
-            "median_se0_A2": se_a,
-            "predicted_gate": pred_gate,
-            "predicted_primary": pred,
-            "gate_rate": sum(r["gate"] for r in rs) / n,
-        }
-        for o in ("vanishes", "persists", "ambiguous"):
-            row[f"rate_{o}"] = sum(r["primary"] == o for r in rs) / n
-        row["error_rate_primary"] = sum(r["primary"] != pred for r in rs) / n
-        row["error_rate_gate"] = sum(r["gate"] != pred_gate for r in rs) / n
-        row["segment_sensitive_rate"] = sum(r["primary"] != r["primary_all_jobs"] for r in rs) / n
-        row["flagged_job_rate"] = float(np.mean([r["n_flagged_jobs"] > 0 for r in rs]))
-        row["guard_drift_flag_rate"] = float(np.mean([r["drift_flags"] > 0 for r in rs]))
-        row["guard_integrity_fail_rate"] = float(np.mean([r["integrity_fail"] > 0 for r in rs]))
-        for k in [c[4:-7] for c in rs[0] if c.startswith("sec_") and c.endswith("_reject")]:
-            row[f"reject_{k}"] = sum(bool(r[f"sec_{k}_reject"]) for r in rs) / n
-        for arm in ARMS:
-            ws = np.array([r[f"{arm}_w0"] for r in rs])
-            ses = np.array([r[f"{arm}_se0"] for r in rs])
-            row[f"{arm}_w0_mean"] = float(ws.mean())
-            row[f"{arm}_w0_sd"] = float(ws.std(ddof=1))
-            row[f"{arm}_se0_median"] = float(np.median(ses))
-            row[f"{arm}_z_exact_vs_mean"] = float(
-                (ws.mean() - exact[h["name"]][arm]["w0"]) / (ws.std(ddof=1) / math.sqrt(n))
-            )
-        out.append(row)
+        per_stratum = []
+        for lab in labels:
+            rs = [
+                r
+                for r in rows
+                if r["hypothesis"] == h["name"] and r.get("stratum", "config") == lab
+            ]
+            if not rs:
+                continue
+            row = _summary_row(h, lab, exact_by[lab][h["name"]], rs, rl)
+            per_stratum.append(row)
+            out.append(row)
+        if len(per_stratum) > 1:
+            pooled: dict[str, Any] = {"hypothesis": h["name"], "stratum": "pooled"}
+            pooled["reps"] = sum(r["reps"] for r in per_stratum)
+            preds = list(dict.fromkeys(r["predicted_primary"] for r in per_stratum))
+            pooled["predicted_primary"] = "/".join(preds)
+            for k in per_stratum[0]:
+                if k.startswith(("rate_", "error_rate", "opposite", "gate_rate", "reject_")) or (
+                    k.endswith("_rate")
+                ):
+                    pooled[k] = float(np.mean([r[k] for r in per_stratum]))
+            out.append(pooled)
     return out
+
+
+def _summary_row(h, label, ex, rs, rl) -> dict[str, Any]:
+    se_b = float(np.median([r["baseline_se0"] for r in rs]))
+    se_a = float(np.median([r["A2_se0"] for r in rs]))
+    pred = F.expected_outcome(ex["baseline"]["w0"], ex["A2"]["w0"], se_b, se_a, rl)
+    pred_gate = ex["baseline"]["w0"] < 0 and abs(ex["baseline"]["w0"]) >= rl.gate_z * se_b
+    n = len(rs)
+    row: dict[str, Any] = {
+        "hypothesis": h["name"],
+        "stratum": label,
+        "decay_true": rs[0].get("decay_true"),
+        "reps": n,
+        "exact_w0_baseline": ex["baseline"]["w0"],
+        "exact_w0_A2": ex["A2"]["w0"],
+        "median_se0_baseline": se_b,
+        "median_se0_A2": se_a,
+        "predicted_gate": pred_gate,
+        "predicted_primary": pred,
+        "gate_rate": sum(r["gate"] for r in rs) / n,
+    }
+    for o in ("vanishes", "persists", "ambiguous"):
+        row[f"rate_{o}"] = sum(r["primary"] == o for r in rs) / n
+    row["error_rate_primary"] = sum(r["primary"] != pred for r in rs) / n
+    row["opposite_call_rate"] = sum(opposite_call(r["primary"], pred) for r in rs) / n
+    row["error_rate_gate"] = sum(r["gate"] != pred_gate for r in rs) / n
+    row["segment_sensitive_rate"] = sum(r["primary"] != r["primary_all_jobs"] for r in rs) / n
+    row["flagged_job_rate"] = float(np.mean([r["n_flagged_jobs"] > 0 for r in rs]))
+    row["guard_drift_flag_rate"] = float(np.mean([r["drift_flags"] > 0 for r in rs]))
+    row["guard_integrity_fail_rate"] = float(np.mean([r["integrity_fail"] > 0 for r in rs]))
+    if "A2_decoding_warn" in rs[0]:
+        row["A2_decoding_warn_rate"] = float(np.mean([r["A2_decoding_warn"] > 0 for r in rs]))
+    for k in [c[4:-7] for c in rs[0] if c.startswith("sec_") and c.endswith("_reject")]:
+        row[f"reject_{k}"] = sum(bool(r[f"sec_{k}_reject"]) for r in rs) / n
+    for arm in ARMS:
+        ws = np.array([r[f"{arm}_w0"] for r in rs])
+        ses = np.array([r[f"{arm}_se0"] for r in rs])
+        row[f"{arm}_w0_mean"] = float(ws.mean())
+        row[f"{arm}_w0_sd"] = float(ws.std(ddof=1))
+        row[f"{arm}_se0_median"] = float(np.median(ses))
+        row[f"{arm}_z_exact_vs_mean"] = float(
+            (ws.mean() - ex[arm]["w0"]) / (ws.std(ddof=1) / math.sqrt(n))
+        )
+    return row
 
 
 # -- outcome map ------------------------------------------------------------------------------
@@ -710,26 +949,30 @@ LADDER = {
 }
 
 
-def prediction_rows(cfg, exact, val_summary) -> list[dict[str, Any]]:
+def prediction_rows(cfg, exact_by, val_summary) -> list[dict[str, Any]]:
     rows = []
-    vs = {r["hypothesis"]: r for r in val_summary}
-    for h in cfg["hypotheses"]:
-        ex = exact[h["name"]]
-        v = vs.get(h["name"], {})
-        base = ex["baseline"]["w0"]
-        for arm in ARMS:
-            e = ex[arm]
-            rows.append(
-                {
-                    "hypothesis": h["name"],
-                    "arm": arm,
-                    **{f"w{j}": e[f"w{j}"] for j in cfg["analysis"]["offsets"]},
-                    "p1": e["p1"],
-                    "lag1": e["lag1"],
-                    "w0_over_baseline": e["w0"] / base if base else math.nan,
-                    "predicted_primary": v.get("predicted_primary"),
-                }
-            )
+    for st in strata(cfg):
+        lab = st["label"]
+        vs = {r["hypothesis"]: r for r in val_summary if r.get("stratum", "config") == lab}
+        for h in cfg["hypotheses"]:
+            ex = exact_by[lab][h["name"]]
+            v = vs.get(h["name"], {})
+            base = ex["baseline"]["w0"]
+            for arm in ARMS:
+                e = ex[arm]
+                rows.append(
+                    {
+                        "stratum": lab,
+                        "decay": st["decay"],
+                        "hypothesis": h["name"],
+                        "arm": arm,
+                        **{f"w{j}": e[f"w{j}"] for j in cfg["analysis"]["offsets"]},
+                        "p1": e["p1"],
+                        "lag1": e["lag1"],
+                        "w0_over_baseline": e["w0"] / base if base else math.nan,
+                        "predicted_primary": v.get("predicted_primary"),
+                    }
+                )
     return rows
 
 
@@ -889,9 +1132,8 @@ def calibration_report(cfg: dict[str, Any], target: Any) -> dict[str, Any]:
     return {"live": live, "reference": ref, "violations": F.calibration_check(live, ref, b)}
 
 
-def live_pilot_predictions(cfg: dict[str, Any], noise_json: dict[str, Any]) -> dict[str, float]:
-    """Pilot-gate predictions from a calibration's noise model (the live one in Stage 4):
-    the baseline's P(1) after the burn-in and A2's P(m = 1), via #20's pieces."""
+def live_pieces(cfg: dict[str, Any], noise_json: dict[str, Any]) -> tuple[A.StepPieces, float]:
+    """#20's step pieces and q75's readout error under a calibration's noise model."""
     from qiskit import qasm3
 
     acfg = ablation_cfg(cfg)
@@ -899,9 +1141,33 @@ def live_pilot_predictions(cfg: dict[str, Any], noise_json: dict[str, Any]) -> d
     step = qasm3.loads((PA.p6dir(acfg) / "step.qasm").read_text())
     noise = PA.noise_from_json(noise_json)
     pc = A.export_pieces(step, noise, lay["step_memory"], lay["step_output"])
+    return pc, float(dict(noise_json["readout"])[lay["step_memory"]])
+
+
+PIECES_LIVE = "pieces_live.npz"
+
+
+def save_live_pieces(path: Path, pc: A.StepPieces, r: float) -> None:
+    np.savez_compressed(path, **pc.to_dict("live"), readout_q75=np.array(r))
+
+
+def load_live_pieces(path: Path) -> tuple[A.StepPieces, float]:
+    z = np.load(path)
+    return A.StepPieces.from_npz(z, "live"), float(z["readout_q75"])
+
+
+def live_pilot_predictions(
+    cfg: dict[str, Any], noise_json: dict[str, Any], pieces_out: Path | None = None
+) -> dict[str, float]:
+    """Pilot-gate predictions from a calibration's noise model (the live one in Stage 4):
+    the baseline's P(1) after the burn-in and A2's P(m = 1), via #20's pieces. With
+    ``pieces_out``, the pieces are saved there (#27: the pilot's own refit uses them)."""
+    acfg = ablation_cfg(cfg)
+    pc, r = live_pieces(cfg, noise_json)
+    if pieces_out is not None:
+        save_live_pieces(pieces_out, pc, r)
     base = A.process(A.step_superops("baseline", pc))
     acfg = copy.deepcopy(acfg)
-    r = dict(noise_json["readout"])[lay["step_memory"]]
     acfg["a2_record"]["readout_error"] = r
     rec = PA.a2_record(acfg, {"calibrated": pc})
     burn, lw = cfg["analysis"]["burn"], cfg["layout"]["length"]
@@ -1084,23 +1350,41 @@ def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
                 summary["aer_pilot"]["seconds"] = time.time() - t0
                 log(out, f"aer pilot: {summary['aer_pilot']}")
 
-    # exact predictions
-    exact = {h["name"]: exact_hypothesis(cfg, h) for h in cfg["hypotheses"]}
-    save_json(out / "exact.json", exact)
-    log(out, "exact predictions done")
+    # exact predictions (per decay stratum, #27)
+    exact_by = {
+        st["label"]: {h["name"]: exact_hypothesis(st["cfg"], h) for h in cfg["hypotheses"]}
+        for st in strata(cfg)
+    }
+    save_json(out / "exact.json", exact_by)
+    log(out, f"exact predictions done (strata {list(exact_by)})")
+
+    # #27: simulated pilots, refitted; each sets its replicates' analysis model
+    reps = args.reps if args.reps is not None else cfg["validation"]["reps"]
+    pilots = None
+    if cfg["validation"].get("pilot_fit"):
+        pcache = out / "pilot_study.json"
+        if pcache.exists():
+            pilots = json.loads(pcache.read_text())
+        else:
+            pilots = pilot_study(cfg, out, reps, cfg["experiment"]["workers"])
+            pcache.write_text(json.dumps(pilots))
+        psum = summarise_pilot_study(pilots)
+        write_csv(sd / "pilot_study.csv", pilots)
+        write_csv(sd / "pilot_study_summary.csv", psum)
+        summary["pilot_study"] = psum
+        log(out, f"pilot study: {psum}")
 
     # validation
-    reps = args.reps if args.reps is not None else cfg["validation"]["reps"]
     cache = out / "validation.json"
     if cache.exists():
         vrows = json.loads(cache.read_text())
     else:
-        vrows = validation(cfg, exact, out, reps, cfg["experiment"]["workers"])
+        vrows = validation(cfg, exact_by, out, reps, cfg["experiment"]["workers"], pilots)
         cache.write_text(json.dumps(vrows))
-    vsum = summarise_validation(cfg, exact, vrows)
+    vsum = summarise_validation(cfg, exact_by, vrows)
     write_csv(sd / "validation_replicates.csv", vrows)
     write_csv(sd / "validation.csv", vsum)
-    preds = prediction_rows(cfg, exact, vsum)
+    preds = prediction_rows(cfg, exact_by, vsum)
     write_csv(sd / "predictions.csv", preds)
     summary["validation"] = vsum
     summary["ladder"] = LADDER
@@ -1158,7 +1442,9 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
             keep_first(out / "circuits.json"),
             {"hash_check": hc, "retimed": cmp, "sha256": built["sha256"]},
         )
-        lp = live_pilot_predictions(cfg, cal0["noise"])
+        # the pieces behind the gate's predictions are kept (first write) for #27's pilot refit
+        pp = out / PIECES_LIVE
+        lp = live_pilot_predictions(cfg, cal0["noise"], None if pp.exists() else pp)
         if (out / "pilot_predictions.json").exists():  # a resume: the gate's own predictions
             save_json(keep_first(out / "pilot_predictions.json"), lp)
             lp = json.loads((out / "pilot_predictions.json").read_text())
@@ -1213,6 +1499,10 @@ def amendment_guard(cfg: dict[str, Any]) -> dict[str, Any] | None:
     am = cfg.get("amendment")
     if am is None:
         return None
+    if isinstance(am, list):  # #27: [[amendment]], every one checked (section 9 and 10)
+        if not am:
+            raise F.Refused("no amendment recorded in the config: refusing to submit")
+        return [amendment_guard({**cfg, "amendment": a}) for a in am]
     doc_path = REPO_ROOT / am["doc"]
     commit = am.get("commit", "")
 
@@ -1346,6 +1636,8 @@ def run_jobs(
             ):
                 return
             continue
+        if stage != "pilot" and "pilot_refit" in cfg and not (out / "pilot" / PILOT_REFIT).exists():
+            raise SystemExit("the pilot's q75 refit is not fixed: no main job before it (#27)")
 
         def guard(rec: dict[str, Any], cost=cost, stage=stage) -> None:
             u = phase6.usage(svc)
@@ -1403,6 +1695,8 @@ def pilot_gate_step(cfg, out: Path, d: Path, pubs, lp, cost, dur, stop_after_pil
         rec = json.loads((d / "job.json").read_text())
         gate = pilot_gate(cfg, d, pubs, lp, rec, cost, dur)
         save_json(d / "gate.json", gate)
+    if "pilot_refit" in cfg and gate.get("a_decoding_and_guards"):
+        pilot_refit_step(cfg, out, d, pubs)  # #27: fixed here, before any main job exists
     if not gate["go"]:
         save_json(d / "gate_failed.json", gate)
         raise SystemExit(f"pilot gate failed: {gate}; stop and report (no retry)")
@@ -1410,6 +1704,58 @@ def pilot_gate_step(cfg, out: Path, d: Path, pubs, lp, cost, dur, stop_after_pil
         log(out, f"pilot gate passed; stopping as asked (resume with --from-run {out})")
         return True
     return False
+
+
+PILOT_REFIT = "refit_pilot.json"
+
+
+def pilot_records(cfg: dict[str, Any], d: Path, pubs) -> dict[str, np.ndarray]:
+    """The pilot's baseline ``y`` and A2's joint record ``m``, ``y`` (shots, length)."""
+    z = np.load(d / "shots.npz")
+    lw = int(z["length"])
+    by: dict[str, list] = {}
+    for pub in pubs:
+        key = "A2_y" if pub.arm == "A2" else pub.arm
+        by.setdefault(key, []).append(W.unpack_shots(z[f"{pub.key}__y"], lw))
+        if f"{pub.key}__m" in z:
+            by.setdefault("A2_m", []).append(W.unpack_shots(z[f"{pub.key}__m"], lw))
+    return {k: np.concatenate(v) for k, v in by.items()}
+
+
+def pilot_refit_step(cfg: dict[str, Any], out: Path, d: Path, pubs) -> dict[str, Any]:
+    """#27 (prereg section 10): q75's decay fitted on this pilot's A2 record with the pieces
+    of the gate's own live calibration, written once to ``pilot/refit_pilot.json`` before any
+    main job is submitted (a resume reuses it, never refits). Its ``decay`` is the q75 model
+    of the analysis; the calibrated model and #26's refit are sensitivity rows."""
+    path = d / PILOT_REFIT
+    if path.exists():
+        return json.loads(path.read_text())
+    pr = cfg["pilot_refit"]
+    pc, r = load_live_pieces(out / PIECES_LIVE)
+    rec = pilot_records(cfg, d, pubs)
+    res = fit_pilot_decay(cfg, rec["A2_m"], rec["A2_y"], pc, r, pr.get("n_boot", 0), pr["seed"])
+    rf = cfg.get("refit", {})
+    lw, burn = rec["A2_m"].shape[1], cfg["analysis"]["burn"]
+    res["pred_p_m1_calibrated"] = R.predicted_p_m1(pc, r, 0.0, None, lw, burn)
+    if rf:
+        res["pred_p_m1_refit26"] = R.predicted_p_m1(
+            pc, r, rf["decay"], rf.get("decay_first"), lw, burn
+        )
+        res["refit26"] = dict(rf)
+    res["readout_q75_live"] = r
+    res["fixed_at"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    res["note"] = (
+        "fixed from the pilot before any main-job submission (prereg section 10); the "
+        "analysis's q75 model uses `decay`"
+    )
+    save_json(path, {"meta": run_metadata(plain(cfg), pr["seed"]), **res})
+    log(out, f"[pilot] refit of q75's decay on this pilot: a = {res['decay']:.4f}; {res['params']}")
+    return json.loads(path.read_text())
+
+
+def pilot_decay(out: Path) -> float:
+    """The analysis's q75 decay: the pilot's own fit (#27)."""
+    return float(json.loads((out / "pilot" / PILOT_REFIT).read_text())["decay"])
 
 
 def keep_first(path: Path) -> Path:
@@ -1438,20 +1784,98 @@ def load_run(cfg: dict[str, Any], out: Path) -> dict[str, dict[str, np.ndarray]]
     return {a: {k: np.concatenate(v) for k, v in d.items()} for a, d in data.items()}
 
 
+def analysis_models(cfg: dict[str, Any], out: Path) -> list[tuple[str, dict[str, Any]]]:
+    """The q75 models the analysis runs under, the primary first. #27 (prereg section 10):
+    the pilot's own fitted decay, then the calibrated model and #26's refit as sensitivity
+    rows. #26: the refit, then the un-refit model. Otherwise the config alone."""
+    if "pilot_refit" in cfg:
+        return [
+            ("pilot_fit", with_decay(cfg, pilot_decay(out))),
+            ("calibrated", without_refit(cfg)),
+            ("refit26", cfg),
+        ]
+    if "refit" in cfg:
+        return [("refit", cfg), ("unrefit", without_refit(cfg))]
+    return [("config", cfg)]
+
+
+def coherence_curve(cfg: dict[str, Any], grid) -> list[dict[str, float]]:
+    """Exact baseline and A2 w(0) when A2's measurement keeps a fraction ``c`` of q75's
+    coherence (``op_coherence``), under ``cfg``'s q75 decay (#27's partial-coherence reading)."""
+    paulis = pauli_table(cfg)
+    rows = []
+    for c in grid:
+        m = ablate_models(cfg, A.Hypothesis(name=f"c{c}", op_coherence=float(c)))
+        wb = exact_arm(m, "baseline", paulis, cfg)["w0"]
+        wa = exact_arm(m, "A2", paulis, cfg)
+        rows.append(
+            {
+                "c": float(c),
+                "w0_base": wb,
+                "w0_A2": wa["w0"],
+                "ratio": wa["w0"] / wb,
+                "p1_A2": wa["p1"],
+            }
+        )
+    return rows
+
+
+def coherence_interval(curve: list[dict[str, float]], lo: float, hi: float) -> dict[str, Any]:
+    """The coherences whose predicted |w_A2| / |w_base| lies in ``[lo, hi]`` (linear
+    interpolation on the grid where the curve is monotone in ``c``; else the grid points)."""
+    c = np.array([r["c"] for r in curve])
+    q = np.abs([r["ratio"] for r in curve])
+    mono = bool(np.all(np.diff(q) >= 0))
+    if mono:
+        c_lo = float(np.interp(max(lo, q[0]), q, c)) if lo > q[0] else float(c[0])
+        c_hi = float(np.interp(hi, q, c)) if hi < q[-1] else float(c[-1])
+        return {"monotone": True, "c_min": c_lo, "c_max": c_hi}
+    inside = [float(x) for x, v in zip(c, q, strict=True) if lo <= v <= hi]
+    return {"monotone": False, "grid_points": inside}
+
+
+def partial_coherence_reading(cfg: dict[str, Any], arms: dict[str, Any]) -> dict[str, Any]:
+    """#27: the observed A2 against the partial-coherence family under ``cfg``'s q75 model:
+    the predictions of H_partial_c05/c08, and the coherences consistent with A2's ratio
+    (|w_A2| +- 1.96 SE_A2 over the concurrent |w_base|; the baseline's own SE is not
+    propagated). Descriptive: the decision uses the data alone."""
+    grid = cfg.get("pilot_refit", {}).get("coherence_grid", [i / 20 for i in range(21)])
+    curve = coherence_curve(cfg, grid)
+    wb, wa, se = abs(arms["baseline"]["w0"]), abs(arms["A2"]["w0"]), arms["A2"]["se0"]
+    lo, hi = max(0.0, (wa - 1.959963984540054 * se) / wb), (wa + 1.959963984540054 * se) / wb
+    pc = {r["c"]: r for r in curve}
+    return {
+        "decay": meas_decay(cfg),
+        "observed_ratio": wa / wb,
+        "observed_ratio_ci95": [lo, hi],
+        "H_partial_c05": pc.get(0.5),
+        "H_partial_c08": pc.get(0.8),
+        "consistent_coherence": coherence_interval(curve, lo, hi),
+        "curve": curve,
+    }
+
+
 def analyse_run(cfg: dict[str, Any], out: Path) -> dict[str, Any]:
     """The pre-registered analysis of a completed run (section 5 of the pre-registration):
     guard rails, per-arm statistics, segment policy, the decision; saved with every shot,
     job record and calibration to ``results/summaries/phase7_hw/``."""
-    q75 = exact_hypothesis(cfg, next(h for h in cfg["hypotheses"] if h["name"] == "H_q75"))
-    marg = {a: np.asarray(q75[a]["marginals"]) if "marginals" in q75[a] else None for a in ARMS}
-    refs = {"A3_vs_prediction": q75["A3"]["w0"], "D1_lag1_vs_prediction": q75["D1"]["lag1"]}
     data = load_run(cfg, out)
     s = analysis_settings(cfg)
-    res = analyse_dataset(cfg, data, marg, s, refs, cfg["analysis"]["seed"])
+    variants = analysis_models(cfg, out)
+    rows = {}
+    for label, cv in variants:
+        q75 = exact_hypothesis(cv, next(h for h in cv["hypotheses"] if h["name"] == "H_q75"))
+        marg = {a: np.asarray(q75[a]["marginals"]) if "marginals" in q75[a] else None for a in ARMS}
+        refs = {"A3_vs_prediction": q75["A3"]["w0"], "D1_lag1_vs_prediction": q75["D1"]["lag1"]}
+        res = analyse_dataset(cv, data, marg, s, refs, cfg["analysis"]["seed"])
+        rows[label] = (cv, q75, refs, res)
+    label0 = variants[0][0]
+    cfg0, q75, refs, res = rows[label0]
     dec: F.Decision = res["decision"]
     summary = {
         "meta": run_metadata(plain(cfg), cfg["analysis"]["seed"]),
         "run_dir": str(out.relative_to(REPO_ROOT)),
+        "q75_model": {"label": label0, "decay": meas_decay(cfg0)},
         "decision": {**dec.__dict__, "reported": dec.reported, "ladder": LADDER[dec.reported]},
         "arms": res["arms"],
         "guards": res["guards"],
@@ -1460,18 +1884,27 @@ def analyse_run(cfg: dict[str, Any], out: Path) -> dict[str, Any]:
     }
     if "m" in data.get("A2", {}):
         summary["A2_p_m1"] = float(data["A2"]["m"][:, s.burn :].mean())
-    if "refit" in cfg:  # #26: the same analysis with the original (un-refit) predictions
-        cu = without_refit(cfg)
-        qu = exact_hypothesis(cu, next(h for h in cu["hypotheses"] if h["name"] == "H_q75"))
-        mu = {a: np.asarray(qu[a]["marginals"]) if "marginals" in qu[a] else None for a in ARMS}
-        ru = {"A3_vs_prediction": qu["A3"]["w0"], "D1_lag1_vs_prediction": qu["D1"]["lag1"]}
-        resu = analyse_dataset(cu, data, mu, s, ru, cfg["analysis"]["seed"])
-        du: F.Decision = resu["decision"]
-        summary["sensitivity_unrefit"] = {
-            "decision": {**du.__dict__, "reported": du.reported, "ladder": LADDER[du.reported]},
-            "guards": resu["guards"],
-            "refs": ru,
-        }
+    if len(variants) > 1:  # #26/#27: the same analysis under each q75 model
+        sens = {}
+        for label, (cv, qv, rv, resv) in rows.items():
+            dv: F.Decision = resv["decision"]
+            sens[label] = {
+                "decay": meas_decay(cv),
+                "decision": {**dv.__dict__, "reported": dv.reported, "ladder": LADDER[dv.reported]},
+                "guards": resv["guards"],
+                "refs": rv,
+                "A2_p1_predicted": qv["A2"]["p1"],
+                "A2_p1_observed": resv["arms"]["A2"]["p1"],
+            }
+            if "pilot_refit" in cfg:
+                sens[label]["partial_coherence"] = partial_coherence_reading(cv, resv["arms"])
+        summary["sensitivity"] = sens
+        summary["decision_identical_across_models"] = all(
+            v["decision"]["reported"] == dec.reported and v["decision"]["primary"] == dec.primary
+            for v in sens.values()
+        )
+        if "pilot_refit" not in cfg:  # #26's name for its one sensitivity row
+            summary["sensitivity_unrefit"] = sens["unrefit"]
     save_json(out / "analysis.json", summary)
     sd = REPO_ROOT / "results" / "summaries" / cfg["experiment"]["name"]
     sd.mkdir(parents=True, exist_ok=True)
@@ -1483,6 +1916,13 @@ def analyse_run(cfg: dict[str, Any], out: Path) -> dict[str, Any]:
     for name in ("calibration_before.json", "circuits.json", "pilot_predictions.json", "log.txt"):
         if (out / name).exists():
             shutil.copy(out / name, sd / name)
+    for src, dst in (
+        (PIECES_LIVE, PIECES_LIVE),
+        ("pilot/gate.json", "gate_pilot.json"),
+        (f"pilot/{PILOT_REFIT}", PILOT_REFIT),
+    ):
+        if (out / src).exists():
+            shutil.copy(out / src, sd / dst)
     log(out, f"decision: {summary['decision']['reported']} (gate {dec.gate})")
     return summary
 
@@ -1519,6 +1959,17 @@ def pilot_gate(cfg, d: Path, pubs, lp, rec, cost, dur) -> dict[str, Any]:
         "pred": lp["A2_p_m1"],
         "ok": abs(pm - lp["A2_p_m1"]) <= p["pm1_tolerance"],
     }
+    c_stops = p.get("c_stops", True)
+    if not c_stops:  # #27's amendment: (c) is a recorded diagnostic and never stops the run
+        cal = lp.get("A2_p_m1_calibrated", lp["A2_p_m1"])
+        out["c_pm1"].update(
+            stops=False,
+            pred_refit26=lp["A2_p_m1"],
+            within_refit26=out["c_pm1"]["ok"],
+            pred_calibrated=cal,
+            within_calibrated=abs(pm - cal) <= p["pm1_tolerance"],
+            tolerance=p["pm1_tolerance"],
+        )
     ex = rec.get("execution_seconds")
     ref = p.get("time_reference", "execution_span")
     if ref == "circuits_execution_time":  # #26: what the cost model's reference measures
@@ -1535,7 +1986,7 @@ def pilot_gate(cfg, d: Path, pubs, lp, rec, cost, dur) -> dict[str, Any]:
     out["go"] = bool(
         out["a_decoding_and_guards"]
         and out["b_p1"]["ok"]
-        and out["c_pm1"]["ok"]
+        and (out["c_pm1"]["ok"] or not c_stops)
         and out["d_time"]["ok"]
     )
     return out

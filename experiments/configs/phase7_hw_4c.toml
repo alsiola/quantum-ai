@@ -1,0 +1,295 @@
+# Phase 7 Stage 4c (issue #27): the pre-registered q75 ablation (#24) re-piloted under the
+# dated, post hoc amendment of docs/phase7-preregistration.md section 10 (after #26's pilot
+# stopped at its amended gate (c)), on top of section 9 (#26). Identical to
+# configs/phase7_hw_4b.toml except where marked "#27": [experiment] names, [ibm]
+# approval_url, [pilot] c_stops (gate (c) becomes a recorded, non-stopping diagnostic),
+# [budget] prior_counted_s (#25 plus #26), the new [pilot_refit] table (the pilot's own fit
+# of q75's decay, the analysis's q75 model), [validation] decay_strata and pilot_fit, and
+# [[amendment]] (sections 9 and 10, both checked). Arms, shots, schedule, mapping,
+# calibration bounds, analysis, decision rule, secondary family and hypotheses are unchanged.
+#
+#   uv run --group hardware python experiments/phase7_hw.py --config experiments/configs/phase7_hw_4c.toml --dry-run-local
+#   uv run --group hardware python experiments/phase7_hw.py --config experiments/configs/phase7_hw_4c.toml --dry-run
+#   uv run --group hardware python experiments/phase7_hw.py --config experiments/configs/phase7_hw_4c.toml --submit --stop-after-pilot
+#       --submit also refuses unless every [[amendment]] matches its section at its commit on main.
+#
+# The original header (#24):
+#   uv run --group hardware python experiments/phase7_hw.py --config experiments/configs/phase7_hw.toml --dry-run-local
+#       no network: FakeKingston + committed snapshots; circuits, hashes, schedule, budget,
+#       predictions, synthetic validation (about 25 min with 2 workers). Without the hardware
+#       group the circuit checks are skipped and the numpy parts still run.
+#   uv run --group hardware python experiments/phase7_hw.py --config experiments/configs/phase7_hw.toml --dry-run
+#       Stage 4 only: reads the live target and calibration, submits nothing.
+#   uv run --group hardware python experiments/phase7_hw.py --config experiments/configs/phase7_hw.toml --submit [--from-run <dir>]
+#       Stage 4 only: refuses unless approval_url is set and --submit is given; pilot, then the
+#       main jobs; a submitted job is re-fetched by its id and never resubmitted.
+
+[experiment]
+name = "phase7_hw_4c"                                   # #27: run dirs results/phase7_hw_4c/
+summary_dir = "results/summaries/phase7_hw_4c/dryrun"   # #27: the local dry run, decay strata
+workers = 2
+phase6_dir = "results/summaries/phase6"
+ablation_config = "experiments/configs/phase7_ablation.toml"   # #20's circuits and pieces
+ablation_dir = "results/summaries/phase7_ablation"
+classical_dir = "results/summaries/phase7_classical"            # #23: D1, D3
+ancilla_dir = "results/summaries/phase7_ancilla"                # #21: B2, fits
+spectator_dir = "results/summaries/phase7_spectator"            # #22: C3
+drift_dir = "results/summaries/phase7_drift"                    # #19: nulls, episode fit
+audit_dir = "results/summaries/phase7_audit"                    # #18
+
+[ibm]
+env_file = ".env"
+channel = "ibm_cloud"
+backend = "ibm_kingston"
+allowed_plans = ["open"]       # never a paid plan: the code refuses anything else
+# The owner's approving comment on #17 (https://github.com/<owner>/<repo>/issues/17#issuecomment-<id>).
+# Empty: every submission is refused. Stage 4 sets it, in a commit, after the approval.
+# #27: the owner's approval of Stage 4c ("Go ahead" to option 3 of ...6723282987); the 120 s
+# cap is ...6720604627's (#26); #25's approval was ...6718778410
+approval_url = "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6723526792"
+
+[layout]                       # ibm_kingston, Phase 6's pair; never re-mapped
+memory = 75
+output = 59
+spectator = 74                 # A2s_spec's measured qubit (q75's other neighbour)
+length = 64
+
+[sampler]                      # as Phase 6: no error mitigation, classified bits
+dynamical_decoupling = false
+twirling_gates = false
+twirling_measure = false
+
+# -- arms ------------------------------------------------------------------------------------
+# source: "ablation" (#20, rebuilt from Phase 6's circuit as #20 built it; hash-checked),
+# "qasm" (a committed file, checked byte for byte). duration_key: where the per-arm duration
+# comes from (FakeKingston estimate minus FakeKingston baseline, added to Phase 6's live
+# baseline estimate).
+[arms.baseline]
+tier = 1
+shots = 15000
+source = "ablation"
+purpose = "concurrent replication and reference"
+
+[arms.A2]
+tier = 1
+shots = 10000
+source = "ablation"
+purpose = "primary: rank > 2 with q75 measured in Z every step?"
+
+[arms.A2s_spec]
+tier = 1
+shots = 15000
+source = "ablation"
+purpose = "sham: delay on q75 + measure q74; readout crosstalk onto q75"
+
+[arms.A1]
+tier = 1
+shots = 4000
+source = "ablation"
+purpose = "reset q75 every step: the cheapest causal-path check"
+
+[arms.A3]
+tier = 2
+instances = 64
+shots_per_instance = 64        # 4,096 shots
+source = "ablation"
+purpose = "random Pauli on q75: destroys its state without reset or readout"
+
+[arms.D1]
+tier = 2
+shots = 10000
+source = "qasm"
+file = "results/summaries/phase7_classical/d1.qasm"
+purpose = "memoryless step at q59's cadence: readout-chain stickiness, w = 0 null"
+
+[tier3]                        # listed with costs; not in the default plan
+B2 = { shots = 15000, file = "results/summaries/phase7_ancilla/qasm/circuit_B2.qasm", purpose = "reset then flag measurement of q59 (#21)" }
+D3 = { shots = 5000, file = "results/summaries/phase7_classical/d3.qasm", purpose = "classical positive control, w(0) = -0.065 (#23)" }
+C3 = { shots = 40000, arms = 2, file = "results/summaries/phase7_spectator/qasm/c3_spectator1.qasm", purpose = "q74 reset vs reset + X at shot start, 20,000 per arm (#22)" }
+
+# -- schedule --------------------------------------------------------------------------------
+[schedule]
+seed = 2024                    # pub order in job j: default_rng([seed, j]); A3 deal: default_rng([seed, 10**6])
+n_jobs = 4
+max_chunk = 1000               # shots per pub
+tier1 = ["baseline", "A2", "A2s_spec", "A1"]
+include_tiers = [1, 2]         # the default plan
+
+[pilot]                        # one job before anything else; stop on any failure, no retry
+arms = { baseline = 500, A2 = 500 }
+seed = 1
+# #26 amendment (prereg section 9, post hoc):
+# (b) stop only if |P(1) - live prediction| > p1_stop; within it, p1_tolerance is recorded as
+#     a consistency flag and does not stop the run (the concurrent baseline is the control)
+p1_tolerance = 0.02
+p1_stop = 0.08
+# (c) A2's q75 record against the refit record model ([refit]) at the live calibration
+pm1_tolerance = 0.021        # 3 x sqrt(0.0045^2 + 0.0052^2), rounded up (refit.json gate_c)
+# #27 amendment (prereg section 10, post hoc): (c) is recorded against #26's refit and the
+# calibrated model, with the same tolerance, and never stops the run; go needs (a), (b), (d)
+c_stops = false
+# (d) circuits_execution_time_ns / shots against the cost model's per-shot time
+time_reference = "circuits_execution_time"
+time_tolerance = 0.25
+
+[calibration]                  # live vs #16's snapshot (q59, q75, CZ); q74 has no snapshot
+factor = 2.0                   # T1, T2 within x2 either way; error rates at most x2
+abs_readout_max = 0.05         # every measured qubit (q74 included)
+abs_t1_min_s = 50e-6
+abs_t2_min_s = 30e-6
+qubits = [59, 75, 74]
+
+# -- budget ----------------------------------------------------------------------------------
+[budget]
+sub_job_overhead_s = 2.0       # Phase 6's cost model
+rep_delay_s = 250e-6
+phase6_circuit_s = 3.08316e-4  # live ibm_kingston estimate of the baseline (#16)
+margin = 0.25                  # upper bound: (1 + margin) x estimate + billing_round_s per job
+billing_round_s = 1.0
+max_qpu_seconds = 20.0         # per job, as Phase 6 (estimate)
+allowance_after_16_s = 584     # Open plan: 600 s / 28 days; Stage 4 re-reads it live
+hard_cap_s = 120               # #26: total for Phase 7 Stage 4/4b/4c, earlier pilots included (#17)
+prior_counted_s = 8.4          # #27: #25's and #26's pilots, 4.1992575 s each (max of 3 s charged and the upper bound), rounded up
+
+# -- #26: the refit and the amendment ------------------------------------------------------------
+[refit]                        # experiments/phase7_refit.py on #25's pilot (results/summaries/phase7_hw_4b/refit.json)
+decay = 0.1225210036278705                # q75 |1> -> |0> per mid-circuit measurement, recorded 0 (every step after the first)
+decay_first = 0.05108972973491628    # the same for the first measurement of a shot (gate record model only)
+source = "results/summaries/phase7_hw_4b/refit.json"
+
+[pilot_refit]                  # #27: q75's decay fitted on this pilot (prereg section 10)
+# qmem.refit's 2-parameter family (#26's primary) on the pilot's joint A2 record (500 shots),
+# with #20's pieces at the gate's own live calibration (run dir pieces_live.npz). Written once
+# to pilot/refit_pilot.json before any main job is submitted; its `decay` is the q75 model of
+# the analysis (A2's predicted P(1), the guard rail's A2 marginals, the partial-coherence
+# reading). The calibrated model (a = 0) and #26's [refit] are sensitivity rows.
+family = "decay_first"
+x0 = [0.05, 0.12]
+n_boot = 200                   # whole-shot bootstrap of the fit (reported, not used by the rule)
+seed = 27
+coherence_grid = [0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0]
+
+# #27: both amendments are checked before any --submit (phase7_hw.amendment_guard)
+[[amendment]]                  # section 9 (#26), as recorded in phase7_hw_4b.toml
+doc = "docs/phase7-preregistration.md"
+heading = "## 9. Amendment of 2026-11-08 (post hoc, after #25's pilot; #26)"
+date = "2026-11-08"
+sha256 = "483731a22578d92987f8285d747d99a056b94f72f9b01680eeec67e7095c0af7"
+commit = "daa49991a7abcc7a999ef2d0297055e1945335e1"
+
+[[amendment]]                  # section 10 (#27)
+doc = "docs/phase7-preregistration.md"
+heading = "## 10. Amendment of 2026-11-08 (post hoc, after #26's pilot; #27)"
+date = "2026-11-08"
+sha256 = ""                    # recorded after the amendment commit lands on main
+commit = ""
+
+# -- analysis (fixed in advance) -----------------------------------------------------------------
+[analysis]
+k_max = 7
+burn = 16
+offsets = [0, 1, 2, 3]
+block = 500                    # circular block bootstrap (shots), within job, stratified when pooled
+n_boot = 1000
+seed = 24
+alpha_segment = 0.01
+n_perm = 1000
+cp_grid = 50
+homog_block = 500
+const_block = 1000
+
+[decision]
+gate_z = 5.0
+vanish_fraction = 0.10
+persist_z = 5.0
+persist_fraction = 0.25
+family_alpha = 0.01
+
+# -- hypotheses for the prediction table and the validation ------------------------------------
+# kind: ablate (#20's joint pieces with qmem.ablate_hw.Hypothesis fields), ancilla (#21's
+# simulator with fitted parameters), hmm (an output-level process for every PMD-cadence arm),
+# with optional readout / persistence on q59's record and a regime-B episode.
+[[hypotheses]]
+name = "H_q75"
+label = "H_q75, calibrated"
+kind = "ablate"
+
+[[hypotheses]]
+name = "H_drift_episode"
+label = "drift: #19's episode regime (q75 -0.49 rad/step + q59 P(1|0) +0.060) in 13.5% of shots, contiguous"
+kind = "ablate"
+episode = { weight = 0.135, start = 0.40, q75_phase = -0.49170087817951275, e01 = 0.05963039868669916 }
+
+[[hypotheses]]
+name = "H_drift_mixture"
+label = "drift: #19's best K = 3 mixture of 2-state HMMs (rest), in every PMD-cadence arm"
+kind = "hmm"
+source = "drift_mixture_K3"
+
+[[hypotheses]]
+name = "H_ancilla_fit"
+label = "q59 reset + leakage + readout, #21's (a)+(b)+(d) fit"
+kind = "ancilla"
+params = "fit_abd_all"
+
+[[hypotheses]]
+name = "H_ancilla_extreme"
+label = "q59 leakage at #21's extreme (5e-3 per readout, seep 0.02)"
+kind = "ancilla"
+params = "max_leak"
+
+[[hypotheses]]
+name = "H_spec_typical"
+label = "spectators typical (#22): Stark 16 kHz, thermal q74 5% with ZZ -10 kHz, q74 readout dephases q75 5%"
+kind = "ablate"
+spectator = { stark_hz = 16e3, zz_hz = -10e3, p_thermal = 0.05, spec_dephasing = 0.05 }
+
+[[hypotheses]]
+name = "H_spec_upper"
+label = "spectators upper (#22 all-upper): Stark 16 kHz, thermal q74 5% with ZZ -50 kHz, q74 readout dephases q75 25%"
+kind = "ablate"
+spectator = { stark_hz = 16e3, zz_hz = -50e3, p_thermal = 0.05, spec_dephasing = 0.25 }
+
+[[hypotheses]]
+name = "H_sticky_fit"
+label = "classical electronics: sticky q59 record, eps = 0.027 (#23's fit)"
+kind = "ablate"
+persistence = 0.027
+
+[[hypotheses]]
+name = "H_sticky_generous"
+label = "classical electronics: sticky q59 record, eps = 0.01 (#23's generous bound)"
+kind = "ablate"
+persistence = 0.01
+
+[[hypotheses]]
+name = "H_outside"
+label = "unmodelled 3-state memory outside q75: every PMD-cadence arm emits #19's 3-state HMM fit"
+kind = "hmm"
+source = "hmm_3state"
+
+[[hypotheses]]
+name = "H_partial_c05"
+label = "incomplete A2 dephasing: q75 keeps 50% of its coherence"
+kind = "ablate"
+op_coherence = 0.5
+
+[[hypotheses]]
+name = "H_partial_c08"
+label = "incomplete A2 dephasing: q75 keeps 80% of its coherence"
+kind = "ablate"
+op_coherence = 0.8
+
+[validation]
+reps = 200                     # per hypothesis and decay stratum
+seed = 4242
+n_boot = 200                   # bootstrap resamples per replicate (1000 in the real analysis)
+n_perm = 100                   # change-point permutations per replicate (1000 in the real analysis)
+# #27: the data of every hypothesis drawn at both q75 decays; each replicate's analysis model
+# is the decay refitted on a simulated 500-shot pilot (replicate r of every hypothesis in a
+# stratum shares pilot r)
+pilot_fit = true
+decay_strata = [
+    { label = "calibrated", decay = 0.0, decay_first = 0.0 },
+    { label = "refit26", decay = 0.1225210036278705, decay_first = 0.05108972973491628 },
+]

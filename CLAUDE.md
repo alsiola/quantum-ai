@@ -58,6 +58,10 @@ and keep within the plan's allowance. Credentials live in `.env` (gitignored; ne
   The amended re-pilot and main jobs use `experiments/configs/phase7_hw_4b.toml` with
   `phase7_hw.py` (same modes as Stage 3/4); `--submit` also refuses unless the dated amendment
   (`docs/phase7-preregistration.md` §9) matches its `[amendment]` hash at its commit on `main`.
+- Phase 7 Stage 4c (#27): gate (c) as a recorded diagnostic, the pilot's own q75 refit as the
+  analysis's model; `experiments/configs/phase7_hw_4c.toml` with `phase7_hw.py` (same modes;
+  `--dry-run-local` validates at both q75 decays, about 2.5 h with 2 workers). `--submit`
+  refuses unless §9 and §10 both match their `[[amendment]]` hashes at their commits on `main`.
 - Phase 6 hardware run (PMD N = 3 on `ibm_kingston`; spends QPU time, see above):
   `uv run --group hardware python experiments/phase6.py --config experiments/configs/phase6.toml --dry-run`,
   then without `--dry-run`. `--from-run <dir>` resumes; a submitted job is re-fetched by id.
