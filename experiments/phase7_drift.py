@@ -1016,6 +1016,7 @@ def plots(res: dict[str, Any], cfg, data: Data, cal: W.LinearProcess, sd: Path) 
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    import matplotlib.ticker
 
     w = cfg["witness"]
     a, b = cfg["segments"]["episode"]
@@ -1126,6 +1127,7 @@ def plots(res: dict[str, Any], cfg, data: Data, cal: W.LinearProcess, sd: Path) 
         axi.axhline(0.5, color="grey", lw=0.8, ls=":")
         axi.axhline(1.0, color="grey", lw=0.8)
         axi.set_xscale("log")
+        axi.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
         axi.set_xlabel("max |z| of g(0..7) against the data")
         axi.set_ylabel(f"w(0) / device w(0) ({tgt})")
         axi.set_title(f"adversarial searches, target: {tgt}")
