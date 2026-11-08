@@ -21,9 +21,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
-from scipy.optimize import minimize
 
 from . import ablate_hw as A
+from .ancilla import nelder_mead
 
 _VEC0 = A.RHO0_JOINT.reshape(-1, order="F")
 _TRACE = np.eye(4).reshape(-1, order="F")
@@ -190,8 +190,8 @@ def fit(
         return float(model_of(family, x, pieces, readout_error).nll(m, y).sum())
 
     start = np.asarray(x0 if x0 is not None else [0.1] * len(names), dtype=float)
-    res = minimize(f, start, method="Nelder-Mead", options={"xatol": 1e-5, "fatol": 1e-4})
-    return Fit(family, dict(zip(names, map(float, res.x), strict=True)), float(res.fun), len(names))
+    x, val, _ = nelder_mead(f, start, step=0.05, max_evals=600, xtol=1e-5, ftol=1e-4)
+    return Fit(family, dict(zip(names, map(float, x), strict=True)), float(val), len(names))
 
 
 def bootstrap_fits(

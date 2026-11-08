@@ -294,6 +294,56 @@ def submission_check(approval_url: str | None, submit_flag: bool) -> None:
         raise Refused(f"approval_url {approval_url!r} is not a GitHub issue-comment URL")
 
 
+def amendment_section(doc: str, heading: str) -> str | None:
+    """The text of the section whose heading line is ``heading``, up to the next heading of
+    the same or a higher level (``None`` if absent). Trailing whitespace is dropped."""
+    lines = doc.splitlines()
+    level = len(heading) - len(heading.lstrip("#"))
+    try:
+        i = next(k for k, ln in enumerate(lines) if ln.rstrip() == heading.rstrip())
+    except StopIteration:
+        return None
+    j = len(lines)
+    for k in range(i + 1, len(lines)):
+        h = lines[k]
+        if h.startswith("#") and len(h) - len(h.lstrip("#")) <= level:
+            j = k
+            break
+    return "\n".join(ln.rstrip() for ln in lines[i:j]).rstrip() + "\n"
+
+
+def amendment_hash(section: str) -> str:
+    import hashlib
+
+    return hashlib.sha256(section.encode()).hexdigest()
+
+
+def amendment_check(
+    doc: str, heading: str, date: str, sha256: str, committed_doc: str | None
+) -> None:
+    """Refuse a submission unless the dated amendment is recorded and unchanged (#26).
+
+    * ``heading`` (from the config) names the section and carries ``date``;
+    * the section in the working copy ``doc`` hashes to the recorded ``sha256``;
+    * ``committed_doc`` (the document at the recorded amendment commit, which must be on
+      ``main``) holds the same section, so the amendment was committed as it now reads.
+    """
+    if not (date and sha256 and heading):
+        raise Refused("no amendment recorded in the config: refusing to submit")
+    if date not in heading:
+        raise Refused(f"the amendment heading {heading!r} does not carry its date {date}")
+    sec = amendment_section(doc, heading)
+    if sec is None:
+        raise Refused(f"amendment section {heading!r} not found in the pre-registration")
+    if amendment_hash(sec) != sha256:
+        raise Refused("the amendment section differs from its recorded hash")
+    if committed_doc is None:
+        raise Refused("the amendment commit is not on main (or not found)")
+    old = amendment_section(committed_doc, heading)
+    if old is None or amendment_hash(old) != sha256:
+        raise Refused("the amendment at its recorded commit differs from its recorded hash")
+
+
 @dataclass
 class CalibrationBounds:
     """Acceptability of the live calibration against a reference snapshot.
@@ -721,6 +771,9 @@ __all__ = [
     "Refused",
     "Secondary",
     "UsageExceeded",
+    "amendment_check",
+    "amendment_hash",
+    "amendment_section",
     "analyse_arm",
     "boot_g",
     "budget_check",

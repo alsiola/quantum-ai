@@ -1,0 +1,45 @@
+# Phase 7 Stage 4b (issue #26), step 1: refit q75 under repeated mid-circuit measurement on
+# #25's pilot (results/summaries/phase7_hw/). Local only: no QPU and no IBM service.
+#
+#   uv run --group hardware python experiments/phase7_refit.py --config experiments/configs/phase7_refit.toml --export
+#       once: #20's step pieces under #25's live calibration (calibration_before.json), saved
+#       as pieces_pilot25.npz in summary_dir (needs Qiskit; FakeKingston is not used).
+#   uv run python experiments/phase7_refit.py --config experiments/configs/phase7_refit.toml
+#       the fits, the whole-shot bootstrap, posterior checks and the gate (c) prediction
+#       (numpy; about 15 min with 2 workers).
+
+[experiment]
+name = "phase7_refit"
+summary_dir = "results/summaries/phase7_hw_4b"
+pilot_dir = "results/summaries/phase7_hw"        # #25: shots_pilot.npz, calibration_before.json
+phase6_dir = "results/summaries/phase6"          # step.qasm
+ablation_dir = "results/summaries/phase7_ablation"  # #20's snapshot pieces (calibrated)
+workers = 2
+
+[layout]
+step_memory = 1          # compact step.qasm: q[0] = q59, q[1] = q75
+step_output = 0
+length = 64
+burn = 16
+pilot_key_A2 = "j0_p001_A2_c0"
+pilot_key_baseline = "j0_p000_baseline_c0"
+
+[fit]
+# The families (qmem.refit.FAMILIES): calibrated (0 parameters), decay (1: a), decay_first
+# (2: a0 for the first measurement of a shot, a for every later one). The primary refit is
+# the 2-parameter one; the 1-parameter fit is reported as a sensitivity.
+families = ["calibrated", "decay", "decay_first"]
+primary = "decay_first"
+x0 = 0.1
+n_boot = 500
+seed = 26
+# comparator: q75 leakage |1> -> |2> per measurement, seeping back per step, |2> read as 0
+# (qmem.ancilla's memory_leak / memory_seep / memory_read2), 2 parameters
+leak_x0 = [0.1, 0.3]
+
+[gate]
+# Gate (c) of the amended pilot (docs/phase7-preregistration.md section 9): the refit
+# prediction at the new pilot's live calibration, with tolerance
+#   z * sqrt(SD of the prediction over the bootstrap refits^2 + SE of a 500-shot pilot^2).
+z = 3.0
+pilot_a2_shots = 500

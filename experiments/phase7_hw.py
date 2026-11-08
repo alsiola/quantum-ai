@@ -25,10 +25,12 @@ from __future__ import annotations
 import argparse
 import copy
 import csv
+import dataclasses
 import hashlib
 import json
 import math
 import shutil
+import subprocess
 import sys
 import time
 import tomllib
@@ -48,6 +50,7 @@ from qmem import ancilla as AN
 from qmem import artefacts as AR
 from qmem import drift as D
 from qmem import followup as F
+from qmem import refit as R
 from qmem import witness as W
 from qmem.records import REPO_ROOT, new_run_dir, run_metadata, save_json
 
@@ -306,8 +309,23 @@ def d1_process(cfg: dict[str, Any], **kw: Any) -> W.LinearProcess:
     return W.LinearProcess.hmm(lab, init)
 
 
+def meas_decay(cfg: dict[str, Any]) -> float:
+    """#26's refit: q75's decay per mid-circuit measurement (0 without a ``[refit]`` table).
+    Applied to A2 in every hypothesis with a q75 model; the stationary models use the
+    steady-state rate (``decay``), the gate's record model also the first-step rate."""
+    return float(cfg.get("refit", {}).get("decay", 0.0))
+
+
+def without_refit(cfg: dict[str, Any]) -> dict[str, Any]:
+    c = copy.deepcopy(cfg)
+    c.pop("refit", None)
+    return c
+
+
 def ablate_models(cfg: dict[str, Any], hyp: A.Hypothesis) -> Models:
     p = pieces(cfg)
+    if not hyp.meas_decay:
+        hyp = dataclasses.replace(hyp, meas_decay=meas_decay(cfg))
     procs = {v: A.process(A.step_superops(v, p, hyp)) for v in ("baseline", "A2", "A2s_spec", "A1")}
     bank = [A.process(A.step_superops("A3", p, hyp, ps)) for ps in A.PAULIS]
     procs["D1"] = d1_process(cfg)
@@ -331,6 +349,7 @@ def ancilla_models(cfg: dict[str, Any], params: dict[str, float]) -> Models:
 
     s6 = json.loads((rdir(cfg, "phase6_dir") / "summary.json").read_text())
     c = AN.apply_params(AN.config_from_snapshot(s6["prepare"]["calibration"]["noise"]), params)
+    c = dataclasses.replace(c, memory_decay=meas_decay(cfg))
     base = AN.physical_step((rdir(cfg, "phase6_dir") / "step.qasm").read_text())
     reg = AN.register_for(c, (59,), 3)
 
@@ -882,13 +901,24 @@ def live_pilot_predictions(cfg: dict[str, Any], noise_json: dict[str, Any]) -> d
     pc = A.export_pieces(step, noise, lay["step_memory"], lay["step_output"])
     base = A.process(A.step_superops("baseline", pc))
     acfg = copy.deepcopy(acfg)
-    acfg["a2_record"]["readout_error"] = dict(noise_json["readout"])[lay["step_memory"]]
+    r = dict(noise_json["readout"])[lay["step_memory"]]
+    acfg["a2_record"]["readout_error"] = r
     rec = PA.a2_record(acfg, {"calibrated": pc})
-    burn = cfg["analysis"]["burn"]
-    return {
-        "baseline_p1": float(base.marginals(cfg["layout"]["length"])[burn:].mean()),
+    burn, lw = cfg["analysis"]["burn"], cfg["layout"]["length"]
+    out = {
+        "baseline_p1": float(base.marginals(lw)[burn:].mean()),
         "A2_p_m1": rec["p_m1"],
     }
+    rf = cfg.get("refit")
+    if rf:  # #26: the amended gate (c) is the refit record model's P(m = 1), t >= burn
+        out["A2_p_m1_calibrated"] = rec["p_m1"]
+        mod = R.RecordModel.build(pc, r, rf["decay"], rf.get("decay_first"))
+        marg = mod.marginals(lw)
+        out["A2_p_m1"] = float(marg["m"][burn:].mean())
+        out["A2_p_m1_step0"] = float(marg["m"][0])
+        out["A2_y_p1"] = float(marg["y"][burn:].mean())
+        out["refit"] = dict(rf)
+    return out
 
 
 def decode(res_pub: Any, arm: str, length: int) -> dict[str, np.ndarray]:
@@ -1100,6 +1130,7 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
 
     if args.submit:
         F.submission_check(cfg["ibm"].get("approval_url"), True)  # before any network call
+        amendment_guard(cfg)
     name = cfg["experiment"]["name"] + ("" if args.submit else "_livedry")
     out = (args.from_run or new_run_dir(name)).resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -1141,7 +1172,7 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
         dur["A3"] = max(v for k, v in built["duration_s"].items() if k.startswith("A3_"))
         if not args.submit:
             b = cfg["budget"]
-            checks, spent = [], 0.0
+            checks, spent = [], float(b.get("prior_counted_s", 0.0))
             jobs = [("pilot", pilot_schedule(cfg))] + [
                 (f"job{j}", job) for j, job in enumerate(schedule(cfg))
             ]
@@ -1173,6 +1204,27 @@ def stage4(cfg: dict[str, Any], args: argparse.Namespace) -> None:
     except BaseException as e:
         log(out, f"FAILED: {e!r}\n{traceback.format_exc()}")
         raise
+
+
+def amendment_guard(cfg: dict[str, Any]) -> dict[str, Any] | None:
+    """#26: refuse unless the dated amendment named in ``[amendment]`` is in the
+    pre-registration, unchanged since its recorded commit, and that commit is on ``main``
+    (``origin/main`` as last fetched). No ``[amendment]`` table: nothing to check (#25)."""
+    am = cfg.get("amendment")
+    if am is None:
+        return None
+    doc_path = REPO_ROOT / am["doc"]
+    commit = am.get("commit", "")
+
+    def git(*a: str) -> subprocess.CompletedProcess:
+        return subprocess.run(["git", *a], cwd=REPO_ROOT, capture_output=True, text=True)
+
+    committed = None
+    if commit and git("merge-base", "--is-ancestor", commit, "origin/main").returncode == 0:
+        shown = git("show", f"{commit}:{am['doc']}")
+        committed = shown.stdout if shown.returncode == 0 else None
+    F.amendment_check(doc_path.read_text(), am["heading"], am["date"], am["sha256"], committed)
+    return {"heading": am["heading"], "date": am["date"], "sha256": am["sha256"], "commit": commit}
 
 
 def _seconds(v: Any) -> float | None:
@@ -1310,7 +1362,7 @@ def run_jobs(
                 b["max_qpu_seconds"],
                 u.get("usage_remaining_seconds"),
                 ctx["plan"],
-                spent_counted(out, source),
+                spent_counted(out, source) + float(b.get("prior_counted_s", 0.0)),
                 b["hard_cap_s"],
                 cfg["ibm"]["allowed_plans"],
             )
@@ -1408,6 +1460,18 @@ def analyse_run(cfg: dict[str, Any], out: Path) -> dict[str, Any]:
     }
     if "m" in data.get("A2", {}):
         summary["A2_p_m1"] = float(data["A2"]["m"][:, s.burn :].mean())
+    if "refit" in cfg:  # #26: the same analysis with the original (un-refit) predictions
+        cu = without_refit(cfg)
+        qu = exact_hypothesis(cu, next(h for h in cu["hypotheses"] if h["name"] == "H_q75"))
+        mu = {a: np.asarray(qu[a]["marginals"]) if "marginals" in qu[a] else None for a in ARMS}
+        ru = {"A3_vs_prediction": qu["A3"]["w0"], "D1_lag1_vs_prediction": qu["D1"]["lag1"]}
+        resu = analyse_dataset(cu, data, mu, s, ru, cfg["analysis"]["seed"])
+        du: F.Decision = resu["decision"]
+        summary["sensitivity_unrefit"] = {
+            "decision": {**du.__dict__, "reported": du.reported, "ladder": LADDER[du.reported]},
+            "guards": resu["guards"],
+            "refs": ru,
+        }
     save_json(out / "analysis.json", summary)
     sd = REPO_ROOT / "results" / "summaries" / cfg["experiment"]["name"]
     sd.mkdir(parents=True, exist_ok=True)
@@ -1443,11 +1507,12 @@ def pilot_gate(cfg, d: Path, pubs, lp, rec, cost, dur) -> dict[str, Any]:
         y[a].shape == (p["arms"][a], lw) for a in ("baseline", "A2")
     )
     p1 = float(y["baseline"][:, s.burn :].mean())
-    out["b_p1"] = {
-        "got": p1,
-        "pred": lp["baseline_p1"],
-        "ok": abs(p1 - lp["baseline_p1"]) <= p["p1_tolerance"],
-    }
+    dev = abs(p1 - lp["baseline_p1"])
+    out["b_p1"] = {"got": p1, "pred": lp["baseline_p1"], "ok": dev <= p["p1_tolerance"]}
+    if "p1_stop" in p:  # #26's amendment: stop only beyond p1_stop; p1_tolerance is a flag
+        out["b_p1"].update(
+            ok=dev <= p["p1_stop"], consistent=dev <= p["p1_tolerance"], stop_at=p["p1_stop"]
+        )
     pm = float(y["A2_m"][:, s.burn :].mean())
     out["c_pm1"] = {
         "got": pm,
@@ -1455,9 +1520,14 @@ def pilot_gate(cfg, d: Path, pubs, lp, rec, cost, dur) -> dict[str, Any]:
         "ok": abs(pm - lp["A2_p_m1"]) <= p["pm1_tolerance"],
     }
     ex = rec.get("execution_seconds")
+    ref = p.get("time_reference", "execution_span")
+    if ref == "circuits_execution_time":  # #26: what the cost model's reference measures
+        ns = (rec.get("metrics") or {}).get("circuits_execution_time_ns")
+        ex = None if ns is None else ns * 1e-9
     per_model = (cost["shot_s"]) / cost["shots"]
     per_got = None if ex is None else ex / cost["shots"]
     out["d_time"] = {
+        "reference": ref,
         "got_s_per_shot": per_got,
         "model_s_per_shot": per_model,
         "ok": per_got is not None and abs(per_got / per_model - 1) <= p["time_tolerance"],
