@@ -1,0 +1,145 @@
+# Phase 7 Stage 2A (issue #20): q75 destruction / dephasing controls, designed and simulated
+# locally. No QPU and no IBM service of any kind: topology and native operations come from
+# FakeKingston, calibration from the committed Phase 6 snapshot.
+#
+# 1. (once, `hardware` group) build every control circuit, export its QASM and the
+#    superoperators of the step pieces:
+#    uv run --group hardware python experiments/phase7_ablation.py --config experiments/configs/phase7_ablation.toml --export
+# 2. predictions, shots and QPU seconds (numpy; a few minutes, 2 workers):
+#    uv run python experiments/phase7_ablation.py --config experiments/configs/phase7_ablation.toml
+# 3. the Stage 3 job plan and its cost (prints only; nothing is ever submitted from here):
+#    uv run python experiments/phase7_ablation.py --config experiments/configs/phase7_ablation.toml --plan
+
+[experiment]
+name = "phase7_ablation"
+summary_dir = "results/summaries/phase7_ablation"
+phase6_dir = "results/summaries/phase6"          # read-only inputs: step.qasm, circuit.qasm, summary.json
+audit_dir = "results/summaries/phase7_audit"     # #18: instruments.npz, summary.json
+workers = 2
+
+[layout]                       # physical qubits of Phase 6's circuit (ibm_kingston, Heron r2)
+memory = 75
+output = 59
+spectator = 74                 # A2s_spec: q75's other neighbour, unused by Phase 6
+step_memory = 1                # compact step.qasm: q[0] = q59, q[1] = q75
+step_output = 0
+
+[circuits]
+# Controls (see qmem.ablate_hw): one operation on q75 per step, after q75's leading gates
+# and before the step's first CZ, so that it runs while q59 is measured and reset.
+variants = ["baseline", "A1", "A2", "A3", "A1s", "A2s", "A2s_spec", "A3s"]
+length = 64
+# Sham delays: "snapshot" uses the live ibm_kingston durations of the Phase 6 snapshot
+# (measure 2.18 us, reset 2.212 us); the x gate's duration comes from FakeKingston (32 ns).
+delays = "snapshot"
+# All circuits pass through the same light transpile (level 0, fixed layout: native gates
+# already), so that baseline and controls differ only where intended. Submit the exported
+# ISA circuits as they are: a level >= 1 transpile would merge A3's Paulis into q75's gates.
+optimization_level = 0
+seed_transpiler = 0
+
+[a3]
+instances = 64                 # M random-Pauli circuits; shots are split evenly over them
+seed = 2020                    # instance i, step t: Pauli drawn by default_rng([seed, i])
+pool = 20000                   # instances in the pool for the finite-M bias study
+m_grid = [8, 16, 32, 64, 128, 256]
+draws = 4000
+qasm_instances = 2             # QASM committed for the first few instances (the rest rebuild)
+
+[noise]
+levels = ["noiseless", "calibrated", "calibrated_x3"]
+# Telegraph-drift regime B (H2): every error probability x3 and T1, T2 / 3 (scale_noise).
+x3_factor = 3.0
+
+[witness]                      # #18's primary statistic and Phase 6's estimator settings
+k_max = 7
+burn = 16
+offsets = [0, 1, 2, 3]
+block = 4
+length = 64
+
+[shots]
+device_w0 = -0.00587           # episode-free Phase 6 device witness (#18)
+device_w0_se = 0.00011
+se_inflation = 1.4             # contiguous-block / bootstrap SE at w(0) (#18; Stage 1 has not predeclared another)
+z = 5.0
+sim_shots = 20000              # simulated shots per prediction for the per-shot SD
+bootstrap = 200
+seed = 7
+nll_shots = 20000
+nll_seed = 11
+persist_fractions = [1.0, 0.5, 0.2, 0.05]   # "persists" / "partial" outcomes: w = f * device_w0
+sham_reduction = 0.2           # a sham "differs" if its witness is 20% below the baseline's
+feasible_shots = 20000
+
+[scans]                        # one parameter at a time, calibrated noise
+q59_e0 = 0.00098
+q59_e1 = [0.0068, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9]
+a2_coherence = [0.0, 0.01, 0.05, 0.1, 0.2, 0.5, 0.8, 1.0]
+spec_dephasing = [0.0, 0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 1.0]
+
+[a2_record]
+readout_error = 0.01513671875  # q75's readout error in the snapshot
+
+[budget]                       # Phase 6's cost model (configs/phase6.toml)
+sub_job_overhead_s = 2.0
+rep_delay_s = 250e-6
+phase6_circuit_duration_s = 3.08316e-4   # live ibm_kingston estimate for the baseline
+
+# Hypotheses (qmem.ablate_hw.Hypothesis). H_q75: the calibrated model. The rest are concrete
+# H_other alternatives; numbers from the Phase 6 snapshot unless stated.
+[[hypotheses]]
+name = "H_q75"
+
+[[hypotheses]]
+# q59's reset as measure + conditional X: from |0> it errs when the readout says 1
+# (prob_meas1_prep0 = 0.00098); from |1> at most prob_meas0_prep1 = 0.0068 (decay during the
+# readout leaves |0>, a correct reset). Stage 2B (#21) has not landed; this is the upper end.
+name = "H1_q59_residual"
+q59_reset = [0.00098, 0.0068]
+
+[[hypotheses]]
+name = "H1x10_q59_residual"    # ten times larger: a pessimistic residual q59 memory
+q59_reset = [0.0098, 0.068]
+
+[[hypotheses]]
+name = "H1_q59_q75_residual"   # also A1's q75 reset (q75: 0.0156 / 0.0146)
+q59_reset = [0.00098, 0.0068]
+q75_reset = [0.0156, 0.0146]
+
+[[hypotheses]]
+name = "H3_weak_A2_measurement"   # A2's measurement keeps 5% of q75's coherence
+op_coherence = 0.05
+
+[[hypotheses]]
+name = "H3_spec_dephasing"     # the spectator readout dephases q75 by 5% per step
+spec_dephasing = 0.05
+
+[[hypotheses]]
+name = "H3_spec_dephasing_strong"
+spec_dephasing = 0.25
+
+# H2, telegraph drift: shots drawn from regime B with probability `weight` (the episode's
+# 13.5% of shots in #18), A otherwise; each regime is a full process of the same circuit.
+[[drift]]
+name = "H2_drift_noise_x3"
+weight = 0.135
+regime_b = { noise = "calibrated_x3" }
+
+[[drift]]
+name = "H2_drift_q75_detuning"
+weight = 0.135
+regime_b = { noise = "calibrated", q75_phase = 0.3 }
+
+[hardware]
+# Ready for Stage 3, never submitted from this repository's Stage 2 scripts: the script has
+# no submission path. Stage 3 asks the owner, re-reads the live target and regenerates the
+# sham delays from it before anything runs (one job, circuits interleaved by the sampler).
+backend = "ibm_kingston"
+submit = false
+# Sized in docs/phase7-ablation.md section 4: A2 resolves a witness of 9% of the device's at
+# 5 sigma; baseline vs A2s_spec resolves a 25% change; A1 and A3 are cross-checks. Optional
+# pure-delay shams (A1s, A2s, A3s): 4,000 shots each if the owner wants them.
+shots_per_circuit = { baseline = 15000, A2 = 10000, A2s_spec = 15000, A1 = 4000 }
+a3_total_shots = 4096          # 64 shots on each of the 64 instances
+sampler = { dynamical_decoupling = false, twirling_gates = false, twirling_measure = false }

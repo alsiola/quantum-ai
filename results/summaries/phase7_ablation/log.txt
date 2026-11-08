@@ -1,0 +1,6 @@
+[02:31:16] run dir /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-4cb0181c74249b5b342bfbfaf1b25bda/results/phase7_ablation/20261108T023116Z
+[02:31:16] checks: {"noiseless": {"max_abs_g_diff_vs_phase6": 3.9968028886505635e-15, "max_abs_marginal_diff_vs_phase6": 3.4416913763379853e-15, "A1_max_abs_w": 1.0832485483789477e-32, "A2_max_abs_w": 1.064311733748522e-18}, "calibrated": {"max_abs_g_diff_vs_phase6": 1.5765166949677223e-14, "max_abs_marginal_diff_vs_phase6": 8.781864124784988e-14, "A1_max_abs_w": 2.657011532962888e-32, "A2_max_abs_w": 9.493254812698014e-19, "max_abs_g_diff_vs_audit_instrument": 3.3084646133829665e-14}}
+[02:31:34] 82 predictions
+[02:31:41] A3 pool (noiseless) done
+[02:31:48] A3 pool (calibrated) done
+[02:31:48] A2 record diagnostics: {"readout_error": 0.01513671875, "p_m1": 0.4925318877296814, "p_y1_given_m0_yprev0": 0.3456008874005573, "p_y1_given_m0_yprev1": 0.3472869797002039, "p_y1_given_m1_yprev0": 0.4248030244999515, "p_y1_given_m1_yprev1": 0.42616809349150486, "cmi_y_yprev_given_m_nats": 1.0753930858125563e-06}

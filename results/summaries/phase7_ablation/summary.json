@@ -1,0 +1,488 @@
+{
+  "a2_record": {
+    "cmi_y_yprev_given_m_nats": 1.0753930858125563e-06,
+    "p_m1": 0.4925318877296814,
+    "p_y1_given_m0_yprev0": 0.3456008874005573,
+    "p_y1_given_m0_yprev1": 0.3472869797002039,
+    "p_y1_given_m1_yprev0": 0.4248030244999515,
+    "p_y1_given_m1_yprev1": 0.42616809349150486,
+    "readout_error": 0.01513671875
+  },
+  "a3_realised_w0": -7.09999057203718e-05,
+  "checks": {
+    "calibrated": {
+      "A1_max_abs_w": 2.657011532962888e-32,
+      "A2_max_abs_w": 9.493254812698014e-19,
+      "max_abs_g_diff_vs_audit_instrument": 3.3084646133829665e-14,
+      "max_abs_g_diff_vs_phase6": 1.5765166949677223e-14,
+      "max_abs_marginal_diff_vs_phase6": 8.781864124784988e-14
+    },
+    "noiseless": {
+      "A1_max_abs_w": 1.0832485483789477e-32,
+      "A2_max_abs_w": 1.064311733748522e-18,
+      "max_abs_g_diff_vs_phase6": 3.9968028886505635e-15,
+      "max_abs_marginal_diff_vs_phase6": 3.4416913763379853e-15
+    }
+  },
+  "meta": {
+    "config": {
+      "a2_record": {
+        "readout_error": 0.01513671875
+      },
+      "a3": {
+        "draws": 4000,
+        "instances": 64,
+        "m_grid": [
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "pool": 20000,
+        "qasm_instances": 2,
+        "seed": 2020
+      },
+      "budget": {
+        "phase6_circuit_duration_s": 0.000308316,
+        "rep_delay_s": 0.00025,
+        "sub_job_overhead_s": 2.0
+      },
+      "circuits": {
+        "delays": "snapshot",
+        "length": 64,
+        "optimization_level": 0,
+        "seed_transpiler": 0,
+        "variants": [
+          "baseline",
+          "A1",
+          "A2",
+          "A3",
+          "A1s",
+          "A2s",
+          "A2s_spec",
+          "A3s"
+        ]
+      },
+      "drift": [
+        {
+          "name": "H2_drift_noise_x3",
+          "regime_b": {
+            "noise": "calibrated_x3"
+          },
+          "weight": 0.135
+        },
+        {
+          "name": "H2_drift_q75_detuning",
+          "regime_b": {
+            "noise": "calibrated",
+            "q75_phase": 0.3
+          },
+          "weight": 0.135
+        }
+      ],
+      "experiment": {
+        "audit_dir": "results/summaries/phase7_audit",
+        "name": "phase7_ablation",
+        "phase6_dir": "results/summaries/phase6",
+        "summary_dir": "results/summaries/phase7_ablation",
+        "workers": 2
+      },
+      "hardware": {
+        "a3_total_shots": 10000,
+        "backend": "ibm_kingston",
+        "sampler": {
+          "dynamical_decoupling": false,
+          "twirling_gates": false,
+          "twirling_measure": false
+        },
+        "shots_per_circuit": {
+          "A1": 10000,
+          "A2": 20000,
+          "A2s_spec": 10000,
+          "baseline": 20000
+        },
+        "submit": false
+      },
+      "hypotheses": [
+        {
+          "name": "H_q75"
+        },
+        {
+          "name": "H1_q59_residual",
+          "q59_reset": [
+            0.00098,
+            0.0068
+          ]
+        },
+        {
+          "name": "H1x10_q59_residual",
+          "q59_reset": [
+            0.0098,
+            0.068
+          ]
+        },
+        {
+          "name": "H1_q59_q75_residual",
+          "q59_reset": [
+            0.00098,
+            0.0068
+          ],
+          "q75_reset": [
+            0.0156,
+            0.0146
+          ]
+        },
+        {
+          "name": "H3_weak_A2_measurement",
+          "op_coherence": 0.05
+        },
+        {
+          "name": "H3_spec_dephasing",
+          "spec_dephasing": 0.05
+        },
+        {
+          "name": "H3_spec_dephasing_strong",
+          "spec_dephasing": 0.25
+        }
+      ],
+      "layout": {
+        "memory": 75,
+        "output": 59,
+        "spectator": 74,
+        "step_memory": 1,
+        "step_output": 0
+      },
+      "noise": {
+        "levels": [
+          "noiseless",
+          "calibrated",
+          "calibrated_x3"
+        ],
+        "x3_factor": 3.0
+      },
+      "scans": {
+        "a2_coherence": [
+          0.0,
+          0.01,
+          0.05,
+          0.1,
+          0.2,
+          0.5,
+          0.8,
+          1.0
+        ],
+        "q59_e0": 0.00098,
+        "q59_e1": [
+          0.0068,
+          0.02,
+          0.05,
+          0.1,
+          0.2,
+          0.3,
+          0.5,
+          0.7,
+          0.9
+        ],
+        "spec_dephasing": [
+          0.0,
+          0.01,
+          0.02,
+          0.05,
+          0.1,
+          0.25,
+          0.5,
+          1.0
+        ]
+      },
+      "shots": {
+        "bootstrap": 200,
+        "device_w0": -0.00587,
+        "device_w0_se": 0.00011,
+        "feasible_shots": 20000,
+        "nll_seed": 11,
+        "nll_shots": 20000,
+        "persist_fractions": [
+          1.0,
+          0.5,
+          0.2,
+          0.05
+        ],
+        "se_inflation": 1.4,
+        "seed": 7,
+        "sham_reduction": 0.2,
+        "sim_shots": 20000,
+        "z": 5.0
+      },
+      "witness": {
+        "block": 4,
+        "burn": 16,
+        "k_max": 7,
+        "length": 64,
+        "offsets": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    "git_commit": "304b1136e0f940a4bbc3ceb2d734deea108c6995",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 7,
+    "timestamp_utc": "2026-11-08T02:31:49+00:00",
+    "torch": "2.15.0"
+  },
+  "run_dir": "results/phase7_ablation/20261108T023116Z",
+  "shots": [
+    {
+      "duration_us": 308.316,
+      "qpu_s": 0.16827066005592653,
+      "role": "baseline",
+      "sd_w0_per_shot": 0.020381317718147853,
+      "shots_vs_H_q75__H1_q59_q75_residual": 132306624661.8644,
+      "shots_vs_H_q75__H1_q59_residual": 132306624661.8644,
+      "shots_vs_H_q75__H1x10_q59_residual": 3466.2471961130746,
+      "shots_vs_H_q75__H2_drift_noise_x3": 74390.20158305147,
+      "shots_vs_H_q75__H2_drift_q75_detuning": 30478.31946401897,
+      "shots_vs_H_q75__H3_spec_dephasing": Infinity,
+      "shots_vs_H_q75__H3_spec_dephasing_strong": Infinity,
+      "shots_vs_H_q75__H3_weak_A2_measurement": Infinity,
+      "shots_w0_from_0": 301.38964324133025,
+      "variant": "baseline",
+      "w0__H1_q59_q75_residual": -0.006899274251003136,
+      "w0__H1_q59_residual": -0.006899274251003136,
+      "w0__H1x10_q59_residual": -0.0051680920155050495,
+      "w0__H2_drift_noise_x3": -0.006525361802758281,
+      "w0__H2_drift_q75_detuning": -0.006315271155849731,
+      "w0__H3_spec_dephasing": -0.006898994087558531,
+      "w0__H3_spec_dephasing_strong": -0.006898994087558531,
+      "w0__H3_weak_A2_measurement": -0.006898994087558531,
+      "w0_device_expected_H_q75": -0.00587,
+      "w0_pred_H_q75": -0.006898994087558531
+    },
+    {
+      "duration_us": 310.6280000000001,
+      "feasible": true,
+      "qpu_s_persist_0.05": 1.8092848338718148,
+      "qpu_s_persist_0.2": 0.11308030211698843,
+      "qpu_s_persist_0.5": 0.01809284833871815,
+      "qpu_s_persist_1": 0.004523212084679537,
+      "qpu_s_vs_baseline": 0.17349068499578002,
+      "role": "destructive",
+      "sd_w0_per_shot": 0.0033346801200628672,
+      "shots_persist_0.05": 3227.2466481727893,
+      "shots_persist_0.2": 201.70291551079933,
+      "shots_persist_0.5": 32.272466481727896,
+      "shots_persist_1": 8.068116620431974,
+      "shots_vs_H_q75__H1_q59_q75_residual": 6.044133272593474e+22,
+      "shots_vs_H_q75__H1_q59_residual": 4.7900817889881745e+35,
+      "shots_vs_H_q75__H1x10_q59_residual": 2.8156271558373438e+32,
+      "shots_vs_H_q75__H2_drift_noise_x3": 1.5926080504829699e+38,
+      "shots_vs_H_q75__H2_drift_q75_detuning": 3.3483584186913506e+61,
+      "shots_vs_H_q75__H3_spec_dephasing": Infinity,
+      "shots_vs_H_q75__H3_spec_dephasing_strong": Infinity,
+      "shots_vs_H_q75__H3_weak_A2_measurement": Infinity,
+      "shots_vs_baseline": 309.45775986176216,
+      "variant": "A1",
+      "w0__H1_q59_q75_residual": 6.781990370876976e-14,
+      "w0__H1_q59_residual": 2.4090883105871052e-20,
+      "w0__H1x10_q59_residual": -9.936572650492601e-19,
+      "w0__H2_drift_noise_x3": 1.3212035484176626e-21,
+      "w0__H2_drift_q75_detuning": -2.945154626682132e-32,
+      "w0__H3_spec_dephasing": -2.657011532962888e-32,
+      "w0__H3_spec_dephasing_strong": -2.657011532962888e-32,
+      "w0__H3_weak_A2_measurement": -2.657011532962888e-32,
+      "w0_device_expected_H_q75": -2.657011532962888e-32,
+      "w0_pred_H_q75": -2.657011532962888e-32,
+      "z2_per_qpu_s": 1381.7614303714001
+    },
+    {
+      "duration_us": 310.59600000000006,
+      "feasible": true,
+      "qpu_s_persist_0.05": 17.433507952706492,
+      "qpu_s_persist_0.2": 1.0895942470441502,
+      "qpu_s_persist_0.5": 0.17433507952706387,
+      "qpu_s_persist_1": 0.04358376988176595,
+      "qpu_s_vs_baseline": 0.21254159832428274,
+      "role": "destructive",
+      "sd_w0_per_shot": 0.010351552665678521,
+      "shots_persist_0.05": 31098.166866525076,
+      "shots_persist_0.2": 1943.6354291578073,
+      "shots_persist_0.5": 310.9816686652489,
+      "shots_persist_1": 77.7454171663122,
+      "shots_vs_H_q75__H1_q59_q75_residual": 1550038950.604859,
+      "shots_vs_H_q75__H1_q59_residual": 1550038950.604859,
+      "shots_vs_H_q75__H1x10_q59_residual": 19058454.560221896,
+      "shots_vs_H_q75__H2_drift_noise_x3": 2096636074511.3892,
+      "shots_vs_H_q75__H2_drift_q75_detuning": 8006557263.161862,
+      "shots_vs_H_q75__H3_spec_dephasing": Infinity,
+      "shots_vs_H_q75__H3_spec_dephasing_strong": Infinity,
+      "shots_vs_H_q75__H3_weak_A2_measurement": 15602254.093548704,
+      "shots_vs_baseline": 379.13506040764247,
+      "variant": "A2",
+      "w0__H1_q59_q75_residual": 1.314631985321865e-06,
+      "w0__H1_q59_residual": 1.314631985321865e-06,
+      "w0__H1x10_q59_residual": 1.1855821714616915e-05,
+      "w0__H2_drift_noise_x3": 3.574489069603406e-08,
+      "w0__H2_drift_q75_detuning": 5.784323760520492e-07,
+      "w0__H3_spec_dephasing": -9.493254812698014e-19,
+      "w0__H3_spec_dephasing_strong": -9.493254812698014e-19,
+      "w0__H3_weak_A2_measurement": 1.3103334481700068e-05,
+      "w0_device_expected_H_q75": -9.493254812698014e-19,
+      "w0_pred_H_q75": -9.493254812698014e-19,
+      "z2_per_qpu_s": 143.40200530965993
+    },
+    {
+      "duration_us": 308.34799999999996,
+      "feasible": true,
+      "qpu_s_persist_0.05": 2.2552529157725143,
+      "qpu_s_persist_0.2": 0.09177080737753184,
+      "qpu_s_persist_0.5": 0.013611613090529261,
+      "qpu_s_persist_1": 0.0033200866627282727,
+      "qpu_s_vs_baseline": 0.17574628784994148,
+      "role": "destructive",
+      "sd_w0_per_shot": 0.0028281688794385106,
+      "shots_persist_0.05": 4039.1528505027586,
+      "shots_persist_0.2": 164.3613076030215,
+      "shots_persist_0.5": 24.378368133367115,
+      "shots_persist_1": 5.9462676730789275,
+      "shots_vs_H_q75__H1_q59_q75_residual": 1.9117812389158099e+27,
+      "shots_vs_H_q75__H1_q59_residual": 1.9117812389158099e+27,
+      "shots_vs_H_q75__H1x10_q59_residual": 2.6140794628924825e+23,
+      "shots_vs_H_q75__H2_drift_noise_x3": 7.390864564769443e+18,
+      "shots_vs_H_q75__H2_drift_q75_detuning": 1.6614266421570206e+38,
+      "shots_vs_H_q75__H3_spec_dephasing": Infinity,
+      "shots_vs_H_q75__H3_spec_dephasing_strong": Infinity,
+      "shots_vs_H_q75__H3_weak_A2_measurement": Infinity,
+      "shots_vs_baseline": 314.7612024220405,
+      "variant": "A3",
+      "w0__H1_q59_q75_residual": 3.234123961853319e-16,
+      "w0__H1_q59_residual": 3.234123961853319e-16,
+      "w0__H1x10_q59_residual": 2.765769325830792e-14,
+      "w0__H2_drift_noise_x3": 5.201489443499422e-12,
+      "w0__H2_drift_q75_detuning": 1.4071507279114928e-21,
+      "w0__H3_spec_dephasing": 3.100796694281385e-22,
+      "w0__H3_spec_dephasing_strong": 3.100796694281385e-22,
+      "w0__H3_weak_A2_measurement": 3.100796694281385e-22,
+      "w0_device_expected_H_q75": -7.09999057203718e-05,
+      "w0_pred_H_q75": -7.09999057203718e-05,
+      "z2_per_qpu_s": 1836.6669573788133
+    },
+    {
+      "duration_us": 310.5280000000001,
+      "feasible": true,
+      "qpu_s_reduction_0.2": 8.446866697338814,
+      "role": "sham",
+      "sd_w0_per_shot": 0.020381317718147853,
+      "shots_reduction_0.2": 15069.482162066506,
+      "shots_vs_H_q75__H1_q59_q75_residual": 132306624661.8644,
+      "shots_vs_H_q75__H1_q59_residual": 132306624661.8644,
+      "shots_vs_H_q75__H1x10_q59_residual": 3466.2471961130746,
+      "shots_vs_H_q75__H2_drift_noise_x3": 74390.20158305147,
+      "shots_vs_H_q75__H2_drift_q75_detuning": 30478.31946401897,
+      "shots_vs_H_q75__H3_spec_dephasing": Infinity,
+      "shots_vs_H_q75__H3_spec_dephasing_strong": Infinity,
+      "shots_vs_H_q75__H3_weak_A2_measurement": Infinity,
+      "variant": "A1s",
+      "w0__H1_q59_q75_residual": -0.006899274251003136,
+      "w0__H1_q59_residual": -0.006899274251003136,
+      "w0__H1x10_q59_residual": -0.0051680920155050495,
+      "w0__H2_drift_noise_x3": -0.006525361802758281,
+      "w0__H2_drift_q75_detuning": -0.006315271155849731,
+      "w0__H3_spec_dephasing": -0.006898994087558531,
+      "w0__H3_spec_dephasing_strong": -0.006898994087558531,
+      "w0__H3_weak_A2_measurement": -0.006898994087558531,
+      "w0_device_expected_H_q75": -0.00587,
+      "w0_pred_H_q75": -0.006898994087558531,
+      "z2_per_qpu_s": 2.9596773449587226
+    },
+    {
+      "duration_us": 310.49600000000004,
+      "feasible": true,
+      "qpu_s_reduction_0.2": 8.44638447390963,
+      "role": "sham",
+      "sd_w0_per_shot": 0.020381317718147853,
+      "shots_reduction_0.2": 15069.482162066506,
+      "shots_vs_H_q75__H1_q59_q75_residual": 132306624661.8644,
+      "shots_vs_H_q75__H1_q59_residual": 132306624661.8644,
+      "shots_vs_H_q75__H1x10_q59_residual": 3466.2471961130746,
+      "shots_vs_H_q75__H2_drift_noise_x3": 74390.20158305147,
+      "shots_vs_H_q75__H2_drift_q75_detuning": 30478.31946401897,
+      "shots_vs_H_q75__H3_spec_dephasing": Infinity,
+      "shots_vs_H_q75__H3_spec_dephasing_strong": Infinity,
+      "shots_vs_H_q75__H3_weak_A2_measurement": Infinity,
+      "variant": "A2s",
+      "w0__H1_q59_q75_residual": -0.006899274251003136,
+      "w0__H1_q59_residual": -0.006899274251003136,
+      "w0__H1x10_q59_residual": -0.0051680920155050495,
+      "w0__H2_drift_noise_x3": -0.006525361802758281,
+      "w0__H2_drift_q75_detuning": -0.006315271155849731,
+      "w0__H3_spec_dephasing": -0.006898994087558531,
+      "w0__H3_spec_dephasing_strong": -0.006898994087558531,
+      "w0__H3_weak_A2_measurement": -0.006898994087558531,
+      "w0_device_expected_H_q75": -0.00587,
+      "w0_pred_H_q75": -0.006898994087558531,
+      "z2_per_qpu_s": 2.9598463197150786
+    },
+    {
+      "duration_us": 310.49600000000004,
+      "feasible": true,
+      "qpu_s_reduction_0.2": 8.44638447390963,
+      "role": "sham",
+      "sd_w0_per_shot": 0.020381317718147853,
+      "shots_reduction_0.2": 15069.482162066506,
+      "shots_vs_H_q75__H1_q59_q75_residual": 132306624661.8644,
+      "shots_vs_H_q75__H1_q59_residual": 132306624661.8644,
+      "shots_vs_H_q75__H1x10_q59_residual": 3466.2471961130746,
+      "shots_vs_H_q75__H2_drift_noise_x3": 74390.20158305147,
+      "shots_vs_H_q75__H2_drift_q75_detuning": 30478.31946401897,
+      "shots_vs_H_q75__H3_spec_dephasing": 5479.534475261388,
+      "shots_vs_H_q75__H3_spec_dephasing_strong": 440.2579509113539,
+      "shots_vs_H_q75__H3_weak_A2_measurement": Infinity,
+      "variant": "A2s_spec",
+      "w0__H1_q59_q75_residual": -0.006899274251003136,
+      "w0__H1_q59_residual": -0.006899274251003136,
+      "w0__H1x10_q59_residual": -0.0051680920155050495,
+      "w0__H2_drift_noise_x3": -0.006525361802758281,
+      "w0__H2_drift_q75_detuning": -0.006315271155849731,
+      "w0__H3_spec_dephasing": -0.005522322239152525,
+      "w0__H3_spec_dephasing_strong": -0.0020422115374345677,
+      "w0__H3_weak_A2_measurement": -0.006898994087558531,
+      "w0_device_expected_H_q75": -0.00587,
+      "w0_pred_H_q75": -0.006898994087558531,
+      "z2_per_qpu_s": 2.9598463197150786
+    },
+    {
+      "duration_us": 308.34799999999996,
+      "feasible": true,
+      "qpu_s_reduction_0.2": 8.414015226225509,
+      "role": "sham",
+      "sd_w0_per_shot": 0.020381317718147853,
+      "shots_reduction_0.2": 15069.482162066506,
+      "shots_vs_H_q75__H1_q59_q75_residual": 132306624661.8644,
+      "shots_vs_H_q75__H1_q59_residual": 132306624661.8644,
+      "shots_vs_H_q75__H1x10_q59_residual": 3466.2471961130746,
+      "shots_vs_H_q75__H2_drift_noise_x3": 74390.20158305147,
+      "shots_vs_H_q75__H2_drift_q75_detuning": 30478.31946401897,
+      "shots_vs_H_q75__H3_spec_dephasing": Infinity,
+      "shots_vs_H_q75__H3_spec_dephasing_strong": Infinity,
+      "shots_vs_H_q75__H3_weak_A2_measurement": Infinity,
+      "variant": "A3s",
+      "w0__H1_q59_q75_residual": -0.006899274251003136,
+      "w0__H1_q59_residual": -0.006899274251003136,
+      "w0__H1x10_q59_residual": -0.0051680920155050495,
+      "w0__H2_drift_noise_x3": -0.006525361802758281,
+      "w0__H2_drift_q75_detuning": -0.006315271155849731,
+      "w0__H3_spec_dephasing": -0.006898994087558531,
+      "w0__H3_spec_dephasing_strong": -0.006898994087558531,
+      "w0__H3_weak_A2_measurement": -0.006898994087558531,
+      "w0_device_expected_H_q75": -0.00587,
+      "w0_pred_H_q75": -0.006898994087558531,
+      "z2_per_qpu_s": 2.9712330353382175
+    }
+  ]
+}

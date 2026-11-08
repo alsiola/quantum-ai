@@ -1,0 +1,2077 @@
+{
+  "baseline_duration_fake_s": 0.0003210159999999986,
+  "circuits": [
+    {
+      "circuit": "baseline",
+      "clbits": 64,
+      "depth": 1343,
+      "duration_fake_s": 0.0003210159999999986,
+      "duration_minus_baseline_s": 0.0,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.0,
+        "sx": 0.0
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "baseline"
+    },
+    {
+      "circuit": "A1",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003233279999999987,
+      "duration_minus_baseline_s": 2.3120000000000822e-06,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "measure": 0.0,
+        "reset": 1.0,
+        "rz": 0.0,
+        "sx": 0.0
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A1"
+    },
+    {
+      "circuit": "A2",
+      "clbits": 128,
+      "depth": 1344,
+      "duration_fake_s": 0.0003232959999999987,
+      "duration_minus_baseline_s": 2.2800000000000663e-06,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "measure": 1.0,
+        "reset": 0.0,
+        "rz": 0.0,
+        "sx": 0.0
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A2"
+    },
+    {
+      "circuit": "A3_000",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.484375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.578125,
+        "sx": 0.0,
+        "x": 0.515625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_001",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.515625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.515625,
+        "sx": 0.0,
+        "x": 0.484375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_002",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.4375,
+        "sx": 0.0,
+        "x": 0.375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_003",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.453125,
+        "sx": 0.0,
+        "x": 0.4375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_004",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.453125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.578125,
+        "sx": 0.0,
+        "x": 0.546875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_005",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.546875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.453125,
+        "sx": 0.0,
+        "x": 0.453125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_006",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.46875,
+        "sx": 0.0,
+        "x": 0.5
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_007",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.515625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.578125,
+        "sx": 0.0,
+        "x": 0.484375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_008",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.453125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.5,
+        "sx": 0.0,
+        "x": 0.546875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_009",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.546875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.453125,
+        "sx": 0.0,
+        "x": 0.453125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_010",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.546875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.53125,
+        "sx": 0.0,
+        "x": 0.453125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_011",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.53125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.546875,
+        "sx": 0.0,
+        "x": 0.46875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_012",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.453125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.453125,
+        "sx": 0.0,
+        "x": 0.546875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_013",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.515625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.5625,
+        "sx": 0.0,
+        "x": 0.484375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_014",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.46875,
+        "sx": 0.0,
+        "x": 0.4375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_015",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.53125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.4375,
+        "sx": 0.0,
+        "x": 0.46875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_016",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.515625,
+        "sx": 0.0,
+        "x": 0.5
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_017",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.46875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.46875,
+        "sx": 0.0,
+        "x": 0.53125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_018",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.421875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.53125,
+        "sx": 0.0,
+        "x": 0.578125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_019",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.515625,
+        "sx": 0.0,
+        "x": 0.5
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_020",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.546875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.484375,
+        "sx": 0.0,
+        "x": 0.453125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_021",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.484375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.546875,
+        "sx": 0.0,
+        "x": 0.515625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_022",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.546875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.453125,
+        "sx": 0.0,
+        "x": 0.453125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_023",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.46875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.609375,
+        "sx": 0.0,
+        "x": 0.53125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_024",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.5,
+        "sx": 0.0,
+        "x": 0.4375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_025",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.484375,
+        "sx": 0.0,
+        "x": 0.5
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_026",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.390625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.59375,
+        "sx": 0.0,
+        "x": 0.609375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_027",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.53125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.53125,
+        "sx": 0.0,
+        "x": 0.46875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_028",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.515625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.390625,
+        "sx": 0.0,
+        "x": 0.484375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_029",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.515625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.5,
+        "sx": 0.0,
+        "x": 0.484375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_030",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.59375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.5,
+        "sx": 0.0,
+        "x": 0.40625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_031",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.46875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.46875,
+        "sx": 0.0,
+        "x": 0.53125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_032",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.578125,
+        "sx": 0.0,
+        "x": 0.4375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_033",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.546875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.484375,
+        "sx": 0.0,
+        "x": 0.453125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_034",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.515625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.5,
+        "sx": 0.0,
+        "x": 0.484375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_035",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.46875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.375,
+        "sx": 0.0,
+        "x": 0.53125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_036",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.53125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.5,
+        "sx": 0.0,
+        "x": 0.46875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_037",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.3125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.40625,
+        "sx": 0.0,
+        "x": 0.6875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_038",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.578125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.53125,
+        "sx": 0.0,
+        "x": 0.421875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_039",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.453125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.46875,
+        "sx": 0.0,
+        "x": 0.546875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_040",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.453125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.578125,
+        "sx": 0.0,
+        "x": 0.546875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_041",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.53125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.5,
+        "sx": 0.0,
+        "x": 0.46875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_042",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.484375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.625,
+        "sx": 0.0,
+        "x": 0.515625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_043",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.59375,
+        "sx": 0.0,
+        "x": 0.625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_044",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.4375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.484375,
+        "sx": 0.0,
+        "x": 0.5625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_045",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.515625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.421875,
+        "sx": 0.0,
+        "x": 0.484375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_046",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.609375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.359375,
+        "sx": 0.0,
+        "x": 0.390625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_047",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.453125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.53125,
+        "sx": 0.0,
+        "x": 0.546875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_048",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.546875,
+        "sx": 0.0,
+        "x": 0.4375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_049",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.46875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.578125,
+        "sx": 0.0,
+        "x": 0.53125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_050",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.421875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.484375,
+        "sx": 0.0,
+        "x": 0.578125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_051",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.453125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.484375,
+        "sx": 0.0,
+        "x": 0.546875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_052",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.40625,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.5625,
+        "sx": 0.0,
+        "x": 0.59375
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_053",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.453125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.59375,
+        "sx": 0.0,
+        "x": 0.546875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_054",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.46875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.453125,
+        "sx": 0.0,
+        "x": 0.53125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_055",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.484375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.453125,
+        "sx": 0.0,
+        "x": 0.515625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_056",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.484375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.53125,
+        "sx": 0.0,
+        "x": 0.515625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_057",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.625,
+        "sx": 0.0,
+        "x": 0.5
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_058",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.546875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.578125,
+        "sx": 0.0,
+        "x": 0.453125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_059",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.4375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.515625,
+        "sx": 0.0,
+        "x": 0.5625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_060",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.578125,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.59375,
+        "sx": 0.0,
+        "x": 0.421875
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_061",
+      "clbits": 64,
+      "depth": 1345,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.5,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.484375,
+        "sx": 0.0,
+        "x": 0.5
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_062",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.484375,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.453125,
+        "sx": 0.0,
+        "x": 0.515625
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A3_063",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 0.421875,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.4375,
+        "sx": 0.0,
+        "x": 0.578125
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3"
+    },
+    {
+      "circuit": "A1s",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003232279999999987,
+      "duration_minus_baseline_s": 2.2120000000000798e-06,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 1.0,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.0,
+        "sx": 0.0
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A1s"
+    },
+    {
+      "circuit": "A2s",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003231959999999987,
+      "duration_minus_baseline_s": 2.180000000000064e-06,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 1.0,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.0,
+        "sx": 0.0
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A2s"
+    },
+    {
+      "circuit": "A2s_spec",
+      "clbits": 128,
+      "depth": 1344,
+      "duration_fake_s": 0.0003231959999999987,
+      "duration_minus_baseline_s": 2.180000000000064e-06,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 1.0,
+        "measure": 1.0,
+        "reset": 0.0,
+        "rz": 0.0,
+        "sx": 0.0
+      },
+      "qubits_used": [
+        59,
+        74,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A2s_spec"
+    },
+    {
+      "circuit": "A3s",
+      "clbits": 64,
+      "depth": 1344,
+      "duration_fake_s": 0.0003210479999999986,
+      "duration_minus_baseline_s": 3.1999999999961747e-08,
+      "measure_supported": true,
+      "per_step_minus_baseline": {
+        "cz": 0.0,
+        "delay": 1.0,
+        "measure": 0.0,
+        "reset": 0.0,
+        "rz": 0.0,
+        "sx": 0.0
+      },
+      "qubits_used": [
+        59,
+        75
+      ],
+      "reset_supported": true,
+      "transpile_preserved": true,
+      "variant": "A3s"
+    }
+  ],
+  "hardware_support": {
+    "backend": "fake_kingston",
+    "baseline_isa_equals_phase6_circuit": true,
+    "delays_used_s": {
+      "dt_units": {
+        "measure": 545,
+        "reset": 553,
+        "x": 8
+      },
+      "measure": 2.18e-06,
+      "reset": 2.212e-06,
+      "x": 3.2e-08
+    },
+    "dt_s": 4e-09,
+    "dynamic_circuits": true,
+    "neighbours_of_memory": [
+      59,
+      74
+    ],
+    "num_qubits": 156,
+    "operations": [
+      "cz",
+      "delay",
+      "id",
+      "if_else",
+      "measure",
+      "measure_2",
+      "reset",
+      "rz",
+      "sx",
+      "x"
+    ],
+    "qubits": {
+      "59": {
+        "delay": {
+          "duration_s": null,
+          "error": null,
+          "supported": true
+        },
+        "measure": {
+          "duration_s": 2.28e-06,
+          "error": 0.0062255859375,
+          "supported": true
+        },
+        "reset": {
+          "duration_s": 2.312e-06,
+          "error": null,
+          "supported": true
+        },
+        "sx": {
+          "duration_s": 3.2e-08,
+          "error": 0.0001396724357308572,
+          "supported": true
+        },
+        "t1_s": 0.0003108371502842573,
+        "t2_s": 0.00047299188972760287,
+        "x": {
+          "duration_s": 3.2e-08,
+          "error": 0.0001396724357308572,
+          "supported": true
+        }
+      },
+      "74": {
+        "delay": {
+          "duration_s": null,
+          "error": null,
+          "supported": true
+        },
+        "measure": {
+          "duration_s": 2.28e-06,
+          "error": 0.0078125,
+          "supported": true
+        },
+        "reset": {
+          "duration_s": 2.312e-06,
+          "error": null,
+          "supported": true
+        },
+        "sx": {
+          "duration_s": 3.2e-08,
+          "error": 0.00037921733401024595,
+          "supported": true
+        },
+        "t1_s": 0.00032288839669564667,
+        "t2_s": 0.00020514300776001875,
+        "x": {
+          "duration_s": 3.2e-08,
+          "error": 0.00037921733401024595,
+          "supported": true
+        }
+      },
+      "75": {
+        "delay": {
+          "duration_s": null,
+          "error": null,
+          "supported": true
+        },
+        "measure": {
+          "duration_s": 2.28e-06,
+          "error": 0.0146484375,
+          "supported": true
+        },
+        "reset": {
+          "duration_s": 2.312e-06,
+          "error": null,
+          "supported": true
+        },
+        "sx": {
+          "duration_s": 3.2e-08,
+          "error": 9.545397887551815e-05,
+          "supported": true
+        },
+        "t1_s": 0.0003345703069299612,
+        "t2_s": 0.0001330059974681722,
+        "x": {
+          "duration_s": 3.2e-08,
+          "error": 9.545397887551815e-05,
+          "supported": true
+        }
+      }
+    },
+    "reset_is_measure_plus_x": {
+      "measure_plus_x_s": 2.312e-06,
+      "reset_s": 2.312e-06
+    },
+    "snapshot_live_durations_s": {
+      "measure": 2.18e-06,
+      "reset": 2.212e-06
+    },
+    "spectator_is_neighbour_of_memory_only": true
+  },
+  "meta": {
+    "config": {
+      "a3": {
+        "draws": 4000,
+        "instances": 64,
+        "m_grid": [
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "pool": 20000,
+        "qasm_instances": 2,
+        "seed": 2020
+      },
+      "budget": {
+        "phase6_circuit_duration_s": 0.000308316,
+        "rep_delay_s": 0.00025,
+        "sub_job_overhead_s": 2.0
+      },
+      "circuits": {
+        "delays": "snapshot",
+        "length": 64,
+        "optimization_level": 0,
+        "seed_transpiler": 0,
+        "variants": [
+          "baseline",
+          "A1",
+          "A2",
+          "A3",
+          "A1s",
+          "A2s",
+          "A2s_spec",
+          "A3s"
+        ]
+      },
+      "drift": [
+        {
+          "name": "H2_drift_noise_x3",
+          "regime_b": {
+            "noise": "calibrated_x3"
+          },
+          "weight": 0.135
+        },
+        {
+          "name": "H2_drift_q75_detuning",
+          "regime_b": {
+            "noise": "calibrated",
+            "q75_phase": 0.3
+          },
+          "weight": 0.135
+        }
+      ],
+      "experiment": {
+        "audit_dir": "results/summaries/phase7_audit",
+        "name": "phase7_ablation",
+        "phase6_dir": "results/summaries/phase6",
+        "summary_dir": "results/summaries/phase7_ablation",
+        "workers": 2
+      },
+      "hardware": {
+        "a3_total_shots": 10000,
+        "backend": "ibm_kingston",
+        "sampler": {
+          "dynamical_decoupling": false,
+          "twirling_gates": false,
+          "twirling_measure": false
+        },
+        "shots_per_circuit": {
+          "A1": 10000,
+          "A2": 20000,
+          "A2s_spec": 10000,
+          "baseline": 20000
+        },
+        "submit": false
+      },
+      "hypotheses": [
+        {
+          "name": "H_q75"
+        },
+        {
+          "name": "H1_q59_residual",
+          "q59_reset": [
+            0.00098,
+            0.0068
+          ]
+        },
+        {
+          "name": "H1x10_q59_residual",
+          "q59_reset": [
+            0.0098,
+            0.068
+          ]
+        },
+        {
+          "name": "H1_q59_q75_residual",
+          "q59_reset": [
+            0.00098,
+            0.0068
+          ],
+          "q75_reset": [
+            0.0156,
+            0.0146
+          ]
+        },
+        {
+          "name": "H3_weak_A2_measurement",
+          "op_coherence": 0.05
+        },
+        {
+          "name": "H3_spec_dephasing",
+          "spec_dephasing": 0.05
+        },
+        {
+          "name": "H3_spec_dephasing_strong",
+          "spec_dephasing": 0.25
+        }
+      ],
+      "layout": {
+        "memory": 75,
+        "output": 59,
+        "spectator": 74,
+        "step_memory": 1,
+        "step_output": 0
+      },
+      "noise": {
+        "levels": [
+          "noiseless",
+          "calibrated",
+          "calibrated_x3"
+        ],
+        "x3_factor": 3.0
+      },
+      "shots": {
+        "bootstrap": 200,
+        "device_w0": -0.00587,
+        "device_w0_se": 0.00011,
+        "feasible_shots": 20000,
+        "nll_seed": 11,
+        "nll_shots": 20000,
+        "persist_fractions": [
+          1.0,
+          0.5,
+          0.2
+        ],
+        "se_inflation": 1.4,
+        "seed": 7,
+        "sim_shots": 20000,
+        "z": 5.0
+      },
+      "witness": {
+        "block": 4,
+        "burn": 16,
+        "k_max": 7,
+        "length": 64,
+        "offsets": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    "git_commit": "304b1136e0f940a4bbc3ceb2d734deea108c6995",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 2020,
+    "timestamp_utc": "2026-11-08T02:27:47+00:00",
+    "torch": "2.15.0"
+  },
+  "qasm_sha256": {
+    "A1": "20fad5af8906e3ebda287725dc1c264c357c5d3d4f9b5e91d65be9ed863fef24",
+    "A1s": "40f5201e90ab3112e886651fff714e4b5055ba50c912a8773f7875c776b034c9",
+    "A2": "5e11bb24878b91aabd22ecfb2ede0150a437979891028cdbb4110fb6d06467a1",
+    "A2s": "4dd92dd1e600d4c1ab8cdfe9a168d29e4ec51b2cef027df6f0d9dc9db66e4b63",
+    "A2s_spec": "d150dfc869ddbcbca5c5bb5154d22d66dac88493791f8afc7e984675a9658193",
+    "A3_000": "0b59c40b4c97d956cc24d90559c5cb6ef9141549e49211ccc8f676b62419e61a",
+    "A3_001": "796f61f491973c08bb0d099bb4b65dc195202681ec9d2fb8fd739a3c540046d9",
+    "A3_002": "37d71681f8e401d4d9abc8bcf3689ba458e9e4a2a4ee1d019f767403b8436908",
+    "A3_003": "1892274b0fc665cfe137ed9553a85bf758d755a9fbed7702d592064677695990",
+    "A3_004": "b75f00c0b70c9cc18268dcc6c075f6882c8c7b1b900cd1d93b09d50483cbe6d5",
+    "A3_005": "64b24f5bcf57095dbb7779e096993bcec280bcf7e3c3186d0f67d69c0d31a2db",
+    "A3_006": "af9eee49ba5be631b290bff9f72b536fd6b0ec2059bd02f5144e9ec33a605392",
+    "A3_007": "78a29ddd125b578ae7ae0d7388277ac6e5b4b7606405ecfaa4d58157d0f67ac0",
+    "A3_008": "b2297880e9c06e7d13b1ae9cb06539b9bd857588e0ae40835c26dc976a8c9d81",
+    "A3_009": "906bf91290affcf8bbb34f629fcf44dcf3641a93d708637a8d73403731007412",
+    "A3_010": "3784cb71c90f300ce81a1e1dcd475bedfe75f92b69a5e7f6bcedd69c8b10e3cd",
+    "A3_011": "ebcf4f863f6e68497422331f35caa0f2699205fab44f0f593df2fc62afaa8e11",
+    "A3_012": "82c450b4ee871c9605f7908771756048923ebe9336ef273ed5a8952b093e9765",
+    "A3_013": "057893909f2575d147d6f163e82b30ed52a4f24ac56efd675ef7b43c07ce9e8e",
+    "A3_014": "0cdd3120a684a12cd0fd4e9314f313c00e4cefee5c1fc7e7cb8cd065361a45d5",
+    "A3_015": "2770144d9bdf4c22cb320cae5c0a645b23c76feaa1e5a8bb952df620cf3dd3b8",
+    "A3_016": "b3958012c8f029f45a9bc03d85de58ee7302f163097718b1ebf601a1e74ac915",
+    "A3_017": "494815ca26e726268997b4847f33a3149d027c81c2ac0f65fec5a398f119ad99",
+    "A3_018": "7fb27e319a6625823275f571faa4f4b176c6d870f82ca20d01d7a336a035fcaa",
+    "A3_019": "0c939121a393361ef43491ddf85bf9451c7dc97596ec58a786265ebde27b77b5",
+    "A3_020": "a7f906522068ebe897e6213c5c79cedad20a95d67557fc13c5c5cc811dc16b23",
+    "A3_021": "dc1ad48eaf08fc26593244a1bbdbc087d87b1e1ab75acd0402f9f672d2358a9b",
+    "A3_022": "3382aafc4e67b00f204cc879c9945660cb43c79bc5e642df47fe4f726afc3f72",
+    "A3_023": "30177c2d566cb6de0780528a7ea3bb8c2d5621630972094d66948430b5178d2f",
+    "A3_024": "483e3a50a99f0ff68c538661fe0139e9d40ab65dffe99ccf98c01117a44842e7",
+    "A3_025": "5c1cf04672a08d36706a17e19ebfecc1811018915f020901779edd5a0037ccd1",
+    "A3_026": "171b0324ec89655e91c5a1e73410cf68a29258c138dd58abce69c76e97ef0141",
+    "A3_027": "d857bea671fe5053101822779584711b28082b69fa9eaafb6766feb376d70ff3",
+    "A3_028": "c65ad97681c1e35e01fa01e161e50ae910b3b57560116878f16d5d001ad8e3cd",
+    "A3_029": "ed0eb906b7e2cbb5b91748b3a4165c51d9fcf757dee71b7c6d9e9dc7c9d274c1",
+    "A3_030": "f944caf61faba3eea54421f0f0d5f666d65f792879c52d2bdfbf9b1824484c45",
+    "A3_031": "77ac0166b52b8d5cabf0ba23eec9672769343d35b54e85ce43f7b8925ec2bed7",
+    "A3_032": "069fb778ba920013ee28d276934f5864e1610bd3808ec1f8eebfe129cf40c10c",
+    "A3_033": "9a0bc8c55e1502be1588826c7f6979d8fe7352a402c7e1b7d178dfed4ecc4244",
+    "A3_034": "99af26f793f301cd388c2ccbde7ed5ae5f87daf39487392297bbbefd6ee6e435",
+    "A3_035": "39c23c690a90c302202a4bc2f81b1371517a1d18193028e21ae94bfea9f6ffb1",
+    "A3_036": "6e9578bad43a447a180607f0b9a802a37c12e1bce2f3077aa6e2c3d5a7e24326",
+    "A3_037": "5907b7cfae107b38cd6280045cc5b58cb5dfb4f26b59c9bccfce941ccee16aee",
+    "A3_038": "a0f7126efff68787c45f45d37f1f974a78a0150c51bace16a9651684c2fa028f",
+    "A3_039": "4286a21317042a476bc06d1b72c677ce93b90ca0f08e4338345ee91238136535",
+    "A3_040": "a42ecfce266039608fa2f4698732e13188fb83cccf5fcf0704a12b12da0cb7e6",
+    "A3_041": "c5d38d9ef14bf8df41103d052c18ae3d1627a749c3c8c39c29d7fc382d5f7e92",
+    "A3_042": "625135fc4249629ceddf321eb398dbabea6bd2aa4005a7460bb8313de1951116",
+    "A3_043": "768de72657fd61aa8b4f9fc66ad87b5e2ac9d090bd57416ddb192f8b1669207a",
+    "A3_044": "267d4fd3641b72b74119d4001fc335002623af83974f7dcde0b365e5aa357d09",
+    "A3_045": "7dfa65c3fd59c8944f085157d02128c730f2cdbb7bddc2da0609b825cc240670",
+    "A3_046": "213f9d8383aa2c1ced4b95078ffa068e4602d218987a63e116c9103a152a49e5",
+    "A3_047": "2435cf89ea815b7e22c964a97f18972a53ae52ea15661a88e969b89335b2cb14",
+    "A3_048": "0baaa64ef9374274ce83432e26bdd33d86dce847d033d0fe58f5df89f95575d2",
+    "A3_049": "0c411b62230718c6b9225d2af4299a9b595b53dba3c76624cddbc7d4361eb3c5",
+    "A3_050": "a1f233aa6b36a440bfbc849f5a2275af2811e373f2f36ee5423f33ab14809a1f",
+    "A3_051": "1a9cb8a2b11300faacc5bf9a2c3ab135b5ec80d9d124c8cad00345400789b908",
+    "A3_052": "0abb8579b9d8f66ae743095b74dd3c6939f9511a731e6359460be389d84efe95",
+    "A3_053": "d143225a073781e8502699869c3d165f336599dc29f23536064bca0cc3438861",
+    "A3_054": "9d962201047fbac85abf2afa546accbc1b315baecd4b3da9db67c5cd2da3dffd",
+    "A3_055": "f0bd2c7d136a8a4878617371cc382d35b7f5f4d04c68badf7b8a5f21758de822",
+    "A3_056": "0641721c17d297586ea2ff098c4b230ed54b18c1ac0924242f3f9b6136b7ed49",
+    "A3_057": "cadb960f8d25b6d05ef2d6051af3272709b53ac2086cba8e9347d64c8af07188",
+    "A3_058": "cd94bb1fb15470979d9f06ffa87570f708949fa86ffbf7a99add0b4cef728f4a",
+    "A3_059": "1855abb1270b46bf2993321c8d09d58c0ae86d37e1aa23aefaae156c33309271",
+    "A3_060": "b95cd8b822c288c2f4cadf68415eea6f0841f07c8a14ad84069fcfd03ad3060e",
+    "A3_061": "c365da5e099f5e643025a091fac493f231764b168f11241bdd06bc15a31feb7a",
+    "A3_062": "d6cbb2b72375510e992337db96a6c3c2d6f933bd790c16eb1454c998a3314694",
+    "A3_063": "41c9eb2f625dca50f8c5d0f3f8d27529518aaec0d700f9f1c87aeacfbf3c9095",
+    "A3s": "cf3d49e14ac82518182843721b7e050ef7fb1626c05b65c88b67b22ddf297666",
+    "baseline": "00cfcf3076ad950a461523f3dfb3efb0712496be4bcbd872bf12d100899e1bd0"
+  }
+}
