@@ -388,15 +388,25 @@ Phase 7 tried to destroy the Phase 6 result. Its claim ladder:
   artefacts, q59 residue and spectators each give < 10% of the witness at plausible
   parameters. On hardware, D1's lag-1 excess has the opposite sign to the sticky-record and
   leakage predictions, and the A2s_spec sham matches the baseline (#27).
-- **q75 is causally necessary: supported.** The pre-registered q75 ablation stopped at its
+- **Leaving q75 undisturbed is causally necessary: supported under the pre-registered
+  analysis, at the edge of the design's resolution; not robust to leave-one-job-out.** The pre-registered q75 ablation stopped at its
   pilot gate twice (#25, #26): q75's record under repeated mid-circuit measurement changed
   between jobs while the reported calibration didn't. After a second dated, post hoc
   amendment made that check a diagnostic, it ran in full (#27). The baseline replicated
   (w(0) = −5.15e-3, z = −40.5, 75% of the predicted witness). Measuring q75 every step (A2)
   left 4.0% of it (95% CI [0, 9.3%]): *vanishes*, with the bound at 93% of the threshold.
-  Resetting or randomising q75 also removed it, and a sham on spectator q74 did not. At most
-  about 55% of q75's coherence can survive A2's measurement. 53 s of QPU time in all
+  Resetting or randomising q75 also removed it. A sham on spectator q74 left w(0) unchanged,
+  but it is equal to the baseline in w(0) only, equivalent at ±20% and not at ±10% (#29). At
+  most about 55% of q75's coherence can survive A2's measurement. 53 s of QPU time in all
   (67 s counted against a 120 s cap).
+  - *Phase 8 Stage 0 (#28).* An independent re-analysis (#29,
+    [phase8-stage0-audit.md](phase8-stage0-audit.md)) reproduces #27 exactly, but leaving out
+    one job puts A2's bound at 10.1% or 11.4%: *ambiguous*. Job1's baseline P(1) dip is
+    specific to the baseline arm and unexplained.
+  - A 6-state classical hidden-state model whose q75 measurement disturbs its hidden state
+    fits every Stage 4c arm, A2's q75 record included (#30,
+    [phase8-claim-framework.md](phase8-claim-framework.md)). So the ablation shows that q75
+    must not be disturbed. It does not show that q75's *coherence* carries the memory.
 - **One-qubit memory dimension: not supported.** A 3-state classical HMM reproduces the
   statistics.
 

@@ -17,16 +17,24 @@ simulation.
 | 1. Nonzero higher-rank *output* statistics | **supported** | #18 |
 | 2. A stationary 2-state HMM is excluded | **supported**, robust to drift and mixed 2-state regimes | #18, #19 |
 | 3. Drift, nonstationary mixtures and control artefacts are excluded | **supported in models**; on hardware, only D1 and the A2s_spec sham were measured, and both agree | #19, #21–#23, #27 |
-| 4. Preserving q75 is causally necessary | **supported**: A2 *vanishes*, sham equal (narrow margin; post hoc gate) | #20, #24–#27 |
+| 4. Leaving q75 undisturbed is causally necessary | **supported under the pre-registered analysis, at the edge of the design's resolution; not robust to leave-one-job-out**: A2 *vanishes*; sham equal in w(0) only, equivalent at ±20% (post hoc gate) | #20, #24–#27; #29, #30 |
 | 5. A one-qubit physical memory-dimension claim | **not supported**, and out of reach of this design | #18, #19 |
 
 **Verdict.** The device's output process on q59 has classical dimension above 2. That is
 robust to every statistical and classical-artefact explanation tested. The pre-registered
-ablation (#27) shows that the witness needs q75 to stay coherent: measuring, resetting or
-randomising q75 every step removes it to below 10% of the baseline, and a sham on spectator
-q74 leaves it unchanged. Phase 7 has **not** shown that the memory is quantum in any
-stronger sense, or that the device uses one qubit of memory. A general 3-state classical HMM
-reproduces the output statistics.
+ablation (#27) shows that the witness needs q75 to be left undisturbed: measuring, resetting
+or randomising q75 every step removes it to below 10% of the baseline under the
+pre-registered analysis, and a sham on spectator q74 leaves w(0) unchanged. That call sits at
+the edge of the design's resolution and is not robust to leaving out one job (#29). Phase 7
+has **not** shown that q75's *coherence* carries the memory, that the memory is quantum in
+any stronger sense, or that the device uses one qubit of memory. A general 3-state classical
+HMM reproduces the output statistics, and a 6-state classical model whose q75 measurement
+disturbs its hidden state reproduces every Stage 4c arm (#30,
+[phase8-claim-framework.md](phase8-claim-framework.md)).
+
+*Revised after Phase 8 Stage 0 (#28): #29's re-analysis and #30's classical intervention
+fit. Rung 4 previously read "supported: A2 vanishes, sham equal", and the verdict said the
+witness "needs q75 to stay coherent".*
 
 ## Rung 1: higher-rank output statistics (supported)
 
@@ -88,7 +96,7 @@ reproduces the output statistics.
 - **Limitation.** The other mechanisms remain models with assumed or literature parameters.
   B2, D3 and C3 (tier 3) were never run.
 
-## Rung 4: is preserving q75 causally necessary? (supported)
+## Rung 4: is leaving q75 undisturbed causally necessary? (supported under the pre-registered analysis; not robust to leave-one-job-out)
 
 **The design** ([phase7-ablation.md](phase7-ablation.md), #20; pre-registered in
 [phase7-preregistration.md](phase7-preregistration.md), #24). The main arms are:
@@ -127,7 +135,7 @@ In #24's validation, no alternative hypothesis gave a wrong decisive call.
   calibrated model (P(m = 1) 0.489, fitted decay a ≈ 0), so #25's decay did not return. The
   four main jobs ran with no calibration violation or usage stop. 47 s charged.
 
-**The outcome (#27): A2 *vanishes*, sham equal.**
+**The outcome (#27): A2 *vanishes*; the sham is equal in w(0) only, equivalent at ±20% (#29).**
 
 | quantity | value |
 |---|---|
@@ -151,9 +159,22 @@ coherence A2's measurement can leave (observed ratio 0.040):
 So 80% surviving coherence is ruled out, but 50% can't be told apart from full dephasing.
 
 **What this does and doesn't imply.**
-- **Supported:** the rank > 2 output statistics need q75's coherence, or its interplay with
-  the classical loop. A Z measurement, a reset or a random Pauli on q75 each step removes the
-  witness; delaying q75 and measuring a spectator does not.
+- **Supported, under the pre-registered analysis:** the rank > 2 output statistics need q75
+  to be left undisturbed. A Z measurement, a reset or a random Pauli on q75 each step removes
+  the witness; delaying q75 and measuring a spectator leaves w(0) unchanged.
+- **Not robust (#29,** [phase8-stage0-audit.md](phase8-stage0-audit.md)**).** #27 reproduces
+  exactly, but leaving out job1 puts A2's bound at 10.1% of the baseline, and leaving out job2
+  at 11.4%: both *ambiguous*. A same-design replicate would call *vanishes* only 91% of the
+  time at a true ratio of 0. The sham is equivalent to the baseline at ±20% (TOST) but not at
+  ±10% (p = 0.054), and it differs from the baseline in the lag-1 excess (z = 8.3), w(1) and
+  w(2). Job1's P(1) dip hits all four baseline pubs and none of the other arms' pubs
+  interleaved with them; nothing yet explains it.
+- **Not coherence (#30,** [phase8-claim-framework.md](phase8-claim-framework.md)**).** A
+  6-state classical hidden-state model with per-arm intervention maps fits every Stage 4c
+  arm, A2's q75 record included, within #27's CIs. Its q75 measurement disturbs the hidden
+  state (the Leggett–Garg clumsiness loophole). Only classical memories that q75's measurement
+  leaves undisturbed are excluded. So the result shows that q75 must not be disturbed, not
+  that its coherence carries the memory.
 - **Not shown:** that no other memory path exists below the vanish bound (about 5e-4 in
   w(0)); "quantum memory" in a stronger sense; a memory dimension (rung 5).
 - **Caveats.**
@@ -177,15 +198,19 @@ So 80% surviving coherence is ruled out, but 50% can't be told apart from full d
   calibrated 1-qubit model, by 0.0004–0.0005 nats/symbol (|z| = 9–15). The Phase 6 claim of
   the opposite was a train/test-split artefact (#18). Only the advantage over 2-state HMMs
   survives.
-- #27's *vanishes* outcome shows only that q75 must stay coherent. It does not
+- #27's *vanishes* outcome shows only that q75 must not be disturbed. It does not
   bound the memory's dimension, because leaky resets, spectators and the readout chain can
   all add states.
 
 ## What would move the ladder
 
-- **Rung 4, firmer:** A2 at more shots (a new run) to widen the margin below the
-  vanish bound, and a q75 coherence scan (partial dephasing) to bound c more tightly than
-  0–0.55. Both need a new approval on #17; 52.78 s remain under the 120 s cap.
+- **Rung 4, firmer:** A2 at more shots (≥ 16,000–20,000, #29) to widen the margin below the
+  vanish bound, and a sham shown equivalent at ±10% in g(k) and lag-1 as well as w(0). Neither
+  moves the question of coherence: #30's classical model reproduces A2's vanishing at any
+  shot count. That needs reversible, composable phase insertions on q75 with held-out
+  sequences ([phase8-claim-framework.md](phase8-claim-framework.md) §4), not a partial
+  dephasing scan alone. Phase 8 (#28) designs these; any new QPU run needs a new approval from
+  the owner, and Phase 7's 120 s cap does not carry over.
 - **Rung 3, measured:** B2, D3 and C3 (tier 3) would measure q59's reset, the readout chain
   and crosstalk directly. They need separate approval.
 - **Rung 1 replication:** a run on another qubit pair or device. The same pair has now
