@@ -325,21 +325,30 @@ def analyse(cfg: dict[str, Any], out: Path) -> dict[str, Any]:
     plan = cfg["plan"]
     s_pm = plan["pm_shots"][f"pm_n{prot['primary_n']}"]
     s_bell = plan["bell_shots"][f"bell_n{prot['primary_n']}"]
-    s_mdi = plan["mdi_shots"][f"mdi_n{prot['primary_n']}"]
     pow_rows = []
     for name in ms:
         for n in all_n:
             row = keep[(name, n)]
             a = alpha if n == prot["primary_n"] else alpha_sec
             for route, eff, sd1, shots in (
-                ("pm", row["pm_score"] - row["pm_threshold"], row["pm_sd1"], 12 * s_pm),
+                (
+                    "pm",
+                    row["pm_score"] - row["pm_threshold"],
+                    row["pm_sd1"],
+                    12 * plan["pm_shots"].get(f"pm_n{n}", 0),
+                ),
                 (
                     "bell",
                     row.get("bell_F", math.nan) - row.get("bell_threshold", math.nan),
                     row.get("bell_sd1", math.nan),
-                    3 * 2 * s_bell,
+                    6 * plan["bell_shots"].get(f"bell_n{n}", 0),
                 ),
-                ("mdi", row["mdi_payoff"], row["mdi_sd1"], 16 * s_mdi),
+                (
+                    "mdi",
+                    row["mdi_payoff"],
+                    row["mdi_sd1"],
+                    16 * plan["mdi_shots"].get(f"mdi_n{n}", 0),
+                ),
             ):
                 pr = {
                     "model": name,
