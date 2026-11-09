@@ -1,0 +1,14 @@
+class,n_params,nll_per_symbol,delta_nll_vs_quantum,bic_vs_quantum,primary_max_abs_z,primary_worst,primary_n_over_1.96,all_max_abs_z,all_worst,all_n_over_bonferroni,fits_primary,fits_all_bonferroni
+quantum_calibrated,0,0.6520768,0.0,0.0,37.4,baseline g1,10,40.97,A2s_spec g1,34,False,False
+drop_baseline_job1,147,0.6517764,-1309.2,-371.2,11.51,baseline g0,9,11.51,baseline g0,17,False,False
+general_d3,77,0.6543672,9982.2,21141.5,54.16,baseline g3,8,58.63,A2s_spec g3,25,False,False
+general_d4,147,0.6516884,-1692.5,-1137.8,6.12,A2s_spec w0,6,14.89,A2 p_m1_step0,15,False,False
+general_d5,239,0.6513654,-3100.4,-2547.1,5.54,A2s_spec w0,3,6.79,A2s_spec w2,9,False,False
+general_d6,353,0.6511841,-3890.6,-2384.7,1.87,baseline g7,0,3.16,A2s_spec g5,0,True,True
+kappa0,151,0.6584642,27837.2,57982.7,88.31,baseline g0,14,161.5,A2 g0,47,False,False
+kappa0.3,151,0.6521542,337.2,2982.8,13.2,baseline g4,11,31.62,A2 g0,34,False,False
+kappa0.6,151,0.6517579,-1389.8,-471.2,6.13,A2s_spec w0,4,8.35,A2s_spec w2,11,False,False
+kappa0.9,151,0.6516579,-1825.5,-1342.6,5.08,A2s_spec w0,7,11.67,A2 p_m1_step0,17,False,False
+no_record,147,0.562773,-389198.8,-776150.4,229.32,A2 p_m1,5,319.67,A2 p_m1_next_given_m1_y0,21,False,False
+zpop_dh2,75,0.6547889,11819.9,24786.4,55.8,baseline g3,10,58.69,A2s_spec g3,33,False,False
+zpop_dh3,153,0.6537175,7150.3,16639.6,12.44,A2 p_m1,12,21.42,A2 p_m1_step0,43,False,False
