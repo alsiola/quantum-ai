@@ -721,9 +721,62 @@ def write_power(cfg: dict[str, Any], summary: dict[str, Any]) -> None:
 # -- the plan -------------------------------------------------------------------------------------
 
 
-def print_plan(cfg: dict[str, Any]) -> None:
+def build_plan(cfg: dict[str, Any]) -> dict[str, Any]:
+    """The unsubmitted plan: the arms and shots of ``[plan]``, each job's estimate and upper
+    bound with ``qmem.followup``'s cost model, against the per-tier hard caps."""
     sd = PC.sdir(cfg)
-    plan = json.loads((sd / "plan.json").read_text())
+    pl, bc = cfg["plan"], cfg["budget"]
+    cm = F.CostModel(
+        bc["sub_job_overhead_s"], bc["rep_delay_s"], bc["margin"], bc["billing_round_s"]
+    )
+    arms = Q.parse_arms(cfg["arms"])
+    dur = {r["arm"]: r["circuit_s"] for r in budget(cfg, arms)["arms"]}
+    circuits = json.loads((sd / "circuits.json").read_text())
+    tiers = []
+    for tier in pl["tiers"]:
+        n_jobs = tier["jobs"]
+        per_job = [
+            F.Pub(0, i, a, 0, pl["shots_per_arm"] // n_jobs) for i, a in enumerate(tier["arms"])
+        ]
+        job = cm.job(per_job, dur)
+        tiers.append(
+            {
+                "tier": tier["name"],
+                "purpose": tier["purpose"],
+                "arms": tier["arms"],
+                "shots_per_arm": pl["shots_per_arm"],
+                "jobs": n_jobs,
+                "per_job": job,
+                "estimate_s": n_jobs * job["estimate_s"],
+                "upper_s": n_jobs * job["upper_s"],
+                "hard_cap_s": tier["hard_cap_s"],
+                "within_cap": n_jobs * job["upper_s"] <= tier["hard_cap_s"],
+            }
+        )
+    plan = {
+        "status": "UNSUBMITTED: needs the owner's explicit approval on #28 (stage, device, "
+        "circuits, upper bound, hard cap). Phase 7's approvals and cap do not apply.",
+        "device": "ibm_kingston",
+        "layout": {"memory": 75, "output": 59, "ancillas": circuits["ancillas"]["chosen"]},
+        "transpile": "optimization_level = 0, fixed layout (as Phase 7); every echo fenced",
+        "qasm_sha256": circuits["qasm_sha256"],
+        "tiers": tiers,
+        "total_upper_s": sum(t["upper_s"] for t in tiers),
+        "allowance_s": bc["allowance_s"],
+        "guards": [
+            "qmem.followup.budget_check per job (Open plan only, live remaining allowance)",
+            "live calibration snapshot and qmem.followup.calibration_check before each job",
+            "pilot job first; stop on a failed pilot gate (prereg draft, docs/phase8-coherence.md)",
+            "max(charged, upper bound) accounting; resume by job id; raw shots preserved",
+            "pub order randomised within each job; per-pub timing recorded",
+        ],
+    }
+    save_json(sd / "plan.json", PC.jround(plan, 9))
+    return plan
+
+
+def print_plan(cfg: dict[str, Any]) -> None:
+    plan = build_plan(cfg)
     print(json.dumps(plan, indent=2))
     print(
         "\nUNSUBMITTED. Nothing is sent: this script has no submission path. A Stage 2 job "

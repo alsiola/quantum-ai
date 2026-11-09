@@ -429,12 +429,12 @@
         "tol": 1e-10
       }
     },
-    "git_commit": "822f479468fed26556f70c36c13406635a5cac5e",
-    "git_dirty": true,
+    "git_commit": "d0a870b97920557c25e82e4206f0d772ead9ca7d",
+    "git_dirty": false,
     "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
     "python": "3.13.6",
     "seed": 0,
-    "timestamp_utc": "2026-11-09T21:11:05+00:00",
+    "timestamp_utc": "2026-11-09T21:12:27+00:00",
     "torch": "2.15.0"
   },
   "qasm_sha256": {
