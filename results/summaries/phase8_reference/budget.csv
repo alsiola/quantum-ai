@@ -1,0 +1,4 @@
+option,jobs,circuits,shots,estimate_s,upper_s,counted_if_unread_s,fits_cap,fits_remaining
+pm_primary,1,60,36000,11.3297,15.1622,15.1622,True,True
+bell_route,1,20,32000,10.952,14.69,14.69,True,True
+mdi_game,1,32,20000,7.13227,9.91534,9.91534,True,True

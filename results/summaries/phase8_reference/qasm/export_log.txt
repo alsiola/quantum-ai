@@ -1,0 +1,2 @@
+[21:04:31] exported 112 circuits; worst noiseless check 1.78e-15
+[21:04:31] done in 6.4 s; outputs in /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-2cf609d0ba49e77b95b911359c9a05a6/results/phase8_reference/20261109T210424Z

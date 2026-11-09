@@ -1,0 +1,7 @@
+qubit,dist_memory,dist_output,path,swaps,cz_count,cz_error_sum,max_cz_error,readout,t1_s,t2_s,admitted,excluded_because,bell_F_n1
+54,3,2,75-59-55-54,2,7,0.0101135,0.0018583,0.0374756,0.000355148,0.000193515,False,coupler to the output or its neighbour; path through the output; readout,0.537384
+55,2,1,75-59-55,1,4,0.00453864,0.00135659,0.0117188,0.000195909,0.000106585,False,coupler to the output or its neighbour; path through the output,0.548477
+72,3,4,75-74-73-72,2,7,0.00968167,0.00163878,0.0533447,0.000263148,0.000138191,False,readout,0.524554
+73,2,3,75-74-73,1,4,0.00476534,0.00120204,0.0406494,0.000366619,0.00027071,False,readout,0.539358
+74,1,2,75-74,0,1,0.00115922,0.00115922,0.0078125,0.000322888,0.000205143,False,coupler to the memory; coupler to the output or its neighbour,0.559677
+79,3,4,75-74-73-79,2,7,0.00784475,0.00120204,0.00854492,0.000304502,7.84231e-05,True,,0.546267
