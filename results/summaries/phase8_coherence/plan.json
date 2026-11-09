@@ -1,0 +1,107 @@
+{
+  "allowance_s": 600,
+  "device": "ibm_kingston",
+  "guards": [
+    "qmem.followup.budget_check per job (Open plan only, live remaining allowance)",
+    "live calibration snapshot and qmem.followup.calibration_check before each job",
+    "pilot job first; stop on a failed pilot gate (prereg draft, docs/phase8-coherence.md)",
+    "max(charged, upper bound) accounting; resume by job id; raw shots preserved",
+    "pub order randomised within each job; per-pub timing recorded"
+  ],
+  "layout": {
+    "ancillas": [
+      50,
+      21
+    ],
+    "memory": 75,
+    "output": 59
+  },
+  "qasm_sha256": {
+    "A2": "5e11bb24878b91aabd22ecfb2ede0150a437979891028cdbb4110fb6d06467a1",
+    "ALT2": "e37f66cfd8bad678ffb088111bc924fb629143e7c0e41e8ec94e8e3f3e8e444e",
+    "COMP22": "e24d0cc9e27c4c4466b36d139926c0522906e9edfcf0e49c56fbd9b64d241045",
+    "COMP40": "f991ca82bd96fed92b4d5016c2e12c6a90460ee62ab7a10e51a2ff64c0b07420",
+    "E0": "c9129760a6f122a02ece19693bb463c665000349bd493c7962e74f0973f58d5d",
+    "E00": "4a44fdd33fc037c00cbe61e65a55f61e23662ad0b4a6807a7b3d4782ecbfb76b",
+    "INV2": "6527a90f973cd64151d90880e16b8507dabc626bcc1506362b842c68ede21322",
+    "P1": "e907ba9475353845c0de7635a60861c39a6053ec0ca469594da8766d5a855424",
+    "P2": "ece774faafa490eba447adc1d024f4fbe4213396112a39d422bdc509490d3171",
+    "P3": "22a6552d3bdfcc0526ffde2ef7765a483f31f77041603a6e3e62e1b259857e90",
+    "P4": "38d1adec0cd1a86fa8e5989896281c11c985fd1d9ac22311e6fd25a907c8f14d",
+    "P5": "15276c0a6ec23ce8cd1e0c8d6b63cc9d61813050a76b328a95c463fac2e55ce2",
+    "P6": "c054db648bf0e71119c4ac4c1e22ed383765d0722a41d890a4f20c42699bbe3f",
+    "P7": "8bf602ad0fadd1364895654a25770c5a3cccc1dd3637ba3fa2dac08e2fb17dc6",
+    "R2": "ac6199d16214b4f9751372dc65893ce30ab47e3c16f87e0dd89fd61713b52b8c",
+    "R4": "d80222794cf7819ec492ad8f77fb67d802f93ec506e82d47c1b25fa831fff0c6",
+    "RS": "94e4d624d5ec854a157183a15c0c2a20cdf3ce9b26269b963cc9351d3fbdc71f",
+    "baseline": "00cfcf3076ad950a461523f3dfb3efb0712496be4bcbd872bf12d100899e1bd0"
+  },
+  "status": "UNSUBMITTED: needs the owner's explicit approval on #28 (stage, device, circuits, upper bound, hard cap). Phase 7's approvals and cap do not apply.",
+  "tiers": [
+    {
+      "arms": [
+        "baseline",
+        "E0",
+        "E00",
+        "P2",
+        "P4",
+        "INV2",
+        "RS",
+        "R2",
+        "A2"
+      ],
+      "estimate_s": 12.571616,
+      "hard_cap_s": 30,
+      "jobs": 1,
+      "per_job": {
+        "estimate_s": 12.571616,
+        "shot_s": 10.571616,
+        "shots": 18000,
+        "upper_s": 16.71452
+      },
+      "purpose": "population invariance (E0, E00, RS against baseline), the phase response at pi/2 and pi, inverse INV2 against E00, R2 against A2; gate before the main jobs",
+      "shots_per_arm": 2000,
+      "tier": "pilot",
+      "upper_s": 16.71452,
+      "within_cap": true
+    },
+    {
+      "arms": [
+        "baseline",
+        "E0",
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "E00",
+        "INV2",
+        "COMP22",
+        "COMP40",
+        "ALT2",
+        "RS",
+        "R2",
+        "R4",
+        "A2"
+      ],
+      "estimate_s": 87.977152,
+      "hard_cap_s": 150,
+      "jobs": 2,
+      "per_job": {
+        "estimate_s": 43.988576,
+        "shot_s": 41.988576,
+        "shots": 72000,
+        "upper_s": 55.98572
+      },
+      "purpose": "every arm: the phi scan (P1-P7, E0), inverse, composition and alternation (held out), the three equivalent dephasings (A2, R2, R4) and the feed-forward sham",
+      "shots_per_arm": 8000,
+      "tier": "main",
+      "upper_s": 111.97144,
+      "within_cap": true
+    }
+  ],
+  "total_upper_s": 128.68596,
+  "transpile": "optimization_level = 0, fixed layout (as Phase 7); every echo fenced"
+}

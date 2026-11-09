@@ -735,16 +735,15 @@ def build_plan(cfg: dict[str, Any]) -> dict[str, Any]:
     tiers = []
     for tier in pl["tiers"]:
         n_jobs = tier["jobs"]
-        per_job = [
-            F.Pub(0, i, a, 0, pl["shots_per_arm"] // n_jobs) for i, a in enumerate(tier["arms"])
-        ]
+        n_arm = tier.get("shots_per_arm", pl["shots_per_arm"])
+        per_job = [F.Pub(0, i, a, 0, n_arm // n_jobs) for i, a in enumerate(tier["arms"])]
         job = cm.job(per_job, dur)
         tiers.append(
             {
                 "tier": tier["name"],
                 "purpose": tier["purpose"],
                 "arms": tier["arms"],
-                "shots_per_arm": pl["shots_per_arm"],
+                "shots_per_arm": n_arm,
                 "jobs": n_jobs,
                 "per_job": job,
                 "estimate_s": n_jobs * job["estimate_s"],

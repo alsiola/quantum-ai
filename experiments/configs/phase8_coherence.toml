@@ -155,3 +155,23 @@ margin = 0.25
 billing_round_s = 1.0
 baseline_circuit_s = 3.21016e-4   # FakeKingston duration of the baseline (Phase 7 durations.csv)
 allowance_s = 600                 # Open plan per 28 days; read live at Stage 4
+
+[plan]                        # --plan: the UNSUBMITTED Stage 2 hardware job (needs #28 approval)
+# Shots per arm (a tier may override it). Main: 8000, so the A2/R2/R4 equivalence TOSTs on
+# w(0) and lag 1 have 80% power (design.json: <= 6.5k per arm needed) and the power study's
+# held-out split (half fitted, half tested) has 4000 a side, twice its simulated 2000. Split
+# into two jobs (two time blocks, for drift). The pilot is a gate, not an analysis.
+shots_per_arm = 8000
+[[plan.tiers]]
+name = "pilot"
+purpose = "population invariance (E0, E00, RS against baseline), the phase response at pi/2 and pi, inverse INV2 against E00, R2 against A2; gate before the main jobs"
+arms = ["baseline", "E0", "E00", "P2", "P4", "INV2", "RS", "R2", "A2"]
+shots_per_arm = 2000
+jobs = 1
+hard_cap_s = 30
+[[plan.tiers]]
+name = "main"
+purpose = "every arm: the phi scan (P1-P7, E0), inverse, composition and alternation (held out), the three equivalent dephasings (A2, R2, R4) and the feed-forward sham"
+arms = ["baseline", "E0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "E00", "INV2", "COMP22", "COMP40", "ALT2", "RS", "R2", "R4", "A2"]
+jobs = 2
+hard_cap_s = 150
