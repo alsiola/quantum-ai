@@ -1,0 +1,334 @@
+{
+  "files": {
+    "results/summaries/phase6/step.qasm": {
+      "added_in": "2ec9bb2175b416ccc5c729b63ba7a35b9291953c",
+      "bytes": 705,
+      "sha256": "50d70c558e27f9e722f23b9598cc00ef6b21c8cde492e8c51a322a3435235a0b"
+    },
+    "results/summaries/phase7_ablation/pieces.npz": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 95216,
+      "sha256": "e5295fe807e486b61c3013757f9e768cfa69c22fe739dfadbd4aec0453b8bbab"
+    },
+    "results/summaries/phase7_ablation/qasm/A1.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 33908,
+      "sha256": "20fad5af8906e3ebda287725dc1c264c357c5d3d4f9b5e91d65be9ed863fef24"
+    },
+    "results/summaries/phase7_ablation/qasm/A1s.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 34356,
+      "sha256": "40f5201e90ab3112e886651fff714e4b5055ba50c912a8773f7875c776b034c9"
+    },
+    "results/summaries/phase7_ablation/qasm/A2.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 34549,
+      "sha256": "5e11bb24878b91aabd22ecfb2ede0150a437979891028cdbb4110fb6d06467a1"
+    },
+    "results/summaries/phase7_ablation/qasm/A2s.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 34356,
+      "sha256": "4dd92dd1e600d4c1ab8cdfe9a168d29e4ec51b2cef027df6f0d9dc9db66e4b63"
+    },
+    "results/summaries/phase7_ablation/qasm/A2s_spec.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 35831,
+      "sha256": "d150dfc869ddbcbca5c5bb5154d22d66dac88493791f8afc7e984675a9658193"
+    },
+    "results/summaries/phase7_ablation/qasm/A3_000.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 34375,
+      "sha256": "0b59c40b4c97d956cc24d90559c5cb6ef9141549e49211ccc8f676b62419e61a"
+    },
+    "results/summaries/phase7_ablation/qasm/A3_001.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 34345,
+      "sha256": "796f61f491973c08bb0d099bb4b65dc195202681ec9d2fb8fd739a3c540046d9"
+    },
+    "results/summaries/phase7_ablation/qasm/A3s.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 34228,
+      "sha256": "cf3d49e14ac82518182843721b7e050ef7fb1626c05b65c88b67b22ddf297666"
+    },
+    "results/summaries/phase7_ablation/qasm/baseline.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 33204,
+      "sha256": "00cfcf3076ad950a461523f3dfb3efb0712496be4bcbd872bf12d100899e1bd0"
+    },
+    "results/summaries/phase7_ablation/qasm/step_A1.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 717,
+      "sha256": "bb20f0457de956746af650aea7dad837ab1b39dc81f8ecee5766d4d5eef3e7bd"
+    },
+    "results/summaries/phase7_ablation/qasm/step_A2.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 736,
+      "sha256": "315ede15d40d7dc3e8d10bb6479a5a5348f1c6cf40c18f59d8ea3db79db4d46d"
+    },
+    "results/summaries/phase7_ablation/qasm/step_A3s.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 722,
+      "sha256": "c35d7a5ad7acf13460246c2daa8fe0b034da4209cf707bab7a286896b2d158ea"
+    },
+    "results/summaries/phase7_ablation/qasm/step_baseline.qasm": {
+      "added_in": "4dd3d75454c044ca7b004938daa22a8818bf53e1",
+      "bytes": 705,
+      "sha256": "50d70c558e27f9e722f23b9598cc00ef6b21c8cde492e8c51a322a3435235a0b"
+    },
+    "results/summaries/phase7_ancilla/qasm/circuit_B1.qasm": {
+      "added_in": "595bab6b7d417b6793e73e1dbbe1f20e6ec9124d",
+      "bytes": 33897,
+      "sha256": "b0ae7cf3adb62365624ccb14cf31f9c02a223b825f564393e01659256d7792b5"
+    },
+    "results/summaries/phase7_ancilla/qasm/circuit_B2.qasm": {
+      "added_in": "595bab6b7d417b6793e73e1dbbe1f20e6ec9124d",
+      "bytes": 35328,
+      "sha256": "7d46405a41a6d64626c0c86d3b3dfa5fa771a2f599ad1ba6de81bb4eb6595a95"
+    },
+    "results/summaries/phase7_ancilla/qasm/circuit_B3.qasm": {
+      "added_in": "595bab6b7d417b6793e73e1dbbe1f20e6ec9124d",
+      "bytes": 33204,
+      "sha256": "ef84d0fa6cc012967890e8d390a51dce39d2b37f04a4cf415d4175d0eb2ead60"
+    },
+    "results/summaries/phase7_ancilla/qasm/circuit_B4m.qasm": {
+      "added_in": "595bab6b7d417b6793e73e1dbbe1f20e6ec9124d",
+      "bytes": 34338,
+      "sha256": "9b8be6984867d63a7fde1fd1e355b5e4e4c4b3dde80d1729dabdcb09f3463621"
+    },
+    "results/summaries/phase7_ancilla/qasm/circuit_B4r.qasm": {
+      "added_in": "595bab6b7d417b6793e73e1dbbe1f20e6ec9124d",
+      "bytes": 34338,
+      "sha256": "94188e6d3a3d7e3b143e10cbaea2fc1199b4456f51df3ba5886a4431d62d8c1b"
+    },
+    "results/summaries/phase7_classical/d1.qasm": {
+      "added_in": "6cd86cd005071d2e465c76cc8bd20112266b327a",
+      "bytes": 8519,
+      "sha256": "35d54460d82cd475ae9e2d2d86c5e30446ed82ab6ebcf0bd07de13a0e0e49404"
+    },
+    "results/summaries/phase7_hw/calibration_before.json": {
+      "added_in": "ff189af13c6f5c19442b791136bb74a479325d21",
+      "bytes": 18659,
+      "sha256": "acc4e1ff2bbe5c26ab89e8f92181e8e0a29db41c591953f480efeea14052517d"
+    },
+    "results/summaries/phase7_hw/circuits.json": {
+      "added_in": "ff189af13c6f5c19442b791136bb74a479325d21",
+      "bytes": 26827,
+      "sha256": "a4ba9548e5483b86cea2d1c9c3b84f95e83c8dc40b4d4bc963173ca569613bc2"
+    },
+    "results/summaries/phase7_hw/gate_pilot.json": {
+      "added_in": "ff189af13c6f5c19442b791136bb74a479325d21",
+      "bytes": 484,
+      "sha256": "91248a0f3b02d4525fafb8548c07654b54b3e97bd91f41a21d79628789ff4a7f"
+    },
+    "results/summaries/phase7_hw/job_pilot.json": {
+      "added_in": "ff189af13c6f5c19442b791136bb74a479325d21",
+      "bytes": 39520,
+      "sha256": "7c9791db12603dd8ea9559f82ca0e154c4e473f2ee68c0a4c2491a9518beab86"
+    },
+    "results/summaries/phase7_hw/pilot_predictions.json": {
+      "added_in": "ff189af13c6f5c19442b791136bb74a479325d21",
+      "bytes": 74,
+      "sha256": "b82b51f532f508fbea2002d977c682188ae46f7149e3f7d5cb5780f5ea7a6e39"
+    },
+    "results/summaries/phase7_hw/shots_pilot.npz": {
+      "added_in": "ff189af13c6f5c19442b791136bb74a479325d21",
+      "bytes": 12653,
+      "sha256": "f09bb5d84fb13c09d37c62c2bd883587eaa584db5b66e342062036cf3f67c49a"
+    },
+    "results/summaries/phase7_hw_4b/calibration_before.json": {
+      "added_in": "47cbdeb6ad3db15de77822780982bf121b2842e1",
+      "bytes": 18652,
+      "sha256": "4ba4d00175f67e2dfa9812db28d145536a0ee0aeed334ef384a71d98900005f3"
+    },
+    "results/summaries/phase7_hw_4b/circuits.json": {
+      "added_in": "47cbdeb6ad3db15de77822780982bf121b2842e1",
+      "bytes": 26827,
+      "sha256": "a4ba9548e5483b86cea2d1c9c3b84f95e83c8dc40b4d4bc963173ca569613bc2"
+    },
+    "results/summaries/phase7_hw_4b/gate_pilot.json": {
+      "added_in": "47cbdeb6ad3db15de77822780982bf121b2842e1",
+      "bytes": 516,
+      "sha256": "96d981f8fac0f35755b44b0361bec5013fbb9c8ed5090dac6c76e0fc6e135ca5"
+    },
+    "results/summaries/phase7_hw_4b/job_pilot.json": {
+      "added_in": "47cbdeb6ad3db15de77822780982bf121b2842e1",
+      "bytes": 39508,
+      "sha256": "98dfd858bdab24b8f02deb853136db88f59fb244aa1bf00b7e85a121c66c27f5"
+    },
+    "results/summaries/phase7_hw_4b/pieces_pilot25.npz": {
+      "added_in": "f46822c1fe87a3ef263b44fe5bbe30400a940c25",
+      "bytes": 8565,
+      "sha256": "cb0aabb1da88234392f21570f4602f635d47a9ba247813e87fd7a1472f3a5d46"
+    },
+    "results/summaries/phase7_hw_4b/refit.json": {
+      "added_in": "f46822c1fe87a3ef263b44fe5bbe30400a940c25",
+      "bytes": 15531,
+      "sha256": "dc5388347da409c4d21d50a712c2b12497b2ef51c8e1f8e1b4608b3d6579e45b"
+    },
+    "results/summaries/phase7_hw_4b/shots_pilot.npz": {
+      "added_in": "47cbdeb6ad3db15de77822780982bf121b2842e1",
+      "bytes": 12661,
+      "sha256": "3350acdaec93e26703f4b10df460c3198a3df64abf3872dfb3a3ed3c078519ac"
+    },
+    "results/summaries/phase7_hw_4c/calibration_before.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 18659,
+      "sha256": "30a80bbe2f2a4c6946bd50fb607c0198f3f51a6051b664ef2560bcda4fbf873f"
+    },
+    "results/summaries/phase7_hw_4c/circuits.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 26827,
+      "sha256": "a4ba9548e5483b86cea2d1c9c3b84f95e83c8dc40b4d4bc963173ca569613bc2"
+    },
+    "results/summaries/phase7_hw_4c/gate_pilot.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 686,
+      "sha256": "0e9a03a73d72f325b6897fe05e93f7d6feddec748e7da74183721c8c6f4d3b48"
+    },
+    "results/summaries/phase7_hw_4c/job_job0.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 45146,
+      "sha256": "8b5803c213d8ff30747691a4bf5bfc26b83bb4ed6c1618aa436a8845d30845f0"
+    },
+    "results/summaries/phase7_hw_4c/job_job1.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 45161,
+      "sha256": "3f72383741a9774aaa0e634cb2549934dc019e7441cfa692a79a9d67a400652b"
+    },
+    "results/summaries/phase7_hw_4c/job_job2.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 45187,
+      "sha256": "f48dc8ab8cb806ba8a89d142fe9e42e2e9925a03a67626415cfb31b630beecb7"
+    },
+    "results/summaries/phase7_hw_4c/job_job3.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 45178,
+      "sha256": "b300a6307515bda9fa5a3f5a5c08d18404c2c6254be7fb7e0e7a19ba4222d27c"
+    },
+    "results/summaries/phase7_hw_4c/job_pilot.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 39511,
+      "sha256": "50f6490df59e3aed273006b088d495a3a15899522210aa821e7acccf49d2eca6"
+    },
+    "results/summaries/phase7_hw_4c/pieces_live.npz": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 8517,
+      "sha256": "39c5cde0f61744f4ef86b4c2fe8d1f2d51328b0a298fc4a022e328a1c59a9434"
+    },
+    "results/summaries/phase7_hw_4c/pilot_predictions.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 341,
+      "sha256": "926466aea69384d59e67805a48b936ba31669578f3b3fd591c0ae1993e44f924"
+    },
+    "results/summaries/phase7_hw_4c/refit_pilot.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 11239,
+      "sha256": "030056b428127b4ffd8969db3415a632cd8b834403b68040adf5259c1268b617"
+    },
+    "results/summaries/phase7_hw_4c/shots_job0.npz": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 141043,
+      "sha256": "0203a7cd1d1f539a219853cf064d37bb2f700b7ad54cc19090575bde7b15dc74"
+    },
+    "results/summaries/phase7_hw_4c/shots_job1.npz": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 140757,
+      "sha256": "c2882bdcdc76135a51992cdf8bafb6e301ebb7f29a58576ae170faebd7f79b01"
+    },
+    "results/summaries/phase7_hw_4c/shots_job2.npz": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 140985,
+      "sha256": "d4e36f234fb4525a1a5f8a4c8fe3a41037b0beaff27725746b15a4f04ab23f79"
+    },
+    "results/summaries/phase7_hw_4c/shots_job3.npz": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 140964,
+      "sha256": "29113e22a1923ee68b7077444a6e5ba408f57e3acb41d6ac496172d39deccd57"
+    },
+    "results/summaries/phase7_hw_4c/shots_pilot.npz": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 12653,
+      "sha256": "d7f0769b6c80f8e85502d959e762b3adbbb1bf578feb5844ff54460cacd7305b"
+    },
+    "results/summaries/phase7_hw_4c/summary.json": {
+      "added_in": "7972548aeb4b08da0186477a77f914a86c211e98",
+      "bytes": 109688,
+      "sha256": "b21182ddb479461b7242ecd1fcc0934d281843d64edb8e8dcfe6cd54ac396fb0"
+    }
+  },
+  "jobs": [
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6718778410",
+      "file": "results/summaries/phase7_hw/job_pilot.json",
+      "job_id": "dbo3cttt7fqc73akg8dg",
+      "shots": 1000,
+      "stage": "pilot",
+      "status": "DONE",
+      "submitted_at": "2026-11-08T08:44:39.956291+00:00"
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6720604627",
+      "file": "results/summaries/phase7_hw_4b/job_pilot.json",
+      "job_id": "dbo7oi0qtr0c73ae4hk0",
+      "shots": 1000,
+      "stage": "pilot",
+      "status": "DONE",
+      "submitted_at": "2026-11-08T13:42:32.990410+00:00"
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6723526792",
+      "file": "results/summaries/phase7_hw_4c/job_job0.json",
+      "job_id": "dborq95t7fqc7388b3h0",
+      "shots": 14524,
+      "stage": "job0",
+      "status": "DONE",
+      "submitted_at": "2026-11-09T12:31:33.123685+00:00"
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6723526792",
+      "file": "results/summaries/phase7_hw_4c/job_job1.json",
+      "job_id": "dboseett7fqc7388c8p0",
+      "shots": 14524,
+      "stage": "job1",
+      "status": "DONE",
+      "submitted_at": "2026-11-09T13:14:36.412474+00:00"
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6723526792",
+      "file": "results/summaries/phase7_hw_4c/job_job2.json",
+      "job_id": "dbotns0qtr0c738dee10",
+      "shots": 14524,
+      "stage": "job2",
+      "status": "DONE",
+      "submitted_at": "2026-11-09T14:42:56.639064+00:00"
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6723526792",
+      "file": "results/summaries/phase7_hw_4c/job_job3.json",
+      "job_id": "dbouj7tt7fqc7388fphg",
+      "shots": 14524,
+      "stage": "job3",
+      "status": "DONE",
+      "submitted_at": "2026-11-09T15:41:20.081527+00:00"
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6723526792",
+      "file": "results/summaries/phase7_hw_4c/job_pilot.json",
+      "job_id": "dbocqblt7fqc73cmtd6g",
+      "shots": 1000,
+      "stage": "pilot",
+      "status": "DONE",
+      "submitted_at": "2026-11-08T19:27:42.582087+00:00"
+    }
+  ],
+  "run_commits": {
+    "phase7_hw/config_meta.json": {
+      "git_commit": "733d6ef4a8dd584d9ccc10d42ce7fcf66e7b1743",
+      "git_dirty": false
+    },
+    "phase7_hw_4c/summary.json": {
+      "git_commit": "13ef8f1bf6185372be4253a0713c1483b306465e",
+      "git_dirty": false
+    }
+  }
+}

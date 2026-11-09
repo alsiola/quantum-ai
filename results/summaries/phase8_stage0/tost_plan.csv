@@ -1,0 +1,25 @@
+margin,true_ratio,power,shots_per_arm,recommended,se
+0.05,1.0,0.8,61141.50152281837,False,primary
+0.05,1.0,0.9,77264.80047812752,False,primary
+0.05,0.97,0.8,275876.9050710049,False,primary
+0.05,0.97,0.9,382134.38451761485,False,primary
+0.05,1.03,0.8,275876.9050710034,False,primary
+0.05,1.03,0.9,382134.38451761485,False,primary
+0.1,1.0,0.8,15285.37538070459,True,primary
+0.1,1.0,0.9,19316.200119531914,True,primary
+0.1,0.97,0.8,22613.386439317295,True,primary
+0.1,0.97,0.9,31203.77154521286,True,primary
+0.1,1.03,0.8,22613.386439317135,True,primary
+0.1,1.03,0.9,31203.771545212807,True,primary
+0.2,1.0,0.8,3821.343845176147,False,primary
+0.2,1.0,0.9,4829.050029882986,False,primary
+0.2,0.97,0.8,4177.783141790848,False,primary
+0.2,0.97,0.9,5473.441101296386,False,primary
+0.2,1.03,0.8,4177.783141790848,False,primary
+0.2,1.03,0.9,5473.441101296386,False,primary
+0.1,1.0,0.8,27799.743242918532,True,drift-conditional (RE over chunks)
+0.1,1.0,0.9,35130.6651212296,True,drift-conditional (RE over chunks)
+0.1,0.97,0.8,41127.30771790432,True,drift-conditional (RE over chunks)
+0.1,0.97,0.9,56750.770953432766,True,drift-conditional (RE over chunks)
+0.1,1.03,0.8,41127.30771790403,True,drift-conditional (RE over chunks)
+0.1,1.03,0.9,56750.77095343256,True,drift-conditional (RE over chunks)

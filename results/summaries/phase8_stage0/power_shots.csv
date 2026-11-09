@@ -1,0 +1,19 @@
+bound_at,criterion,ratio,probability,shots_A2
+1.0,observed |w_A2| held fixed,,,7836.913532508269
+1.0,expected bound,0.0,,5666.850600928635
+1.0,P(bound below) >= probability,0.0,0.5,5171.089937180933
+1.0,P(bound below) >= probability,0.0,0.8,7828.835319915716
+1.0,P(bound below) >= probability,0.0,0.9,9682.054688392369
+1.0,expected bound,0.05,,11660.096765805942
+1.0,P(bound below) >= probability,0.05,0.5,11450.019869599319
+1.0,P(bound below) >= probability,0.05,0.8,23392.06731690766
+1.0,P(bound below) >= probability,0.05,0.9,31315.341279663317
+0.7,observed |w_A2| held fixed,,,30902.963302979366
+0.7,expected bound,0.0,,11565.00122638497
+0.7,P(bound below) >= probability,0.0,0.5,10553.244769757026
+0.7,P(bound below) >= probability,0.0,0.8,15977.214938603505
+0.7,P(bound below) >= probability,0.0,0.9,19759.295282433446
+0.7,expected bound,0.05,,71554.5426914979
+0.7,P(bound below) >= probability,0.05,0.5,71554.529401733
+0.7,P(bound below) >= probability,0.05,0.8,146200.4207090959
+0.7,P(bound below) >= probability,0.05,0.9,195720.8829978933
