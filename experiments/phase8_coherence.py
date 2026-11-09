@@ -528,6 +528,7 @@ def main() -> None:
     ap.add_argument("--plan", action="store_true")
     ap.add_argument("--workers", type=int, default=None)
     ap.add_argument("--from-run", default=None, help="resume a run directory")
+    ap.add_argument("--review-run", default=None, help="the review run (fitted quantum model)")
     args = ap.parse_args()
     cfg_path = str(Path(args.config).resolve())
     cfg = load_config(Path(cfg_path))
@@ -553,13 +554,14 @@ def main() -> None:
     elif args.part == "design":
         import phase8_coherence_design as DS
 
-        summary = DS.part_design(cfg, out)
+        review = Path(args.review_run) if args.review_run else None
+        summary = DS.part_design(cfg, out, review)
         summary["meta"] = meta
         save_json(out / "design_summary.json", summary)
     elif args.part == "power":
         import phase8_coherence_design as DS
 
-        summary = DS.part_power(cfg, cfg_path, out, workers)
+        summary = DS.part_power(cfg, cfg_path, out, workers, args.review_run)
         summary["meta"] = meta
         save_json(out / "power_summary.json", summary)
     log(out, "done")

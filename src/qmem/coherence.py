@@ -255,6 +255,8 @@ class QuantumModel:
         pc, p = self.pieces, self.p
         if name == "I":
             out = np.eye(16, dtype=complex)
+        elif name.startswith("p:"):  # the echo at any phase (prediction curves)
+            out = A.on_q75(echo_kraus(float(name[2:]), pc.p1_q75, p.over))
         elif name.startswith("e") and name[1:].isdigit():
             out = A.on_q75(echo_kraus(echo_phase(int(name[1:])), pc.p1_q75, p.over))
         elif name == "spec":
@@ -364,6 +366,72 @@ class QuantumModel:
                 return D.TimeVaryingProcess.constant(self.averaged(arm), length)
             choice = arm.choices(1, length)[0]
         return D.TimeVaryingProcess(self.vec0, bank[np.asarray(choice)], self.trace)
+
+
+# -- classical starts from the quantum model ----------------------------------------------------
+
+
+def bloch_maps(qm: QuantumModel, elements: Sequence[str], labelled: Sequence[str] = ()):
+    """q75-only maps in Bloch coordinates (column convention, ``qmem.classical``'s
+    ``effective_maps``): the slot-to-slot step ``pre @ post[y]`` of the baseline, the initial
+    slot state, and each element (``labelled``: (2, 4, 4) by recorded bit)."""
+    eff = C.effective_maps(qm.pieces, qm.readout)
+    out = {"step": np.stack([eff["pre"] @ eff["post"][y] for y in (0, 1)])}
+    out["init"] = eff["pre"] @ eff["r0"]
+    pt59 = lambda m4: np.einsum("aibi->ab", m4.reshape(2, 2, 2, 2))  # noqa: E731
+    vec = lambda m: m.reshape(-1, order="F")  # noqa: E731
+    k0 = np.diag([1.0, 0.0]).astype(complex)
+
+    def _apply(sup: np.ndarray, rho: np.ndarray) -> np.ndarray:
+        return pt59((sup @ vec(np.kron(rho, k0))).reshape(4, 4, order="F"))
+
+    for e in elements:
+        out[e] = C._bloch_map(lambda rho, e=e: _apply(qm.element(e), rho))
+    for e in labelled:
+        out[e] = np.stack(
+            [C._bloch_map(lambda rho, e=e, m=m: _apply(qm.element(e, m), rho)) for m in (0, 1)]
+        )
+    return out
+
+
+def polytope_start(
+    maps: dict[str, np.ndarray],
+    u: np.ndarray,
+    elements: Sequence[str],
+    labelled: Sequence[str] = (),
+    eps: float = 0.01,
+) -> C.ProgramModel:
+    """A classical start carrying the quantum model's structure: hidden states the vertices
+    ``u`` (4, d) (columns ``(1, x, y, z)``) of a polytope in q75's Bloch space, each map
+    ``T`` taken to ``(pinv(u) T u)^T`` (exact when the polytope is invariant), clipped at 0,
+    renormalised and smoothed by ``eps``. ``P = I``; ``Q[y]`` the slot-to-slot step."""
+    d = u.shape[1]
+    ui = np.linalg.pinv(u)
+    row = lambda x: x / x.sum(-1, keepdims=True)  # noqa: E731
+
+    def conv(t: np.ndarray) -> np.ndarray:
+        return np.clip((ui @ t @ u).T, 0, None)
+
+    post = np.stack([conv(t) for t in maps["step"]])
+    post = post / post.sum(axis=(0, 2))[None, :, None]
+    init = np.clip(ui @ maps["init"], 0, None)
+    model = C.ProgramModel(
+        init / init.sum(),
+        np.eye(d),
+        post,
+        {e: row(conv(maps[e]) + 1e-12) for e in elements},
+        {},
+    )
+    for e in labelled:
+        lab = np.stack([conv(t) for t in maps[e]])
+        model.labelled[e] = lab / lab.sum(axis=(0, 2))[None, :, None]
+    return C.smooth_program(model, eps)
+
+
+def octahedron(a: float = 1.0, c: float = 1.0) -> np.ndarray:
+    """(4, 6): vertices ``(+-a, 0, 0), (0, +-a, 0), (0, 0, +-c)``."""
+    v = [(a, 0, 0), (-a, 0, 0), (0, a, 0), (0, -a, 0), (0, 0, c), (0, 0, -c)]
+    return np.array([[1.0, *x] for x in v]).T
 
 
 # -- arms -----------------------------------------------------------------------------------------
@@ -597,6 +665,7 @@ __all__ = [
     "StatSettings",
     "arm_elements",
     "benchmark",
+    "bloch_maps",
     "coherence_factor",
     "compose",
     "data_stats",
@@ -611,7 +680,9 @@ __all__ = [
     "kraus_channel",
     "model_arm_stats",
     "norm_cdf",
+    "octahedron",
     "parse_arms",
+    "polytope_start",
     "power_one_sided",
     "randomised_channel",
     "relax_kraus",

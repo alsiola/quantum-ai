@@ -138,11 +138,15 @@ n_train = 2000
 n_test = 2000
 dims = [4, 6]
 max_iters = 1500
-random_starts = 1
+refit_evals = 600              # Nelder-Mead evaluations of the quantum refit to the training shots
 generators = ["fixed", "fitted"]
 z_alpha = 1.6448536269514722  # one-sided alpha = 0.05 per d (Holm over d = 4, 6 below)
 z_beta = 0.8416212335729143   # 80% power
 planned_shots_per_arm = [1000, 2000, 5000, 10000, 20000]
+
+[export]                      # --export-qasm (hardware group, FakeKingston only)
+qasm_arms = ["E0", "P2", "P4", "E00", "INV2", "COMP22", "ALT2", "RS", "R2", "R4"]
+control_arms = ["P2", "INV2", "COMP22", "ALT2"]   # also built unfenced and with virtual rz
 
 [budget]                      # qmem.followup's cost model (Phase 6/7)
 rep_delay_s = 250e-6

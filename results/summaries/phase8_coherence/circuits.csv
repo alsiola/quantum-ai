@@ -1,0 +1,19 @@
+arm,schedule,L0_x_per_step,L0_barriers,L0_q75_ops_equal_level0,expected_x_per_step,L0_rz_count,L0_if_else_blocks,duration_s,duration_minus_baseline_s,L1_x_per_step,L1_barriers,L1_q75_ops_equal_level0,L2_x_per_step,L2_barriers,L2_q75_ops_equal_level0,L3_x_per_step,L3_barriers,L3_q75_ops_equal_level0,alap_duration_s,alap_minus_baseline_s,alap_x_per_step,unfenced_L0_x_per_step,unfenced_L0_rz_count,unfenced_L1_x_per_step,unfenced_L1_rz_count,unfenced_L3_x_per_step,unfenced_L3_rz_count,virtual_L0_x_per_step,virtual_L0_rz_count,virtual_L1_x_per_step,virtual_L1_rz_count,virtual_L3_x_per_step,virtual_L3_rz_count,duration_note
+baseline,constant,0.0,0,,0.0,323,0,0.000321,0.0,0.0,0,True,0.0,0,False,0.0,0,False,,,,,,,,,,,,,,,,
+E0,constant,2.0,256,,2.0,451,0,0.0003211,1e-07,2.0,256,False,2.0,256,False,2.0,256,False,,,,,,,,,,,,,,,,
+P1,constant,2.0,256,,2.0,451,0,0.0003211,1e-07,2.0,256,True,2.0,256,False,2.0,256,False,,,,,,,,,,,,,,,,
+P2,constant,2.0,256,,2.0,451,0,0.0003211,1e-07,2.0,256,True,2.0,256,False,2.0,256,False,0.0003211,1e-07,2.0,2.0,451,0.0,323,0.0,259,0.0,387,0.0,323,0.0,259,
+P3,constant,2.0,256,,2.0,451,0,0.0003211,1e-07,2.0,256,True,2.0,256,False,2.0,256,False,,,,,,,,,,,,,,,,
+P4,constant,2.0,256,,2.0,451,0,0.0003211,1e-07,2.0,256,True,2.0,256,False,2.0,256,False,,,,,,,,,,,,,,,,
+P5,constant,2.0,256,,2.0,451,0,0.0003211,1e-07,2.0,256,True,2.0,256,False,2.0,256,False,,,,,,,,,,,,,,,,
+P6,constant,2.0,256,,2.0,451,0,0.0003211,1e-07,2.0,256,True,2.0,256,False,2.0,256,False,,,,,,,,,,,,,,,,
+P7,constant,2.0,256,,2.0,451,0,0.0003211,1e-07,2.0,256,True,2.0,256,False,2.0,256,False,,,,,,,,,,,,,,,,
+E00,constant,4.0,512,,4.0,579,0,0.0003211,1e-07,4.0,512,False,4.0,512,False,4.0,512,False,,,,,,,,,,,,,,,,
+INV2,constant,4.0,512,,4.0,579,0,0.0003211,1e-07,4.0,512,True,4.0,512,False,4.0,512,False,0.0003211,1e-07,4.0,4.0,579,0.0,323,0.0,259,0.0,451,0.0,323,0.0,259,
+COMP22,constant,4.0,512,,4.0,579,0,0.0003211,1e-07,4.0,512,True,4.0,512,False,4.0,512,False,0.0003211,1e-07,4.0,4.0,579,0.0,323,0.0,259,0.0,451,0.0,323,0.0,259,
+COMP40,constant,4.0,512,,4.0,579,0,0.0003211,1e-07,4.0,512,False,4.0,512,False,4.0,512,False,,,,,,,,,,,,,,,,
+ALT2,alternate,2.0,256,,2.0,451,0,0.0003211,1e-07,2.0,256,True,2.0,256,False,2.0,256,False,0.0003211,1e-07,2.0,2.0,451,0.0,323,0.0,259,0.0,387,0.0,323,0.0,259,
+RS,random,8.0,1024,,8.0,835,256,,,8.0,1024,False,8.0,1024,False,8.0,1024,False,,,,,,,,,,,,,,,,QiskitError: 'Duration not found for if_else on qubits: [Qubit(75)]'
+R2,random,8.0,1024,,8.0,835,256,,,8.0,1024,False,8.0,1024,False,8.0,1024,False,,,,,,,,,,,,,,,,QiskitError: 'Duration not found for if_else on qubits: [Qubit(75)]'
+R4,random,8.0,1024,,8.0,835,256,,,8.0,1024,False,8.0,1024,False,8.0,1024,False,,,,,,,,,,,,,,,,QiskitError: 'Duration not found for if_else on qubits: [Qubit(75)]'
+A2,constant,0.0,0,,0.0,323,0,0.0003233,2.3e-06,0.0,0,True,0.0,0,False,0.0,0,False,,,,,,,,,,,,,,,,
