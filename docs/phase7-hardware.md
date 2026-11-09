@@ -271,5 +271,130 @@ the dated, post hoc amendment in `docs/phase7-preregistration.md` §10. The conf
 
 ## Hardware
 
-Not yet run: waiting for the coordinator's go on #27. The plan is 4.20 s (pilot) + 54.6 s (main
-jobs), as upper bounds, with 8.4 s already counted against the 120 s cap.
+**Outcome: A2 *vanishes*; rung 4 is supported.** The pilot passed (a), (b) and (d), and the
+four main jobs ran without a calibration violation or a usage stop. The pre-registered
+analysis (§4, unchanged) gives *vanishes*. A2s_spec does not differ from the baseline, so the
+reading is "A2 vanishes, sham equal". The decision is the same under all three q75 models.
+Curated outputs: `results/summaries/phase7_hw_4c/` (`summary.json` is the run's
+`analysis.json`; `gate_pilot.json`, `refit_pilot.json`, `job_*.json`, `shots_*.npz`, `log.txt`).
+
+**What ran** (after the coordinator's go on #27), all at `13ef8f1`:
+1. **Local dry run** and **live `--dry-run`** (2026-11-08 19:27Z): all 68 hashes match; no
+   calibration violations; every job within the guard.
+2. **Pilot** `dbocqblt7fqc73cmtd6g` (500 baseline + 500 A2 shots). Submitted 19:27Z, it
+   queued for about 14 h and ran at 10:08Z on 2026-11-09. Charged 3 s, counted 4.20 s.
+3. **Pilot refit** written to `pilot/refit_pilot.json` at 10:13Z, before any main job.
+4. **Main jobs**, one after another, each with a live calibration check before it:
+
+| job | id | ran (UTC, 2026-11-09) | shots | charged | counted | violations |
+|---|---|---|---|---|---|---|
+| job0 | `dborq95t7fqc7388b3h0` | 12:44–13:14 | 14,524 | 11 s | 13.66 s | none |
+| job1 | `dboseett7fqc7388c8p0` | 14:41–14:42 | 14,524 | 11 s | 13.66 s | none |
+| job2 | `dbotns0qtr0c738dee10` | 15:18–15:41 | 14,524 | 11 s | 13.66 s | none |
+| job3 | `dbouj7tt7fqc7388fphg` | 15:42–16:10 | 14,524 | 11 s | 13.66 s | none |
+
+Every job's `circuits_execution_time_ns` is 0.568 ms per shot, as in the pilot. The live
+calibration was the same for all four jobs (q75 readout 0.0127, T1 253 µs, T2 132 µs; q59
+readout 0.0020).
+
+**QPU total.** Stage 4c: 47 s charged and 58.82 s counted. Stage 4/4b/4c: 53 s charged and
+**67.22 s counted against the 120 s cap**, as planned. 531 s are left on the Open plan.
+
+### The pilot gate
+
+| condition (§10) | got | criterion | result |
+|---|---|---|---|
+| (a) decoding, integrity | both pubs 500 × 64, no flags | must pass | pass |
+| (b) baseline P(1), t ≥ 16 | 0.5666 | 0.5810 ± 0.08 (flag at ± 0.02) | pass, consistent (−0.014) |
+| (c) A2's P(m = 1), diagnostic | 0.4891 | calibrated 0.4925 ± 0.021; #26's refit 0.4191 ± 0.021 | within calibrated; outside refit26; does not stop |
+| (d) execution time / shot | 0.568 ms | 0.559 ms ± 25% | pass (+1.5%) |
+
+**go = true.**
+
+**The pilot's own q75 refit** (`decay_first` family, 500 A2 shots, live pieces): decay
+**a = 7.8e-9** (bootstrap 95% CI [2e-10, 0.011]) and decay_first 0.017 (CI [3e-8, 0.068]).
+It improves on the calibrated model by 0.34 nats. So the q75 record looked like the
+calibrated model again, as on #26's pilot. The ~12% decay per measurement on #25's run did
+not come back. Across the main jobs A2's P(m = 1) is 0.4964, also close to the calibrated
+model.
+
+### The primary outcome and the replication gate
+
+| arm | shots | P(1) | w(0) | SE | z | H_q75 w(0) |
+|---|---|---|---|---|---|---|
+| baseline | 15,000 | 0.5658 | −5.15e-3 | 1.27e-4 (block) | −40.5 | −6.90e-3 |
+| A2 | 10,000 | 0.3818 | −2.04e-4 | 1.41e-4 | −1.45 | 0 |
+| A2s_spec | 15,000 | 0.5768 | −5.38e-3 | 1.18e-4 | −45.5 | −6.90e-3 |
+| A1 | 4,000 | 0.3474 | −1.29e-4 | 1.86e-4 | −0.70 | 0 |
+| A3 | 64 × 64 | 0.3815 | −2.11e-5 | 9.5e-5 (block) | −0.22 | −7.10e-5 |
+| D1 | 10,000 | 0.5787 | −6.2e-6 | 4.5e-6 | −1.37 | 0 |
+
+- **Replication gate: passes.** The baseline's w(0) is −5.15e-3 at z = −40.5. It is 75% of
+  the H_q75 prediction (−6.90e-3); its P(1) is 0.566 against 0.582.
+- **Primary: *vanishes*.** |w_A2| + 1.96 SE = 4.80e-4, below 0.10 |w_base| = 5.15e-4. A2's
+  witness is 4.0% of the baseline's (95% CI [0, 9.3%]). The margin is narrow: the bound is
+  93% of the threshold.
+- **Segment sensitivity was not triggered.** No job is flagged in the baseline or in A2, so
+  the primary outcome on unflagged jobs is the same by construction. Per job, A2's w(0) is
+  −3.0e-4, −1.3e-4, −2.4e-4 and −2.8e-4; the baseline's is −5.1e-3, −5.8e-3, −5.7e-3 and
+  −5.6e-3.
+- **A2's output P(1)** is 0.3818: 0.3852 predicted by the pilot fit and the calibrated model,
+  0.3791 by #26's refit.
+
+### Secondary family (Holm, α = 0.01)
+
+| test | estimate | reference | difference | z | p | Holm |
+|---|---|---|---|---|---|---|
+| A2s_spec − baseline | −5.38e-3 | −5.15e-3 | −2.3e-4 (ratio 1.044 ± 0.034) | −1.32 | 0.19 | not rejected |
+| A1 against 0 | −1.29e-4 | 0 | −1.29e-4 | −0.70 | 0.49 | not rejected |
+| A3 against its realised H_q75 value | −2.11e-5 | −7.10e-5 | +5.0e-5 | +0.52 | 0.60 | not rejected |
+| D1's w(0) against 0 | −6.2e-6 | 0 | −6.2e-6 | −1.37 | 0.17 | not rejected |
+| D1's lag-1 excess against prediction | −0.0045 | −0.0009 | −0.0036 | −2.46 | 0.014 | not rejected |
+
+Nothing in the family is rejected. A1 and A3, read descriptively under A2's thresholds, both
+*vanish*. D1's lag-1 excess is the closest to the line, and it is in the **negative**
+direction. The sticky record (+0.009 to +0.026) and q59 leakage (+0.017 to +0.050) predict a
+positive excess, so neither is indicated.
+
+### Guard rails and segments (reported, not in the rule)
+
+- No integrity failures, no duplicate shots and no decoding warnings in any arm.
+- **The baseline's P(1) moved between jobs**: 0.577, **0.541**, 0.573, 0.573. This sets its
+  dispersion and order-inflation flags. Its w(0) stayed within −5.1e-3 to −5.8e-3, and
+  neither its segment tests nor A2's flag a job. A2s_spec, run in the same jobs, does not
+  show the dip in job1 (0.574).
+- A2s_spec's segment tests flag jobs 1 and 3 and its dispersion of g(1) − g(3) is high. It
+  is not part of the segment-sensitivity rule. Its pooled ratio to the baseline is 1.04.
+- A3's flags come from its 64 different circuits, which the guard rails expect (§4: only
+  integrity applies).
+
+### The partial-coherence reading, by q75 model
+
+The decision does not depend on the model (`decision_identical_across_models` is true). The
+model only changes how A2's ratio is read as surviving coherence c. The observed ratio is
+0.040 (95% CI [0, 0.093]).
+
+| q75 model | decay a | A2 P(1) predicted | ratio at c = 0.5 | ratio at c = 0.8 | c consistent with the CI |
+|---|---|---|---|---|---|
+| **pilot fit** (the analysis's model) | 7.8e-9 | 0.3852 | 0.068 | 0.386 | 0 to 0.55 |
+| calibrated (sensitivity) | 0 | 0.3852 | 0.068 | 0.386 | 0 to 0.55 |
+| #26's refit (sensitivity) | 0.1225 | 0.3791 | 0.044 | 0.248 | 0 to 0.60 |
+
+On the analysis's model, A2's measurement leaves at most about 55% of q75's coherence. That
+rules out H_partial_c08 (80% kept). It cannot tell 50% kept from full dephasing, as §4
+foresaw. The bound is 60% under #26's refit.
+
+### What this does and doesn't imply
+
+- **Supported (rung 4):** the rank > 2 output statistics need q75's coherence, or its
+  interplay with the classical loop. Measuring q75 in Z every step (A2), resetting it (A1)
+  or randomising it (A3) each removes the witness to below 10% of the baseline. A sham that
+  delays q75 and measures q74 (A2s_spec) leaves it unchanged.
+- **Not shown:** "quantum memory" in a stronger sense; that no other path exists below the
+  vanish bound (about 5e-4 in w(0), with c ≤ 0.55); a physical memory dimension (rung 5).
+- **Caveats:**
+  - The primary bound is narrow, at 93% of the threshold.
+  - The baseline witness replicates at 75% of the H_q75 prediction, with a dip in P(1)
+    during job1.
+  - Gate (c) and the pilot-fitted q75 model come from the post hoc amendments §9 and §10.
+    The decision rule itself is the pre-registered one and does not use the q75 record.

@@ -1,0 +1,386 @@
+{
+  "bootstrap": {
+    "decay_ci95": [
+      2.1979872259822336e-10,
+      0.011084991359096182
+    ],
+    "decay_first_ci95": [
+      3.290613007789298e-08,
+      0.0680422426215213
+    ],
+    "decay_first_sd": 0.01929075054065471,
+    "decay_sd": 0.003189722350315325,
+    "n_boot": 200,
+    "seed": 27
+  },
+  "decay": 7.808481153988245e-09,
+  "decay_first": 0.01709564374043136,
+  "family": "decay_first",
+  "fixed_at": "2026-11-09T10:13:07+0000",
+  "meta": {
+    "config": {
+      "amendment": [
+        {
+          "commit": "daa49991a7abcc7a999ef2d0297055e1945335e1",
+          "date": "2026-11-08",
+          "doc": "docs/phase7-preregistration.md",
+          "heading": "## 9. Amendment of 2026-11-08 (post hoc, after #25's pilot; #26)",
+          "sha256": "483731a22578d92987f8285d747d99a056b94f72f9b01680eeec67e7095c0af7"
+        },
+        {
+          "commit": "0f78670bacdaaf4e97db7399413f9c240171e54e",
+          "date": "2026-11-08",
+          "doc": "docs/phase7-preregistration.md",
+          "heading": "## 10. Amendment of 2026-11-08 (post hoc, after #26's pilot; #27)",
+          "sha256": "2c1b5c541a4ee3983cb2efb477ded03bb36da2d5c0ba3edbdc2532138d408c34"
+        }
+      ],
+      "analysis": {
+        "alpha_segment": 0.01,
+        "block": 500,
+        "burn": 16,
+        "const_block": 1000,
+        "cp_grid": 50,
+        "homog_block": 500,
+        "k_max": 7,
+        "n_boot": 1000,
+        "n_perm": 1000,
+        "offsets": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "seed": 24
+      },
+      "arms": {
+        "A1": {
+          "purpose": "reset q75 every step: the cheapest causal-path check",
+          "shots": 4000,
+          "source": "ablation",
+          "tier": 1
+        },
+        "A2": {
+          "purpose": "primary: rank > 2 with q75 measured in Z every step?",
+          "shots": 10000,
+          "source": "ablation",
+          "tier": 1
+        },
+        "A2s_spec": {
+          "purpose": "sham: delay on q75 + measure q74; readout crosstalk onto q75",
+          "shots": 15000,
+          "source": "ablation",
+          "tier": 1
+        },
+        "A3": {
+          "instances": 64,
+          "purpose": "random Pauli on q75: destroys its state without reset or readout",
+          "shots_per_instance": 64,
+          "source": "ablation",
+          "tier": 2
+        },
+        "D1": {
+          "file": "results/summaries/phase7_classical/d1.qasm",
+          "purpose": "memoryless step at q59's cadence: readout-chain stickiness, w = 0 null",
+          "shots": 10000,
+          "source": "qasm",
+          "tier": 2
+        },
+        "baseline": {
+          "purpose": "concurrent replication and reference",
+          "shots": 15000,
+          "source": "ablation",
+          "tier": 1
+        }
+      },
+      "budget": {
+        "allowance_after_16_s": 584,
+        "billing_round_s": 1.0,
+        "hard_cap_s": 120,
+        "margin": 0.25,
+        "max_qpu_seconds": 20.0,
+        "phase6_circuit_s": 0.000308316,
+        "prior_counted_s": 8.4,
+        "rep_delay_s": 0.00025,
+        "sub_job_overhead_s": 2.0
+      },
+      "calibration": {
+        "abs_readout_max": 0.05,
+        "abs_t1_min_s": 5e-05,
+        "abs_t2_min_s": 3e-05,
+        "factor": 2.0,
+        "qubits": [
+          59,
+          75,
+          74
+        ]
+      },
+      "decision": {
+        "family_alpha": 0.01,
+        "gate_z": 5.0,
+        "persist_fraction": 0.25,
+        "persist_z": 5.0,
+        "vanish_fraction": 0.1
+      },
+      "experiment": {
+        "ablation_config": "experiments/configs/phase7_ablation.toml",
+        "ablation_dir": "results/summaries/phase7_ablation",
+        "ancilla_dir": "results/summaries/phase7_ancilla",
+        "audit_dir": "results/summaries/phase7_audit",
+        "classical_dir": "results/summaries/phase7_classical",
+        "drift_dir": "results/summaries/phase7_drift",
+        "name": "phase7_hw_4c",
+        "phase6_dir": "results/summaries/phase6",
+        "spectator_dir": "results/summaries/phase7_spectator",
+        "summary_dir": "results/summaries/phase7_hw_4c/dryrun",
+        "workers": 2
+      },
+      "hypotheses": [
+        {
+          "kind": "ablate",
+          "label": "H_q75, calibrated",
+          "name": "H_q75"
+        },
+        {
+          "episode": {
+            "e01": 0.05963039868669916,
+            "q75_phase": -0.49170087817951275,
+            "start": 0.4,
+            "weight": 0.135
+          },
+          "kind": "ablate",
+          "label": "drift: #19's episode regime (q75 -0.49 rad/step + q59 P(1|0) +0.060) in 13.5% of shots, contiguous",
+          "name": "H_drift_episode"
+        },
+        {
+          "kind": "hmm",
+          "label": "drift: #19's best K = 3 mixture of 2-state HMMs (rest), in every PMD-cadence arm",
+          "name": "H_drift_mixture",
+          "source": "drift_mixture_K3"
+        },
+        {
+          "kind": "ancilla",
+          "label": "q59 reset + leakage + readout, #21's (a)+(b)+(d) fit",
+          "name": "H_ancilla_fit",
+          "params": "fit_abd_all"
+        },
+        {
+          "kind": "ancilla",
+          "label": "q59 leakage at #21's extreme (5e-3 per readout, seep 0.02)",
+          "name": "H_ancilla_extreme",
+          "params": "max_leak"
+        },
+        {
+          "kind": "ablate",
+          "label": "spectators typical (#22): Stark 16 kHz, thermal q74 5% with ZZ -10 kHz, q74 readout dephases q75 5%",
+          "name": "H_spec_typical",
+          "spectator": {
+            "p_thermal": 0.05,
+            "spec_dephasing": 0.05,
+            "stark_hz": 16000.0,
+            "zz_hz": -10000.0
+          }
+        },
+        {
+          "kind": "ablate",
+          "label": "spectators upper (#22 all-upper): Stark 16 kHz, thermal q74 5% with ZZ -50 kHz, q74 readout dephases q75 25%",
+          "name": "H_spec_upper",
+          "spectator": {
+            "p_thermal": 0.05,
+            "spec_dephasing": 0.25,
+            "stark_hz": 16000.0,
+            "zz_hz": -50000.0
+          }
+        },
+        {
+          "kind": "ablate",
+          "label": "classical electronics: sticky q59 record, eps = 0.027 (#23's fit)",
+          "name": "H_sticky_fit",
+          "persistence": 0.027
+        },
+        {
+          "kind": "ablate",
+          "label": "classical electronics: sticky q59 record, eps = 0.01 (#23's generous bound)",
+          "name": "H_sticky_generous",
+          "persistence": 0.01
+        },
+        {
+          "kind": "hmm",
+          "label": "unmodelled 3-state memory outside q75: every PMD-cadence arm emits #19's 3-state HMM fit",
+          "name": "H_outside",
+          "source": "hmm_3state"
+        },
+        {
+          "kind": "ablate",
+          "label": "incomplete A2 dephasing: q75 keeps 50% of its coherence",
+          "name": "H_partial_c05",
+          "op_coherence": 0.5
+        },
+        {
+          "kind": "ablate",
+          "label": "incomplete A2 dephasing: q75 keeps 80% of its coherence",
+          "name": "H_partial_c08",
+          "op_coherence": 0.8
+        }
+      ],
+      "ibm": {
+        "allowed_plans": [
+          "open"
+        ],
+        "approval_url": "https://github.com/alsiola/quantum-ai/issues/17#issuecomment-6723526792",
+        "backend": "ibm_kingston",
+        "channel": "ibm_cloud",
+        "env_file": ".env"
+      },
+      "layout": {
+        "length": 64,
+        "memory": 75,
+        "output": 59,
+        "spectator": 74
+      },
+      "pilot": {
+        "arms": {
+          "A2": 500,
+          "baseline": 500
+        },
+        "c_stops": false,
+        "p1_stop": 0.08,
+        "p1_tolerance": 0.02,
+        "pm1_tolerance": 0.021,
+        "seed": 1,
+        "time_reference": "circuits_execution_time",
+        "time_tolerance": 0.25
+      },
+      "pilot_refit": {
+        "coherence_grid": [
+          0.0,
+          0.05,
+          0.1,
+          0.15,
+          0.2,
+          0.25,
+          0.3,
+          0.35,
+          0.4,
+          0.45,
+          0.5,
+          0.55,
+          0.6,
+          0.65,
+          0.7,
+          0.75,
+          0.8,
+          0.85,
+          0.9,
+          0.95,
+          1.0
+        ],
+        "family": "decay_first",
+        "n_boot": 200,
+        "seed": 27,
+        "x0": [
+          0.05,
+          0.12
+        ]
+      },
+      "refit": {
+        "decay": 0.1225210036278705,
+        "decay_first": 0.05108972973491628,
+        "source": "results/summaries/phase7_hw_4b/refit.json"
+      },
+      "sampler": {
+        "dynamical_decoupling": false,
+        "twirling_gates": false,
+        "twirling_measure": false
+      },
+      "schedule": {
+        "include_tiers": [
+          1,
+          2
+        ],
+        "max_chunk": 1000,
+        "n_jobs": 4,
+        "seed": 2024,
+        "tier1": [
+          "baseline",
+          "A2",
+          "A2s_spec",
+          "A1"
+        ]
+      },
+      "tier3": {
+        "B2": {
+          "file": "results/summaries/phase7_ancilla/qasm/circuit_B2.qasm",
+          "purpose": "reset then flag measurement of q59 (#21)",
+          "shots": 15000
+        },
+        "C3": {
+          "arms": 2,
+          "file": "results/summaries/phase7_spectator/qasm/c3_spectator1.qasm",
+          "purpose": "q74 reset vs reset + X at shot start, 20,000 per arm (#22)",
+          "shots": 40000
+        },
+        "D3": {
+          "file": "results/summaries/phase7_classical/d3.qasm",
+          "purpose": "classical positive control, w(0) = -0.065 (#23)",
+          "shots": 5000
+        }
+      },
+      "validation": {
+        "decay_strata": [
+          {
+            "decay": 0.0,
+            "decay_first": 0.0,
+            "label": "calibrated"
+          },
+          {
+            "decay": 0.1225210036278705,
+            "decay_first": 0.05108972973491628,
+            "label": "refit26"
+          }
+        ],
+        "n_boot": 200,
+        "n_perm": 100,
+        "pilot_fit": true,
+        "reps": 200,
+        "seed": 4242
+      }
+    },
+    "git_commit": "13ef8f1bf6185372be4253a0713c1483b306465e",
+    "git_dirty": false,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 27,
+    "timestamp_utc": "2026-11-09T10:13:07+00:00",
+    "torch": "2.15.0"
+  },
+  "nll": 40672.33049329181,
+  "nll_calibrated": 40672.67296362019,
+  "note": "fixed from the pilot before any main-job submission (prereg section 10); the analysis's q75 model uses `decay`",
+  "observed": {
+    "p_m1": 0.4890833333333333,
+    "p_m1_next_given_m0_y0": 0.21245096798684043,
+    "p_m1_next_given_m0_y1": 0.6840699368625547,
+    "p_m1_next_given_m1_y0": 0.5712769184106764,
+    "p_m1_next_given_m1_y1": 0.6620266120777891,
+    "p_m1_step0": 0.816,
+    "p_m1_step1": 0.524,
+    "p_y1": 0.38329166666666664,
+    "p_y1_given_m0": 0.3428478225411841,
+    "p_y1_given_m1": 0.42554097802010565
+  },
+  "params": {
+    "decay": 7.808481153988245e-09,
+    "decay_first": 0.01709564374043136
+  },
+  "pred_p_m1": 0.49248907980141055,
+  "pred_p_m1_calibrated": 0.4924890846394283,
+  "pred_p_m1_refit26": 0.41910298793704936,
+  "readout_q75_live": 0.0087890625,
+  "refit26": {
+    "decay": 0.1225210036278705,
+    "decay_first": 0.05108972973491628,
+    "source": "results/summaries/phase7_hw_4b/refit.json"
+  },
+  "shots": 500
+}

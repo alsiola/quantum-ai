@@ -1,0 +1,32 @@
+{
+  "a_decoding_and_guards": true,
+  "b_p1": {
+    "consistent": true,
+    "got": 0.566625,
+    "ok": true,
+    "pred": 0.5809755596341454,
+    "stop_at": 0.08
+  },
+  "c_pm1": {
+    "got": 0.4890833333333333,
+    "ok": false,
+    "pred": 0.41910298793704936,
+    "pred_calibrated": 0.49248908464129826,
+    "pred_refit26": 0.41910298793704936,
+    "stops": false,
+    "tolerance": 0.021,
+    "within_calibrated": true,
+    "within_refit26": false
+  },
+  "d_time": {
+    "got_s_per_shot": 0.000567818752,
+    "model_s_per_shot": 0.000559405999999999,
+    "ok": true,
+    "reference": "circuits_execution_time"
+  },
+  "go": true,
+  "guard_flags": {
+    "A2": [],
+    "baseline": []
+  }
+}
