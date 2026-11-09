@@ -1,0 +1,1208 @@
+{
+  "circuits": {
+    "all_equivalent": true,
+    "all_match": true,
+    "rows": {
+      "m104_o105:A2": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m104_o105:A2s": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m104_o105:A2s_spec": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m104_o105:baseline": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m149_o148:A2": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m149_o148:A2s": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m149_o148:A2s_spec": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m149_o148:baseline": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m67_o68:A2": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m67_o68:A2s": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m67_o68:A2s_spec": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m67_o68:baseline": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m75_o59:A2": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m75_o59:A2s": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m75_o59:A2s_spec": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      },
+      "m75_o59:baseline": {
+        "file_matches": true,
+        "rebuilt_equals_recorded": true,
+        "relabelled_equals_reference": true
+      }
+    }
+  },
+  "classical": {
+    "class": "general_d6",
+    "note": "transferred unchanged from 59/75; the class has no parameter-free prediction for a new pair. Any invasive classical A2 gives w_A2 = 0 on any pair (#30, Theorem 3), so a replication cannot separate it from the quantum model",
+    "predictions": {
+      "A2": {
+        "lag1": 0.03130770085798795,
+        "p1": 0.3820662647884765,
+        "w0": 1.5737894836352486e-05,
+        "w1": -2.1877385627137096e-07,
+        "w2": 3.865329013243896e-09
+      },
+      "A2s": {
+        "lag1": 0.17927767205410194,
+        "p1": 0.5668290402280189,
+        "w0": -0.005010969637097981,
+        "w1": -0.029731245196623464,
+        "w2": -0.030670751714955643
+      },
+      "A2s_spec": {
+        "lag1": 0.19092693140463868,
+        "p1": 0.5754919571727556,
+        "w0": -0.005484818079913167,
+        "w1": -0.03559836467949352,
+        "w2": -0.04019395481075169
+      },
+      "baseline": {
+        "lag1": 0.17927767205410194,
+        "p1": 0.5668290402280189,
+        "w0": -0.005010969637097981,
+        "w1": -0.029731245196623464,
+        "w2": -0.030670751714955643
+      }
+    }
+  },
+  "elapsed_s": 1097.061912059784,
+  "inflation": {
+    "A2": {
+      "g0": 1.5020005794847313,
+      "g1": 1.0,
+      "g2": 1.3351186398394055,
+      "g3": 1.0133280313597928,
+      "g4": 1.139380933400635,
+      "g5": 1.0009364904375586,
+      "g6": 1.023680966743941,
+      "g7": 1.339362904646422,
+      "lag1": 1.293201681070312,
+      "w0": 1.788910510247802
+    },
+    "A2s": {
+      "g0": 4.079663480121521,
+      "g1": 7.702062005390769,
+      "g2": 7.387558138803658,
+      "g3": 1.7210332367611236,
+      "g4": 3.736101892685726,
+      "g5": 4.942310082315601,
+      "g6": 1.319566159085228,
+      "g7": 1.6438598080650502,
+      "lag1": 4.519258783867484,
+      "w0": 1.6859888265949714
+    },
+    "A2s_spec": {
+      "g0": 1.6231624463585106,
+      "g1": 7.702062005390769,
+      "g2": 7.139432953259165,
+      "g3": 1.7210332367611236,
+      "g4": 3.736101892685726,
+      "g5": 3.153513878367346,
+      "g6": 1.0911608674137419,
+      "g7": 1.6438598080650502,
+      "lag1": 4.519258783867484,
+      "w0": 1.6859888265949714
+    },
+    "baseline": {
+      "g0": 4.079663480121521,
+      "g1": 7.524013353552787,
+      "g2": 7.387558138803658,
+      "g3": 1.3356902442744227,
+      "g4": 1.810513570642745,
+      "g5": 4.942310082315601,
+      "g6": 1.319566159085228,
+      "g7": 1.062402553035864,
+      "lag1": 2.9719919261641228,
+      "w0": 1.2993178685592766
+    }
+  },
+  "meta": {
+    "config": {
+      "analysis": {
+        "block": 500,
+        "burn": 16,
+        "k_max": 7,
+        "n_boot": 1000,
+        "seed": 31
+      },
+      "budget": {
+        "billing_round_s": 1.0,
+        "cap_s": 120,
+        "margin": 0.25,
+        "max_job_estimate_s": 12.0,
+        "min_jobs": 4,
+        "open_plan_s": 600,
+        "phase6_circuit_s": 0.000308316,
+        "rep_delay_s": 0.00025,
+        "sub_job_overhead_s": 2.0
+      },
+      "circuits": {
+        "arms": [
+          "baseline",
+          "A2",
+          "A2s_spec",
+          "A2s"
+        ],
+        "delays": "snapshot",
+        "length": 64,
+        "optimization_level": 0,
+        "seed_transpiler": 0
+      },
+      "experiment": {
+        "ablation_config": "experiments/configs/phase7_ablation.toml",
+        "ablation_dir": "results/summaries/phase7_ablation",
+        "classical_dir": "results/summaries/phase8_classical",
+        "hw4c_dir": "results/summaries/phase7_hw_4c",
+        "main_jobs": [
+          "job0",
+          "job1",
+          "job2",
+          "job3"
+        ],
+        "name": "phase8_replication",
+        "phase6_dir": "results/summaries/phase6",
+        "spectator_dir": "results/summaries/phase7_spectator",
+        "summary_dir": "results/summaries/phase8_replication",
+        "workers": 2
+      },
+      "inflation": {
+        "delay_sham_from": [
+          "baseline",
+          "A2s_spec"
+        ],
+        "floor": 1.0
+      },
+      "model": {
+        "classical_class": "general_d6",
+        "feedforward_time": 1e-06,
+        "moment_seed": 311,
+        "moment_shots": 40000,
+        "moment_shots_chosen": 200000,
+        "shortfall": 0.75,
+        "shortfall_sensitivity": [
+          0.6,
+          1.0
+        ]
+      },
+      "options": {
+        "a2_shots": [
+          16000,
+          20000,
+          30000
+        ],
+        "arm_sets": [
+          "full",
+          "no_spectator_sham",
+          "no_delay_sham"
+        ],
+        "base_sham_shots": [
+          20000,
+          28000,
+          35000,
+          45000
+        ],
+        "modes": [
+          "one",
+          "two_sequential",
+          "two_parallel"
+        ]
+      },
+      "pilot": {
+        "p1_stop": 0.08,
+        "seed": 3132,
+        "shots": {
+          "A2": 500,
+          "A2s": 500,
+          "A2s_spec": 500,
+          "baseline": 500
+        },
+        "time_tolerance": 0.25
+      },
+      "power": {
+        "n_mc": 20000,
+        "seed": 3102,
+        "sham_ratio_sensitivity": [
+          0.97,
+          1.03
+        ],
+        "true_ratio_sensitivity": [
+          0.05
+        ]
+      },
+      "reference": {
+        "memory": 75,
+        "output": 59,
+        "spectator": 74
+      },
+      "rule": {
+        "armjob_alpha": 0.01,
+        "full_sham": "A2s",
+        "g_alpha": 0.01,
+        "gate_z": 5.0,
+        "lojo": true,
+        "margin": 0.1,
+        "persist_fraction": 0.25,
+        "persist_z": 5.0,
+        "sham_stats": [
+          "w0",
+          "lag1"
+        ],
+        "tost_alpha": 0.05,
+        "vanish_fraction": 0.1,
+        "vanish_z": 1.959963984540054,
+        "w0_sham": "A2s_spec"
+      },
+      "schedule": {
+        "max_chunk": 1000,
+        "seed": 3131
+      },
+      "selection": {
+        "cz_max": 0.005,
+        "mem_readout_max": 0.03,
+        "mem_t1_min": 0.00015,
+        "mem_t2_min": 0.0001,
+        "min_distance_pairs": 3,
+        "min_distance_reference": 3,
+        "n_pairs": 2,
+        "named": [
+          [
+            67,
+            68
+          ],
+          [
+            149,
+            148
+          ],
+          [
+            104,
+            105
+          ]
+        ],
+        "out_readout_max": 0.02,
+        "out_t1_min": 0.0001,
+        "out_t2_min": 5e-05,
+        "power_min": 0.8,
+        "spec_readout_max": 0.05,
+        "sx_max": 0.001
+      },
+      "selection_design": {
+        "A2": 20000,
+        "A2s": 35000,
+        "A2s_spec": 35000,
+        "baseline": 35000,
+        "n_jobs": 6,
+        "n_mc": 4000,
+        "seed": 3101
+      },
+      "validation": {
+        "armjob_flip": 0.058,
+        "armjob_job": 1,
+        "chunk_drift_sd": {
+          "A2": 0.058,
+          "A2s": 0.107,
+          "A2s_spec": 0.107,
+          "baseline": 0.058
+        },
+        "drift_levels": 7,
+        "n_boot": 200,
+        "reps": 40,
+        "seed": 3141
+      }
+    },
+    "git_commit": "bfe04569b0f3f91a16ea5529302e9d91a311a3c4",
+    "git_dirty": false,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 3102,
+    "timestamp_utc": "2026-11-09T21:57:40+00:00",
+    "torch": "2.15.0"
+  },
+  "plan": {
+    "arms": {
+      "par:A2": 20000,
+      "par:A2s": 35000,
+      "par:A2s_spec": 35000,
+      "par:baseline": 35000
+    },
+    "durations_s": {
+      "par:A2": 0.000310596,
+      "par:A2s": 0.00031049600000000006,
+      "par:A2s_spec": 0.00031049600000000006,
+      "par:baseline": 0.000308316
+    },
+    "estimate_s": 87.107652,
+    "job_costs": [
+      {
+        "estimate_s": 11.998723368000002,
+        "shot_s": 9.998723368000002,
+        "shots": 17858,
+        "upper_s": 15.998404210000002
+      },
+      {
+        "estimate_s": 11.998162772,
+        "shot_s": 9.998162772,
+        "shots": 17857,
+        "upper_s": 15.997703465
+      },
+      {
+        "estimate_s": 11.998162772,
+        "shot_s": 9.998162772,
+        "shots": 17857,
+        "upper_s": 15.997703465
+      },
+      {
+        "estimate_s": 11.998162772,
+        "shot_s": 9.998162772,
+        "shots": 17857,
+        "upper_s": 15.997703465
+      },
+      {
+        "estimate_s": 11.998162772,
+        "shot_s": 9.998162772,
+        "shots": 17857,
+        "upper_s": 15.997703465
+      },
+      {
+        "estimate_s": 11.998162772,
+        "shot_s": 9.998162772,
+        "shots": 17857,
+        "upper_s": 15.997703465
+      },
+      {
+        "estimate_s": 11.998162772,
+        "shot_s": 9.998162772,
+        "shots": 17857,
+        "upper_s": 15.997703465
+      }
+    ],
+    "jobs": 7,
+    "pilot_cost": {
+      "estimate_s": 3.119952,
+      "shot_s": 1.119952,
+      "shots": 2000,
+      "upper_s": 4.89994
+    },
+    "problems": [],
+    "pubs": 126,
+    "upper_s": 116.88456500000001
+  },
+  "recommendation": {
+    "cheapest_powered": {
+      "all_pairs_joint": 0.82435,
+      "arm_set": "no_spectator_sham",
+      "cost_estimate_s": 58.127956000000005,
+      "cost_jobs": 5,
+      "cost_shot_s": 48.127956000000005,
+      "cost_shots": 86000,
+      "cost_upper_s": 77.65994500000001,
+      "m67_o68_h1": 1.0,
+      "m67_o68_h2": 0.82435,
+      "m67_o68_joint": 0.82435,
+      "m67_o68_sham": 0.8829,
+      "m67_o68_vanish": 0.9343,
+      "min_pair_joint": 0.82435,
+      "mode": "one",
+      "pairs": "m67_o68",
+      "shots_A2": 16000,
+      "shots_base_sham": 35000,
+      "upper_with_pilot_s": 82.55988500000001
+    },
+    "option": {
+      "all_pairs_joint": 0.6575567075000001,
+      "arm_set": "full",
+      "cost_estimate_s": 83.9877,
+      "cost_jobs": 7,
+      "cost_shot_s": 69.9877,
+      "cost_shots": 125000,
+      "cost_upper_s": 111.98462500000001,
+      "m149_o148_h1": 1.0,
+      "m149_o148_h2": 0.80945,
+      "m149_o148_joint": 0.80945,
+      "m149_o148_sham": 0.81755,
+      "m149_o148_vanish": 0.9897,
+      "m67_o68_h1": 1.0,
+      "m67_o68_h2": 0.81235,
+      "m67_o68_joint": 0.81235,
+      "m67_o68_sham": 0.82045,
+      "m67_o68_vanish": 0.98985,
+      "min_pair_joint": 0.80945,
+      "mode": "two_parallel",
+      "pairs": "m67_o68 + m149_o148",
+      "shots_A2": 20000,
+      "shots_base_sham": 35000,
+      "upper_with_pilot_s": 116.88456500000001
+    },
+    "verdict": "pass"
+  },
+  "reference": {
+    "w0_calibrated_fake": -0.006533715412134783,
+    "w0_calibrated_live": -0.006675597482088448
+  },
+  "rule_on_27": {
+    "a2_bound_27_summary": 0.09306609529891935,
+    "pre_registered_call_27": "vanishes",
+    "this_rule_on_27_drift_conditional_se": {
+      "a2_bound": 0.09438255377983322,
+      "a2_lojo_max_bound": 0.11350700244659101,
+      "flagged_jobs": [
+        1
+      ],
+      "interaction": [
+        {
+          "arm": "A2",
+          "fe": -0.18362832543222574,
+          "outlier_job": 1,
+          "outlier_z": 11.639251381590718,
+          "per_job": [
+            -0.19362222222222225,
+            -0.16012499999999996,
+            -0.1921388888888888,
+            -0.190086111111111
+          ],
+          "per_job_se": [
+            0.0024466900451413087,
+            0.0023496952282701933,
+            0.0023810751197337926,
+            0.002438014579960844
+          ],
+          "q": 136.53006294759265,
+          "q_p": 0.0,
+          "stat": "p1",
+          "vs": "baseline"
+        },
+        {
+          "arm": "A2",
+          "fe": 0.005340111780408481,
+          "per_job": [
+            0.00475395412801877,
+            0.005700943922336961,
+            0.0054566075001102055,
+            0.0053225780551740915
+          ],
+          "per_job_se": [
+            0.00043169717596456023,
+            0.00039663900135935095,
+            0.0003477472587599397,
+            0.0003962443670771591
+          ],
+          "q": 2.785398087667363,
+          "q_p": 0.4259092960991022,
+          "stat": "w0",
+          "vs": "baseline"
+        },
+        {
+          "arm": "A2",
+          "fe": -0.14587075133116703,
+          "per_job": [
+            -0.1283092468862499,
+            -0.16925264091576198,
+            -0.14285425304369387,
+            -0.14115445621564465
+          ],
+          "per_job_se": [
+            0.004534506280772616,
+            0.004335732129659663,
+            0.004422521119926423,
+            0.004475145117801319
+          ],
+          "q": 45.6576171686906,
+          "q_p": 6.706365462960662e-10,
+          "stat": "lag1",
+          "vs": "baseline"
+        },
+        {
+          "arm": "A2s_spec",
+          "fe": 0.011194473889700256,
+          "outlier_job": 1,
+          "outlier_z": 10.936586743774525,
+          "per_job": [
+            0.001677777777777778,
+            0.03300555555555551,
+            0.005038888888889037,
+            0.004277777777777825
+          ],
+          "per_job_se": [
+            0.002334957191071232,
+            0.002313679270983688,
+            0.0023504364546613012,
+            0.002386233910257794
+          ],
+          "q": 120.74074722681908,
+          "q_p": 1.7763568394002505e-15,
+          "stat": "p1",
+          "vs": "baseline"
+        },
+        {
+          "arm": "A2s_spec",
+          "fe": -0.0002278867275169548,
+          "per_job": [
+            1.725959406718644e-05,
+            -0.00017497838868363313,
+            -0.0004785571093684684,
+            -0.00029862144910517904
+          ],
+          "per_job_se": [
+            0.0004158644479492575,
+            0.0004473630256169976,
+            0.00043649666275979456,
+            0.0004394932017023016
+          ],
+          "q": 0.7171797472786969,
+          "q_p": 0.8691558523603601,
+          "stat": "w0",
+          "vs": "baseline"
+        },
+        {
+          "arm": "A2s_spec",
+          "fe": 0.01618119523025173,
+          "per_job": [
+            0.004792516586186291,
+            0.027137607852661616,
+            0.018814215015420632,
+            0.012960468113793144
+          ],
+          "per_job_se": [
+            0.003959519469946275,
+            0.00378370619351522,
+            0.003978868043783921,
+            0.003961773798476773
+          ],
+          "q": 17.756756698899206,
+          "q_p": 0.0004936904330159475,
+          "stat": "lag1",
+          "vs": "baseline"
+        }
+      ],
+      "label": "ambiguous: the call changes without the flagged job",
+      "sham_equivalent_per_stat": {
+        "g0": true,
+        "g1": true,
+        "g2": false,
+        "g3": true,
+        "g4": false,
+        "g5": false,
+        "g6": true,
+        "g7": false,
+        "lag1": false,
+        "w0": false
+      },
+      "sham_w0_ratio": 1.0444356757463893,
+      "sham_w0_ratio_se": 0.04652006406573269
+    },
+    "this_rule_on_27_primary_se": {
+      "a2_bound": 0.09438255377983322,
+      "a2_call_all_jobs": "vanishes",
+      "a2_lojo_max_bound": 0.11350700244659101,
+      "label": "ambiguous: A2 vanishes on all jobs but not leaving one job out",
+      "sham_equivalent_per_stat": {
+        "g0": true,
+        "g1": true,
+        "g2": true,
+        "g3": true,
+        "g4": true,
+        "g5": false,
+        "g6": true,
+        "g7": true,
+        "lag1": false,
+        "w0": false
+      },
+      "sham_w0_equivalent": false,
+      "sham_w0_ratio": 1.0444356757463893,
+      "vanish_with_lojo": false
+    }
+  },
+  "run_dir": "results/phase8_replication/20261109T215740Z",
+  "selection": {
+    "chosen": [
+      "m67_o68",
+      "m149_o148"
+    ],
+    "chosen_rows": [
+      {
+        "couplers": "47-57 57-67 66-67 67-68 68-69",
+        "cz_error": 0.0013738185169772654,
+        "distance_from_reference": 6,
+        "measure_time_s": 2.28e-06,
+        "memory": 67,
+        "memory_degree": 3,
+        "memory_readout": 0.0162353515625,
+        "memory_sx": 0.00024060124647188002,
+        "memory_t1_us": 362.66678614398216,
+        "memory_t2_us": 387.25659910968903,
+        "named_candidate": true,
+        "output": 68,
+        "output_readout": 0.00341796875,
+        "output_sx": 0.00018531791467288136,
+        "output_t1_us": 177.63588723818052,
+        "output_t2_us": 131.77442978952234,
+        "power_h1": 1.0,
+        "power_h2": 0.839,
+        "power_joint": 0.839,
+        "power_sham": 0.8405,
+        "power_vanish": 0.99825,
+        "pred_p1_calibrated": 0.5820509433096613,
+        "pred_w0_calibrated": -0.007430925387317849,
+        "pred_w0_truth": -0.00557319404031683,
+        "rank": 1,
+        "reasons": [],
+        "reset_time_s": 2.312e-06,
+        "snr": 0.3992483460177712,
+        "spectator": 57,
+        "spectator_readout": 0.0047607421875,
+        "status": "chosen",
+        "truth_dephasing": 0.06598745574592613
+      },
+      {
+        "couplers": "147-148 148-149 149-150 150-151",
+        "cz_error": 0.0025854599322507332,
+        "distance_from_reference": 16,
+        "measure_time_s": 2.28e-06,
+        "memory": 149,
+        "memory_degree": 2,
+        "memory_readout": 0.0089111328125,
+        "memory_sx": 0.00018273140424799025,
+        "memory_t1_us": 343.337651811599,
+        "memory_t2_us": 383.4303430997334,
+        "named_candidate": true,
+        "output": 148,
+        "output_readout": 0.002197265625,
+        "output_sx": 0.00016335767023560236,
+        "output_t1_us": 243.49733800231476,
+        "output_t2_us": 201.0760808840766,
+        "power_h1": 1.0,
+        "power_h2": 0.837,
+        "power_joint": 0.837,
+        "power_sham": 0.8385,
+        "power_vanish": 0.99825,
+        "pred_p1_calibrated": 0.5816408621684697,
+        "pred_w0_calibrated": -0.007416577485780855,
+        "pred_w0_truth": -0.005562433115011933,
+        "rank": 2,
+        "reasons": [],
+        "reset_time_s": 2.312e-06,
+        "snr": 0.3982028458722813,
+        "spectator": 150,
+        "spectator_readout": 0.0078125,
+        "status": "chosen",
+        "truth_dephasing": 0.0660643340961542
+      }
+    ],
+    "n_candidates": 352,
+    "n_qualified": 7,
+    "n_screened": 87,
+    "named": {
+      "m104_o105": {
+        "power_joint": 0.78975,
+        "rank": null,
+        "reasons": [
+          "P(H1 and H2) 0.790 < 0.8"
+        ],
+        "status": "excluded"
+      },
+      "m149_o148": {
+        "power_joint": 0.837,
+        "rank": 2,
+        "reasons": [],
+        "status": "chosen"
+      },
+      "m67_o68": {
+        "power_joint": 0.839,
+        "rank": 1,
+        "reasons": [],
+        "status": "chosen"
+      }
+    },
+    "statement": "2 pairs qualify and are chosen"
+  },
+  "sensitivity": [
+    {
+      "A2s_equiv_all": 0.882,
+      "A2s_equiv_w0": 0.92685,
+      "A2s_g_any_differs": 0.0096,
+      "A2s_spec_equiv_all": 0.87575,
+      "A2s_spec_equiv_w0": 0.92325,
+      "A2s_spec_g_any_differs": 0.0107,
+      "a2_bound_median": 0.04944130500719231,
+      "h1": 1.0,
+      "h1_and_h2": 0.81235,
+      "h2": 0.81235,
+      "h2_sham": 0.82045,
+      "pair": "m67_o68",
+      "persist": 0.0,
+      "scenario": "design (true A2 ratio 0, sham ratio 1, shortfall 0.75, drift-conditional SEs)",
+      "vanish": 0.98985,
+      "vanish_all_jobs": 0.9992
+    },
+    {
+      "A2s_equiv_all": 0.882,
+      "A2s_equiv_w0": 0.92685,
+      "A2s_g_any_differs": 0.0096,
+      "A2s_spec_equiv_all": 0.87575,
+      "A2s_spec_equiv_w0": 0.92325,
+      "A2s_spec_g_any_differs": 0.0107,
+      "a2_bound_median": 0.08672727225961305,
+      "h1": 1.0,
+      "h1_and_h2": 0.3953,
+      "h2": 0.3953,
+      "h2_sham": 0.82045,
+      "pair": "m67_o68",
+      "persist": 0.0,
+      "scenario": "true A2 ratio 0.05",
+      "vanish": 0.48155,
+      "vanish_all_jobs": 0.7582
+    },
+    {
+      "A2s_equiv_all": 0.75745,
+      "A2s_equiv_w0": 0.79665,
+      "A2s_g_any_differs": 0.0096,
+      "A2s_spec_equiv_all": 0.753,
+      "A2s_spec_equiv_w0": 0.79455,
+      "A2s_spec_g_any_differs": 0.0107,
+      "a2_bound_median": 0.04944130500719231,
+      "h1": 1.0,
+      "h1_and_h2": 0.62235,
+      "h2": 0.62235,
+      "h2_sham": 0.62885,
+      "pair": "m67_o68",
+      "persist": 0.0,
+      "scenario": "sham w(0) ratio 0.97",
+      "vanish": 0.98985,
+      "vanish_all_jobs": 0.9992
+    },
+    {
+      "A2s_equiv_all": 0.7189,
+      "A2s_equiv_w0": 0.75595,
+      "A2s_g_any_differs": 0.0096,
+      "A2s_spec_equiv_all": 0.71565,
+      "A2s_spec_equiv_w0": 0.7542,
+      "A2s_spec_g_any_differs": 0.0107,
+      "a2_bound_median": 0.04944130500719231,
+      "h1": 1.0,
+      "h1_and_h2": 0.57965,
+      "h2": 0.57965,
+      "h2_sham": 0.5853,
+      "pair": "m67_o68",
+      "persist": 0.0,
+      "scenario": "sham w(0) ratio 1.03",
+      "vanish": 0.98985,
+      "vanish_all_jobs": 0.9992
+    },
+    {
+      "A2s_equiv_all": 0.99925,
+      "A2s_equiv_w0": 0.99925,
+      "A2s_g_any_differs": 0.00975,
+      "A2s_spec_equiv_all": 0.9994,
+      "A2s_spec_equiv_w0": 0.9994,
+      "A2s_spec_g_any_differs": 0.01075,
+      "a2_bound_median": 0.027638152714425074,
+      "h1": 1.0,
+      "h1_and_h2": 0.99865,
+      "h2": 0.99865,
+      "h2_sham": 0.99865,
+      "pair": "m67_o68",
+      "persist": 0.0,
+      "scenario": "no drift inflation",
+      "vanish": 1.0,
+      "vanish_all_jobs": 1.0
+    },
+    {
+      "A2s_equiv_all": 0.7913,
+      "A2s_equiv_w0": 0.8522,
+      "A2s_g_any_differs": 0.01065,
+      "A2s_spec_equiv_all": 0.7863,
+      "A2s_spec_equiv_w0": 0.8499,
+      "A2s_spec_g_any_differs": 0.01065,
+      "a2_bound_median": 0.05081055195204813,
+      "h1": 1.0,
+      "h1_and_h2": 0.67195,
+      "h2": 0.67195,
+      "h2_sham": 0.683,
+      "pair": "m67_o68",
+      "persist": 0.0,
+      "scenario": "shortfall 0.6",
+      "vanish": 0.984,
+      "vanish_all_jobs": 0.9991
+    },
+    {
+      "A2s_equiv_all": 0.9539,
+      "A2s_equiv_w0": 0.9852,
+      "A2s_g_any_differs": 0.0096,
+      "A2s_spec_equiv_all": 0.95105,
+      "A2s_spec_equiv_w0": 0.984,
+      "A2s_spec_g_any_differs": 0.0108,
+      "a2_bound_median": 0.032603131710444,
+      "h1": 1.0,
+      "h1_and_h2": 0.9395,
+      "h2": 0.9395,
+      "h2_sham": 0.9395,
+      "pair": "m67_o68",
+      "persist": 0.0,
+      "scenario": "shortfall 1.0",
+      "vanish": 1.0,
+      "vanish_all_jobs": 1.0
+    },
+    {
+      "A2s_equiv_all": 0.88095,
+      "A2s_equiv_w0": 0.92525,
+      "A2s_g_any_differs": 0.00965,
+      "A2s_spec_equiv_all": 0.8743,
+      "A2s_spec_equiv_w0": 0.9207,
+      "A2s_spec_g_any_differs": 0.0107,
+      "a2_bound_median": 0.0495535535598048,
+      "h1": 1.0,
+      "h1_and_h2": 0.80945,
+      "h2": 0.80945,
+      "h2_sham": 0.81755,
+      "pair": "m149_o148",
+      "persist": 0.0,
+      "scenario": "design (true A2 ratio 0, sham ratio 1, shortfall 0.75, drift-conditional SEs)",
+      "vanish": 0.9897,
+      "vanish_all_jobs": 0.99915
+    },
+    {
+      "A2s_equiv_all": 0.88095,
+      "A2s_equiv_w0": 0.92525,
+      "A2s_g_any_differs": 0.00965,
+      "A2s_spec_equiv_all": 0.8743,
+      "A2s_spec_equiv_w0": 0.9207,
+      "A2s_spec_g_any_differs": 0.0107,
+      "a2_bound_median": 0.0867896753575213,
+      "h1": 1.0,
+      "h1_and_h2": 0.392,
+      "h2": 0.392,
+      "h2_sham": 0.81755,
+      "pair": "m149_o148",
+      "persist": 0.0,
+      "scenario": "true A2 ratio 0.05",
+      "vanish": 0.4791,
+      "vanish_all_jobs": 0.7561
+    },
+    {
+      "A2s_equiv_all": 0.75565,
+      "A2s_equiv_w0": 0.79445,
+      "A2s_g_any_differs": 0.00965,
+      "A2s_spec_equiv_all": 0.7509,
+      "A2s_spec_equiv_w0": 0.7913,
+      "A2s_spec_g_any_differs": 0.0107,
+      "a2_bound_median": 0.0495535535598048,
+      "h1": 1.0,
+      "h1_and_h2": 0.6188,
+      "h2": 0.6188,
+      "h2_sham": 0.6252,
+      "pair": "m149_o148",
+      "persist": 0.0,
+      "scenario": "sham w(0) ratio 0.97",
+      "vanish": 0.9897,
+      "vanish_all_jobs": 0.99915
+    },
+    {
+      "A2s_equiv_all": 0.7171,
+      "A2s_equiv_w0": 0.7538,
+      "A2s_g_any_differs": 0.00965,
+      "A2s_spec_equiv_all": 0.7141,
+      "A2s_spec_equiv_w0": 0.75155,
+      "A2s_spec_g_any_differs": 0.0107,
+      "a2_bound_median": 0.0495535535598048,
+      "h1": 1.0,
+      "h1_and_h2": 0.5764,
+      "h2": 0.5764,
+      "h2_sham": 0.58215,
+      "pair": "m149_o148",
+      "persist": 0.0,
+      "scenario": "sham w(0) ratio 1.03",
+      "vanish": 0.9897,
+      "vanish_all_jobs": 0.99915
+    },
+    {
+      "A2s_equiv_all": 0.99925,
+      "A2s_equiv_w0": 0.99925,
+      "A2s_g_any_differs": 0.0098,
+      "A2s_spec_equiv_all": 0.9994,
+      "A2s_spec_equiv_w0": 0.9994,
+      "A2s_spec_g_any_differs": 0.01075,
+      "a2_bound_median": 0.02770020959937851,
+      "h1": 1.0,
+      "h1_and_h2": 0.99865,
+      "h2": 0.99865,
+      "h2_sham": 0.99865,
+      "pair": "m149_o148",
+      "persist": 0.0,
+      "scenario": "no drift inflation",
+      "vanish": 1.0,
+      "vanish_all_jobs": 1.0
+    },
+    {
+      "A2s_equiv_all": 0.78785,
+      "A2s_equiv_w0": 0.8479,
+      "A2s_g_any_differs": 0.0107,
+      "A2s_spec_equiv_all": 0.784,
+      "A2s_spec_equiv_w0": 0.8469,
+      "A2s_spec_g_any_differs": 0.01065,
+      "a2_bound_median": 0.051096858556620606,
+      "h1": 1.0,
+      "h1_and_h2": 0.666,
+      "h2": 0.666,
+      "h2_sham": 0.67775,
+      "pair": "m149_o148",
+      "persist": 0.0,
+      "scenario": "shortfall 0.6",
+      "vanish": 0.98265,
+      "vanish_all_jobs": 0.99895
+    },
+    {
+      "A2s_equiv_all": 0.95305,
+      "A2s_equiv_w0": 0.9843,
+      "A2s_g_any_differs": 0.0105,
+      "A2s_spec_equiv_all": 0.95055,
+      "A2s_spec_equiv_w0": 0.98375,
+      "A2s_spec_g_any_differs": 0.0106,
+      "a2_bound_median": 0.032682219301064956,
+      "h1": 1.0,
+      "h1_and_h2": 0.93845,
+      "h2": 0.93845,
+      "h2_sham": 0.93845,
+      "pair": "m149_o148",
+      "persist": 0.0,
+      "scenario": "shortfall 1.0",
+      "vanish": 1.0,
+      "vanish_all_jobs": 1.0
+    },
+    {
+      "A2s_equiv_all": 0.83355,
+      "A2s_equiv_w0": 0.88925,
+      "A2s_g_any_differs": 0.01045,
+      "A2s_spec_equiv_all": 0.82835,
+      "A2s_spec_equiv_w0": 0.8863,
+      "A2s_spec_g_any_differs": 0.01105,
+      "a2_bound_median": 0.0536436895137091,
+      "h1": 1.0,
+      "h1_and_h2": 0.7243,
+      "h2": 0.7243,
+      "h2_sham": 0.74645,
+      "pair": "m75_o59 (#27 live)",
+      "persist": 0.0,
+      "scenario": "design",
+      "vanish": 0.9692,
+      "vanish_all_jobs": 0.997
+    }
+  ],
+  "snapshot": {
+    "backend": "fake_kingston",
+    "calibration_date": "2026-04-15 09:15:15+02:00",
+    "note": "dry run on FakeKingston's committed snapshot; the real selection runs on the live snapshot at Stage 4 only, after the owner approves"
+  },
+  "validation": [
+    {
+      "engine_at_design_se": {
+        "h1": 1.0,
+        "h1_and_h2": 0.80945,
+        "h2": 0.80945,
+        "h2_sham": 0.81755,
+        "vanish": 0.9897
+      },
+      "engine_at_simulated_se": {
+        "h1": 1.0,
+        "h1_and_h2": 0.8994,
+        "h2": 0.8994,
+        "h2_sham": 0.8994,
+        "inflation_w0": {
+          "A2": 1.042877585599763,
+          "A2s": 1.620471726570788,
+          "A2s_spec": 1.6066786975933935,
+          "baseline": 1.2368863891498019
+        },
+        "vanish": 1.0
+      },
+      "labels": {
+        "ambiguous: arm x job heterogeneity beyond one job": 1,
+        "ambiguous: more than one job flagged (arm x job)": 2,
+        "ambiguous: the call changes without the flagged job": 3,
+        "partial: A2 vanishes, sham equivalence not established": 3,
+        "replicates: H1 and H2 (A2 vanishes; shams equivalent)": 31
+      },
+      "mean_base_se_over_primary": 1.1609092232702116,
+      "median_a2_bound": 0.029914274528056034,
+      "p_flagged_any": 1.0,
+      "p_h1": 1.0,
+      "p_h1_and_h2": 0.9,
+      "p_h2": 0.9,
+      "p_h2_sham": 0.9,
+      "p_vanish": 1.0,
+      "p_vanish_all_jobs": 1.0,
+      "pair": "m149_o148",
+      "reps": 40,
+      "scenario": "armjob"
+    },
+    {
+      "engine_at_design_se": {
+        "h1": 1.0,
+        "h1_and_h2": 0.80945,
+        "h2": 0.80945,
+        "h2_sham": 0.81755,
+        "vanish": 0.9897
+      },
+      "engine_at_simulated_se": {
+        "h1": 1.0,
+        "h1_and_h2": 0.904,
+        "h2": 0.904,
+        "h2_sham": 0.904,
+        "inflation_w0": {
+          "A2": 1.0735855684270714,
+          "A2s": 1.645056152553314,
+          "A2s_spec": 1.6200902529385406,
+          "baseline": 1.1903265818628712
+        },
+        "vanish": 1.0
+      },
+      "labels": {
+        "partial: A2 vanishes, sham equivalence not established": 2,
+        "replicates: H1 and H2 (A2 vanishes; shams equivalent)": 38
+      },
+      "mean_base_se_over_primary": 1.1412564210788085,
+      "median_a2_bound": 0.029574718064792768,
+      "p_flagged_any": 0.0,
+      "p_h1": 1.0,
+      "p_h1_and_h2": 0.95,
+      "p_h2": 0.95,
+      "p_h2_sham": 0.95,
+      "p_vanish": 1.0,
+      "p_vanish_all_jobs": 1.0,
+      "pair": "m149_o148",
+      "reps": 40,
+      "scenario": "drift"
+    },
+    {
+      "engine_at_design_se": {
+        "h1": 1.0,
+        "h1_and_h2": 0.81235,
+        "h2": 0.81235,
+        "h2_sham": 0.82045,
+        "vanish": 0.98985
+      },
+      "engine_at_simulated_se": {
+        "h1": 1.0,
+        "h1_and_h2": 0.90005,
+        "h2": 0.90005,
+        "h2_sham": 0.90005,
+        "inflation_w0": {
+          "A2": 1.0413105249319836,
+          "A2s": 1.6251726857133526,
+          "A2s_spec": 1.6124505323899092,
+          "baseline": 1.2386274464764582
+        },
+        "vanish": 1.0
+      },
+      "labels": {
+        "ambiguous: arm x job heterogeneity beyond one job": 1,
+        "ambiguous: more than one job flagged (arm x job)": 2,
+        "ambiguous: the call changes without the flagged job": 3,
+        "partial: A2 vanishes, sham equivalence not established": 3,
+        "replicates: H1 and H2 (A2 vanishes; shams equivalent)": 31
+      },
+      "mean_base_se_over_primary": 1.160999107087736,
+      "median_a2_bound": 0.029996051712503295,
+      "p_flagged_any": 1.0,
+      "p_h1": 1.0,
+      "p_h1_and_h2": 0.9,
+      "p_h2": 0.9,
+      "p_h2_sham": 0.9,
+      "p_vanish": 1.0,
+      "p_vanish_all_jobs": 1.0,
+      "pair": "m67_o68",
+      "reps": 40,
+      "scenario": "armjob"
+    },
+    {
+      "engine_at_design_se": {
+        "h1": 1.0,
+        "h1_and_h2": 0.81235,
+        "h2": 0.81235,
+        "h2_sham": 0.82045,
+        "vanish": 0.98985
+      },
+      "engine_at_simulated_se": {
+        "h1": 1.0,
+        "h1_and_h2": 0.90605,
+        "h2": 0.90605,
+        "h2_sham": 0.90605,
+        "inflation_w0": {
+          "A2": 1.0720790330515184,
+          "A2s": 1.64322544389916,
+          "A2s_spec": 1.6255751727574337,
+          "baseline": 1.1913162806893718
+        },
+        "vanish": 1.0
+      },
+      "labels": {
+        "partial: A2 vanishes, sham equivalence not established": 2,
+        "replicates: H1 and H2 (A2 vanishes; shams equivalent)": 38
+      },
+      "mean_base_se_over_primary": 1.142321259742488,
+      "median_a2_bound": 0.02980853397274518,
+      "p_flagged_any": 0.0,
+      "p_h1": 1.0,
+      "p_h1_and_h2": 0.95,
+      "p_h2": 0.95,
+      "p_h2_sham": 0.95,
+      "p_vanish": 1.0,
+      "p_vanish_all_jobs": 1.0,
+      "pair": "m67_o68",
+      "reps": 40,
+      "scenario": "drift"
+    }
+  ]
+}

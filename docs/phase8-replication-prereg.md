@@ -209,8 +209,11 @@ A2s_spec 1.69). The delay-only sham, which has no data yet, takes the larger of 
 and A2s_spec's.
 
 Arm × job (#29 finding 5, `arm_job_interaction`): for each sham and A2, and for each of P(1),
-w(0) and lag1, the per-job difference from the baseline gets Cochran's Q. Where a P(1) or w(0)
-test has p < 0.01, the job furthest from the pooled others (leave-one-out z) is flagged.
+w(0) and lag1, the per-job difference from the baseline gets Cochran's Q. Each per-job SE is
+drift-conditional: the shot SE plus τ²/(chunks in the job), where τ is the chunk random effect
+estimated *within* jobs (`within_job_tau`). A shift of a whole job is therefore not absorbed,
+while #29's per-chunk drift is not read as heterogeneity. Where a P(1) or w(0) test has
+p < 0.01, the job furthest from the pooled others (leave-one-out z) is flagged.
 
 - One flagged job: the decision is recomputed without that job (every arm of it). If A2's call,
   H1 or H2 changes, or a P(1) or w(0) test is still heterogeneous, the pair is *ambiguous*.
@@ -229,8 +232,17 @@ LOJO in the vanish rule (§6) is applied whether or not a job is flagged.
 - A pair stopped at the pilot or by live calibration is *not run*, not failed.
 
 The full pipeline was validated on simulated shots through the real analysis (`[validation]`,
-40 replicates per pair and scenario, including #29's chunk-level drift and a planted arm × job
-shift). Results are in the dry run's `summary.json`.
+40 replicates per pair and scenario; `validation.csv`, `summary.json`):
+
+| scenario | per pair (q67/q68 · q149/q148) | replicates | partial | ambiguous | any job flagged |
+| --- | --- | --- | --- | --- | --- |
+| chunk drift only | both | 38/40 | 2 | 0 | 0/40 |
+| drift + planted baseline dip in job 1 | both | 31/40 | 3 | 6 | 40/40 |
+
+The first draft of the job rule used shot-only per-job SEs. Under drift alone it flagged a job
+in 23/40 and 22/40 datasets and turned 11/40 replications ambiguous, so it was fixed before
+this draft (§13). The simulated SEs are smaller than the design's, so these rates are higher
+than §4's 0.81. #27's own data still flag job 1 (P(1) z ≈ 11.6) and come out *ambiguous* (§6).
 
 ## 12. Stop/go
 
@@ -249,4 +261,5 @@ shift). Results are in the dry run's `summary.json`.
 Any change after the first live data is a dated, post-hoc amendment appended here, with its
 reason. It is fixed before the data it affects, in the manner of Phase 7 §§9–10.
 
-- (none)
+- 2026-11-09, before any data: the arm × job test's per-job SEs gain the within-job chunk
+  random effect (§10). The reason is the validation result quoted in §11.

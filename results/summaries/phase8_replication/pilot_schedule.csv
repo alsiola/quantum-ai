@@ -1,0 +1,5 @@
+job,position,arm,chunk,instance,shots,key
+0,0,par:baseline,0,,500,j0_p000_par:baseline_c0
+0,1,par:A2s_spec,0,,500,j0_p001_par:A2s_spec_c0
+0,2,par:A2s,0,,500,j0_p002_par:A2s_c0
+0,3,par:A2,0,,500,j0_p003_par:A2_c0
