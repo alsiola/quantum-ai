@@ -416,5 +416,6 @@ circuits, the upper bound and the cap. Before submission, also:
 - Seeds: `[analysis] seed = 33` (Monte Carlo power, pub order); `[hardware] seed_transpiler =
   0`.
 - The curated summary records the commit and config in its `meta`. The analysis ran at
-  `447b12d` and the QASM export at `2fab8e8`. The circuit code is the same in both; the note
+  `447b12d` and the QASM export at `2fab8e8`. Those are the pre-rebase SHAs of `2600472` and
+  `939c170` on `main`. The circuit code is the same in both; the note
   and the summaries were uncommitted at the time, hence `git_dirty`.
