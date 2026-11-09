@@ -1,0 +1,1150 @@
+{
+  "backend": "fake_kingston",
+  "chosen": [
+    "m67_o68",
+    "m149_o148"
+  ],
+  "delays_s": {
+    "dt": 4e-09,
+    "measure": 2.18e-06,
+    "reset": 2.212e-06,
+    "x": 3.2e-08
+  },
+  "meta": {
+    "config": {
+      "analysis": {
+        "block": 500,
+        "burn": 16,
+        "k_max": 7,
+        "n_boot": 1000,
+        "seed": 31
+      },
+      "budget": {
+        "billing_round_s": 1.0,
+        "cap_s": 120,
+        "margin": 0.25,
+        "max_job_estimate_s": 12.0,
+        "min_jobs": 4,
+        "open_plan_s": 600,
+        "phase6_circuit_s": 0.000308316,
+        "rep_delay_s": 0.00025,
+        "sub_job_overhead_s": 2.0
+      },
+      "circuits": {
+        "arms": [
+          "baseline",
+          "A2",
+          "A2s_spec",
+          "A2s"
+        ],
+        "delays": "snapshot",
+        "length": 64,
+        "optimization_level": 0,
+        "seed_transpiler": 0
+      },
+      "experiment": {
+        "ablation_config": "experiments/configs/phase7_ablation.toml",
+        "ablation_dir": "results/summaries/phase7_ablation",
+        "classical_dir": "results/summaries/phase8_classical",
+        "hw4c_dir": "results/summaries/phase7_hw_4c",
+        "main_jobs": [
+          "job0",
+          "job1",
+          "job2",
+          "job3"
+        ],
+        "name": "phase8_replication",
+        "phase6_dir": "results/summaries/phase6",
+        "spectator_dir": "results/summaries/phase7_spectator",
+        "summary_dir": "results/summaries/phase8_replication",
+        "workers": 2
+      },
+      "inflation": {
+        "delay_sham_from": [
+          "baseline",
+          "A2s_spec"
+        ],
+        "floor": 1.0
+      },
+      "model": {
+        "classical_class": "general_d6",
+        "feedforward_time": 1e-06,
+        "moment_seed": 311,
+        "moment_shots": 40000,
+        "moment_shots_chosen": 200000,
+        "shortfall": 0.75,
+        "shortfall_sensitivity": [
+          0.6,
+          1.0
+        ]
+      },
+      "options": {
+        "a2_shots": [
+          16000,
+          20000,
+          30000
+        ],
+        "arm_sets": [
+          "full",
+          "no_spectator_sham",
+          "no_delay_sham"
+        ],
+        "base_sham_shots": [
+          20000,
+          28000,
+          35000,
+          45000
+        ],
+        "modes": [
+          "one",
+          "two_sequential",
+          "two_parallel"
+        ]
+      },
+      "pilot": {
+        "p1_stop": 0.08,
+        "seed": 3132,
+        "shots": {
+          "A2": 500,
+          "A2s": 500,
+          "A2s_spec": 500,
+          "baseline": 500
+        },
+        "time_tolerance": 0.25
+      },
+      "power": {
+        "n_mc": 20000,
+        "seed": 3102,
+        "sham_ratio_sensitivity": [
+          0.97,
+          1.03
+        ],
+        "true_ratio_sensitivity": [
+          0.05
+        ]
+      },
+      "reference": {
+        "memory": 75,
+        "output": 59,
+        "spectator": 74
+      },
+      "rule": {
+        "armjob_alpha": 0.01,
+        "full_sham": "A2s",
+        "g_alpha": 0.01,
+        "gate_z": 5.0,
+        "lojo": true,
+        "margin": 0.1,
+        "persist_fraction": 0.25,
+        "persist_z": 5.0,
+        "sham_stats": [
+          "w0",
+          "lag1"
+        ],
+        "tost_alpha": 0.05,
+        "vanish_fraction": 0.1,
+        "vanish_z": 1.959963984540054,
+        "w0_sham": "A2s_spec"
+      },
+      "schedule": {
+        "max_chunk": 1000,
+        "seed": 3131
+      },
+      "selection": {
+        "cz_max": 0.005,
+        "mem_readout_max": 0.03,
+        "mem_t1_min": 0.00015,
+        "mem_t2_min": 0.0001,
+        "min_distance_pairs": 3,
+        "min_distance_reference": 3,
+        "n_pairs": 2,
+        "named": [
+          [
+            67,
+            68
+          ],
+          [
+            149,
+            148
+          ],
+          [
+            104,
+            105
+          ]
+        ],
+        "out_readout_max": 0.02,
+        "out_t1_min": 0.0001,
+        "out_t2_min": 5e-05,
+        "power_min": 0.8,
+        "spec_readout_max": 0.05,
+        "sx_max": 0.001
+      },
+      "selection_design": {
+        "A2": 20000,
+        "A2s": 35000,
+        "A2s_spec": 35000,
+        "baseline": 35000,
+        "n_jobs": 6,
+        "n_mc": 4000,
+        "seed": 3101
+      },
+      "validation": {
+        "armjob_flip": 0.058,
+        "armjob_job": 1,
+        "chunk_drift_sd": {
+          "A2": 0.058,
+          "A2s": 0.107,
+          "A2s_spec": 0.107,
+          "baseline": 0.058
+        },
+        "drift_levels": 7,
+        "n_boot": 200,
+        "reps": 40,
+        "seed": 3141
+      }
+    },
+    "git_commit": "107625512e7966a286383dfde1d498938ef081c9",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": null,
+    "timestamp_utc": "2026-11-09T21:36:17+00:00",
+    "torch": "2.15.0"
+  },
+  "pairs": {
+    "m104_o105": {
+      "arms": {
+        "A2": {
+          "count_ops": {
+            "cz": 192,
+            "measure": 128,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              104,
+              105
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003232959999999987,
+          "file": "qasm/m104_o105_A2.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            104,
+            105
+          ],
+          "reference_sha256": "5e11bb24878b91aabd22ecfb2ede0150a437979891028cdbb4110fb6d06467a1",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "c67e88d8251a8063e41a6f7979a9ff4dc741d43a16e4994735fb2499d62d1235",
+          "relabelled_text_equals_reference": false,
+          "sha256": "dabce807e0150f609a0802a56697d6cdb7aa92e834b3b0d4f301f92efb6bbcc3",
+          "swaps": 0,
+          "text_order_differences_from_reference": 1541
+        },
+        "A2s": {
+          "count_ops": {
+            "cz": 192,
+            "delay": 64,
+            "measure": 64,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              104,
+              105
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003231959999999987,
+          "file": "qasm/m104_o105_A2s.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            104,
+            105
+          ],
+          "reference_sha256": "4dd92dd1e600d4c1ab8cdfe9a168d29e4ec51b2cef027df6f0d9dc9db66e4b63",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "ae9bf65ba355db1d69f21e4feb2d9b175489c035516956b47803126be816ba15",
+          "relabelled_text_equals_reference": false,
+          "sha256": "75c77277ecf3128ec59ec630cad8ce6425698568e0420c29da4562696fb02e3b",
+          "swaps": 0,
+          "text_order_differences_from_reference": 1226
+        },
+        "A2s_spec": {
+          "count_ops": {
+            "cz": 192,
+            "delay": 64,
+            "measure": 128,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              104,
+              105
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003231959999999987,
+          "file": "qasm/m104_o105_A2s_spec.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            103,
+            104,
+            105
+          ],
+          "reference_sha256": "d150dfc869ddbcbca5c5bb5154d22d66dac88493791f8afc7e984675a9658193",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "4a22c647adaf8e6a24c89924539828e8afff964f006ee2ce7285c615ef4220c1",
+          "relabelled_text_equals_reference": false,
+          "sha256": "89bf9d1ca7e2d2fd848faf177c9d41aedcee1d14c23f3a0bf7814508d201df17",
+          "swaps": 0,
+          "text_order_differences_from_reference": 1226
+        },
+        "baseline": {
+          "count_ops": {
+            "cz": 192,
+            "measure": 64,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              104,
+              105
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003210159999999986,
+          "file": "qasm/m104_o105_baseline.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            104,
+            105
+          ],
+          "reference_sha256": "00cfcf3076ad950a461523f3dfb3efb0712496be4bcbd872bf12d100899e1bd0",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "92d36ab9d150f6c4c0b344e846e910246957c96b79e1cc3b5c82e5bc90b90a36",
+          "relabelled_text_equals_reference": false,
+          "sha256": "2ee431d3440a93db235487ffaeb1ac58f6e1340beddf9fc146e9cad8e2b2b988",
+          "swaps": 0,
+          "text_order_differences_from_reference": 1162
+        }
+      },
+      "calibration_fakekingston": {
+        "q103": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.0115966796875,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.0002401902635507382,
+          "t1_us": 273.89874407577094,
+          "t2_us": 89.06112159692928
+        },
+        "q104": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.0047607421875,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.00032974691037243055,
+          "t1_us": 253.98013645212617,
+          "t2_us": 416.80119446044023
+        },
+        "q105": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.005859375,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.00026399134159812,
+          "t1_us": 232.76930020460077,
+          "t2_us": 216.8210750674034
+        }
+      },
+      "couplers": [
+        [
+          96,
+          103
+        ],
+        [
+          102,
+          103
+        ],
+        [
+          103,
+          104
+        ],
+        [
+          104,
+          105
+        ],
+        [
+          105,
+          106
+        ],
+        [
+          105,
+          117
+        ]
+      ],
+      "cz_error": 0.0016456904733716804,
+      "duration_minus_baseline_s": {
+        "A2": 2.2800000000000663e-06,
+        "A2s": 2.180000000000064e-06,
+        "A2s_spec": 2.180000000000064e-06,
+        "baseline": 0.0
+      },
+      "duration_s": {
+        "A2": 0.0003232959999999987,
+        "A2s": 0.0003231959999999987,
+        "A2s_spec": 0.0003231959999999987,
+        "baseline": 0.0003210159999999986
+      },
+      "memory": 104,
+      "noise": {
+        "backend": "fake_kingston",
+        "feedforward_time_s": 1e-06,
+        "measure_time_s": 2.28e-06,
+        "physical_qubits": [
+          105,
+          104
+        ],
+        "readout_error": {
+          "104": 0.0047607421875,
+          "105": 0.005859375
+        },
+        "reset_time_s": 2.312e-06,
+        "sx_error": {
+          "104": 0.00032974691037243055,
+          "105": 0.00026399134159812
+        },
+        "t1_s": {
+          "104": 0.0002539801364521262,
+          "105": 0.00023276930020460076
+        },
+        "t2_s": {
+          "104": 0.0004168011944604402,
+          "105": 0.0002168210750674034
+        },
+        "two_qubit_error": {
+          "104-105": 0.0016456904733716804,
+          "105-104": 0.0016456904733716804
+        },
+        "two_qubit_gate": "cz",
+        "two_qubit_time_s": 6.8e-08
+      },
+      "output": 105,
+      "routing": "trivial layout, level 0, no SWAPs (every CZ on a native coupler)",
+      "spectator": 103
+    },
+    "m149_o148": {
+      "arms": {
+        "A2": {
+          "count_ops": {
+            "cz": 192,
+            "measure": 128,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              149,
+              148
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003232959999999987,
+          "file": "qasm/m149_o148_A2.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            148,
+            149
+          ],
+          "reference_sha256": "5e11bb24878b91aabd22ecfb2ede0150a437979891028cdbb4110fb6d06467a1",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "5e11bb24878b91aabd22ecfb2ede0150a437979891028cdbb4110fb6d06467a1",
+          "relabelled_text_equals_reference": true,
+          "sha256": "a0abfde1618a8e02ad8693508ffd0f72d0c29778f1486c4759d7564ee374b71f",
+          "swaps": 0,
+          "text_order_differences_from_reference": 0
+        },
+        "A2s": {
+          "count_ops": {
+            "cz": 192,
+            "delay": 64,
+            "measure": 64,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              149,
+              148
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003231959999999987,
+          "file": "qasm/m149_o148_A2s.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            148,
+            149
+          ],
+          "reference_sha256": "4dd92dd1e600d4c1ab8cdfe9a168d29e4ec51b2cef027df6f0d9dc9db66e4b63",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "4dd92dd1e600d4c1ab8cdfe9a168d29e4ec51b2cef027df6f0d9dc9db66e4b63",
+          "relabelled_text_equals_reference": true,
+          "sha256": "1fc8c16f11ed31ef1d86ec5da0d5f1db84ad15ccdbf462c13f4d4a18dd3ea9c8",
+          "swaps": 0,
+          "text_order_differences_from_reference": 0
+        },
+        "A2s_spec": {
+          "count_ops": {
+            "cz": 192,
+            "delay": 64,
+            "measure": 128,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              149,
+              148
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003231959999999987,
+          "file": "qasm/m149_o148_A2s_spec.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            148,
+            149,
+            150
+          ],
+          "reference_sha256": "d150dfc869ddbcbca5c5bb5154d22d66dac88493791f8afc7e984675a9658193",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "d150dfc869ddbcbca5c5bb5154d22d66dac88493791f8afc7e984675a9658193",
+          "relabelled_text_equals_reference": true,
+          "sha256": "42dcce000ec5b3ae79c85770741051031a7ca195155952ab9409471143bf163f",
+          "swaps": 0,
+          "text_order_differences_from_reference": 0
+        },
+        "baseline": {
+          "count_ops": {
+            "cz": 192,
+            "measure": 64,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              149,
+              148
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003210159999999986,
+          "file": "qasm/m149_o148_baseline.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            148,
+            149
+          ],
+          "reference_sha256": "00cfcf3076ad950a461523f3dfb3efb0712496be4bcbd872bf12d100899e1bd0",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "00cfcf3076ad950a461523f3dfb3efb0712496be4bcbd872bf12d100899e1bd0",
+          "relabelled_text_equals_reference": true,
+          "sha256": "dc2048e3a261da04490800411fbd58f1099c9eb2289f674322bca21c0e4f6333",
+          "swaps": 0,
+          "text_order_differences_from_reference": 0
+        }
+      },
+      "calibration_fakekingston": {
+        "q148": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.002197265625,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.00016335767023560236,
+          "t1_us": 243.49733800231476,
+          "t2_us": 201.0760808840766
+        },
+        "q149": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.0089111328125,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.00018273140424799025,
+          "t1_us": 343.337651811599,
+          "t2_us": 383.4303430997334
+        },
+        "q150": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.0078125,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.0001959802761799512,
+          "t1_us": 362.69671819080634,
+          "t2_us": 428.1310540434408
+        }
+      },
+      "couplers": [
+        [
+          147,
+          148
+        ],
+        [
+          148,
+          149
+        ],
+        [
+          149,
+          150
+        ],
+        [
+          150,
+          151
+        ]
+      ],
+      "cz_error": 0.0025854599322507332,
+      "duration_minus_baseline_s": {
+        "A2": 2.2800000000000663e-06,
+        "A2s": 2.180000000000064e-06,
+        "A2s_spec": 2.180000000000064e-06,
+        "baseline": 0.0
+      },
+      "duration_s": {
+        "A2": 0.0003232959999999987,
+        "A2s": 0.0003231959999999987,
+        "A2s_spec": 0.0003231959999999987,
+        "baseline": 0.0003210159999999986
+      },
+      "memory": 149,
+      "noise": {
+        "backend": "fake_kingston",
+        "feedforward_time_s": 1e-06,
+        "measure_time_s": 2.28e-06,
+        "physical_qubits": [
+          148,
+          149
+        ],
+        "readout_error": {
+          "148": 0.002197265625,
+          "149": 0.0089111328125
+        },
+        "reset_time_s": 2.312e-06,
+        "sx_error": {
+          "148": 0.00016335767023560236,
+          "149": 0.00018273140424799025
+        },
+        "t1_s": {
+          "148": 0.00024349733800231477,
+          "149": 0.00034333765181159904
+        },
+        "t2_s": {
+          "148": 0.0002010760808840766,
+          "149": 0.00038343034309973345
+        },
+        "two_qubit_error": {
+          "148-149": 0.0025854599322507332,
+          "149-148": 0.0025854599322507332
+        },
+        "two_qubit_gate": "cz",
+        "two_qubit_time_s": 6.8e-08
+      },
+      "output": 148,
+      "routing": "trivial layout, level 0, no SWAPs (every CZ on a native coupler)",
+      "spectator": 150
+    },
+    "m67_o68": {
+      "arms": {
+        "A2": {
+          "count_ops": {
+            "cz": 192,
+            "measure": 128,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              67,
+              68
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003232959999999987,
+          "file": "qasm/m67_o68_A2.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            67,
+            68
+          ],
+          "reference_sha256": "5e11bb24878b91aabd22ecfb2ede0150a437979891028cdbb4110fb6d06467a1",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "c67e88d8251a8063e41a6f7979a9ff4dc741d43a16e4994735fb2499d62d1235",
+          "relabelled_text_equals_reference": false,
+          "sha256": "150163205e7e91f99f12f014839af2ef6c587f6fe3f95c198e31cdc8c26e7d0f",
+          "swaps": 0,
+          "text_order_differences_from_reference": 1541
+        },
+        "A2s": {
+          "count_ops": {
+            "cz": 192,
+            "delay": 64,
+            "measure": 64,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              67,
+              68
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003231959999999987,
+          "file": "qasm/m67_o68_A2s.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            67,
+            68
+          ],
+          "reference_sha256": "4dd92dd1e600d4c1ab8cdfe9a168d29e4ec51b2cef027df6f0d9dc9db66e4b63",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "ae9bf65ba355db1d69f21e4feb2d9b175489c035516956b47803126be816ba15",
+          "relabelled_text_equals_reference": false,
+          "sha256": "690b91df752cebd34c7935c1e5b41589e4f4bdbbb18fa06774eb6386d8887231",
+          "swaps": 0,
+          "text_order_differences_from_reference": 1226
+        },
+        "A2s_spec": {
+          "count_ops": {
+            "cz": 192,
+            "delay": 64,
+            "measure": 128,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              67,
+              68
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003231959999999987,
+          "file": "qasm/m67_o68_A2s_spec.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            57,
+            67,
+            68
+          ],
+          "reference_sha256": "d150dfc869ddbcbca5c5bb5154d22d66dac88493791f8afc7e984675a9658193",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "4a22c647adaf8e6a24c89924539828e8afff964f006ee2ce7285c615ef4220c1",
+          "relabelled_text_equals_reference": false,
+          "sha256": "39fc5a4486f74c9d09d92b4cc3974ab5862d6227cfa945a296fa94f9295f4fc9",
+          "swaps": 0,
+          "text_order_differences_from_reference": 1226
+        },
+        "baseline": {
+          "count_ops": {
+            "cz": 192,
+            "measure": 64,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              67,
+              68
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003210159999999986,
+          "file": "qasm/m67_o68_baseline.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            67,
+            68
+          ],
+          "reference_sha256": "00cfcf3076ad950a461523f3dfb3efb0712496be4bcbd872bf12d100899e1bd0",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "92d36ab9d150f6c4c0b344e846e910246957c96b79e1cc3b5c82e5bc90b90a36",
+          "relabelled_text_equals_reference": false,
+          "sha256": "561b6a976a020387755fe3233dacd09b4d1f9670673aa1d8b1e8ce0b573801bc",
+          "swaps": 0,
+          "text_order_differences_from_reference": 1162
+        }
+      },
+      "calibration_fakekingston": {
+        "q57": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.0047607421875,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.00013783261786917263,
+          "t1_us": 224.76403498679068,
+          "t2_us": 275.4578543344821
+        },
+        "q67": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.0162353515625,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.00024060124647188002,
+          "t1_us": 362.66678614398216,
+          "t2_us": 387.25659910968903
+        },
+        "q68": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.00341796875,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.00018531791467288136,
+          "t1_us": 177.63588723818052,
+          "t2_us": 131.77442978952234
+        }
+      },
+      "couplers": [
+        [
+          47,
+          57
+        ],
+        [
+          57,
+          67
+        ],
+        [
+          66,
+          67
+        ],
+        [
+          67,
+          68
+        ],
+        [
+          68,
+          69
+        ]
+      ],
+      "cz_error": 0.0013738185169772654,
+      "duration_minus_baseline_s": {
+        "A2": 2.2800000000000663e-06,
+        "A2s": 2.180000000000064e-06,
+        "A2s_spec": 2.180000000000064e-06,
+        "baseline": 0.0
+      },
+      "duration_s": {
+        "A2": 0.0003232959999999987,
+        "A2s": 0.0003231959999999987,
+        "A2s_spec": 0.0003231959999999987,
+        "baseline": 0.0003210159999999986
+      },
+      "memory": 67,
+      "noise": {
+        "backend": "fake_kingston",
+        "feedforward_time_s": 1e-06,
+        "measure_time_s": 2.28e-06,
+        "physical_qubits": [
+          68,
+          67
+        ],
+        "readout_error": {
+          "67": 0.0162353515625,
+          "68": 0.00341796875
+        },
+        "reset_time_s": 2.312e-06,
+        "sx_error": {
+          "67": 0.00024060124647188002,
+          "68": 0.00018531791467288136
+        },
+        "t1_s": {
+          "67": 0.00036266678614398215,
+          "68": 0.0001776358872381805
+        },
+        "t2_s": {
+          "67": 0.00038725659910968904,
+          "68": 0.00013177442978952233
+        },
+        "two_qubit_error": {
+          "67-68": 0.0013738185169772654,
+          "68-67": 0.0013738185169772654
+        },
+        "two_qubit_gate": "cz",
+        "two_qubit_time_s": 6.8e-08
+      },
+      "output": 68,
+      "routing": "trivial layout, level 0, no SWAPs (every CZ on a native coupler)",
+      "spectator": 57
+    },
+    "m75_o59": {
+      "arms": {
+        "A2": {
+          "count_ops": {
+            "cz": 192,
+            "measure": 128,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              75,
+              59
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003232959999999987,
+          "file": "qasm/m75_o59_A2.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            59,
+            75
+          ],
+          "reference_sha256": "5e11bb24878b91aabd22ecfb2ede0150a437979891028cdbb4110fb6d06467a1",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "5e11bb24878b91aabd22ecfb2ede0150a437979891028cdbb4110fb6d06467a1",
+          "relabelled_text_equals_reference": true,
+          "sha256": "5e11bb24878b91aabd22ecfb2ede0150a437979891028cdbb4110fb6d06467a1",
+          "swaps": 0,
+          "text_order_differences_from_reference": 0
+        },
+        "A2s": {
+          "count_ops": {
+            "cz": 192,
+            "delay": 64,
+            "measure": 64,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              75,
+              59
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003231959999999987,
+          "file": "qasm/m75_o59_A2s.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            59,
+            75
+          ],
+          "reference_sha256": "4dd92dd1e600d4c1ab8cdfe9a168d29e4ec51b2cef027df6f0d9dc9db66e4b63",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "4dd92dd1e600d4c1ab8cdfe9a168d29e4ec51b2cef027df6f0d9dc9db66e4b63",
+          "relabelled_text_equals_reference": true,
+          "sha256": "4dd92dd1e600d4c1ab8cdfe9a168d29e4ec51b2cef027df6f0d9dc9db66e4b63",
+          "swaps": 0,
+          "text_order_differences_from_reference": 0
+        },
+        "A2s_spec": {
+          "count_ops": {
+            "cz": 192,
+            "delay": 64,
+            "measure": 128,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              75,
+              59
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003231959999999987,
+          "file": "qasm/m75_o59_A2s_spec.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            59,
+            74,
+            75
+          ],
+          "reference_sha256": "d150dfc869ddbcbca5c5bb5154d22d66dac88493791f8afc7e984675a9658193",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "d150dfc869ddbcbca5c5bb5154d22d66dac88493791f8afc7e984675a9658193",
+          "relabelled_text_equals_reference": true,
+          "sha256": "d150dfc869ddbcbca5c5bb5154d22d66dac88493791f8afc7e984675a9658193",
+          "swaps": 0,
+          "text_order_differences_from_reference": 0
+        },
+        "baseline": {
+          "count_ops": {
+            "cz": 192,
+            "measure": 64,
+            "reset": 63,
+            "rz": 771,
+            "sx": 770
+          },
+          "cz_edges": [
+            [
+              75,
+              59
+            ]
+          ],
+          "cz_native": true,
+          "duration_fake_s": 0.0003210159999999986,
+          "file": "qasm/m75_o59_baseline.qasm",
+          "per_qubit_sequence_differences_from_reference": 0,
+          "qubits_used": [
+            59,
+            75
+          ],
+          "reference_sha256": "00cfcf3076ad950a461523f3dfb3efb0712496be4bcbd872bf12d100899e1bd0",
+          "relabelled_equals_reference": true,
+          "relabelled_sha256": "00cfcf3076ad950a461523f3dfb3efb0712496be4bcbd872bf12d100899e1bd0",
+          "relabelled_text_equals_reference": true,
+          "sha256": "00cfcf3076ad950a461523f3dfb3efb0712496be4bcbd872bf12d100899e1bd0",
+          "swaps": 0,
+          "text_order_differences_from_reference": 0
+        }
+      },
+      "calibration_fakekingston": {
+        "q59": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.0062255859375,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.0001396724357308572,
+          "t1_us": 310.83715028425735,
+          "t2_us": 472.9918897276029
+        },
+        "q74": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.0078125,
+          "reset_time_s": 2.312e-06,
+          "sx": 0.00037921733401024595,
+          "t1_us": 322.8883966956467,
+          "t2_us": 205.14300776001875
+        },
+        "q75": {
+          "measure_time_s": 2.28e-06,
+          "readout": 0.0146484375,
+          "reset_time_s": 2.312e-06,
+          "sx": 9.545397887551815e-05,
+          "t1_us": 334.5703069299612,
+          "t2_us": 133.00599746817218
+        }
+      },
+      "couplers": [
+        [
+          55,
+          59
+        ],
+        [
+          59,
+          75
+        ],
+        [
+          73,
+          74
+        ],
+        [
+          74,
+          75
+        ]
+      ],
+      "cz_error": 0.0013565910690837846,
+      "duration_minus_baseline_s": {
+        "A2": 2.2800000000000663e-06,
+        "A2s": 2.180000000000064e-06,
+        "A2s_spec": 2.180000000000064e-06,
+        "baseline": 0.0
+      },
+      "duration_s": {
+        "A2": 0.0003232959999999987,
+        "A2s": 0.0003231959999999987,
+        "A2s_spec": 0.0003231959999999987,
+        "baseline": 0.0003210159999999986
+      },
+      "memory": 75,
+      "noise": {
+        "backend": "fake_kingston",
+        "feedforward_time_s": 1e-06,
+        "measure_time_s": 2.28e-06,
+        "physical_qubits": [
+          59,
+          75
+        ],
+        "readout_error": {
+          "59": 0.0062255859375,
+          "75": 0.0146484375
+        },
+        "reset_time_s": 2.312e-06,
+        "sx_error": {
+          "59": 0.0001396724357308572,
+          "75": 9.545397887551815e-05
+        },
+        "t1_s": {
+          "59": 0.0003108371502842573,
+          "75": 0.0003345703069299612
+        },
+        "t2_s": {
+          "59": 0.00047299188972760287,
+          "75": 0.0001330059974681722
+        },
+        "two_qubit_error": {
+          "59-75": 0.0013565910690837846,
+          "75-59": 0.0013565910690837846
+        },
+        "two_qubit_gate": "cz",
+        "two_qubit_time_s": 6.8e-08
+      },
+      "output": 59,
+      "routing": "trivial layout, level 0, no SWAPs (every CZ on a native coupler)",
+      "spectator": 74
+    }
+  },
+  "parallel": {
+    "arms": {
+      "A2": {
+        "file": "qasm/parallel_A2.qasm",
+        "only_pair_qubits": true,
+        "pair_a_preserved": true,
+        "pair_b_preserved": true,
+        "sha256": "4b2ed048f0bc92099021c4067032ff3d1ee9fb4ce2835606feeb090b046722e3"
+      },
+      "A2s": {
+        "file": "qasm/parallel_A2s.qasm",
+        "only_pair_qubits": true,
+        "pair_a_preserved": true,
+        "pair_b_preserved": true,
+        "sha256": "2552ec67ee8018b613755c26517d6c02092e7e409a9a39f26a3a402af6d63b5c"
+      },
+      "A2s_spec": {
+        "file": "qasm/parallel_A2s_spec.qasm",
+        "only_pair_qubits": true,
+        "pair_a_preserved": true,
+        "pair_b_preserved": true,
+        "sha256": "bde7bf407c63c03b2f775bd5c9d3ee657ef40633bfd4aaf1bc86c528bee4dae7"
+      },
+      "baseline": {
+        "file": "qasm/parallel_baseline.qasm",
+        "only_pair_qubits": true,
+        "pair_a_preserved": true,
+        "pair_b_preserved": true,
+        "sha256": "72a640334354e4615bd3a9e40a6cb42eedd301793182552cf87991b2f584179f"
+      }
+    },
+    "duration_s": {
+      "A2": 0.0003232959999999987,
+      "A2s": 0.0003231959999999987,
+      "A2s_spec": 0.0003231959999999987,
+      "baseline": 0.0003210159999999986
+    },
+    "pairs": [
+      "m67_o68",
+      "m149_o148"
+    ]
+  }
+}
