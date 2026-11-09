@@ -1,0 +1,109 @@
+# Phase 8 Stage 0A (issue #29): independent re-analysis of Phase 7 Stage 4c (#27).
+# Local only: no QPU, no IBM service, no network.
+#
+#   uv run python experiments/phase8_stage0.py --config experiments/configs/phase8_stage0.toml
+#       verify provenance, reproduce, fragility, drift-conditional SEs, sham per job, TOST,
+#       baseline shortfall (numpy; a few minutes).
+#   ... --freeze   writes results/summaries/phase8_stage0/provenance.json (once; refuses to
+#       overwrite a different one).
+
+[experiment]
+name = "phase8_stage0"
+summary_dir = "results/summaries/phase8_stage0"
+stage4c_dir = "results/summaries/phase7_hw_4c"
+main_jobs = ["job0", "job1", "job2", "job3"]
+
+[provenance]
+# Every committed Phase 7 Stage 4 / 4b / 4c shot, QASM, circuit and calibration file, and the
+# job records (they hold the IBM job ids). Globs relative to the repository root.
+globs = [
+  "results/summaries/phase7_hw/shots_*.npz",
+  "results/summaries/phase7_hw/job_*.json",
+  "results/summaries/phase7_hw/calibration_before.json",
+  "results/summaries/phase7_hw/circuits.json",
+  "results/summaries/phase7_hw/gate_pilot.json",
+  "results/summaries/phase7_hw/pilot_predictions.json",
+  "results/summaries/phase7_hw_4b/shots_*.npz",
+  "results/summaries/phase7_hw_4b/job_*.json",
+  "results/summaries/phase7_hw_4b/calibration_before.json",
+  "results/summaries/phase7_hw_4b/circuits.json",
+  "results/summaries/phase7_hw_4b/gate_pilot.json",
+  "results/summaries/phase7_hw_4b/pieces_pilot25.npz",
+  "results/summaries/phase7_hw_4b/refit.json",
+  "results/summaries/phase7_hw_4c/shots_*.npz",
+  "results/summaries/phase7_hw_4c/job_*.json",
+  "results/summaries/phase7_hw_4c/calibration_before.json",
+  "results/summaries/phase7_hw_4c/circuits.json",
+  "results/summaries/phase7_hw_4c/gate_pilot.json",
+  "results/summaries/phase7_hw_4c/refit_pilot.json",
+  "results/summaries/phase7_hw_4c/pieces_live.npz",
+  "results/summaries/phase7_hw_4c/pilot_predictions.json",
+  "results/summaries/phase7_hw_4c/summary.json",
+  "results/summaries/phase7_ablation/qasm/*",
+  "results/summaries/phase7_ablation/pieces.npz",
+  "results/summaries/phase7_ancilla/qasm/*",
+  "results/summaries/phase7_classical/d1.qasm",
+  "results/summaries/phase6/step.qasm",
+]
+
+[analysis]                 # as Stage 3/4 (experiments/configs/phase7_hw_4c.toml [analysis])
+k_max = 7
+burn = 16
+offsets = [0, 1, 2, 3]
+block = 500
+n_boot = 1000
+seed = 24                  # each arm's bootstrap seed is seed + 11 i, i its order of first appearance
+
+[decision]                 # as Stage 3/4 (pre-registration section 5)
+gate_z = 5.0
+vanish_fraction = 0.10
+persist_z = 5.0
+persist_fraction = 0.25
+family_alpha = 0.01
+
+[fragility]
+# Predeclared before any of these were computed (#29). Each row recomputes A2's 95% upper
+# bound on |w_A2| / |w_base| and calls it vanishes (< 0.10) or not.
+#
+# The REASONABLE set (the pass/fail of #29 is judged on these): every choice uses all of the
+# design's data, or drops only data with a documented reason.
+#   SE:      the pre-registered SE; stratified-by-job block bootstrap at each block length;
+#            unstratified block bootstrap of the time-ordered arm at each block length; block
+#            bootstrap stratified by pub (chunk); each as max(shot, block) like the rule.
+#   ratio:   the rule's bound; a delta method propagating the baseline's SE; Fieller; a
+#            percentile bootstrap of the ratio (stratified block resamples of both arms).
+#   pooling: pooled (the rule); inverse-variance fixed effect over jobs; DerSimonian-Laird
+#            random effect over jobs; dropping job1 (the baseline's P(1) dip).
+#   q75:     the observed baseline as denominator under each of the three q75 models; the
+#            H_q75 baseline prediction of each model as denominator.
+# DESCRIPTIVE only (not part of the call): each job alone (a quarter of the shots), and
+# leaving out job0, job2 or job3 (no documented reason to).
+block_lengths = [250, 500, 1000, 2000]
+n_boot = 1000
+seed = 2901
+
+[power]
+ratios = [0.0, 0.05]       # true |w_A2| / |w_base| for a replicate of the same design
+target_fraction = 0.70     # bound at <= 70% of the threshold (Stage 1's design input)
+target_probability = [0.5, 0.8, 0.9]
+n_mc = 400000
+seed = 2902
+
+[drift]
+n_perm = 1000
+cp_grid = 50
+seed = 2903
+lags = [1, 2, 3]
+n_boot = 1000
+
+[tost]
+margins = [0.05, 0.10, 0.20]
+alpha = 0.05               # per one-sided bound
+n_boot = 1000
+seed = 2904
+# Recommendation for Phase 8 (predeclared here, rationale in docs/phase8-stage0-audit.md):
+recommended_margin = 0.10
+recommended_alpha = 0.05
+true_ratio = 1.0           # H_q75 predicts the sham equal to the baseline
+true_ratio_sensitivity = [0.97, 1.03]
+power = [0.8, 0.9]
