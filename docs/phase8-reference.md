@@ -381,8 +381,35 @@ circuits, the upper bound and the cap. Before submission, also:
   - Estimator does not run dynamic circuits, so Sampler is used.
   - Our circuits keep Phase 6's plain `measure`/`reset` on q59, so that the step is the one
     #27 measured. They have no conditionals.
-- **npj Quantum Information (2021), doi:10.1038/s41534-021-00444-9: not read.** The page needs
-  a login. The PDF has been requested on #33. Nothing here relies on it.
+- **[Yuan2021]**, npj Quantum Inf. 7, 108. Read in full from the PDF the owner attached on
+  #28; it was added after #33 closed, by the coordinator.
+  - It defines the robustness of quantum memory, R(N): the least EB noise s for which
+    (N + sM)/(1 + s) is EB. R = 0 exactly when N is EB.
+  - R is the advantage of N over every EB channel in the best non-negative "quantum game"
+    (its Thm 3). Any fixed game gives a lower bound on R, P(N, G) − 1.
+  - For a qubit channel it is exact and computable: R(N) = max{0, 2 λ_max(Φ_N) − 1}, where Φ_N
+    is the normalised Choi state (its Thm 4, using the reduction criterion).
+  - Its IBM experiment trusts SPAM. Its channels are synthesised with ancillas or built from CX
+    sequences (R from 2.67 for one CX to 2.50 for six). So certifying a non-EB channel on IBM
+    hardware *is not new*. What is new here is the object certified: one step of a trained
+    instrument with a mid-circuit measurement.
+  - **Applied to §1's channel** (coordinator's check on the Stage 4c pieces, not in the
+    committed outputs):
+
+    | n | R, unconditional (live) | R, unconditional (noiseless) | R, all-zero record, normalised (live) |
+    |---|---|---|---|
+    | 1 | 0.265 | 0.289 | 0.947 |
+    | 2 | 0.016 | 0.036 | 0.890 |
+    | 3 | 0 | 0 | 0.751 |
+    | 4 | 0 | 0 | 0.793 |
+
+    At n = 2, λ_max = 0.508 while the best Bell fidelity is 0.391. The Choi state's top
+    eigenvector is not maximally entangled, which is why every fidelity witness fails there.
+    The optimal game would detect it, but only with R = 0.016, out of reach in shots like
+    §4's PPT witness. So the paper confirms §1's verdict and doesn't change the plan.
+  - In the noiseless model, the y = 0 branch is a single, invertible Kraus operator (λ_max = 1),
+    so certifying it shows that q59's y = 0 emission is not a measure-and-prepare readout of
+    q75. That is the quantum model's mechanism, under trusted SPAM.
 
 ## 9. Limits
 
