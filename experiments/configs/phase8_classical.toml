@@ -1,0 +1,58 @@
+# Phase 8 Stage 0B (issue #30): the adversarial classical hidden-state/intervention model,
+# fitted jointly to every arm of Phase 7 Stage 4c (#27). Local only: no QPU, no IBM service.
+#
+#   uv run python experiments/phase8_classical.py --config experiments/configs/phase8_classical.toml
+#       about an hour with 2 workers; raw outputs in results/phase8_classical/<timestamp>/,
+#       the curated summary in results/summaries/phase8_classical/.
+
+[experiment]
+name = "phase8_classical"
+summary_dir = "results/summaries/phase8_classical"
+data_dir = "results/summaries/phase7_hw_4c"             # #27: shots_job0-3.npz, pieces_live.npz, refit_pilot.json, summary.json
+ablation_config = "experiments/configs/phase7_ablation.toml"   # A3's Pauli table
+stage0_summary = "results/summaries/phase8_stage0/summary.json"   # #29 (read for the sham's TOST)
+workers = 2
+n_jobs = 4
+
+[analysis]                     # as #27 (configs/phase7_hw_4c.toml [analysis])
+length = 64
+burn = 16
+k_max = 7
+offsets = [0, 1, 2, 3]
+z_fit = 1.96                   # a statistic "fits" when |model - data| <= z_fit x its SE
+n_boot = 200                   # whole-shot bootstrap of A2's record statistics
+seed = 30
+
+[fit]
+# The classes (qmem.classical): general (every map free), kappa (A2 QND on the hidden state
+# except in a fraction kappa of steps) and zpop (q75 a classical Z bit plus dh side states
+# that q75's own operations don't touch). EM with SQUAREM from several starts per class:
+# random Dirichlet(1) starts; for d = 4 also the calibrated quantum model in Klein-tetrahedron
+# coordinates (clipped at 0, smoothed); for d > 3 also a split of the best (d - 1)-state fit.
+dims = [3, 4, 5, 6]
+random_starts = 1
+max_iters = 800                # EM steps per start
+tol = 1e-10                    # per symbol, per SQUAREM cycle
+smooth = 0.01                  # mixing of every start with the uniform map
+seed = 30
+kappa_d = 4
+kappa_grid = [0.0, 0.3, 0.6, 0.9]
+zpop_dh = [2, 3]
+
+[embedding]
+# Is the calibrated quantum model itself a 4-state classical model? The slot simplex must be
+# a Klein tetrahedron (a, b, +-1) (the Paulis permute it, the Z measurement's effects stay
+# >= 0 and its post-measurement states lie in it); scan (a, b) for the least negative entry.
+a_grid = [-4.0, 4.0, 321]
+b_grid = [-4.0, 4.0, 321]
+
+[cv]
+# two-fold cross-validation by pub parity (pubs are interleaved within every job)
+d = 4
+
+[sensitivity]
+# #29: the job1 P(1) dip hits only the baseline's pubs (not A2s_spec, A2 or D1 interleaved
+# with them); no stationary model (classical or quantum) can produce an arm x job effect.
+# The main fit keeps every shot; this refit drops the baseline's job1 shots.
+drop_baseline_jobs = [1]
+d = 4
