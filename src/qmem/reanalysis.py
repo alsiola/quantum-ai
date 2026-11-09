@@ -31,7 +31,9 @@ Z95 = 1.6448536269514722  # one-sided 95% (TOST at alpha = 0.05 per bound)
 
 # -- loading the committed shots -------------------------------------------------------------
 
-KEY = re.compile(r"^j(?P<job>\d+)_p(?P<pub>\d+)_(?P<arm>.+?)(?:_i(?P<inst>\d+))?_c(?P<chunk>\d+)__(?P<reg>[a-z0-9_]+)$")
+KEY = re.compile(
+    r"^j(?P<job>\d+)_p(?P<pub>\d+)_(?P<arm>.+?)(?:_i(?P<inst>\d+))?_c(?P<chunk>\d+)__(?P<reg>[a-z0-9_]+)$"
+)
 
 
 def parse_key(key: str) -> dict[str, Any] | None:
@@ -239,9 +241,9 @@ def lag_pair_counts(shots: np.ndarray, burn: int) -> np.ndarray:
     """Per shot ``(#11, #1*, #01, #0*)`` over pairs ``(t, t+1)``, ``t >= burn``."""
     y = np.asarray(shots)[:, burn:].astype(np.int64)
     a, b = y[:, :-1], y[:, 1:]
-    return np.stack(
-        [(a & b).sum(1), a.sum(1), ((1 - a) & b).sum(1), (1 - a).sum(1)], 1
-    ).astype(np.float64)
+    return np.stack([(a & b).sum(1), a.sum(1), ((1 - a) & b).sum(1), (1 - a).sum(1)], 1).astype(
+        np.float64
+    )
 
 
 def _excess(c: np.ndarray) -> np.ndarray:
@@ -359,7 +361,11 @@ def vanish_power_mc(
     rng = np.random.default_rng(seed)
     wb = w_base + se_base * rng.standard_normal(n)
     wa = ratio * w_base + se_a2 * rng.standard_normal(n)
-    ok = (wb < 0) & (np.abs(wb) >= gate_z * se_base) & (np.abs(wa) + z * se_a2 < fraction * np.abs(wb))
+    ok = (
+        (wb < 0)
+        & (np.abs(wb) >= gate_z * se_base)
+        & (np.abs(wa) + z * se_a2 < fraction * np.abs(wb))
+    )
     return float(ok.mean())
 
 
@@ -480,6 +486,6 @@ __all__ = [
     "vanish_bound",
     "vanish_power",
     "vanish_power_mc",
-    "wit",
     "window_freqs",
+    "wit",
 ]
