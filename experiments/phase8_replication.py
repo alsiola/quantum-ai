@@ -18,9 +18,12 @@ Modes:
   validation, and #27's own data under this rule.
 * ``--plan``: prints the unsubmitted execution plan of the recommended option.
 
-    uv run --group hardware python experiments/phase8_replication.py --config experiments/configs/phase8_replication.toml --export
-    uv run python experiments/phase8_replication.py --config experiments/configs/phase8_replication.toml --dry-run-local
-    uv run python experiments/phase8_replication.py --config experiments/configs/phase8_replication.toml --plan
+    uv run --group hardware python experiments/phase8_replication.py \\
+        --config experiments/configs/phase8_replication.toml --export
+    uv run python experiments/phase8_replication.py \\
+        --config experiments/configs/phase8_replication.toml --dry-run-local
+    uv run python experiments/phase8_replication.py \\
+        --config experiments/configs/phase8_replication.toml --plan
 """
 
 from __future__ import annotations
@@ -54,7 +57,7 @@ from qmem.records import REPO_ROOT, new_run_dir, run_metadata, save_json
 SETTINGS = A.Settings()
 
 
-# -- config and io ------------------------------------------------------------------------------
+# -- config and io ---------------------------------------------------------------------------------
 
 
 def load_config(path: Path) -> dict[str, Any]:
@@ -184,7 +187,7 @@ def arms_of(arm_set: str) -> tuple[str, ...]:
     }[arm_set]
 
 
-# -- pieces -------------------------------------------------------------------------------------------
+# -- pieces ----------------------------------------------------------------------------------------
 
 
 def load_pieces(cfg: dict[str, Any]) -> dict[str, A.StepPieces]:
@@ -201,7 +204,7 @@ def live_reference_pieces(cfg: dict[str, Any]) -> A.StepPieces:
     return A.StepPieces.from_npz(z, "live")
 
 
-# -- per-pair moments and power (numpy, in worker processes) ----------------------------------------
+# -- per-pair moments and power (numpy, in worker processes) ---------------------------------------
 
 
 def pair_moments(pc: A.StepPieces, shortfall: float, n: int, seed: int) -> dict[str, Any]:
@@ -254,7 +257,7 @@ def run_pool(fn, tasks: list[dict[str, Any]], workers: int) -> list[dict[str, An
         return list(ex.map(fn, tasks))
 
 
-# -- inflation: #27's drift-conditional SEs against the 59/75 truth model ------------------------------
+# -- inflation: #27's drift-conditional SEs against the 59/75 truth model --------------------------
 
 
 def load_27(cfg: dict[str, Any]) -> dict[str, dict[str, np.ndarray]]:
@@ -323,7 +326,7 @@ def calibrate_inflation(cfg: dict[str, Any], out: Path | None):
     return live_m, a27, infl, rows
 
 
-# -- the classical alternative --------------------------------------------------------------------------
+# -- the classical alternative ---------------------------------------------------------------------
 
 
 def classical_model(cfg: dict[str, Any]) -> C.InterventionModel:
@@ -376,7 +379,7 @@ def prediction_rows(name: str, model: str, preds: dict[str, dict[str, Any]]) -> 
     return rows
 
 
-# -- durations and cost -------------------------------------------------------------------------------
+# -- durations and cost ----------------------------------------------------------------------------
 
 
 def cost_model(cfg: dict[str, Any]) -> F.CostModel:
@@ -401,7 +404,7 @@ def arm_durations(cfg: dict[str, Any], circ: dict[str, Any] | None, k: str | Non
     return {a: base + src[a] - src["baseline"] for a in REP.ARMS}
 
 
-# -- options ---------------------------------------------------------------------------------------------
+# -- options ---------------------------------------------------------------------------------------
 
 
 def option_shots(arm_set: str, n_bs: int, n_a2: int) -> dict[str, int]:
@@ -507,12 +510,15 @@ def recommend(rows: list[dict[str, Any]], cap: float, power_min: float) -> dict[
     best = min(ok, key=lambda r: r["upper_with_pilot_s"])
     return {
         "verdict": "ambiguous",
-        "reason": f"powered options exist but the cheapest costs {best['upper_with_pilot_s']:.1f} s > cap {cap}",
+        "reason": (
+            f"powered options exist but the cheapest costs "
+            f"{best['upper_with_pilot_s']:.1f} s > cap {cap}"
+        ),
         "option": best,
     }
 
 
-# -- schedule -------------------------------------------------------------------------------------------
+# -- schedule --------------------------------------------------------------------------------------
 
 
 def option_pubs(opt: dict[str, Any], pairs: list[str]) -> dict[str, int]:
@@ -560,7 +566,7 @@ def make_plan(cfg, opt, pairs, circ, cm) -> dict[str, Any]:
     }
 
 
-# -- full-pipeline validation -----------------------------------------------------------------------------
+# -- full-pipeline validation ----------------------------------------------------------------------
 
 
 def _validation_task(task: dict[str, Any]) -> dict[str, Any]:
@@ -654,7 +660,7 @@ def drift_levels(n: int) -> list[float]:
     return list(q / q.std())
 
 
-# -- export (hardware group, FakeKingston only) --------------------------------------------------------------
+# -- export (hardware group, FakeKingston only) ----------------------------------------------------
 
 
 def widen(qc: Any, n: int) -> Any:
@@ -885,7 +891,7 @@ def export(cfg: dict[str, Any], workers: int) -> None:
     log(out, f"[export] circuits of {len(build)} pairs; relabelled hashes equal #20's: {ok}")
 
 
-# -- selection run -----------------------------------------------------------------------------------------
+# -- selection run ---------------------------------------------------------------------------------
 
 
 def run_selection(cfg, dev, pieces, infl, workers, out) -> tuple[REP.Selection, dict]:
@@ -926,7 +932,7 @@ def run_selection(cfg, dev, pieces, infl, workers, out) -> tuple[REP.Selection, 
     return REP.select(dev, rules, power), res
 
 
-# -- the dry run ---------------------------------------------------------------------------------------------
+# -- the dry run -----------------------------------------------------------------------------------
 
 
 def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
@@ -1003,7 +1009,7 @@ def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
     )
 
     # 3. selection on the snapshot
-    sel, pres = run_selection(cfg, dev, pieces, infl, workers, out)
+    sel, _pres = run_selection(cfg, dev, pieces, infl, workers, out)
     cand_rows = []
     for r in sel.rows:
         cand_rows.append({k: v for k, v in r.items() if k not in ("screen_reasons",)})
@@ -1012,7 +1018,8 @@ def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
     chosen = [key(r["memory"], r["output"]) for r in sel.chosen]
     log(
         out,
-        f"[selection] {len(sel.rows)} directed pairs, {sum(1 for r in sel.rows if not r['screen_reasons'])} "
+        f"[selection] {len(sel.rows)} directed pairs, "
+        f"{sum(1 for r in sel.rows if not r['screen_reasons'])} "
         f"pass the screen, {sel.n_qualified} qualify; chosen {chosen} ({sel.statement})",
     )
 
@@ -1091,8 +1098,9 @@ def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
     if opt:
         log(
             out,
-            f"[recommend] {rec['verdict']}: {opt['mode']} / {opt['arm_set']} / {opt['shots_base_sham']} "
-            f"(A2 {opt['shots_A2']}); upper {opt['upper_with_pilot_s']:.1f} s; min pair power {opt['min_pair_joint']:.3f}",
+            f"[recommend] {rec['verdict']}: {opt['mode']} / {opt['arm_set']} / "
+            f"{opt['shots_base_sham']} (A2 {opt['shots_A2']}); upper "
+            f"{opt['upper_with_pilot_s']:.1f} s; min pair power {opt['min_pair_joint']:.3f}",
         )
 
     # 6. sensitivity of the recommended option
@@ -1243,7 +1251,10 @@ def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
         "snapshot": {
             "backend": dev.backend,
             "calibration_date": dev.date,
-            "note": "dry run on FakeKingston's committed snapshot; the real selection runs on the live snapshot at Stage 4 only, after the owner approves",
+            "note": (
+                "dry run on FakeKingston's committed snapshot; the real selection runs on the "
+                "live snapshot at Stage 4 only, after the owner approves"
+            ),
         },
         "selection": {
             "n_candidates": len(sel.rows),
@@ -1297,7 +1308,11 @@ def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
                 a: {k: v for k, v in p.items() if k in ("w0", "w1", "w2", "p1", "lag1")}
                 for a, p in cl.items()
             },
-            "note": "transferred unchanged from 59/75; the class has no parameter-free prediction for a new pair. Any invasive classical A2 gives w_A2 = 0 on any pair (#30, Theorem 3), so a replication cannot separate it from the quantum model",
+            "note": (
+                "transferred unchanged from 59/75; the class has no parameter-free prediction "
+                "for a new pair. Any invasive classical A2 gives w_A2 = 0 on any pair (#30, "
+                "Theorem 3), so a replication cannot separate it from the quantum model"
+            ),
         },
         "elapsed_s": time.time() - t_start,
     }
@@ -1351,7 +1366,7 @@ def circuit_check(cfg: dict[str, Any], only: list[str] | None = None) -> dict[st
     }
 
 
-# -- --plan ---------------------------------------------------------------------------------------------
+# -- --plan ----------------------------------------------------------------------------------------
 
 
 def print_plan(cfg: dict[str, Any]) -> None:
@@ -1392,11 +1407,13 @@ def print_plan(cfg: dict[str, Any]) -> None:
         for p in job:
             arms[p.arm] = arms.get(p.arm, 0) + p.shots
         print(
-            f"job {j}: {len(job)} pubs, {c['shots']} shots, estimate {c['estimate_s']:.2f} s, upper "
+            f"job {j}: {len(job)} pubs, {c['shots']} shots, "
+            f"estimate {c['estimate_s']:.2f} s, upper "
             f"{c['upper_s']:.2f} s; " + ", ".join(f"{a} {n}" for a, n in arms.items())
         )
     print(
-        f"\ntotal (pilot + main): estimate {plan['estimate_s']:.1f} s, upper bound {plan['upper_s']:.1f} s "
+        f"\ntotal (pilot + main): estimate {plan['estimate_s']:.1f} s, "
+        f"upper bound {plan['upper_s']:.1f} s "
         f"(max(charged, upper) accounting); plan cap {cfg['budget']['cap_s']} s; "
         f"Open plan {cfg['budget']['open_plan_s']} s / 28 d shared with Stages 2-3"
     )
@@ -1407,7 +1424,8 @@ def print_plan(cfg: dict[str, Any]) -> None:
     if plan["problems"]:
         print("SCHEDULE PROBLEMS:", plan["problems"])
     print(
-        "NOT AUTHORISED: no figure here is an approval. Stage 4 needs the owner's explicit approval."
+        "NOT AUTHORISED: no figure here is an approval. "
+        "Stage 4 needs the owner's explicit approval."
     )
 
 

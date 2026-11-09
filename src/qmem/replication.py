@@ -714,6 +714,37 @@ def chunk_re_se(per: np.ndarray, lc: np.ndarray, chunks: Sequence[np.ndarray]) -
     return {k: np.array(v) for k, v in out.items()}
 
 
+def within_job_tau(
+    per: np.ndarray, lc: np.ndarray, sh: np.ndarray, jobs: np.ndarray, chunk_ids: np.ndarray
+) -> tuple[np.ndarray, float]:
+    """The SD of the chunk random effect within jobs, for ``STATS`` and P(1): DerSimonian-Laird
+    with each job's chunks pooled to their own job's fixed effect (Q and its df summed over
+    jobs), so a shift common to a whole job does not enter it."""
+    n_s = len(STATS) + 1
+    q, df, c = np.zeros(n_s), 0, np.zeros(n_s)
+    for j in dict.fromkeys(jobs.tolist()):
+        chunks = F.strata(chunk_ids[jobs == j])
+        idx = np.nonzero(jobs == j)[0]
+        if len(chunks) < 2:
+            continue
+        est, se = [], []
+        for ch in chunks:
+            k = idx[ch]
+            inf = shot_influence(per[k], lc[k])
+            est.append([*stat_vector(per[k], lc[k]), sh[k].mean()])
+            se.append(
+                [*(inf.std(0, ddof=1) / math.sqrt(len(k))), sh[k].std(ddof=1) / math.sqrt(len(k))]
+            )
+        e, w = np.array(est), 1 / np.array(se) ** 2
+        fe = (w * e).sum(0) / w.sum(0)
+        q += (w * (e - fe) ** 2).sum(0)
+        c += w.sum(0) - (w**2).sum(0) / w.sum(0)
+        df += len(chunks) - 1
+    tau2 = np.where(c > 0, np.maximum(0.0, (q - df) / np.where(c > 0, c, 1)), 0.0)
+    tau = np.sqrt(tau2)
+    return tau[:-1], float(tau[-1])
+
+
 def arm_statistics(
     shots: np.ndarray, jobs: np.ndarray, pubs: np.ndarray, s: AnalysisSettings, seed: int
 ) -> dict[str, Any]:
@@ -756,31 +787,36 @@ def arm_statistics(
     allj["lojo_value"] = np.array([x["value"] for x in lo])
     allj["lojo_se"] = np.array([x["se"] for x in lo])
     allj["lojo_se_primary"] = np.array([x["se_primary"] for x in lo])
-    allj["per_job"] = [
-        {
-            "job": j,
-            "n": int((jobs == j).sum()),
-            "p1": float(shots[jobs == j][:, s.burn :].mean()),
-            "se_p1": float(
-                shots[jobs == j][:, s.burn :].mean(1).std(ddof=1)
-                / math.sqrt(int((jobs == j).sum()))
-            ),
-            **{
-                k: float(v)
-                for k, v in zip(STATS, stat_vector(per[jobs == j], lc[jobs == j]), strict=True)
-            },
-            **{
-                f"se_{k}": float(v)
-                for k, v in zip(
-                    STATS,
-                    shot_influence(per[jobs == j], lc[jobs == j]).std(0, ddof=1)
-                    / math.sqrt(int((jobs == j).sum())),
-                    strict=True,
-                )
-            },
-        }
-        for j in labels
-    ]
+    # Per-job estimates for the arm x job test. Their SEs are drift-conditional too: the shot
+    # SE plus tau^2 / (chunks in the job), where tau is the chunk random effect *within* jobs
+    # (a shift of a whole job must stay visible). With shot SEs alone, #29's chunk drift
+    # (every arm's own) reads as arm x job heterogeneity.
+    chunk_ids = jobs * 10**6 + pubs
+    sh = shots[:, s.burn :].mean(1)
+    tau, tau_p1 = within_job_tau(per, lc, sh, jobs, chunk_ids)
+    allj["tau_within_job"] = tau
+    allj["tau_within_job_p1"] = tau_p1
+    allj["per_job"] = []
+    for j in labels:
+        sel = jobs == j
+        n_j = int(sel.sum())
+        m_j = len(np.unique(chunk_ids[sel]))
+        se_p1 = float(sh[sel].std(ddof=1) / math.sqrt(n_j))
+        se_shot = shot_influence(per[sel], lc[sel]).std(0, ddof=1) / math.sqrt(n_j)
+        se_job = np.sqrt(se_shot**2 + tau**2 / m_j)
+        allj["per_job"].append(
+            {
+                "job": j,
+                "n": n_j,
+                "chunks": m_j,
+                "p1": float(sh[sel].mean()),
+                "se_p1_shot": se_p1,
+                "se_p1": math.sqrt(se_p1**2 + tau_p1**2 / m_j),
+                **dict(zip(STATS, map(float, stat_vector(per[sel], lc[sel])), strict=True)),
+                **{f"se_{k}": float(v) for k, v in zip(STATS, se_job, strict=True)},
+                **{f"se_{k}_shot": float(v) for k, v in zip(STATS, se_shot, strict=True)},
+            }
+        )
     return allj
 
 

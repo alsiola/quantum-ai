@@ -282,6 +282,46 @@ def test_arm_job_interaction_flags_an_arm_specific_job_shift(live_pieces):
     t = next(x for x in REP.arm_job_interaction(arms) if x["stat"] == "p1")
     assert t["q_p"] < 1e-6
     assert int(np.argmax(np.abs(np.array(t["per_job"]) - t["fe"]))) == 2
+    # the per-job SE is the shot SE plus the chunk random effect over the job's chunks
+    a = arms["A2s"]
+    iw = REP.STATS.index("w0")
+    for r in a["per_job"]:
+        want = np.hypot(r["se_w0_shot"], a["tau_within_job"][iw] / np.sqrt(r["chunks"]))
+        assert r["se_w0"] == pytest.approx(want, rel=1e-12)
+        assert r["se_p1"] == pytest.approx(
+            np.hypot(r["se_p1_shot"], a["tau_within_job_p1"] / np.sqrt(r["chunks"])), rel=1e-12
+        )
+        assert r["chunks"] == 2
+
+
+def test_chunk_drift_alone_is_not_arm_x_job_heterogeneity(live_pieces, monkeypatch):
+    """Chunk-level dephasing drift in every arm (#29's random effect, here strong: w(0) at 0.4
+    or 1 of its value, drawn per chunk) is not an arm x job effect. With shot-only per-job SEs
+    Cochran's Q flags most tests; with the within-job random effect it flags few."""
+    pf = REP.shortfall_dephasing(live_pieces, 0.4, A.Settings())
+    procs = [REP.arm_process("baseline", live_pieces, p) for p in (pf, 0.0)]
+    s = REP.AnalysisSettings(n_boot=20)
+
+    def flagged() -> int:
+        ps = []
+        for rep in range(4):
+            jobs = F.make_schedule({"baseline": 16000, "A2s": 16000}, 4, 1000, 10 + rep)
+            arms = {}
+            for i, arm in enumerate(("baseline", "A2s")):
+                pubs = [p for j in jobs for p in j if p.arm == arm]
+                rng = np.random.default_rng([rep, i])
+                lv = {(p.job, p.position): int(rng.integers(2)) for p in pubs}
+                sim = REP.simulate_arm(
+                    procs, pubs, lambda p, lv=lv: lv[(p.job, p.position)], 200 + rep
+                )
+                arms[arm] = REP.arm_statistics(sim["shots"], sim["jobs"], sim["pubs"], s, rep)
+            ps += [t["q_p"] for t in REP.arm_job_interaction(arms) if t["stat"] in ("p1", "w0")]
+        return sum(p < 0.01 for p in ps)
+
+    with_re = flagged()
+    monkeypatch.setattr(REP, "within_job_tau", lambda *a: (np.zeros(len(REP.STATS)), 0.0))
+    shot_only = flagged()
+    assert shot_only >= 5 and with_re <= 2
 
 
 def test_plan_cost_respects_the_job_limit():
