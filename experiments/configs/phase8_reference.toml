@@ -1,0 +1,108 @@
+# Phase 8 Stage 3 (issue #33): can q75's step channel be certified non-entanglement-breaking?
+# Local only: theory, simulation, circuits and an UNSUBMITTED, capped plan. No QPU and no IBM
+# service of any kind. Topology and calibration come from committed files only.
+#
+# 1. predictions, power, budget (numpy; under a minute):
+#    uv run python experiments/phase8_reference.py --config experiments/configs/phase8_reference.toml
+# 2. (once, `hardware` group) build every circuit against FakeKingston, check it against the
+#    numpy model, write the QASM and its hashes:
+#    uv run --group hardware python experiments/phase8_reference.py --config experiments/configs/phase8_reference.toml --export-qasm
+#
+# Every choice below (targets, step counts, branches, alpha, thresholds, shots) is fixed here,
+# before any data. The correction unitaries V_n are computed from the committed Stage 4c pieces
+# and written to the summary and the QASM; they are never fitted to test data.
+
+[experiment]
+name = "phase8_reference"
+summary_dir = "results/summaries/phase8_reference"
+phase6_dir = "results/summaries/phase6"                         # step.qasm (the trained step)
+pieces = "results/summaries/phase7_hw_4c/pieces_live.npz"       # Stage 4c's analysis model (#27)
+pieces_key = "live"
+phase6_pieces = "results/summaries/phase7_ablation/pieces.npz"  # noiseless and Phase 6 snapshot
+calibration = "results/summaries/phase7_hw_4c/calibration_before.json"  # q59/q75 live snapshot
+device = "results/summaries/phase7_spectator/device.json"       # FakeKingston map + calibration (stale, 2026-04-15)
+
+[layout]
+memory = 75
+output = 59
+bridge = 74            # q75's other neighbour: Bell partner then SWAP bridge (Bell route), BSM partner (MDI)
+step_memory = 1        # compact step.qasm: q[0] = q59, q[1] = q75
+step_output = 0
+
+[reference_rule]
+# Predeclared: among qubits within max_dist_memory of q75, admit those with no coupler to q75
+# (excludes q74: its ZZ to q75, #22; its sham changes the process, #29) and none to q59 or a
+# neighbour of q59; then readout, T2 and path-CZ limits; pick the admitted qubit with the
+# highest predicted n = 1 Bell fidelity (ties: fewer SWAPs, then lower qubit index).
+min_dist_memory = 2
+min_dist_output = 3
+max_dist_memory = 3
+max_readout = 0.03
+min_t2_us = 50.0
+max_cz_error = 0.01
+
+[protocol]
+steps = [0, 1, 2, 3]          # circuits are built for these; n = 0 is the positive control
+descriptive_steps = [4, 8]    # simulated only (the unconditional channel is PPT from n = 3)
+primary_n = 1
+secondary_n = [2]
+negative_control_n = 1        # q75 measured mid-step (A2's operation) in step 1: EB
+step_s = 4.852e-6             # one step on ibm_kingston (#22, from step.qasm and the snapshot)
+end_s = 2.4e-6                # final rotation + measurement (2.18 us readout + gates)
+mdi_steps = [0, 1]
+
+[spam]                        # q75 from the Stage 4c snapshot; gate errors -> depolarising p = 2 r
+gates_per_prep = 2            # sx count of an axis-state preparation / measurement rotation
+bsm_cz_error_from = "74-75"   # MDI Bell measurement's CZ (device.json)
+
+[leakage]                     # leakage treated as loss and scored as a success (worst case)
+leak_per_cz = 1e-3            # conservative: ~10x IBM leakage-RB rates (#21's literature)
+cz_per_step = 3
+
+[analysis]
+alpha = 0.05                  # one-sided, primary test (n = 1, unconditional, P&M)
+secondary_alpha = 0.05        # Holm over the secondary family
+power_targets = [0.8, 0.9]
+mc_draws = 4000
+seed = 33
+min_branch_shots = 500        # a branch is tested only if it collects at least this many shots
+branch_steps = [1, 2]         # every record of these lengths is reported (secondary, Holm)
+
+[sensitivity]
+extra_dephasing = [0.0, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5]
+q75_phase = [0.042, 0.1, 0.2, 0.44, 1.0]      # rad per step; 0.042: #21's comparator; 0.44: a 16 kHz Stark shift over q59's 4.39 us readout+reset (#22)
+q59_reset = [0.0057, 0.0183]                  # #21's fit (a)
+deficit_ratio = 0.747                         # Stage 4c baseline / H_q75 prediction (#29)
+
+[witness]                     # for the deficit-matched model's w(0)
+k_max = 7
+burn = 16
+length = 64
+
+[plan]
+# Shots per circuit. P&M: 12 circuits per arm (6 axis inputs x 2 balanced success labels).
+# The primary arm (n = 1) gets 1,000 shots per circuit: about 23x the 80%-power count under
+# the Stage 4c model, enough for 50% power even at an extra 30% dephasing per step. The
+# controls and descriptive arms get 500.
+pm_shots = { pm_n0 = 500, pm_n1 = 1000, pm_n2 = 500, pm_n3 = 500, pm_neg = 500 }
+bell_steps = [0, 1, 2]        # 3 settings x 2 readout flips per n; plus the q59-only control
+bell_shots = { bell_n0 = 500, bell_n1 = 1000, bell_n2 = 500 }
+q59_control_steps = 8
+q59_control_shots = 10000     # per reference state
+mdi_shots = { mdi_n0 = 250, mdi_n1 = 1000 }  # 16 input pairs per n
+zero_branch_steps = [1, 2, 3, 4, 8]  # descriptive: the all-0 record's conditional fidelity
+ppt_n = 2
+ppt_shots_per_setting = 0     # 0: report the shots needed only (18 Pauli settings)
+max_qpu_seconds = 20.0        # per-job estimate limit (Phase 6's guard)
+hard_cap_s = 30.0             # proposed Stage 3 cap (P&M primary); never authorisation
+remaining_after_phase7_s = 531  # Open plan, after #27 (docs/phase7-hardware.md)
+
+[cost]                        # qmem.followup.CostModel
+overhead_s = 2.0
+rep_delay_s = 250e-6
+margin = 0.25
+billing_round_s = 1.0
+
+[hardware]
+optimization_level = 0
+seed_transpiler = 0
