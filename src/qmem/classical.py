@@ -914,3 +914,579 @@ __all__ = [
     "split_state",
     "start_model",
 ]
+
+
+# -- Phase 8 Stage 2 (#32): programs of named slot maps ----------------------------------------
+#
+# A generalisation of ``InterventionModel`` for designs with many slot operations: every step
+# of every arm is ``P @ F_1 @ ... @ F_j @ Q[y]``, where the slot's *program* ``(F_1 .. F_j)``
+# is a sequence of named elementary operations. Each name has one free stochastic map, shared
+# by every arm and every position in which that operation appears ("the same operation is the
+# same map": the composition and inverse arms are data the shared maps must explain, not
+# constraints imposed on them). ``"I"`` is the identity (no operation, not a parameter). A
+# *labelled* element emits a recorded bit (A2's q75 measurement: ``(2, d, d)``, summing to a
+# stochastic map), and the step's symbol is then ``2 m + y``. A *whole-step* arm (D1) has its
+# own labelled step map. The per-shot choice of program (A3's Pauli, a feed-forward phase) is
+# data, recorded per shot and step.
+
+
+@dataclass(frozen=True)
+class ArmSpec:
+    """One arm: its slot programs and how each shot picks one per step.
+
+    * ``schedule = "constant"``: ``programs[0]`` in every step;
+    * ``"alternate"``: ``programs[t % len(programs)]``;
+    * ``"random"``: a per-shot, per-step choice recorded in the data (drawn with ``probs``
+      when simulated);
+    * ``whole``: the arm is a different circuit with its own whole-step labelled map (D1).
+    """
+
+    name: str
+    programs: tuple[tuple[str, ...], ...] = (("I",),)
+    schedule: str = "constant"
+    probs: tuple[float, ...] | None = None
+    whole: str | None = None
+
+    def choices(self, n: int, length: int, rng: np.random.Generator | None = None) -> np.ndarray:
+        """``(n, length)`` program index of each shot and step (``rng`` for ``random``)."""
+        if self.schedule == "constant" or self.whole is not None:
+            return np.zeros((n, length), dtype=np.int64)
+        if self.schedule == "alternate":
+            return np.tile(np.arange(length) % len(self.programs), (n, 1))
+        if rng is None:
+            raise ValueError("a random arm's choices are data: pass them, or an rng to draw them")
+        p = (
+            np.full(len(self.programs), 1 / len(self.programs))
+            if self.probs is None
+            else self.probs
+        )
+        return rng.choice(len(self.programs), size=(n, length), p=np.asarray(p))
+
+    def elements(self) -> set[str]:
+        return {e for prog in self.programs for e in prog} - {"I"}
+
+
+@dataclass
+class ProgramData:
+    """One arm's shots: ``y`` (n, T); the program index per step ``choice`` (n, T; ``None``:
+    zeros); ``m`` (n, T), the labelled element's recorded bit (A2)."""
+
+    y: np.ndarray
+    choice: np.ndarray | None = None
+    m: np.ndarray | None = None
+
+    def subset(self, keep: np.ndarray) -> ProgramData:
+        return ProgramData(
+            self.y[keep],
+            None if self.choice is None else self.choice[keep],
+            None if self.m is None else self.m[keep],
+        )
+
+    def ch(self) -> np.ndarray:
+        return np.zeros(self.y.shape, dtype=np.int64) if self.choice is None else self.choice
+
+    @property
+    def n_symbols(self) -> int:
+        return int(self.y.size + (0 if self.m is None else self.m.size))
+
+
+@dataclass
+class ProgramModel:
+    """``init``, ``pre`` (P), ``post`` (Q[y]); ``maps`` (name -> (d, d)); ``labelled``
+    (name -> (2, d, d)); ``whole`` (name -> (2, d, d), whole-step maps)."""
+
+    init: np.ndarray
+    pre: np.ndarray
+    post: np.ndarray
+    maps: dict[str, np.ndarray] = field(default_factory=dict)
+    labelled: dict[str, np.ndarray] = field(default_factory=dict)
+    whole: dict[str, np.ndarray] = field(default_factory=dict)
+
+    @property
+    def d(self) -> int:
+        return len(self.init)
+
+    def factor(self, name: str, label: int | None = None) -> np.ndarray:
+        if name == "I":
+            return np.eye(self.d)
+        if name in self.labelled:
+            m = self.labelled[name]
+            return m.sum(0) if label is None else m[label]
+        return self.maps[name]
+
+    def slot(self, program: Sequence[str], label: int | None = None) -> np.ndarray:
+        out = np.eye(self.d)
+        for e in program:
+            out = out @ self.factor(e, label if e in self.labelled else None)
+        return out
+
+    def labelled_in(self, program: Sequence[str]) -> str | None:
+        lab = [e for e in program if e in self.labelled]
+        if len(lab) > 1:
+            raise ValueError("at most one labelled element per program")
+        return lab[0] if lab else None
+
+    def bank(self, arm: ArmSpec, record: bool = True) -> np.ndarray:
+        """``(n_programs, n_symbols, d, d)`` step matrices: symbol ``y``, or ``2 m + y`` when
+        the program has a labelled element and ``record`` (else summed over ``m``)."""
+        if arm.whole is not None:
+            return self.whole[arm.whole][None]
+        out = []
+        lab = {self.labelled_in(p) for p in arm.programs} - {None}
+        four = record and bool(lab)
+        for prog in arm.programs:
+            if four:
+                if self.labelled_in(prog) is None:
+                    raise ValueError("every program of a recorded arm needs its labelled element")
+                mats = [
+                    self.pre @ self.slot(prog, m) @ self.post[y] for m in (0, 1) for y in (0, 1)
+                ]
+            else:
+                s = self.pre @ self.slot(prog)
+                mats = [s @ self.post[y] for y in (0, 1)]
+            out.append(np.stack(mats))
+        return np.stack(out)
+
+    def symbols(self, arm: ArmSpec, data: ProgramData) -> np.ndarray:
+        if data.m is not None and arm.whole is None:
+            return 2 * data.m.astype(np.int64) + data.y.astype(np.int64)
+        return data.y.astype(np.int64)
+
+    def nll(self, arm: ArmSpec, data: ProgramData) -> np.ndarray:
+        """Per-shot ``-log P`` (nats) of the arm's data (A2's record jointly if present)."""
+        bank = self.bank(arm, data.m is not None)
+        return bank_nll(self.init, bank, np.ones(self.d), data.ch(), self.symbols(arm, data))
+
+    def averaged(self, arm: ArmSpec) -> W.LinearProcess:
+        """The arm's process with its program choice averaged (``random``: i.i.d. per step,
+        so the averaged step is exact; ``constant``: the program's own step)."""
+        bank = self.bank(arm, record=False)
+        if arm.schedule == "random":
+            p = np.full(len(bank), 1 / len(bank)) if arm.probs is None else np.asarray(arm.probs)
+            return W.LinearProcess.hmm(np.tensordot(p, bank, 1), self.init)
+        if arm.schedule == "alternate":
+            raise ValueError("an alternating arm is time-varying: use time_varying")
+        return W.LinearProcess.hmm(bank[0], self.init)
+
+    def time_varying(self, arm: ArmSpec, length: int) -> D.TimeVaryingProcess:
+        bank = self.bank(arm, record=False)
+        ch = arm.choices(1, length)[0] if arm.schedule != "random" else None
+        if ch is None:
+            proc = self.averaged(arm)
+            return D.TimeVaryingProcess.constant(proc, length)
+        return D.TimeVaryingProcess(self.init, bank[ch], np.ones(self.d))
+
+    def n_params(self) -> int:
+        d = self.d
+        k = (d - 1) + d * (d - 1) + d * (2 * d - 1)
+        k += len(self.maps) * d * (d - 1)
+        k += (len(self.labelled) + len(self.whole)) * d * (2 * d - 1)
+        return k
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "init": self.init.tolist(),
+            "pre": self.pre.tolist(),
+            "post": self.post.tolist(),
+            "maps": {k: v.tolist() for k, v in self.maps.items()},
+            "labelled": {k: v.tolist() for k, v in self.labelled.items()},
+            "whole": {k: v.tolist() for k, v in self.whole.items()},
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> ProgramModel:
+        a = lambda x: np.asarray(x, dtype=np.float64)  # noqa: E731
+        return cls(
+            a(d["init"]),
+            a(d["pre"]),
+            a(d["post"]),
+            {k: a(v) for k, v in d.get("maps", {}).items()},
+            {k: a(v) for k, v in d.get("labelled", {}).items()},
+            {k: a(v) for k, v in d.get("whole", {}).items()},
+        )
+
+    @classmethod
+    def from_intervention(cls, m: InterventionModel) -> ProgramModel:
+        """The same model as a ``ProgramModel`` (``STAGE4C_ARMS`` give the same likelihoods)."""
+        maps = {"spec": m.spec, "reset": m.reset, "X": m.pauli[1], "Y": m.pauli[2], "Z": m.pauli[3]}
+        return cls(
+            m.init.copy(), m.pre.copy(), m.post.copy(), maps, {"meas": m.meas.copy()}, {"D1": m.d1}
+        )
+
+
+STAGE4C_ARMS = {
+    "baseline": ArmSpec("baseline"),
+    "A2s_spec": ArmSpec("A2s_spec", (("spec",),)),
+    "A1": ArmSpec("A1", (("reset",),)),
+    "A2": ArmSpec("A2", (("meas",),)),
+    "A3": ArmSpec("A3", (("I",), ("X",), ("Y",), ("Z",)), "random"),
+    "D1": ArmSpec("D1", whole="D1"),
+}
+
+
+def program_data_from_arm(arm: str, a: ArmData) -> ProgramData:
+    """Stage 4c's ``ArmData`` as ``ProgramData`` (A3's Pauli index is the program index)."""
+    return ProgramData(a.y, None if a.paulis is None else np.asarray(a.paulis, np.int64), a.m)
+
+
+def bank_nll(
+    init: np.ndarray, bank: np.ndarray, final: np.ndarray, choice: np.ndarray, sym: np.ndarray
+) -> np.ndarray:
+    """Per-shot ``-log P`` with shot n using ``bank[choice[n, t], sym[n, t]]`` at step t (row
+    convention; real or complex ``bank`` of shape (programs, symbols, D, D))."""
+    n, length = sym.shape
+    p, k, d, _ = bank.shape
+    cat = bank.reshape(p * k, d, d).transpose(1, 0, 2).reshape(d, p * k * d)
+    idx = choice * k + sym
+    rows = np.arange(n)
+    s = np.tile(init, (n, 1))
+    out = np.zeros(n)
+    for t in range(length):
+        s = (s @ cat).reshape(n, p * k, d)[rows, idx[:, t]]
+        z = (s @ final).real
+        out -= np.log(z)
+        s = s / z[:, None]
+    return out
+
+
+def bank_sample(
+    init: np.ndarray,
+    bank: np.ndarray,
+    final: np.ndarray,
+    choice: np.ndarray,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    """Symbols ``(n, T)`` drawn by sequential conditioning with the per-shot programs."""
+    n, length = choice.shape
+    k = bank.shape[1]
+    s = np.tile(init, (n, 1)).astype(bank.dtype)
+    out = np.zeros((n, length), dtype=np.int64)
+    rows = np.arange(n)
+    for t in range(length):
+        nxt = np.einsum("nd,nkde->nke", s, bank[choice[:, t]])  # (n, k, D)
+        p = np.clip((nxt @ final).real, 0, None)
+        c = np.cumsum(p, 1) / p.sum(1, keepdims=True)
+        sym = (rng.random(n)[:, None] > c[:, : k - 1]).sum(1)
+        out[:, t] = sym
+        s = nxt[rows, sym] / p[rows, sym][:, None]
+    return out
+
+
+def brute_force_program_prob(
+    model: ProgramModel,
+    arm: ArmSpec,
+    y: Sequence[int],
+    choice: Sequence[int] | None = None,
+    m: Sequence[int] | None = None,
+) -> float:
+    """``P(y)`` (and ``m``) by explicit enumeration of every hidden path through every factor
+    of every step (``s -> P -> [F_1 .. F_j] -> Q[y] -> s'``): the tests' check of ``nll``."""
+    d = model.d
+    T = len(y)
+    choice = [0] * T if choice is None else list(choice)
+
+    def chain(t: int) -> list[np.ndarray]:
+        if arm.whole is not None:
+            return [model.whole[arm.whole][y[t]]]
+        prog = arm.programs[choice[t]]
+        fs = [model.pre]
+        for e in prog:
+            if e == "I":
+                continue
+            lab = m[t] if (e in model.labelled and m is not None) else None
+            fs.append(model.factor(e, lab))
+        fs.append(model.post[y[t]])
+        return fs
+
+    def through(fs: list[np.ndarray], s: int, w: float, t: int) -> float:
+        if w == 0.0:
+            return 0.0
+        if not fs:
+            return rec(t + 1, s, w)
+        return sum(through(fs[1:], s2, w * fs[0][s, s2], t) for s2 in range(d))
+
+    def rec(t: int, s: int, w: float) -> float:
+        if t == T:
+            return w
+        return through(chain(t), s, w, t)
+
+    return float(sum(rec(0, s0, model.init[s0]) for s0 in range(d)))
+
+
+def random_program_model(
+    d: int,
+    maps: Sequence[str],
+    rng: np.random.Generator,
+    labelled: Sequence[str] = (),
+    whole: Sequence[str] = (),
+    conc: float = 1.0,
+) -> ProgramModel:
+    """Dirichlet(``conc``) rows for every map."""
+
+    def stoch(k: int = 1) -> np.ndarray:
+        rows = rng.dirichlet(np.full(k * d, conc), size=d)
+        return rows.reshape(d, k, d).transpose(1, 0, 2) if k > 1 else rows
+
+    return ProgramModel(
+        rng.dirichlet(np.full(d, conc)),
+        stoch(),
+        stoch(2),
+        {k: stoch() for k in maps},
+        {k: stoch(2) for k in labelled},
+        {k: stoch(2) for k in whole},
+    )
+
+
+def _program_classes(model: ProgramModel, arm: ArmSpec, data: ProgramData):
+    """Candidates ``(K, d, d)``, each shot's candidate per step (n, T), and per candidate its
+    factor chain ``[(kind, name, label)]`` (kind: ``pre``, ``map``, ``lab``, ``post``,
+    ``whole``)."""
+    rec = data.m is not None
+    bank = model.bank(arm, rec)
+    p, s = bank.shape[:2]
+    idx = data.ch() * s + model.symbols(arm, data)
+    chains = []
+    for pi in range(p):
+        for si in range(s):
+            if arm.whole is not None:
+                chains.append([("whole", arm.whole, si)])
+                continue
+            m, y = (si // 2, si % 2) if (rec and s == 4) else (None, si)
+            ch = [("pre", "pre", None)]
+            for e in arm.programs[pi]:
+                if e == "I":
+                    continue
+                if e in model.labelled:
+                    if m is None:
+                        raise ValueError("EM needs the labelled element's record")
+                    ch.append(("lab", e, m))
+                else:
+                    ch.append(("map", e, None))
+            ch.append(("post", "post", y))
+            chains.append(ch)
+    return bank.reshape(p * s, model.d, model.d), idx, chains
+
+
+def _mat(model: ProgramModel, kind: str, name: str, label: int | None) -> np.ndarray:
+    if kind == "pre":
+        return model.pre
+    if kind == "post":
+        return model.post[label]
+    if kind == "map":
+        return model.maps[name]
+    if kind == "lab":
+        return model.labelled[name][label]
+    return model.whole[name][label]
+
+
+def program_em_step(
+    model: ProgramModel, arms: dict[str, ArmSpec], data: dict[str, ProgramData]
+) -> tuple[ProgramModel, float]:
+    """One exact EM step over every arm jointly (Baum-Welch through each factor chain: the
+    expected counts of factor ``F_i`` in ``L = A F_i B`` are ``F_i * (A^T R B^T)`` with
+    ``R = C / L``, ``C`` the step's expected transition counts). Returns the new model and the
+    old model's log-likelihood."""
+    d = model.d
+    n_pre = np.zeros((d, d))
+    n_post = np.zeros((2, d, d))
+    n_map = {k: np.zeros((d, d)) for k in model.maps}
+    n_lab = {k: np.zeros((2, d, d)) for k in model.labelled}
+    n_whole = {k: np.zeros((2, d, d)) for k in model.whole}
+    n_init = np.zeros(d)
+    ll = 0.0
+    for name, a in data.items():
+        arm = arms[name]
+        ops, idx, chains = _program_classes(model, arm, a)
+        c, g0, l_arm = forward_backward(model.init, ops, idx)
+        ll += l_arm
+        n_init += g0
+        for k, ch in enumerate(chains):
+            if not c[k].any():
+                continue
+            lk = ops[k]
+            r = np.divide(c[k], lk, out=np.zeros_like(lk), where=lk > 0)
+            mats = [_mat(model, *f) for f in ch]
+            left = [np.eye(d)]
+            for mtx in mats[:-1]:
+                left.append(left[-1] @ mtx)
+            right = [np.eye(d)]
+            for mtx in mats[:0:-1]:
+                right.append(mtx @ right[-1])
+            right = right[::-1]
+            for i, (kind, nm, lab) in enumerate(ch):
+                cnt = mats[i] * (left[i].T @ r @ right[i].T)
+                if kind == "pre":
+                    n_pre += cnt
+                elif kind == "post":
+                    n_post[lab] += cnt
+                elif kind == "map":
+                    n_map[nm] += cnt
+                elif kind == "lab":
+                    n_lab[nm][lab] += cnt
+                else:
+                    n_whole[nm][lab] += cnt
+    new = ProgramModel(
+        n_init / n_init.sum(),
+        _normalise(n_pre, model.pre),
+        _normalise(n_post, model.post, True),
+        {k: _normalise(v, model.maps[k]) for k, v in n_map.items()},
+        {k: _normalise(v, model.labelled[k], True) for k, v in n_lab.items()},
+        {k: _normalise(v, model.whole[k], True) for k, v in n_whole.items()},
+    )
+    return new, ll
+
+
+def _pm_flat(m: ProgramModel) -> list[np.ndarray]:
+    return [
+        m.init,
+        m.pre,
+        m.post,
+        *(m.maps[k] for k in sorted(m.maps)),
+        *(m.labelled[k] for k in sorted(m.labelled)),
+        *(m.whole[k] for k in sorted(m.whole)),
+    ]
+
+
+def _pm_unflat(parts: list[np.ndarray], like: ProgramModel, floor: float = 1e-12) -> ProgramModel:
+    """Back onto the class after an extrapolation (clip at ``floor``, renormalise rows)."""
+    row = lambda x: np.clip(x, floor, None) / np.clip(x, floor, None).sum(-1, keepdims=True)  # noqa: E731
+
+    def lab(x: np.ndarray) -> np.ndarray:
+        x = np.clip(x, floor, None)
+        return x / x.sum(axis=(0, 2))[None, :, None]
+
+    it = iter(parts)
+    init = np.clip(next(it), floor, None)
+    out = ProgramModel(init / init.sum(), row(next(it)), lab(next(it)))
+    out.maps = {k: row(next(it)) for k in sorted(like.maps)}
+    out.labelled = {k: lab(next(it)) for k in sorted(like.labelled)}
+    out.whole = {k: lab(next(it)) for k in sorted(like.whole)}
+    return out
+
+
+def program_loglik(
+    model: ProgramModel, arms: dict[str, ArmSpec], data: dict[str, ProgramData]
+) -> float:
+    return -float(sum(model.nll(arms[k], a).sum() for k, a in data.items()))
+
+
+@dataclass
+class ProgramFit:
+    model: ProgramModel
+    nll: float
+    n_symbols: int
+    iters: int
+    converged: bool
+    history: list[float] = field(default_factory=list)  # NLL per symbol after each cycle
+
+
+def fit_program_model(
+    arms: dict[str, ArmSpec],
+    data: dict[str, ProgramData],
+    model: ProgramModel,
+    max_iters: int = 2000,
+    tol: float = 1e-10,
+    accel: bool = True,
+    callback=None,
+) -> ProgramFit:
+    """EM with SQUAREM (as ``fit_em_model``) until a cycle improves the NLL per symbol by
+    less than ``tol`` or ``max_iters`` EM steps; ``callback(iters, model, nll_per_symbol)``
+    after every cycle (checkpoints)."""
+    n_sym = sum(a.n_symbols for a in data.values())
+    ll = -math.inf
+    it, conv = 0, False
+    hist: list[float] = []
+    while it < max_iters:
+        m1, ll0 = program_em_step(model, arms, data)
+        m2, _ = program_em_step(m1, arms, data)
+        it += 2
+        cand = m2
+        if accel:
+            p0, p1, p2 = (_pm_flat(m) for m in (model, m1, m2))
+            r = [b - a for a, b in zip(p0, p1, strict=True)]
+            v = [c - 2 * b + a for a, b, c in zip(p0, p1, p2, strict=True)]
+            nr = math.sqrt(sum(float(np.sum(x**2)) for x in r))
+            nv = math.sqrt(sum(float(np.sum(x**2)) for x in v))
+            if nv > 0:
+                alpha = -max(1.0, nr / nv)
+                pe = [a - 2 * alpha * x + alpha**2 * y for a, x, y in zip(p0, r, v, strict=True)]
+                ms, _ = program_em_step(_pm_unflat(pe, model), arms, data)
+                it += 1
+                if program_loglik(ms, arms, data) >= program_loglik(m2, arms, data):
+                    cand = ms
+        model = cand
+        hist.append(-ll0 / n_sym)
+        if callback is not None:
+            callback(it, model, -ll0 / n_sym)
+        if math.isfinite(ll) and (ll0 - ll) / n_sym < tol:
+            conv = True
+            break
+        ll = ll0
+    return ProgramFit(model, -program_loglik(model, arms, data), n_sym, it, conv, hist)
+
+
+def split_program_state(
+    model: ProgramModel, rng: np.random.Generator, noise: float = 0.05, state: int | None = None
+) -> ProgramModel:
+    """A ``d + 1``-state start: one hidden state duplicated (``state``; default the most
+    occupied in the stationary state of ``pre @ post``), maps perturbed by ``noise``."""
+    d = model.d
+    if state is None:
+        pi = W.LinearProcess.hmm(np.stack([model.pre @ q for q in model.post]), model.init)
+        state = int(np.argmax(pi.stationary().real))
+    s = state
+
+    def grow(m: np.ndarray, labelled: bool) -> np.ndarray:
+        x = m if labelled else m[None]
+        new = np.zeros((x.shape[0], d + 1, d + 1))
+        new[:, :d, :d] = x
+        new[:, :d, d] = x[:, :, s] / 2
+        new[:, :d, s] = x[:, :, s] / 2
+        new[:, d, :] = new[:, s, :]
+        new *= np.exp(noise * rng.standard_normal(new.shape))
+        new /= new.sum(axis=(0, 2), keepdims=True)
+        return new if labelled else new[0]
+
+    ini = np.append(model.init, model.init[s] / 2)
+    ini[s] /= 2
+    return ProgramModel(
+        ini / ini.sum(),
+        grow(model.pre, False),
+        grow(model.post, True),
+        {k: grow(v, False) for k, v in model.maps.items()},
+        {k: grow(v, True) for k, v in model.labelled.items()},
+        {k: grow(v, True) for k, v in model.whole.items()},
+    )
+
+
+def smooth_program(model: ProgramModel, eps: float) -> ProgramModel:
+    d = model.d
+    row = lambda x: (1 - eps) * x + eps / d  # noqa: E731
+    lab = lambda x: (1 - eps) * x + eps / (2 * d)  # noqa: E731
+    return ProgramModel(
+        row(model.init),
+        row(model.pre),
+        lab(model.post),
+        {k: row(v) for k, v in model.maps.items()},
+        {k: lab(v) for k, v in model.labelled.items()},
+        {k: lab(v) for k, v in model.whole.items()},
+    )
+
+
+__all__ += [
+    "STAGE4C_ARMS",
+    "ArmSpec",
+    "ProgramData",
+    "ProgramFit",
+    "ProgramModel",
+    "bank_nll",
+    "bank_sample",
+    "brute_force_program_prob",
+    "fit_program_model",
+    "program_data_from_arm",
+    "program_em_step",
+    "program_loglik",
+    "random_program_model",
+    "smooth_program",
+    "split_program_state",
+]

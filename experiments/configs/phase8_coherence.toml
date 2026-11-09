@@ -1,0 +1,153 @@
+# Phase 8 Stage 2 (issue #32): coherence-specific test design on q75/q59. Local only: no QPU,
+# no IBM service. Parts (experiments/phase8_coherence.py):
+#
+#   --part review   #30's review points: the fitted quantum model on every Stage 4c arm; the
+#                   pub-parity CV at d = 4, 5, 6 and at the fitted quantum model; EM run to
+#                   convergence. About 2 h with 2 workers (resumable: --from-run <dir>).
+#   --part design   the fixed predictions w(phi), g(k; phi), P(1; phi); equivalent dephasings;
+#                   benchmarks; Knee-style controls; noise and leakage alternatives; budget.
+#                   A few minutes.
+#   --part power    the power study against the classical alternative: simulated data from the
+#                   fixed and the fitted quantum models, classical program models fitted at
+#                   d = 4 and 6, held-out shots and held-out arms. About 1-2 h with 2 workers
+#                   (resumable).
+#   --export-qasm   (hardware group) the circuits on FakeKingston, the transpilation and
+#                   scheduling checks, QASM and hashes, the device numbers the design uses.
+#   --plan          prints the unsubmitted hardware plan (nothing is sent anywhere).
+
+[experiment]
+name = "phase8_coherence"
+summary_dir = "results/summaries/phase8_coherence"
+classical_config = "experiments/configs/phase8_classical.toml"   # #30: data, Quantum, statistics
+classical_summary = "results/summaries/phase8_classical/summary.json"
+phase6_dir = "results/summaries/phase6"
+workers = 2
+
+[analysis]                     # as #27 / #30
+length = 64
+burn = 16
+k_max = 7
+offsets = [0, 1, 2, 3]
+z_fit = 1.96
+
+# -- review point 1: the fitted quantum model --------------------------------------------------
+[quantum_fit]
+# NoiseParams fitted (qmem.coherence.FITTED) by Nelder-Mead on the total NLL of the five q75
+# arms (D1 is a different circuit: #23's fixed model, as in #30). Start: the calibrated model
+# with A2's decay from the pilot refit (#27).
+params = ["dephase", "damp", "detune", "flip", "reset_e0", "reset_e1", "meas_decay", "spec_dephase", "spec_phase"]
+max_evals = 900
+restarts = 2                  # Nelder-Mead restarted from its own optimum
+step = 0.4
+
+# -- review points 2 and 3: CV and convergence ---------------------------------------------------
+[review]
+cv_dims = [4, 5, 6]           # fold-trained chain: d = 4 from the quantum start, then splits
+cv_max_iters = 3000
+converge_dims = [4, 5, 6]     # #30's best fits continued
+converge_max_iters = 4000
+tol = 1e-10
+smooth = 0.01
+seed = 32
+checkpoint_every = 50         # SQUAREM cycles between checkpoints (resumable)
+
+# -- the design ----------------------------------------------------------------------------------
+# Elements (qmem.coherence): e<k> = the physical echo x, rz(a), x, rz(-a) with Rz(k pi / 4)
+# (e0: two x pulses, the matched-timing sham); ff<b1><b2>: two ancillas, prepared in |+>
+# and measured together, whose bits b1, b2 drive the feed-forward echoes and are recorded;
+# meas: A2's q75 Z measurement (record m). Each programme is the slot's sequence of elements.
+[arms.baseline]
+programs = [["I"]]
+[arms.E0]
+programs = [["e0"]]
+[arms.P1]
+programs = [["e1"]]
+[arms.P2]
+programs = [["e2"]]
+[arms.P3]
+programs = [["e3"]]
+[arms.P4]
+programs = [["e4"]]
+[arms.P5]
+programs = [["e5"]]
+[arms.P6]
+programs = [["e6"]]
+[arms.P7]
+programs = [["e7"]]
+[arms.E00]                    # the 4-pulse sham
+programs = [["e0", "e0"]]
+[arms.INV2]                   # Rz(pi/2) then Rz(-pi/2) in one slot: quantum = E00
+programs = [["e2", "e6"]]
+[arms.COMP22]                 # Rz(pi/2) Rz(pi/2) against COMP40 = Rz(pi) (4 pulses each)
+programs = [["e2", "e2"]]
+[arms.COMP40]
+programs = [["e4", "e0"]]
+[arms.ALT2]                   # Rz(pi/2) on even steps, Rz(-pi/2) on odd steps
+programs = [["e2"], ["e6"]]
+schedule = "alternate"
+[arms.RS]                     # feed-forward sham: ancillas measured, both branches e0
+programs = [["ff00", "e0", "e0"], ["ff01", "e0", "e0"], ["ff10", "e0", "e0"], ["ff11", "e0", "e0"]]
+schedule = "random"
+[arms.R2]                     # random Rz(0) / Rz(pi) per shot and step (bit b1)
+programs = [["ff00", "e0", "e0"], ["ff01", "e0", "e0"], ["ff10", "e4", "e0"], ["ff11", "e4", "e0"]]
+schedule = "random"
+[arms.R4]                     # random Rz(0, pi/2, pi, 3pi/2) per shot and step (b1, b2)
+programs = [["ff00", "e0", "e0"], ["ff01", "e0", "e2"], ["ff10", "e4", "e0"], ["ff11", "e4", "e2"]]
+schedule = "random"
+[arms.A2]
+programs = [["meas"]]
+
+[design]
+phi_grid = 64                 # the fixed prediction curves over [0, 2 pi)
+# feed-forward timing per step (s), to be replaced by the live values at Stage 4: one
+# measurement of the (parallel) ancillas plus the controller's conditional latency.
+ff_measure_s = 2.2e-6
+ff_latency_s = 1.0e-6
+x_s = 3.2e-8
+# the step's q59 reset window that the slot runs inside (Phase 7: A2's 2.28 us measurement
+# added 2.28 us to the whole circuit, so the slot is concurrent with q59's reset)
+slot_window_s = 2.2e-6
+ancilla_bias = 0.02           # |P(b = 1) - 1/2| for the alternatives (|+> preparation, readout)
+held_out_arms = ["INV2", "COMP22", "COMP40", "ALT2"]
+
+[knee]
+size = 4                      # outputs y_0..y_3 after the preparation in step 0's slot
+interventions = { e4 = ["e4"], e2 = ["e2"], A2 = ["meas"] }
+sham = ["e0"]
+
+[benchmark]
+states = ["0", "1", "+", "+i"]
+reps = [0, 1, 2, 4, 8]
+interventions = ["e0", "e2", "e4", "RS", "R2", "R4", "A2", "A1"]
+spacing_s = 4.9e-6            # one PMD step (321 us / 64 steps, minus the slot)
+
+[alternatives]
+# Predictions for every arm under #21's and #22's alternatives, within qmem.coherence's
+# 16-dimensional model: #21's fitted q59 reset asymmetry and its q75 detuning; #22's static
+# ZZ / Stark phases; the echo's pulse amplitude error; the ancilla's bias and ZZ phase.
+reset_asym = [0.008906575148383047, 0.020857561314715674]   # #21 fit ad_reset_readout
+q75_detuning = 0.04170795970926516                         # #21 fit q75_detuning_readout (rad/step)
+stark_rad = 0.2                                            # 16 kHz x 2 us (#22's stark_16k), y = 1 only
+over = 0.01                                                # x amplitude error
+ff_phase = 0.1                                             # rad on q75 when an ancilla bit is 1
+
+[power]
+seed = 32
+# shots per arm simulated for training and for the held-out test (each a separate draw)
+n_train = 2000
+n_test = 2000
+dims = [4, 6]
+max_iters = 1500
+random_starts = 1
+generators = ["fixed", "fitted"]
+z_alpha = 1.6448536269514722  # one-sided alpha = 0.05 per d (Holm over d = 4, 6 below)
+z_beta = 0.8416212335729143   # 80% power
+planned_shots_per_arm = [1000, 2000, 5000, 10000, 20000]
+
+[budget]                      # qmem.followup's cost model (Phase 6/7)
+rep_delay_s = 250e-6
+sub_job_overhead_s = 2.0
+margin = 0.25
+billing_round_s = 1.0
+baseline_circuit_s = 3.21016e-4   # FakeKingston duration of the baseline (Phase 7 durations.csv)
+allowance_s = 600                 # Open plan per 28 days; read live at Stage 4
