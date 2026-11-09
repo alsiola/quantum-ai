@@ -933,7 +933,8 @@ def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
     t_start = time.time()
     sd = sdir(cfg)
     out = new_run_dir(cfg["experiment"]["name"])
-    save_json(out / "config.json", {"meta": run_metadata(jsonable(cfg), cfg["power"]["seed"])})
+    meta = run_metadata(jsonable(cfg), cfg["power"]["seed"])  # before any output is written
+    save_json(out / "config.json", {"meta": meta})
     workers = args.workers or cfg["experiment"]["workers"]
     dev = load_device(cfg)
     pieces = load_pieces(cfg)
@@ -1237,7 +1238,7 @@ def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
         "w0_calibrated_live": ref_live["baseline"]["w0"],
     }
     summary = {
-        "meta": run_metadata(jsonable(cfg), cfg["power"]["seed"]),
+        "meta": meta,
         "run_dir": str(out.relative_to(REPO_ROOT)),
         "snapshot": {
             "backend": dev.backend,
