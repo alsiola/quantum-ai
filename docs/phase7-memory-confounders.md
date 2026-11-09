@@ -1,13 +1,14 @@
 # Phase 7: is the Phase 6 witness memory in q75? Synthesis and claim ladder (#17)
 
-Coordinator synthesis of Phase 7 (#17, children #18–#26). It asks whether the nonzero Hankel
+Coordinator synthesis of Phase 7 (#17, children #18–#27). It asks whether the nonzero Hankel
 witness from the `ibm_kingston` PMD N = 3 run (#16, [phase6-hardware-run.md](phase6-hardware-run.md))
 comes from memory carried by the intended persistent qubit, q75, or from another physical or
 statistical memory path. This note adds no new analysis. Each statement links to the child
 note that establishes it, and those notes have the data, code and provenance.
 
-Phase 7 used 6 s of QPU time (#25 and #26, 3 s each). Everything else was analysis of the
-committed Phase 6 shots and local simulation.
+Phase 7 used 53 s of QPU time (#25 and #26, 3 s each; #27, 47 s), 67.22 s counted against
+the owner's 120 s cap. Everything else was analysis of the committed Phase 6 shots and local
+simulation.
 
 ## The claim ladder
 
@@ -15,15 +16,17 @@ committed Phase 6 shots and local simulation.
 |---|---|---|
 | 1. Nonzero higher-rank *output* statistics | **supported** | #18 |
 | 2. A stationary 2-state HMM is excluded | **supported**, robust to drift and mixed 2-state regimes | #18, #19 |
-| 3. Drift, nonstationary mixtures and control artefacts are excluded | **supported in models, not measured on hardware** | #19, #21–#23 |
-| 4. Preserving q75 is causally necessary | **unresolved**: the hardware ablation stopped twice at its pilot gate | #20, #24–#26 |
+| 3. Drift, nonstationary mixtures and control artefacts are excluded | **supported in models**; on hardware, only D1 and the A2s_spec sham were measured, and both agree | #19, #21–#23, #27 |
+| 4. Preserving q75 is causally necessary | **supported**: A2 *vanishes*, sham equal (narrow margin; post hoc gate) | #20, #24–#27 |
 | 5. A one-qubit physical memory-dimension claim | **not supported**, and out of reach of this design | #18, #19 |
 
 **Verdict.** The device's output process on q59 has classical dimension above 2. That is
-robust to every statistical and classical-artefact explanation tested. Phase 7 has **not**
-shown that this memory sits in q75, that it is quantum, or that the device uses one qubit of
-memory. A general 3-state classical HMM reproduces the output statistics. The causal test of
-q75 was designed, pre-registered and approved, but never reached its main jobs.
+robust to every statistical and classical-artefact explanation tested. The pre-registered
+ablation (#27) shows that the witness needs q75 to stay coherent: measuring, resetting or
+randomising q75 every step removes it to below 10% of the baseline, and a sham on spectator
+q74 leaves it unchanged. Phase 7 has **not** shown that the memory is quantum in any
+stronger sense, or that the device uses one qubit of memory. A general 3-state classical HMM
+reproduces the output statistics.
 
 ## Rung 1: higher-rank output statistics (supported)
 
@@ -34,9 +37,12 @@ q75 was designed, pre-registered and approved, but never reached its main jobs.
   distributed, but shots 5,300–8,000 (in returned order) come from a different process. With
   SEs from contiguous blocks of shots, z(0) = −39 rather than −54. w(0) is the predeclared
   primary witness. The other offsets are reported separately: z(1..3) = −8.5, −4.7, −1.3.
-- **Limitation.** This is one run of 20,000 shots on one qubit pair on one day. Two later
-  500-shot baseline pilots (#25, #26) had P(1) of 0.552 and 0.565, against Phase 6's 0.579–0.581,
-  and they were not sized to re-measure w(0).
+- **Replicated (#27).** The concurrent baseline of the ablation, 15,000 shots on the same
+  qubit pair on 2026-11-09, gives w(0) = −5.15e-3 at z = −40.5, which
+  passes the pre-registered replication gate. It is 75% of the H_q75 prediction, with P(1)
+  0.566 against 0.582 (a dip to 0.541 in one job).
+- **Limitation.** One qubit pair on one device. Three later baseline measurements (#25, #26,
+  #27) sit 0.013–0.029 below Phase 6's P(1).
 
 ## Rung 2: a stationary 2-state HMM is excluded (supported)
 
@@ -75,11 +81,14 @@ q75 was designed, pre-registered and approved, but never reached its main jobs.
   of about 0.04 rad per step plus readout asymmetry (#19, #21), or as an effective sticky
   record with ε = 0.027 (#23). Neither needs a hidden memory. Readout persistence and Heron
   residual ZZ have no published values.
-- **Limitation.** Each of these is a model with assumed or literature parameters. None was
-  measured on the device. The controls that would measure them (D1's lag-1 excess, A2s_spec,
-  B2, C3) were designed and pre-registered but never run.
+- **Measured on hardware (#27).** D1's lag-1 excess is −0.0036 (z = −2.46, not rejected
+  under Holm). The sticky record and q59 leakage both predict a *positive* excess
+  (+0.009 to +0.050), so neither is indicated. The A2s_spec sham, which delays q75 and
+  measures spectator q74, matches the baseline (ratio 1.04 ± 0.03).
+- **Limitation.** The other mechanisms remain models with assumed or literature parameters.
+  B2, D3 and C3 (tier 3) were never run.
 
-## Rung 4: is preserving q75 causally necessary? (unresolved)
+## Rung 4: is preserving q75 causally necessary? (supported)
 
 **The design** ([phase7-ablation.md](phase7-ablation.md), #20; pre-registered in
 [phase7-preregistration.md](phase7-preregistration.md), #24). The main arms are:
@@ -109,31 +118,56 @@ In #24's validation, no alternative hypothesis gave a wrong decisive call.
     0.4191 ± 0.021. It matched the *original* calibrated model (0.4925) under an identical
     reported calibration, about 5.5 h after #25. 3 s charged.
   - As pre-registered, both stages stopped with no retry, re-mapping or main job.
+- **Stage 4c (#27), owner-approved, same cap.** A second dated, post hoc amendment
+  (prereg §10) made (c) a recorded diagnostic that never stops the run. It took q75's model
+  for the analysis from the pilot's own refit, fixed before any main job, with the
+  calibrated model and #26's refit as sensitivity rows. The decision rule, arms, shots,
+  schedule, mapping and secondary family were unchanged. Its validation (4,800 replicates)
+  gave no wrong decisive call. The pilot passed (a), (b) and (d). Its q75 record matched the
+  calibrated model (P(m = 1) 0.489, fitted decay a ≈ 0), so #25's decay did not return. The
+  four main jobs ran with no calibration violation or usage stop. 47 s charged.
+
+**The outcome (#27): A2 *vanishes*, sham equal.**
+
+| quantity | value |
+|---|---|
+| replication gate (baseline w(0), 15,000 shots) | −5.15e-3 ± 1.27e-4, z = −40.5: **passes** |
+| A2 w(0) (10,000 shots) | −2.04e-4 ± 1.41e-4, **4.0%** of baseline (95% CI [0, 9.3%]) |
+| vanish bound \|w\| + 1.96 SE against 0.10 \|w_base\| | 4.80e-4 < 5.15e-4: ***vanishes*** (bound at 93% of threshold) |
+| A2s_spec − baseline | −2.3e-4, ratio 1.04 ± 0.03, z = −1.32: not rejected |
+| A1 (reset) w(0) | −1.29e-4, z = −0.70: not rejected; vanishes descriptively |
+| A3 (random Paulis) against its H_q75 value | z = +0.52: not rejected; vanishes descriptively |
+| D1 lag-1 excess against prediction | −0.0036, z = −2.46, p = 0.014: not rejected (Holm, α = 0.01) |
+
+The decision is the same under all three q75 models. They differ only in how much of q75's
+coherence A2's measurement can leave (observed ratio 0.040):
+
+| q75 model | decay a | surviving coherence c consistent with the CI |
+|---|---|---|
+| pilot fit (the analysis's model) | 7.8e-9 | 0 to 0.55 |
+| calibrated (sensitivity) | 0 | 0 to 0.55 |
+| #26's refit (sensitivity) | 0.1225 | 0 to 0.60 |
+
+So 80% surviving coherence is ruled out, but 50% can't be told apart from full dephasing.
 
 **What this does and doesn't imply.**
-- No ablation contrast was measured, so the stops bear on rung 4 in neither direction.
-- q75's behaviour under repeated mid-circuit measurement changed by hours, invisibly to
-  IBM's calibration data: about 12% extra decay per measurement on #25's run and none on
-  #26's. Any physical reading of the original witness has to allow for a memory qubit whose
-  noise isn't stationary between jobs.
-- The decision rule doesn't use the q75 record. Under every q75 model, A2's predicted witness
-  is exactly 0, because A2's q75 is a classical bit each step. A future run could gate on
-  decoding, timing and the baseline alone. That is a new decision for the owner, and it would
-  need its own dated amendment before submission.
-
-**Flags from #26 for any future run.**
-- **The refit is incomplete even on #25's data.** The record's step-to-step transitions
-  P(m_{t+1} | m_t, y_t) are more persistent than either model, by |z| ≈ 3 for the refit and
-  6–12 for the calibrated model. A third parameter wasn't added.
-- **The partial-coherence reading depends on the q75 model.** Under the refit, "A2 keeps 80%
-  of q75's coherence" predicts 24.8% of the baseline witness, at the *persists* threshold. Its
-  prediction moves from *persists* to *ambiguous*. "Keeps 50%" moves to *vanishes*. So a
-  *vanishes* or *persists* call is model-independent, but how much coherence it allows is not.
-- **(b) is non-stopping within ±0.08 under the amendment,** a post hoc judgement resting on
-  #19's bound on level shifts. The stricter alternative, a hard tolerance of about ±0.04
-  derived from drift, would risk stopping on job-scale drift like #25's.
-- **Ambiguous rates rise under the refit.** Under q59 leakage at its fit they go from 22.5%
-  to 33%. Under the sticky record they go from 10.5% to 16.5%. D1's lag-1 test detects both.
+- **Supported:** the rank > 2 output statistics need q75's coherence, or its interplay with
+  the classical loop. A Z measurement, a reset or a random Pauli on q75 each step removes the
+  witness; delaying q75 and measuring a spectator does not.
+- **Not shown:** that no other memory path exists below the vanish bound (about 5e-4 in
+  w(0)); "quantum memory" in a stronger sense; a memory dimension (rung 5).
+- **Caveats.**
+  - **Narrow margin.** The vanish bound is 93% of the threshold.
+  - **Post hoc gate.** Gate (c) as a diagnostic and the pilot-fitted q75 model come from the
+    dated amendments §9 and §10, written after the earlier pilots. The decision rule is the
+    original pre-registered one and doesn't use the q75 record, and A2's predicted witness is
+    exactly 0 under every q75 model.
+  - **Non-stationary q75.** q75's behaviour under repeated mid-circuit measurement changed
+    by hours, invisibly to IBM's calibration data: about 12% extra decay per measurement on
+    #25's run and none on #26's or #27's.
+  - **Baseline below prediction.** The baseline replicates at 75% of the H_q75 witness, and
+    its P(1) dipped to 0.541 in one main job, though its w(0) held and no segment test flagged
+    a job.
 
 ## Rung 5: a one-qubit physical memory dimension (not supported)
 
@@ -143,18 +177,18 @@ In #24's validation, no alternative hypothesis gave a wrong decisive call.
   calibrated 1-qubit model, by 0.0004–0.0005 nats/symbol (|z| = 9–15). The Phase 6 claim of
   the opposite was a train/test-split artefact (#18). Only the advantage over 2-state HMMs
   survives.
-- Even a *vanishes* outcome for A2 would show only that q75 must stay coherent. It would not
+- #27's *vanishes* outcome shows only that q75 must stay coherent. It does not
   bound the memory's dimension, because leaky resets, spectators and the readout chain can
   all add states.
 
 ## What would move the ladder
 
-- **Rung 4:** the pre-registered ablation (#24's tier 1 and tier 2, about 55 s upper bound),
-  run under a gate that doesn't depend on q75's absolute record level, with q75's record
-  reported as a diagnostic. Its validation and decision rule are already on `main`.
-- **Rung 3, measured:** D1 (lag-1 excess to ±0.001) and A2s_spec in the same jobs. B2, D3 and
-  C3 are tier 3 and would need separate approval.
-- **Rung 1 replication:** a second full run, or the baseline arm of the run above, which the
-  replication gate requires to give w(0) < 0 at |z| ≥ 5.
+- **Rung 4, firmer:** A2 at more shots (a new run) to widen the margin below the
+  vanish bound, and a q75 coherence scan (partial dephasing) to bound c more tightly than
+  0–0.55. Both need a new approval on #17; 52.78 s remain under the 120 s cap.
+- **Rung 3, measured:** B2, D3 and C3 (tier 3) would measure q59's reset, the readout chain
+  and crosstalk directly. They need separate approval.
+- **Rung 1 replication:** a run on another qubit pair or device. The same pair has now
+  replicated (#27).
 - **Rung 5:** out of reach of output statistics from one qubit pair. It needs process
   tomography of the instrument, or a dimension witness that bounds every physical path.

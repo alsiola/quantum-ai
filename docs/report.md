@@ -384,12 +384,19 @@ Phase 7 tried to destroy the Phase 6 result. Its claim ladder:
 - **Higher-rank output statistics: supported.** The audit reproduces the witness at |z| = 39.
 - **A stationary 2-state HMM is excluded: supported.** This holds within segments and
   against adversarial drift and mixture nulls.
-- **Drift and control artefacts are excluded: supported in models, not measured.**
-  Classical readout artefacts, q59 residue and spectators each give < 10% of the witness at
-  plausible parameters.
-- **q75 is causally necessary: unresolved.** The pre-registered q75 ablation stopped at its
-  pilot gate twice (#25, #26), for 6 s of QPU time. q75's record under repeated mid-circuit
-  measurement changed between the two jobs while the reported calibration didn't.
+- **Drift and control artefacts are excluded: supported in models.** Classical readout
+  artefacts, q59 residue and spectators each give < 10% of the witness at plausible
+  parameters. On hardware, D1's lag-1 excess has the opposite sign to the sticky-record and
+  leakage predictions, and the A2s_spec sham matches the baseline (#27).
+- **q75 is causally necessary: supported.** The pre-registered q75 ablation stopped at its
+  pilot gate twice (#25, #26): q75's record under repeated mid-circuit measurement changed
+  between jobs while the reported calibration didn't. After a second dated, post hoc
+  amendment made that check a diagnostic, it ran in full (#27). The baseline replicated
+  (w(0) = −5.15e-3, z = −40.5, 75% of the predicted witness). Measuring q75 every step (A2)
+  left 4.0% of it (95% CI [0, 9.3%]): *vanishes*, with the bound at 93% of the threshold.
+  Resetting or randomising q75 also removed it, and a sham on spectator q74 did not. At most
+  about 55% of q75's coherence can survive A2's measurement. 53 s of QPU time in all
+  (67 s counted against a 120 s cap).
 - **One-qubit memory dimension: not supported.** A 3-state classical HMM reproduces the
   statistics.
 
