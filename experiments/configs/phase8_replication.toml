@@ -1,0 +1,157 @@
+# Phase 8 Stage 1 (issue #31): pair selection and the independent-pair replication design.
+# Design, simulation and an UNSUBMITTED plan only. No QPU and no IBM service of any kind: the
+# device is FakeKingston's committed snapshot (phase7_spectator/device.json), the reference
+# pair's live calibration is #27's committed snapshot. There is no submit path in this issue.
+#
+# 1. (once, `hardware` group; FakeKingston only, no network) step pieces of every screened
+#    pair, the selection, and the ISA circuits, QASM and hashes of the named and chosen pairs:
+#    uv run --group hardware python experiments/phase8_replication.py --config experiments/configs/phase8_replication.toml --export
+# 2. the local dry run (numpy; the circuit and hash checks also run when the hardware group is
+#    present): selection, predictions, power, options and budget, schedule, the full-pipeline
+#    validation, #27's data under this rule (about 30-40 min with 2 workers):
+#    uv run python experiments/phase8_replication.py --config experiments/configs/phase8_replication.toml --dry-run-local
+# 3. the unsubmitted execution plan of the recommended option (prints only):
+#    uv run python experiments/phase8_replication.py --config experiments/configs/phase8_replication.toml --plan
+
+[experiment]
+name = "phase8_replication"
+summary_dir = "results/summaries/phase8_replication"
+workers = 2
+phase6_dir = "results/summaries/phase6"                 # step.qasm, circuit.qasm, summary.json
+ablation_config = "experiments/configs/phase7_ablation.toml"
+ablation_dir = "results/summaries/phase7_ablation"      # #20's circuits.json (reference hashes)
+spectator_dir = "results/summaries/phase7_spectator"    # device.json: FakeKingston's snapshot
+hw4c_dir = "results/summaries/phase7_hw_4c"             # #27: shots, live snapshot, pieces_live.npz
+classical_dir = "results/summaries/phase8_classical"    # #30: the fitted classical models
+main_jobs = ["job0", "job1", "job2", "job3"]            # #27's main jobs (for the rule check)
+
+[reference]                    # Phase 6/7's pair on ibm_kingston; never re-used as a "new" pair
+memory = 75
+output = 59
+spectator = 74
+
+# -- 1. pair selection (frozen before any live data; prereg section 2) ----------------------------
+# Inputs: calibration and topology only, plus the expected power from the pair's own calibrated
+# model. Device.from_snapshot keeps an allow-list of calibration fields: no output-witness
+# number can enter. Every directed edge of the device is a candidate.
+[selection]
+min_distance_reference = 3     # hops from q59, q75, q74 to the pair and its spectator (#22)
+min_distance_pairs = 3         # hops between chosen footprints (pair + spectator)
+n_pairs = 2
+mem_t1_min = 150e-6            # the memory idles 91% of each step (#22): T2 matters most
+mem_t2_min = 100e-6            # q75: 139 us live (#27's snapshot)
+out_t1_min = 100e-6
+out_t2_min = 50e-6
+out_readout_max = 0.02         # #22's C2 bound
+mem_readout_max = 0.03         # A2 reads the memory; its error does not enter y, but a large one is a bad qubit
+spec_readout_max = 0.05        # Phase 7's absolute readout bound for every measured qubit
+cz_max = 0.005                 # 59/75: 0.0011-0.0014
+sx_max = 1e-3
+power_min = 0.80               # P(H1 and H2) at the selection design below
+named = [[67, 68], [149, 148], [104, 105]]   # #22's C2 candidates: listed, not presumed winners
+
+[selection_design]             # the design at which power ranks the pairs (not the final shots)
+baseline = 35000
+A2 = 20000
+A2s_spec = 35000
+A2s = 35000
+n_jobs = 6
+n_mc = 4000
+seed = 3101                    # common random numbers: every pair sees the same draws
+
+# -- 2. models -----------------------------------------------------------------------------------
+[model]
+shortfall = 0.75               # truth: baseline w(0) = 0.75 x the pair's calibrated prediction (#27: 0.747; Phase 6: 0.72)
+shortfall_sensitivity = [0.6, 1.0]
+moment_shots = 40000           # simulated shots per arm for the per-shot covariance of STATS
+moment_shots_chosen = 200000
+moment_seed = 311
+feedforward_time = 1e-6        # as Phase 6's noise model
+classical_class = "general_d6" # #30's best classical intervention model (Theorem 3: invasive A2)
+
+# The drift-conditional SE of each arm and statistic, relative to the model's per-shot SD:
+# calibrated on #27's arms (RE over pub chunks vs the 59/75 truth model), floored at 1.
+# The delay-only sham (no data yet) takes the larger of the baseline's and A2s_spec's.
+[inflation]
+floor = 1.0
+delay_sham_from = ["baseline", "A2s_spec"]
+
+# -- 3. the decision rule (prereg section 4) --------------------------------------------------------
+[rule]
+gate_z = 5.0                   # H1: w(0) < 0 and |w(0)| >= 5 drift-conditional SE
+vanish_fraction = 0.10         # A2: |w_A2| + 1.96 SE < 0.10 |w_base| ...
+vanish_z = 1.959963984540054
+lojo = true                    # ... on all jobs AND leaving out any one job (#29 finding 1)
+persist_z = 5.0
+persist_fraction = 0.25
+margin = 0.10                  # TOST on sham / baseline ratios, +-10% (#29's recommendation)
+tost_alpha = 0.05              # per bound: a 90% CI inside the margin
+full_sham = "A2s"              # the delay-only sham must be equivalent on sham_stats
+w0_sham = "A2s_spec"           # the spectator sham must be equivalent on w0 (everything else reported)
+sham_stats = ["w0", "lag1"]    # TOST +-10% on each ratio (intersection-union: both must pass)
+g_alpha = 0.01                 # g(0..7) of each sham vs the baseline: two-sided, Holm over k (reported, not in H2;
+                               # relative margins on g(2), g(5), g(7) ~ 0.005-0.04 have no power under #27's drift)
+armjob_alpha = 0.01            # arm x job interaction (#29 finding 5): flag, re-analyse without
+
+[analysis]                     # as Phase 7 (#24), with #29's drift-conditional SE
+k_max = 7
+burn = 16
+block = 500
+n_boot = 1000
+seed = 31
+
+# -- 4. power, options and budget --------------------------------------------------------------------
+[power]
+n_mc = 20000
+seed = 3102
+true_ratio_sensitivity = [0.05]
+sham_ratio_sensitivity = [0.97, 1.03]
+
+[options]
+base_sham_shots = [20000, 28000, 35000, 45000]
+a2_shots = [16000, 20000, 30000]
+modes = ["one", "two_sequential", "two_parallel"]
+arm_sets = ["full", "no_spectator_sham", "no_delay_sham"]
+
+[budget]                       # Phase 7's cost model (qmem.followup.CostModel)
+sub_job_overhead_s = 2.0
+rep_delay_s = 250e-6
+phase6_circuit_s = 3.08316e-4  # live ibm_kingston estimate of the baseline (#16); arms add FakeKingston's difference
+margin = 0.25                  # upper bound: (1 + margin) x estimate + 1 s per job
+billing_round_s = 1.0
+max_job_estimate_s = 12.0      # short interleaved jobs (Phase 7: 20 s); each job holds every arm
+min_jobs = 4
+cap_s = 120                    # this plan's stated cap for the replication tier, pilot included. NOT an authorisation.
+open_plan_s = 600              # free Open plan: 600 s per 28 days, shared with Stages 2-3; Stage 4 reads it live
+
+[schedule]
+seed = 3131                    # pub order in job j: default_rng([seed, j]) (qmem.followup.make_schedule)
+max_chunk = 1000               # shots per pub
+
+[pilot]                        # one job, every chosen pair, before any main job (prereg section 6)
+shots = { baseline = 500, A2 = 500, A2s_spec = 500, A2s = 500 }
+seed = 3132
+p1_stop = 0.08                 # (b) stop the pair if |P(1) - live prediction| > 0.08 (Phase 7 section 9's value)
+time_tolerance = 0.25          # (d) per-shot execution time within 25% of the cost model
+# (a) integrity: 0/1, shapes, every pub returned; (c) A2's memory-record P(m = 1) against the
+#     live prediction: recorded, never stops (Phase 7 section 10's treatment, inherited post hoc);
+# (e) calibration: T1, T2 within x2 of the selection snapshot, readout <= 0.05 on every measured qubit
+
+# -- 5. full-pipeline validation (simulated shots through the real analysis) ---------------------------
+[validation]
+reps = 40                      # per chosen pair and scenario
+n_boot = 200                   # bootstrap resamples per replicate (1000 in the real analysis)
+seed = 3141
+# per-chunk SD of each arm's w(0), as a fraction of it, drawn per (arm, job, chunk): #29's random effects
+# over chunks (baseline tau 3.0e-4 of 5.15e-3; A2s_spec 5.7e-4 of 5.38e-3); the delay-only sham as A2s_spec
+chunk_drift_sd = { baseline = 0.058, A2 = 0.058, A2s_spec = 0.107, A2s = 0.107 }
+drift_levels = 7               # dephasing levels the chunks draw from (quantised normal)
+armjob_flip = 0.058            # scenario "armjob": one job's baseline records lose 5.8% of their 1s (#27's -0.033 in P(1))
+armjob_job = 1
+
+[circuits]                     # as #20: level 0, trivial layout, snapshot delays
+arms = ["baseline", "A2", "A2s_spec", "A2s"]
+length = 64
+delays = "snapshot"
+optimization_level = 0
+seed_transpiler = 0
