@@ -555,13 +555,13 @@ def main() -> None:
         import phase8_coherence_design as DS
 
         review = Path(args.review_run) if args.review_run else None
-        summary = DS.part_design(cfg, out, review)
+        summary = DS.part_design(cfg, out, review, meta)
         summary["meta"] = meta
         save_json(out / "design_summary.json", summary)
     elif args.part == "power":
         import phase8_coherence_design as DS
 
-        summary = DS.part_power(cfg, cfg_path, out, workers, args.review_run)
+        summary = DS.part_power(cfg, cfg_path, out, workers, args.review_run, meta)
         summary["meta"] = meta
         save_json(out / "power_summary.json", summary)
     log(out, "done")

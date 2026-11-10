@@ -50,10 +50,10 @@ one fixed stochastic map on at most 6 hidden states. It does not exclude a model
 states. Nor does it exclude one in which a pulse's action depends on its context (§5).
 
 **Review points first** (§1). The fitted quantum model (9 parameters) beats #30's
-353-parameter d = 6 classical class on BIC by about 2,270. #30's A3 edge for the quantum
+353-parameter d = 6 classical class on BIC by 2,325 (2,202 after #30's fit is run on to 4,800 steps). #30's A3 edge for the quantum
 model shrinks with d but survives at d = 6 held out: 0.0037–0.0041 nats per symbol, against
 0.0105 at d = 4. #30's fits, continued past their 800-step cap, gain
-**{{CONV_GAIN}}**.
+**347, 233 and 291 nats at d = 4, 5 and 6 (under 1e−4 nats per symbol). Only d = 5 converges; none of it changes an ordering or a conclusion**.
 
 ## 1. #30's review points
 
@@ -83,16 +83,20 @@ model, as in #30.
 | model | parameters | total NLL | ΔNLL vs fitted quantum | ΔBIC vs fitted quantum |
 | --- | --- | --- | --- | --- |
 | quantum, fitted | 9 | 2,839,420.9 | 0 | 0 |
-| quantum, calibrated (#27) | 0 | 2,841,464 | +2,043 | {{BIC_CAL}} |
-| classical d = 6 (#30, 800 steps) | 353 | 2,837,953.9 | −1,467 | ≈ +2,270 |
-| {{CONV_ROWS}} | | | | |
+| quantum, calibrated (#27) | 0 | 2,841,844.5 | +2,424 | +4,710 |
+| classical d = 4 (#30, 800 steps) | 147 | 2,840,152.0 | +731 | +3,572 |
+| classical d = 5 (#30, 800 steps) | 239 | 2,838,744.1 | −677 | +2,163 |
+| classical d = 6 (#30, 800 steps) | 353 | 2,837,953.9 | −1,467 | +2,325 |
+| classical d = 4 (continued, 4,002 more steps) | 159 | 2,839,804.7 | +384 | +3,061 |
+| classical d = 5 (continued, converged after 3,063) | 259 | 2,838,510.8 | −910 | +2,002 |
+| classical d = 6 (continued, 4,002 more steps) | 383 | 2,837,663.2 | −1,758 | +2,202 |
 
-(Full table: `review_classes.csv`. BIC uses the total symbol count, {{NSYM}}.)
+(Full table: `review_classes.csv`. BIC uses the total symbol count, 4,358,144; the parameter counts are those `review_classes.csv` records for each run.)
 
-The fitted model gains 2,043 nats on the calibrated one. Most of the gain is on A2s_spec and
+The fitted model gains 2,424 nats on the calibrated one. Most of the gain is on A2s_spec and
 the baseline (the q74 sham's dephasing and q75's detuning). **The free d = 6 classical class is
-still 1,467 nats better in likelihood. With 344 more parameters, it loses on BIC.** On A3 the
-fitted quantum model beats d = 6 by 1,035 nats.
+still 1,467 nats better in likelihood (1,758 once continued). With 344 more parameters (374 continued), it loses on BIC by 2,325 (2,202).** On A3 the
+fitted quantum model beats d = 6 by 1,035 nats (901 continued).
 
 **The fold-wise parameters are not stable.** Fit on one pub-parity fold, `detune` is 0.066
 against 0.007, and `dephase` is 0.038 against 0.008. The two folds are uneven per arm (#29's
@@ -137,7 +141,24 @@ Held-out NLL per symbol, classical minus quantum:
 Every #30 fit stopped at the 800-step cap. The fits continued here are #30's best at d = 4, 5
 and 6, with up to 4,000 more SQUAREM steps:
 
-{{CONV_TABLE}}
+| d | steps after 800 | converged | NLL gain | per symbol | last step, per symbol | ΔNLL vs fitted quantum | ΔBIC | A3: classical − fitted quantum | primary stats \|z\| > 1.96 (of 16; 0.8 expected) | all stats over Bonferroni (of 94) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 4 | 4,002 (cap) | no | 347 | 8.0e−5 | 3e−9 | +384 | +3,061 | +2,736 | 7 | 15 |
+| 5 | 3,063 | yes | 233 | 5.4e−5 | 0 | −910 | +2,002 | +1,657 | 4 | 9 |
+| 6 | 4,002 (cap) | no | 291 | 6.7e−5 | 1e−9 | −1,758 | +2,202 | +901 | 2 | 1 |
+
+(`review.json` → `convergence`; the statistics are #30's 94 per-arm w, g, P(1) and lag 1 checks.)
+
+- **The gap left by the 800-step cap is small:** at most 347 nats, under 1e−4 nats per symbol.
+  At d = 4 and 6 the last steps gain 1e−9 to 3e−9 nats per symbol, so what remains is far below
+  the BIC margins.
+- **Nothing changes order.** The fitted quantum model still wins on BIC against every d (by at
+  least 2,002) and on A3 against every d (by at least 901 nats). d = 6 still wins in raw
+  likelihood.
+- Continued to convergence, d = 6 now fits all 16 primary statistics within Bonferroni (two
+  beyond 1.96, against 0.8 expected) and all but one of the 94 (A2s_spec g(4), z = +4.1). On
+  Stage 4c's arms a 6-state classical model is an adequate description; the new arms are what
+  separate it from the quantum one (§3).
 
 ## 2. The design
 
@@ -332,19 +353,39 @@ The deficit is reported against three quantum predictions:
 
 Results (`power.json`, `power_fits.csv`):
 
-{{POWER_TABLE}}
+Best start per cell (d = 6: the octahedron start; with arms held out, the split start). Deficit
+in nats per shot, classical minus quantum, on all 18 arms:
+
+| generator | d | in-sample (truth) | held out: truth | refit | other | SD per shot | held-out z (refit) | shots for 80% (total; worst evaluator) | stats over Bonferroni (of 252) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| fixed | 4 | 0.227 | 0.235 | 0.235 | 0.214 | 0.66 | 67.7 | 53 | 86 |
+| fixed | 6 | 0.045 | 0.050 | 0.050 | 0.030 | 0.30 | 31.5 | 710 | 25 |
+| fitted | 4 | 0.198 | 0.198 | 0.197 | 0.176 | 0.63 | 59.2 | 93 | 77 |
+| fitted | 6 | 0.032 | 0.035 | 0.033 | 0.013 | 0.29 | 22.0 | 4,828 | 15 |
+
+With INV2, COMP22, COMP40 and ALT2 held out of training (deficit on all arms' test shots):
+
+| generator | d | in-sample (truth) | held out: truth | refit | other | shots for 80% |
+| --- | --- | --- | --- | --- | --- | --- |
+| fixed | 4 | 0.158 | 4.97 | 4.97 | 4.95 | 2 |
+| fixed | 6 | 0.103 | 2.96 | 2.96 | 2.95 | 4 |
+| fitted | 4 | 0.142 | 5.08 | 5.07 | 5.06 | 2 |
+| fitted | 6 | 0.103 | 3.59 | 3.59 | 3.57 | 3 |
+
+Power at every planned shot count (1,000 to 20,000 per arm) is ≥ 0.999 in every cell. No fit
+converged at 1,500 steps; the last gains are ≤ 2e−6 nats per symbol.
 
 - **(a) The minimal classical d that fits within CIs is above 6** at these shot counts. At
-  d = 6, {{D6_STATS}} of the 252 statistics (w, g, P(1) and lag 1 per arm) lie outside the
+  d = 6, 25 (fixed generator) and 15 (fitted) of the 252 statistics (w, g, P(1) and lag 1 per arm) lie outside the
   Bonferroni level. The worst is COMP22's g(4): the composition arm is where the classical
   maps fail. This design does not locate the minimal d above 6.
-- **(b) d ≤ 4 and d ≤ 6 are excluded** at 80% power with at most {{SHOTS_MAX}} shots in total
+- **(b) d ≤ 4 and d ≤ 6 are excluded** at 80% power with at most 4,828 shots in total
   (all arms together), against 144,000 planned. The margin is large enough that the exclusion
   survives a misspecified quantum prediction (*other*).
 - **With the four composite arms held out,** d = 4 misses them by about 5 nats per shot. This
   is the Lemma at work: a finite classical model cannot make Rz(π/2)Rz(−π/2) the identity with
   non-permutation maps (`test_divisible_phase_maps_in_a_finite_model_must_be_permutations_to_compose_exactly`).
-  {{HOLD_D6}}
+  At d = 6 the split fits miss them by 3.0 (fixed) and 3.6 (fitted) nats per shot: two more states do not let the maps compose.
 - **The D the claim inherits is 6.** The deficit falls steeply from d = 4 to 6 (0.23 to 0.05
   nats per shot in-sample). An exclusion at d = 6 says nothing about d = 8 or more. Excluding
   larger d would need more φ settings or more composition arms, not more shots.
@@ -423,7 +464,7 @@ Everything below is fixed before any data. Amendments are dated and hashed as in
    jobs and within segments.
 6. **Search completeness.** EM finds local optima. Four starts per d, with a monotone credit
    in d, is a heuristic, not a certificate. A better classical optimum at d = 6 would shrink
-   the deficit. The power margin (≥ 30× in shots) is what protects against this.
+   the deficit. The power margin (about 30× in shots: 144,000 planned against 4,828 needed) is what protects against this.
 7. **The bits are independent of the memory.** The ancillas are fresh, separate and measured
    before the echo. §2.3's crosstalk alternatives are the check.
 
@@ -444,7 +485,11 @@ uv run pytest tests/test_coherence.py
 - Seeds: `[review] seed = 32`, `[power] seed = 32` (each task's derived from it).
 - The run directories here were `results/phase8_coherence/20261109T210012Z` (review) and
   `…/20261109T213520Z` (power).
-- The curated files' metadata records the commit and config.
+- The curated files' metadata records the commit and config. All three runs started at
+  7d39420; the review and power runs with uncommitted work in progress (`git_dirty = true`).
+  30830cf changed only the `[plan]` config, `build_plan`, CLAUDE.md and this note, so the
+  summaries were not regenerated. `design.json` and `power.json` got their runs' metadata
+  afterwards (the script now writes it there itself).
 
 Tests in `tests/test_coherence.py`:
 - the echo is Rz(φ) and frame-neutral, and echoes compose as the phase group (with pulse

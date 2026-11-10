@@ -94,14 +94,19 @@ def arm_stats_row(model, arm: C.ArmSpec, s: Q.StatSettings) -> dict[str, Any]:
 # -- part: design ---------------------------------------------------------------------------------
 
 
-def part_design(cfg: dict[str, Any], out: Path, review: Path | None = None) -> dict[str, Any]:
+def part_design(
+    cfg: dict[str, Any],
+    out: Path,
+    review: Path | None = None,
+    meta: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     ctx = PC.Ctx(cfg)
     s = settings(cfg)
     arms = Q.parse_arms(cfg["arms"])
     gens = generators(ctx, cfg, review)
     sd = PC.sdir(cfg)
     sd.mkdir(parents=True, exist_ok=True)
-    summary: dict[str, Any] = {"ff_idle_s": ff_idle_s(cfg), "generators": {}}
+    summary: dict[str, Any] = {"ff_idle_s": ff_idle_s(cfg), "generators": {}, "meta": meta}
 
     # 1. fixed predictions of every arm, and the continuous phase curve
     rows, curve = [], []
@@ -520,7 +525,12 @@ def _power_task(task: dict[str, Any]) -> dict[str, Any]:
 
 
 def part_power(
-    cfg: dict[str, Any], cfg_path: str, out: Path, workers: int, review: str | None = None
+    cfg: dict[str, Any],
+    cfg_path: str,
+    out: Path,
+    workers: int,
+    review: str | None = None,
+    meta: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     pw = cfg["power"]
     tasks0, tasks1, tasks2 = [], [], []
@@ -570,6 +580,7 @@ def part_power(
                 res.append(r)
     summary = summarise_power(cfg, out, [r for r in res if "d" in r])
     summary["quantum"] = {r["generator"]: r for r in res if "d" not in r}
+    summary["meta"] = meta
     write_power(cfg, summary)
     return summary
 

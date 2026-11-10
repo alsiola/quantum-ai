@@ -1,0 +1,13 @@
+label,generator,d,start,hold_arms,iters,converged,n_params,last_gain_per_symbol,stats_n,stats_max_abs_z,stats_worst,stats_over_1.96,stats_bonferroni_z,stats_over_bonferroni,train_nll_per_shot
+fixed_d4_klein,fixed,4,klein,False,1500,False,215,0.0,252,30.0792476,P6 g4,132,3.7210289,86,38.9165381
+fixed_d4_random,fixed,4,random,False,1500,False,215,0.0,252,33.8796873,INV2 g2,160,3.7210289,135,39.1516964
+fixed_d6_octahedron,fixed,6,octahedron,False,1500,False,527,0.0,252,9.3653148,COMP22 g4,74,3.7210289,25,38.7341757
+fixed_d4_klein_holdarms,fixed,4,klein,True,1500,False,215,0.0,252,341.5390774,COMP22 g0,128,3.7210289,94,39.9281807
+fitted_d4_klein,fitted,4,klein,False,1500,False,215,0.0,252,25.3761126,P6 g4,122,3.7210289,77,39.0767479
+fitted_d4_random,fitted,4,random,False,1500,False,215,0.0,252,27.4260638,COMP22 lag1,156,3.7210289,111,39.1834771
+fitted_d6_octahedron,fitted,6,octahedron,False,1500,False,527,0.0,252,6.4479004,COMP22 g4,57,3.7210289,15,38.9115267
+fitted_d4_klein_holdarms,fitted,4,klein,True,1500,False,215,1.7e-06,252,353.4208218,COMP22 g0,121,3.7210289,81,40.1597164
+fixed_d6_split,fixed,6,split,False,1500,False,527,1.3e-06,252,12.6608184,COMP22 g3,101,3.7210289,40,38.8039127
+fixed_d6_split_holdarms,fixed,6,split,True,1500,False,527,1e-07,252,236.2715315,ALT2 w1,109,3.7210289,60,39.8728735
+fitted_d6_split,fitted,6,split,False,1500,False,527,1e-07,252,18.3915856,INV2 g3,97,3.7210289,38,38.993631
+fitted_d6_split_holdarms,fitted,6,split,True,1500,False,527,0.0,252,182.0084881,COMP22 g0,97,3.7210289,56,40.1208448
