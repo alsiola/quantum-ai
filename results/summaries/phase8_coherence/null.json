@@ -1,0 +1,901 @@
+{
+  "alpha": 0.05,
+  "by_source": {
+    "a": {
+      "fixed": {
+        "deficit6_max": -0.049347994,
+        "deficit6_mean": -0.049987265,
+        "false_rejections_d6_holm": 0,
+        "normal_rejection_prob_d6": 0.0,
+        "rate_d6": 0.0,
+        "rate_d6_cp95": [
+          0.0,
+          0.459258126
+        ],
+        "rejections_d4_holm": 6,
+        "sds_from_threshold": 63.187645119,
+        "z6_max": -37.546903555,
+        "z6_mean": -38.766104117,
+        "z6_sd": 0.639538911
+      },
+      "n": 6,
+      "refit": {
+        "deficit6_max": -0.045077322,
+        "deficit6_mean": -0.045984906,
+        "false_rejections_d6_holm": 0,
+        "normal_rejection_prob_d6": 0.0,
+        "rate_d6": 0.0,
+        "rate_d6_cp95": [
+          0.0,
+          0.459258126
+        ],
+        "rejections_d4_holm": 6,
+        "sds_from_threshold": 56.291687767,
+        "z6_max": -36.708398633,
+        "z6_mean": -37.539430943,
+        "z6_sd": 0.696093617
+      }
+    },
+    "all": {
+      "fixed": {
+        "deficit6_max": -0.049347994,
+        "deficit6_mean": -0.146864713,
+        "false_rejections_d6_holm": 0,
+        "normal_rejection_prob_d6": 0.005047044,
+        "rate_d6": 0.0,
+        "rate_d6_cp95": [
+          0.0,
+          0.264648469
+        ],
+        "rejections_d4_holm": 6,
+        "sds_from_threshold": 2.572589398,
+        "z6_max": -37.546903555,
+        "z6_mean": -62.615978121,
+        "z6_sd": 24.979047099
+      },
+      "n": 12,
+      "refit": {
+        "deficit6_max": -0.045077322,
+        "deficit6_mean": -0.115097755,
+        "false_rejections_d6_holm": 0,
+        "normal_rejection_prob_d6": 0.002075082,
+        "rate_d6": 0.0,
+        "rate_d6_cp95": [
+          0.0,
+          0.264648469
+        ],
+        "rejections_d4_holm": 6,
+        "sds_from_threshold": 2.866516619,
+        "z6_max": -36.708398633,
+        "z6_mean": -57.031908821,
+        "z6_sd": 20.469709495
+      }
+    },
+    "b": {
+      "fixed": {
+        "deficit6_max": -0.242103462,
+        "deficit6_mean": -0.243742161,
+        "false_rejections_d6_holm": 0,
+        "normal_rejection_prob_d6": 0.0,
+        "rate_d6": 0.0,
+        "rate_d6_cp95": [
+          0.0,
+          0.459258126
+        ],
+        "rejections_d4_holm": 0,
+        "sds_from_threshold": 33.00336472,
+        "z6_max": -81.745791588,
+        "z6_mean": -86.465852125,
+        "z6_sd": 2.669749176
+      },
+      "n": 6,
+      "refit": {
+        "deficit6_max": -0.181199268,
+        "deficit6_mean": -0.184210604,
+        "false_rejections_d6_holm": 0,
+        "normal_rejection_prob_d6": 0.0,
+        "rate_d6": 0.0,
+        "rate_d6_cp95": [
+          0.0,
+          0.459258126
+        ],
+        "rejections_d4_holm": 0,
+        "sds_from_threshold": 25.442994041,
+        "z6_max": -70.583125802,
+        "z6_mean": -76.524386698,
+        "z6_sd": 3.072328681
+      }
+    }
+  },
+  "generators": {
+    "gen_a": {
+      "iters": 1500,
+      "kind": "gen_a",
+      "label": "gen_a",
+      "seconds": 521.690062046,
+      "source": "#32 power: fixed_d6_octahedron"
+    },
+    "gen_b": {
+      "converged": false,
+      "iters": 1500,
+      "kind": "gen_b",
+      "label": "gen_b",
+      "match": [
+        {
+          "arm": "baseline",
+          "lag1_b": 0.179277672,
+          "lag1_q": 0.154612257,
+          "p1_b": 0.56682904,
+          "p1_q": 0.58097556,
+          "w0_b": -0.00501097,
+          "w0_q": -0.006675597
+        },
+        {
+          "arm": "E0",
+          "lag1_b": 0.187506834,
+          "lag1_q": 0.154515655,
+          "p1_b": 0.564647689,
+          "p1_q": 0.580901045,
+          "w0_b": -0.006878881,
+          "w0_q": -0.00666143
+        },
+        {
+          "arm": "P1",
+          "lag1_b": 0.012926333,
+          "lag1_q": 0.011149446,
+          "p1_b": 0.400747539,
+          "p1_q": 0.401177688,
+          "w0_b": -0.003082659,
+          "w0_q": -0.002680063
+        },
+        {
+          "arm": "P2",
+          "lag1_b": 0.01560439,
+          "lag1_q": 0.023198329,
+          "p1_b": 0.153809883,
+          "p1_q": 0.151040303,
+          "w0_b": -0.013285729,
+          "w0_q": -0.010721337
+        },
+        {
+          "arm": "P3",
+          "lag1_b": 0.042762026,
+          "lag1_q": 0.047613932,
+          "p1_b": 0.053357786,
+          "p1_q": 0.052973677,
+          "w0_b": 0.010988665,
+          "w0_q": -0.033004018
+        },
+        {
+          "arm": "P4",
+          "lag1_b": 0.014571177,
+          "lag1_q": -0.014215767,
+          "p1_b": 0.178414588,
+          "p1_q": 0.181875978,
+          "w0_b": -0.021851766,
+          "w0_q": -0.084003007
+        },
+        {
+          "arm": "P5",
+          "lag1_b": 0.034108181,
+          "lag1_q": 0.024837202,
+          "p1_b": 0.383369453,
+          "p1_q": 0.384413487,
+          "w0_b": -0.045178996,
+          "w0_q": -0.09059247
+        },
+        {
+          "arm": "P6",
+          "lag1_b": 0.195226222,
+          "lag1_q": 0.204925727,
+          "p1_b": 0.561018774,
+          "p1_q": 0.545043892,
+          "w0_b": -0.002009887,
+          "w0_q": -0.004243309
+        },
+        {
+          "arm": "P7",
+          "lag1_b": 0.302535972,
+          "lag1_q": 0.317116142,
+          "p1_b": 0.617864127,
+          "p1_q": 0.6205599,
+          "w0_b": -0.000807723,
+          "w0_q": -0.001513009
+        },
+        {
+          "arm": "E00",
+          "lag1_b": 0.180197377,
+          "lag1_q": 0.154419139,
+          "p1_b": 0.569732672,
+          "p1_q": 0.580826551,
+          "w0_b": -0.006065944,
+          "w0_q": -0.006647295
+        },
+        {
+          "arm": "INV2",
+          "lag1_b": 0.120453188,
+          "lag1_q": 0.154419139,
+          "p1_b": 0.569626407,
+          "p1_q": 0.580826551,
+          "w0_b": -0.00030664,
+          "w0_q": -0.006647295
+        },
+        {
+          "arm": "COMP22",
+          "lag1_b": 0.002214486,
+          "lag1_q": -0.014279509,
+          "p1_b": 0.178853732,
+          "p1_q": 0.182007331,
+          "w0_b": -0.024408288,
+          "w0_q": -0.08388259
+        },
+        {
+          "arm": "COMP40",
+          "lag1_b": 0.012415334,
+          "lag1_q": -0.014279509,
+          "p1_b": 0.187322654,
+          "p1_q": 0.182007331,
+          "w0_b": -0.02127036,
+          "w0_q": -0.08388259
+        },
+        {
+          "arm": "ALT2",
+          "lag1_b": -0.202501091,
+          "lag1_q": -0.203070629,
+          "p1_b": 0.409177087,
+          "p1_q": 0.418848582,
+          "w0_b": -0.009365951,
+          "w0_q": -0.022521048
+        },
+        {
+          "arm": "RS",
+          "lag1_b": 0.137501853,
+          "lag1_q": 0.151017341,
+          "p1_b": 0.582404712,
+          "p1_q": 0.578108521,
+          "w0_b": -0.000919607,
+          "w0_q": -0.006217009
+        },
+        {
+          "arm": "R2",
+          "lag1_b": 0.033010268,
+          "lag1_q": 0.022986808,
+          "p1_b": 0.379453633,
+          "p1_q": 0.385914165,
+          "w0_b": -0.000452643,
+          "w0_q": -0.0
+        },
+        {
+          "arm": "R4",
+          "lag1_b": 0.026085079,
+          "lag1_q": 0.022986808,
+          "p1_b": 0.388440097,
+          "p1_q": 0.385914165,
+          "w0_b": -9.8935e-05,
+          "w0_q": -0.0
+        },
+        {
+          "arm": "A2",
+          "lag1_b": 0.031307701,
+          "lag1_q": 0.023024812,
+          "p1_b": 0.382066265,
+          "p1_q": 0.386081135,
+          "w0_b": 1.5738e-05,
+          "w0_q": 0.0
+        }
+      ],
+      "seconds": 521.321452141,
+      "source": "#30 general_d6 (frozen) + new maps by EM on #32's fixed-generator shots",
+      "train_nll_per_shot": 38.931005385
+    }
+  },
+  "meta": {
+    "config": {
+      "alternatives": {
+        "ff_phase": 0.1,
+        "over": 0.01,
+        "q75_detuning": 0.04170796,
+        "reset_asym": [
+          0.008906575,
+          0.020857561
+        ],
+        "stark_rad": 0.2
+      },
+      "analysis": {
+        "burn": 16,
+        "k_max": 7,
+        "length": 64,
+        "offsets": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "z_fit": 1.96
+      },
+      "arms": {
+        "A2": {
+          "programs": [
+            [
+              "meas"
+            ]
+          ]
+        },
+        "ALT2": {
+          "programs": [
+            [
+              "e2"
+            ],
+            [
+              "e6"
+            ]
+          ],
+          "schedule": "alternate"
+        },
+        "COMP22": {
+          "programs": [
+            [
+              "e2",
+              "e2"
+            ]
+          ]
+        },
+        "COMP40": {
+          "programs": [
+            [
+              "e4",
+              "e0"
+            ]
+          ]
+        },
+        "E0": {
+          "programs": [
+            [
+              "e0"
+            ]
+          ]
+        },
+        "E00": {
+          "programs": [
+            [
+              "e0",
+              "e0"
+            ]
+          ]
+        },
+        "INV2": {
+          "programs": [
+            [
+              "e2",
+              "e6"
+            ]
+          ]
+        },
+        "P1": {
+          "programs": [
+            [
+              "e1"
+            ]
+          ]
+        },
+        "P2": {
+          "programs": [
+            [
+              "e2"
+            ]
+          ]
+        },
+        "P3": {
+          "programs": [
+            [
+              "e3"
+            ]
+          ]
+        },
+        "P4": {
+          "programs": [
+            [
+              "e4"
+            ]
+          ]
+        },
+        "P5": {
+          "programs": [
+            [
+              "e5"
+            ]
+          ]
+        },
+        "P6": {
+          "programs": [
+            [
+              "e6"
+            ]
+          ]
+        },
+        "P7": {
+          "programs": [
+            [
+              "e7"
+            ]
+          ]
+        },
+        "R2": {
+          "programs": [
+            [
+              "ff00",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff01",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff10",
+              "e4",
+              "e0"
+            ],
+            [
+              "ff11",
+              "e4",
+              "e0"
+            ]
+          ],
+          "schedule": "random"
+        },
+        "R4": {
+          "programs": [
+            [
+              "ff00",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff01",
+              "e0",
+              "e2"
+            ],
+            [
+              "ff10",
+              "e4",
+              "e0"
+            ],
+            [
+              "ff11",
+              "e4",
+              "e2"
+            ]
+          ],
+          "schedule": "random"
+        },
+        "RS": {
+          "programs": [
+            [
+              "ff00",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff01",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff10",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff11",
+              "e0",
+              "e0"
+            ]
+          ],
+          "schedule": "random"
+        },
+        "baseline": {
+          "programs": [
+            [
+              "I"
+            ]
+          ]
+        }
+      },
+      "benchmark": {
+        "interventions": [
+          "e0",
+          "e2",
+          "e4",
+          "RS",
+          "R2",
+          "R4",
+          "A2",
+          "A1"
+        ],
+        "reps": [
+          0,
+          1,
+          2,
+          4,
+          8
+        ],
+        "spacing_s": 4.9e-06,
+        "states": [
+          "0",
+          "1",
+          "+",
+          "+i"
+        ]
+      },
+      "budget": {
+        "allowance_s": 600,
+        "baseline_circuit_s": 0.000321016,
+        "billing_round_s": 1.0,
+        "margin": 0.25,
+        "rep_delay_s": 0.00025,
+        "sub_job_overhead_s": 2.0
+      },
+      "contrast": {
+        "arms": [
+          "baseline",
+          "E0",
+          "E00",
+          "RS",
+          "R2",
+          "R4",
+          "A2"
+        ],
+        "fractions": [
+          0.1,
+          0.25,
+          0.5
+        ],
+        "jobs": 2,
+        "margins": [
+          0.1,
+          0.2,
+          0.3
+        ],
+        "n_mc": 20000,
+        "pooled_reference": [
+          "baseline",
+          "E0",
+          "E00"
+        ],
+        "sd_shots": 20000,
+        "seed": 34,
+        "shots_grid": [
+          2000,
+          8000,
+          20000,
+          50000
+        ],
+        "trade_options": [
+          {
+            "boost": [],
+            "drop": [],
+            "name": "plan"
+          },
+          {
+            "boost": [
+              "RS",
+              "E00"
+            ],
+            "drop": [
+              "P1",
+              "P3",
+              "P5",
+              "P7"
+            ],
+            "name": "drop odd scan points to RS, E00"
+          },
+          {
+            "boost": [
+              "RS",
+              "E00",
+              "R2"
+            ],
+            "drop": [
+              "P1",
+              "P3",
+              "P5",
+              "P7"
+            ],
+            "name": "drop odd scan points to RS, E00, R2"
+          },
+          {
+            "boost": [],
+            "drop": [],
+            "extra": {
+              "E00": 40000,
+              "RS": 40000
+            },
+            "name": "add 40k each to RS and E00"
+          }
+        ]
+      },
+      "controls": {
+        "benchmark_interventions": [
+          "e0",
+          "e2",
+          "e4",
+          "R2",
+          "A2"
+        ],
+        "benchmark_margin": 0.02,
+        "benchmark_reps": 8,
+        "benchmark_states": [
+          "0",
+          "1"
+        ],
+        "knee_interventions": {
+          "A2": [
+            "meas"
+          ],
+          "e2": [
+            "e2"
+          ],
+          "e4": [
+            "e4"
+          ],
+          "sham": [
+            "e0"
+          ]
+        },
+        "knee_shots": 1000,
+        "knee_states": [
+          "0",
+          "1",
+          "+",
+          "+i"
+        ]
+      },
+      "design": {
+        "ancilla_bias": 0.02,
+        "ff_latency_s": 1e-06,
+        "ff_measure_s": 2.2e-06,
+        "held_out_arms": [
+          "INV2",
+          "COMP22",
+          "COMP40",
+          "ALT2"
+        ],
+        "phi_grid": 64,
+        "slot_window_s": 2.2e-06,
+        "x_s": 3.2e-08
+      },
+      "experiment": {
+        "classical_config": "experiments/configs/phase8_classical.toml",
+        "classical_summary": "results/summaries/phase8_classical/summary.json",
+        "name": "phase8_coherence",
+        "phase6_dir": "results/summaries/phase6",
+        "summary_dir": "results/summaries/phase8_coherence",
+        "workers": 2
+      },
+      "export": {
+        "control_arms": [
+          "P2",
+          "INV2",
+          "COMP22",
+          "ALT2"
+        ],
+        "qasm_arms": [
+          "E0",
+          "P2",
+          "P4",
+          "E00",
+          "INV2",
+          "COMP22",
+          "ALT2",
+          "RS",
+          "R2",
+          "R4"
+        ]
+      },
+      "knee": {
+        "interventions": {
+          "A2": [
+            "meas"
+          ],
+          "e2": [
+            "e2"
+          ],
+          "e4": [
+            "e4"
+          ]
+        },
+        "sham": [
+          "e0"
+        ],
+        "size": 4
+      },
+      "null": {
+        "alpha": 0.05,
+        "gen_b_eps": 0.02,
+        "gen_max_iters": 1500,
+        "jobs": 2,
+        "n_boot": 1000,
+        "per_job": 4000,
+        "replicates": 6,
+        "seed": 34,
+        "segment": 8,
+        "source_ids": {
+          "a": 1,
+          "b": 2,
+          "fitted": 4,
+          "fixed": 3
+        },
+        "sources": [
+          "a",
+          "b"
+        ]
+      },
+      "plan": {
+        "shots_per_arm": 8000,
+        "tiers": [
+          {
+            "arms": [
+              "baseline",
+              "E0",
+              "E00",
+              "P2",
+              "P4",
+              "INV2",
+              "RS",
+              "R2",
+              "A2"
+            ],
+            "hard_cap_s": 30,
+            "jobs": 1,
+            "name": "pilot",
+            "purpose": "population invariance (E0, E00, RS against baseline), the phase response at pi/2 and pi, inverse INV2 against E00, R2 against A2; gate before the main jobs",
+            "shots_per_arm": 2000
+          },
+          {
+            "arms": [
+              "baseline",
+              "E0",
+              "P1",
+              "P2",
+              "P3",
+              "P4",
+              "P5",
+              "P6",
+              "P7",
+              "E00",
+              "INV2",
+              "COMP22",
+              "COMP40",
+              "ALT2",
+              "RS",
+              "R2",
+              "R4",
+              "A2"
+            ],
+            "hard_cap_s": 150,
+            "jobs": 2,
+            "name": "main",
+            "purpose": "every arm: the phi scan (P1-P7, E0), inverse, composition and alternation (held out), the three equivalent dephasings (A2, R2, R4) and the feed-forward sham"
+          },
+          {
+            "hard_cap_s": 45,
+            "jobs": 1,
+            "kind": "controls",
+            "name": "controls",
+            "purpose": "direct q75 population benchmark (e0, e2, e4, R2, A2 from |0>, |1>, 8 repetitions, TOST +-0.02 against e0) and the Knee classical-disturbance circuits (|0>, |1>, |+>, |+i> x e4, e2, A2, sham; 1000 shots)"
+          }
+        ]
+      },
+      "power": {
+        "dims": [
+          4,
+          6
+        ],
+        "generators": [
+          "fixed",
+          "fitted"
+        ],
+        "max_iters": 1500,
+        "n_test": 2000,
+        "n_train": 2000,
+        "planned_shots_per_arm": [
+          1000,
+          2000,
+          5000,
+          10000,
+          20000
+        ],
+        "refit_evals": 600,
+        "seed": 32,
+        "z_alpha": 1.644853627,
+        "z_beta": 0.841621234
+      },
+      "quantum_fit": {
+        "max_evals": 900,
+        "params": [
+          "dephase",
+          "damp",
+          "detune",
+          "flip",
+          "reset_e0",
+          "reset_e1",
+          "meas_decay",
+          "spec_dephase",
+          "spec_phase"
+        ],
+        "restarts": 2,
+        "step": 0.4
+      },
+      "register": {
+        "n_pop": [
+          2,
+          3,
+          4
+        ],
+        "sources": [
+          "fixed",
+          "fitted"
+        ],
+        "starts": [
+          "prism",
+          "random"
+        ]
+      },
+      "review": {
+        "checkpoint_every": 50,
+        "converge_dims": [
+          4,
+          5,
+          6
+        ],
+        "converge_max_iters": 4000,
+        "cv_dims": [
+          4,
+          5,
+          6
+        ],
+        "cv_max_iters": 3000,
+        "seed": 32,
+        "smooth": 0.01,
+        "tol": 0.0
+      },
+      "separation": {
+        "options": [
+          {
+            "arms": 6,
+            "name": "incommensurate phase (1 rad)",
+            "phases": "e(1), e(-1), INV(1, -1), COMP(1, 1) vs e(2), e(1)^3 vs e(3)",
+            "tests": "no finite permutation group contains Rz(1 rad) exactly; INV(1, -1) = identity forces e(1) to be a permutation (#32's Lemma), whose powers repeat with a period the quantum response does not have"
+          },
+          {
+            "arms": 10,
+            "name": "finer scan (16 points)",
+            "phases": "e(k pi / 8) for odd k (8 arms), INV and COMP at pi / 8",
+            "tests": "a Z_8 register cannot represent pi / 8; a Z_16 one can (d >= 16 n_pop): raises D, no absolute exclusion"
+          },
+          {
+            "arms": 10,
+            "name": "irrational scan (golden angle)",
+            "phases": "e(j phi_g), j = 1..8, phi_g = 2.39996 rad; INV and COMP at phi_g",
+            "tests": "phases outside any small cyclic group; a register needs n large enough to approximate all of them at the plan's resolution"
+          },
+          {
+            "arms": 0,
+            "name": "dimension witness on the existing scan",
+            "phases": "none: the rank of the cross-arm Hankel matrix of the 8 scan points",
+            "tests": "a lower bound on the hidden dimension any model needs; weak (a d = 16 register has room)"
+          }
+        ]
+      }
+    },
+    "git_commit": "abf9f82a842e70adc793e4b2d4411b05a64e2127",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 34,
+    "timestamp_utc": "2026-11-10T08:27:42+00:00",
+    "torch": "2.15.0"
+  }
+}

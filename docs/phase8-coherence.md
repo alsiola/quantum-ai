@@ -1,4 +1,4 @@
-# Phase 8 Stage 2: a coherence-specific test on q75/q59 (#32)
+# Phase 8 Stage 2: a coherence-specific test on q75/q59 (#32, #34)
 
 Local theory, simulation, QASM and an unsubmitted plan only: no QPU, no IBM service. This note
 asks whether any feasible experiment on q75/q59 makes a classical hidden-state model with ≤ D
@@ -20,8 +20,45 @@ assumptions, against the bar of §4 there.
   `circuits.json`, `circuits.csv`, `device.json`, `qasm/` (hashes in `circuits.json`),
   `plan.json`.
 - Tests: `tests/test_coherence.py` (listed in §6).
+- Stage 2b (#34): `qmem.register` (the Z_8 × n_pop phase register); `qmem.classical`'s
+  frozen-map EM; `qmem.coherence`'s §4 pipeline statistics (parity split, block bootstrap,
+  Holm) and the Claim 3 contrast power. Scripts `experiments/phase8_coherence_null.py` (parts
+  `null`, `register`), `experiments/phase8_coherence_contrast.py` (part `contrast`, with the
+  separating options' prices), `experiments/phase8_coherence_hw.py --export-controls`. Outputs
+  `null.json`, `null_replicates.csv`, `null_generator_b_match.csv`, `register.json`,
+  `register_classes.csv`, `contrast.json`, `contrast_arms.csv`, `controls.json`,
+  `controls.csv`, `qasm/controls/`, and the updated `plan.json`. Tests `tests/test_register.py`.
+  The amendment is §4.1; the new results are §§3.1–3.4.
 
 ## Headline
+
+**Stage 2b (#34; 2026-11-10, pre-data): the Go stands at D = 6, but the exclusion is
+narrower than the paragraphs below it suggest.**
+- **The test holds its size.** On data from two classical d = 6 generators at the main tier's
+  shots, §4's exact pipeline rejected "d ≤ 6" in **0 of 12 replicates (95% CI
+  0–0.26)**. Its z never came near the threshold: z between −86 and −37 against 1.645. EM's search
+  does not inflate the size (§3.3).
+- **A classical phase register is not robustly excluded.** In this model a hidden phase index
+  in Z_8 is shifted by each echo, alongside 2–4 free population states (d = 16–32). At 3 or 4
+  population states it reproduces all 252 per-arm statistics within the plan's Bonferroni
+  resolution. The held-out likelihood still separates it from the *refitted* quantum model at
+  the plan's shots: 0.004–0.008 nats per shot, z = 8–17, 80% power at 1,600–7,000 shots in
+  total. But that margin is smaller than the quantum model's own uncertainty. Scored against
+  the *other* quantum model, the register wins by 0.014–0.018 nats per shot. Free d = 8 sits
+  at the same edge (+0.0005 and −0.003 against the other model). **So Stage 2's classical
+  exclusion holds robustly only for element-wise models with d ≤ 6. It does not hold for
+  models with a phase-covariant hidden register, or for free d = 8, unless the 9-parameter
+  quantum model is right to within about 0.005 nats per shot.** A 1 rad incommensurate-phase
+  tier would separate them most cheaply (6 arms, upper bound +34 s, §3.2).
+- **Claim 3's own contrast is now a leg (§4.1).** R2 and R4 vanish relative to RS (#31's
+  rule, f = 0.25, power ≥ 0.999 at 8,000 shots per arm; f = 0.10 has power 0.75–1.00). RS is
+  preserved relative to E00 (predicted ratio 0.935) at a non-inferiority margin of 0.20: power
+  0.97–0.98 at the plan's shots. ±10% would need 50,000–54,000 shots per arm.
+- **Controls tier.** It covers §2.5's population benchmark and §2.6's Knee circuits: 26
+  circuits, 76,000 shots, one job. The upper bound is 38 s, with a proposed hard cap of 45 s.
+  The plan's total upper bound is 166 s of the 600 s allowance.
+
+**Stage 2 (#32):**
 
 **Go, with D = 6, under the assumptions in §5.** The design adds 17 arms to the baseline:
 - an 8-point physical phase scan on q75;
@@ -257,6 +294,10 @@ with a TOST at 80% power it needs about 8,000. These short q75-only circuits are
 baseline in P(1) and lag 1 (§4). **A Stage 4 proposal should add the direct benchmark.** About
 20 s covers e0, e2, e4, R2 and A2 from \|0⟩ and \|1⟩ at 8 repetitions, to ±0.02.
 
+*Stage 2b (#34):* it is now in `plan.json` as the controls tier (§3.4). Each circuit is tested
+against the e0 sham at the same preparation (TOST, ±0.02, 80% power). That needs at most
+5,315 shots (R2 from \|1⟩), so the tier runs 6,000 shots per circuit.
+
 ### 2.6 Knee-style classical-disturbance controls
 
 q75 is prepared in step 0's slot in \|0⟩, \|1⟩, \|+⟩ or \|+i⟩, followed by one intervention
@@ -279,8 +320,8 @@ The inequality's weak point is its premise. A classical model is free to give th
 preparation its own hidden state rather than a mixture. The sham's own outputs test this: the
 best mixture of the \|0⟩ and \|1⟩ sham distributions misses the \|+⟩ one by a TVD of 0.35. A
 preparation-noncontextual classical model is therefore excluded outright. A contextual one is
-not, which is why §5 lists noncontextuality as an assumption. These short circuits, like §2.5's,
-are not in `plan.json`.
+not, which is why §5 lists noncontextuality as an assumption. *Stage 2b (#34):* the 16
+circuits are now in `plan.json`'s controls tier at 1,000 shots each (§3.4).
 
 ### 2.7 Noise and leakage alternatives
 
@@ -390,6 +431,155 @@ converged at 1,500 steps; the last gains are ≤ 2e−6 nats per symbol.
   nats per shot in-sample). An exclusion at d = 6 says nothing about d = 8 or more. Excluding
   larger d would need more φ settings or more composition arms, not more shots.
 
+### 3.1 The phase register beyond d = 6 (#34, `--part register`)
+
+**The model** (`qmem.register`). A hidden phase index θ ∈ Z_8 sits alongside a population
+register of n_pop states, so d = 8 n_pop.
+- Each echo e_k is the fixed permutation θ → θ + k, so INV2, COMP22 = COMP40 and ALT2 compose
+  exactly.
+- R2 and R4 are the bit-averaged mixtures of the same permutations, so they have no free
+  parameters either.
+- The free maps are the step's pre, post and reset maps, `meas`, the `ff` branches and the
+  readout. That gives 2,207, 5,039 and 9,023 parameters at n_pop = 2, 3 and 4, against 527 for
+  free d = 6, 975 for free d = 8, and about 4,100 for free d = 16.
+- EM keeps the permutations frozen (`ProgramModel`'s frozen-map EM).
+- Starts:
+  - the *prism*, which embeds the ideal rotation as the shift (`test_prism_embeds_the_ideal_rotation_as_the_shift`);
+  - a random start.
+- Its likelihood matches path enumeration (`test_register_likelihood_against_path_enumeration`).
+
+**Method.** The data come from #32's two quantum generators (rep 0) at the main tier's shots:
+8,000 per arm in two jobs, with a parity split. Every class is run through §4's pipeline at
+1,500 steps per start. Each class is credited with its best start, monotone in d. No fit
+converged at 1,500 steps; the last gains were ≤ 6e−6 nats per symbol.
+
+Results (`register_classes.csv`). Held-out deficit is in nats per shot, classical minus
+quantum. z uses the block SE. "Stats out" counts the 252 per-arm statistics outside
+Bonferroni:
+
+| generator | class | params | held out: truth | refit | other | z (refit) | shots for 80% (refit, total) | in-sample (refit) | stats out |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| fixed | free d ≤ 4 | 215 | 0.238 | 0.238 | 0.216 | 97.2 | 57 | 0.233 | 117 |
+| fixed | free d ≤ 6 | 527 | 0.047 | 0.047 | 0.025 | 41.1 | 259 | 0.043 | 35 |
+| fixed | free d ≤ 8 | 975 | 0.023 | 0.023 | 0.0005 | 29.8 | 540 | 0.020 | 16 |
+| fixed | Z_8 × 2 (d = 16) | 2,207 | 0.0079 | 0.0079 | −0.014 | 16.7 | 1,665 | 0.0038 | 5 |
+| fixed | Z_8 × 3 (d = 24) | 5,039 | 0.0051 | 0.0050 | −0.017 | 13.2 | 2,653 | −0.0024 | 0 |
+| fixed | Z_8 × 4 (d = 32) | 9,023 | 0.0055 | 0.0055 | −0.016 | 13.3 | 2,425 | −0.0044 | 0 |
+| fitted | free d ≤ 4 | 215 | 0.198 | 0.196 | 0.175 | 81.6 | 74 | 0.194 | 110 |
+| fitted | free d ≤ 6 | 527 | 0.037 | 0.035 | 0.014 | 32.4 | 423 | 0.034 | 42 |
+| fitted | free d ≤ 8 | 975 | 0.020 | 0.018 | −0.003 | 23.6 | 844 | 0.016 | 8 |
+| fitted | Z_8 × 2 (d = 16) | 2,207 | 0.0075 | 0.0056 | −0.016 | 11.3 | 3,692 | 0.0010 | 0 |
+| fitted | Z_8 × 3 (d = 24) | 5,039 | 0.0056 | 0.0037 | −0.018 | 8.2 | 6,970 | −0.0047 | 0 |
+| fitted | Z_8 × 4 (d = 32) | 9,023 | 0.0070 | 0.0051 | −0.016 | 10.6 | 4,192 | −0.0075 | 0 |
+
+**The outcome, plainly.**
+- **The register matches the quantum prediction within the plan's resolution on every
+  summary statistic.** At n_pop ≥ 3 none of the 252 statistics (w, g, P(1) and lag 1 per
+  arm) is outside Bonferroni. In sample it beats even the generating model, which is
+  overfitting with 5,000–9,000 parameters.
+- **On held-out shots the refitted quantum model still wins** by 0.004–0.008 nats per shot
+  (z = 8–17 at the plan's shots). §4's primary contrast would therefore reject the register
+  too, *if the quantum model is correctly specified*.
+- **That condition carries the result.** The fixed and fitted quantum models differ by about
+  0.02 nats per shot. Scored against the *other* one, every register class beats the quantum
+  prediction (z from −17 to −21). Free d = 8 is not rejected (z = 0.6, fixed generator) or
+  wins (z = −2.9, fitted). In §3 the same
+  check left d ≤ 6 excluded with a wide margin; here it does not. A device whose truth departs
+  from the 9-parameter model by a fixed-versus-fitted amount would let a phase register (or
+  free d = 8) win.
+- **So the Stage 2 classical exclusion is restricted to models without a phase-covariant
+  hidden register.** Robustly, it excludes element-wise models with d ≤ 6 (D = 6, §5).
+  Excluding a register, or free d = 8, holds only conditional on the quantum model's
+  specification.
+- d = 32 does no better than d = 24 held out. More population states do not close the gap;
+  the residual is the register's fixed Z_8 geometry, not its size.
+
+### 3.2 What would separate the instrument from a phase register (not built)
+
+Priced with `qmem.followup`'s cost model at the plan's 8,000 shots per arm (`contrast.json`
+`separation`). The echoes add no circuit time.
+
+| option | arms | shots | added upper bound (main tier) | own tier upper bound | what it tests |
+| --- | --- | --- | --- | --- | --- |
+| **incommensurate phase, 1 rad** | 6 | 48,000 | 34 s | 38 s | e(1), e(−1), INV(1, −1), COMP(1, 1) against e(2), e(1)³ against e(3). No finite permutation group contains Rz(1 rad). INV(1, −1) = identity forces e(1) to be a permutation (#32's Lemma), and its powers repeat with a period the quantum response does not have. |
+| finer scan, 16 points | 10 | 80,000 | 57 s | 61 s | Z_8 cannot represent π/8, but Z_16 can: this raises D to 16 n_pop without an absolute exclusion |
+| irrational scan, golden angle | 10 | 80,000 | 57 s | 61 s | phases outside any small cyclic group; a register needs n large enough to approximate all of them at the plan's resolution |
+| dimension witness on the existing scan | 0 | 0 | 0 | 0 | the rank of the cross-arm Hankel matrix of the 8 scan points; a lower bound on d, weak (d = 16 has room) |
+
+**Recommendation:** the 1 rad option. It is the cheapest, and it attacks the register's
+structure rather than its size. With it the plan's total upper bound would be about 200 s of
+600 s. It needs its own power study against a Z_n register (n ≤ 16) before it goes into a
+pre-registration. That study is not run here.
+
+### 3.3 Null calibration (#34, `--part null`)
+
+**Generators.** Both are classical with d = 6, for all 18 arms (`null.json` `generators`):
+- (a) #32's best d = 6 `ProgramModel` fit to the fixed quantum generator's simulated shots
+  (`power_fixed_d6_octahedron`). This is the adversary closest to the quantum prediction.
+- (b) #30's Stage 4c d = 6 fit (`general_d6`), with its maps frozen. The new elements' maps
+  (e0…e7, `ff` branches) were fitted by EM to the same shots, starting at (1 − 0.02) I + 0.02/d.
+  Its per-arm P(1) is within 0.02 of the quantum model's on every arm. Lag 1 is within
+  0.034; w(0) differs at P3–P5 and in the composition arms (`null_generator_b_match.csv`).
+
+**Pipeline.** §4's exactly, at the main tier's shots:
+- 8,000 per arm in two jobs of 4,000, split by parity;
+- the four starts at 1,500 steps, and the quantum refit;
+- block bootstrap by job and 8-shot segment (1,000 resamples);
+- Holm over D = 4, 6 at α = 0.05.
+
+Each replicate draws new data from the generator.
+
+**Replicates.** There are 6 per generator, 12 in all, fewer than the 20 the issue
+asks for. Each replicate is five fits at 15–30 CPU-min each, about 86 CPU-min. At the
+shared machine's 2 workers, 12 replicates took about 10 h. The z distribution below
+makes the binomial bound the weaker of the two statements.
+
+Results (`null.json`, `null_replicates.csv`). Deficit in nats per shot, classical minus
+quantum, against the refit:
+
+| generator | replicates | false rejections, d ≤ 6 (Holm) | 95% CI | z (d = 6): mean | SD | max | deficit (d = 6): mean | max | rejections, d ≤ 4 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| (a) #32's d = 6 fit | 6 | 0 | 0–0.46 | −37.5 | 0.70 | −36.7 | −0.046 | −0.045 | 6 |
+| (b) #30's d = 6, extended | 6 | 0 | 0–0.46 | −76.5 | 3.07 | −70.6 | −0.184 | −0.181 | 0 |
+| both | 12 | **0** | **0–0.26** | | | −36.7 | | −0.045 | 6 |
+
+Against the fixed quantum model instead of the refit, z is −38.8 (a) and −86.5 (b), with 0
+rejections.
+
+- **False rejections of "d ≤ 6": 0 of 12 (95% Clopper–Pearson CI 0–0.26).**
+- The binomial interval is wide only because of the replicate count. The statistic itself is
+  far below the threshold: 56 between-replicate SDs below it for (a), 25 for (b). Held out,
+  the classical fit beats the quantum refit by 0.046 (a) and 0.18 (b) nats per shot.
+- **Search failure would have to be very large to matter.** The best d = 6 start on (a)'s
+  data beats the quantum refit by about 0.046 nats per shot. For a false rejection, EM would
+  have to miss the optimum by more than that: about 3,300 nats on each replicate's 72,000
+  training shots. The fits' last gains were ≤ 4e−6 nats per symbol.
+- "d ≤ 4" was rejected in 6 of 6 replicates from (a). That is a correct rejection:
+  (a) is genuinely d = 6. It was rejected in 0 of 6 from (b), whose d = 4 fit also
+  beats the quantum refit.
+- No pipeline fix is needed, so §3's power study stands at the pipeline as registered.
+
+### 3.4 The controls tier in the plan (#34)
+
+`--export-controls` (`hardware` group, `FakeKingston` only) writes 26 QASM files to
+`qasm/controls/`, with hashes in `controls.json` and `plan.json`:
+- §2.5's benchmark: 10 circuits (e0, e2, e4, R2 and A2 from \|0⟩ and \|1⟩, 8 repetitions)
+  × 6,000 shots;
+- §2.6's Knee circuits: 16 (\|0⟩, \|1⟩, \|+⟩, \|+i⟩ × e4, e2, A2, sham) × 1,000 shots.
+
+That makes 76,000 shots in one job: estimate 29 s, upper bound 38 s, **proposed hard cap 45 s**.
+The plan's tiers are now:
+
+| tier | shots | jobs | estimate | upper bound | hard cap |
+| --- | --- | --- | --- | --- | --- |
+| pilot | 18,000 | 1 | 13 s | 17 s | 30 s |
+| main | 144,000 | 2 | 88 s | 112 s | 150 s |
+| controls | 76,000 | 1 | 29 s | 38 s | 45 s |
+| **total** | 238,000 | 4 | 130 s | **166 s** | 225 s |
+
+against the Open plan's 600 s. `plan.json` is UNSUBMITTED and needs the owner's explicit
+approval on #28.
+
 ## 4. Pre-registration draft (Stage 4, if approved)
 
 Everything below is fixed before any data. Amendments are dated and hashed as in Phase 7
@@ -403,7 +593,9 @@ Everything below is fixed before any data. Amendments are dated and hashed as in
   - *pilot:* 9 arms (baseline, E0, E00, P2, P4, INV2, RS, R2, A2) × 2,000 shots, one job,
     upper bound 17 s, hard cap 30 s;
   - *main:* all 18 arms × 8,000 shots in two jobs (two time blocks), upper bound 112 s, hard
-    cap 150 s.
+    cap 150 s;
+  - *controls* (§4.1): §2.5's benchmark and §2.6's Knee circuits, 26 circuits, 76,000 shots,
+    one job, upper bound 38 s, hard cap 45 s.
   - Pub order is randomised within each job, and per-pub timing is recorded.
 - **Pilot gate (stop rules).** The main jobs are submitted only if every check passes:
   - P(1) of E0, E00 and RS each within ±0.02 of the baseline's;
@@ -431,23 +623,65 @@ Everything below is fixed before any data. Amendments are dated and hashed as in
     lag 1).
   - Composition: COMP22 equivalent to COMP40, and INV2 to E00 (TOST, same margins).
 - **Population invariance (i).** E0, E00 and RS are each equivalent to the baseline in P(1)
-  (TOST, margin 0.01). Add §2.5's direct benchmark if it is approved.
+  (TOST, margin 0.01). §2.5's direct benchmark is in the controls tier (§4.1).
 - **Equivalent dephasings (iii).** A2, R2 and R4 are pairwise equivalent in P(1) and lag 1
   (margin 0.01) and in w(0) (margin 10% of the baseline's |w(0)|). RS–E00 is the timing
   control in P(1) and lag 1; its w(0) TOST would need 86,000 shots per arm, so it is reported
-  but not gated.
-- **Multiplicity.** Claim 3 needs every leg to pass (intersection–union, each at α = 0.05).
+  but not gated. (Superseded for w(0) by §4.1's Claim 3 contrast, a ratio with a 0.20 margin.)
+- **Multiplicity.** Claim 3 needs every leg to pass, including §4.1's contrast
+  (intersection–union, each at α = 0.05).
   The primary contrast is Holm over D. Everything else is descriptive.
 - **Decision.**
-  - *Supported (under §5):* all legs pass at D = 6.
+  - *Supported (under §5):* all legs pass at D = 6. Per §4.1, the headline names the excluded
+    class: element-wise classical models with d ≤ 6. It does not claim models with a
+    phase-covariant register unless an amended design separates them (§3.2).
   - *Partial:* the exclusion passes only at D = 4.
   - *Not supported:* the exclusion fails at D = 4, or (i) or (iii) fails. A failure of (iii)
     would point to an implementation artefact (#25-type measurement disturbance) rather than
     to the absence of coherence.
 
+### 4.1 Amendment of 2026-11-10 (#34; pre-data)
+
+**Pre-data.** It was written before any Stage 2 job was approved or submitted, from simulation
+only (§§3.1–3.4). It changes the draft above in four places.
+
+1. **Null calibration.** The primary contrast is kept as registered. On classical d = 6 truth
+   it rejected "d ≤ 6" in 0 of 12 replicates (§3.3). No change to the starts, the steps
+   or the SE.
+2. **Scope of the exclusion.** A Z_8 phase register is excluded only conditional on the
+   quantum model's specification (§3.1). Stage 2's classical exclusion is stated for
+   element-wise models with d ≤ 6 and for nothing larger. Report the register and free d = 8
+   fits as a secondary, with the deficit against the refit and the fixed model. If the
+   coordinator wants the register excluded, add §3.2's 1 rad tier with its own power study
+   (not done here).
+3. **The Claim 3 contrast, a new leg** (#28's taxonomy, item 3; `contrast.json`). On w(0),
+   with #31's rule and the main tier's two jobs:
+   - *Vanish:* R2 and R4 each vanish relative to RS:
+     |w_X(0)| + 1.96 SE_X < f |w_RS(0)|, on all jobs and on each leave-one-job-out subset, with
+     **f = 0.25**. Power at 8,000 shots per arm is ≥ 0.999 under both quantum models. f = 0.10
+     is reported, not gated: power 0.95 / 0.85 (R2, fixed / fitted) and 1.00 / 0.75 (R4). The
+     smallest f at 80% power is 0.085–0.096 (R2) and 0.059–0.104 (R4).
+   - *Preserve:* RS is non-inferior to E00 in w(0): the ratio w_RS(0) / w_E00(0) has a lower
+     one-sided 95% bound above 1 − m, with **m = 0.20**. The model predicts 0.935 (fixed) and
+     0.937 (fitted). Power at 8,000 shots per arm is 0.98 (fixed) and 0.97 (fitted). The margin
+     with 80% power at the plan is 0.153–0.159. The TOST form (ratio within 1 ± m) has the same
+     power. Shots per arm for 80%: 3,400–3,900 at ±20%, 50,000–54,000 at ±10%, 1,100–1,300 at
+     ±30%. Pooling RS against baseline, E0 and E00 lowers ±10% to 38,000–43,000.
+   - *The trade* (`contrast.json` `trade`): ±10% is out of the tier's reach. Adding 40,000
+     shots each to RS and E00 brings the 80% margin to 0.10, at a main-tier upper bound of
+     173 s, 61 s more. Dropping the odd scan points P1, P3, P5 and P7 to triple RS and E00
+     reaches only 0.12 and weakens §3's phase response. **Proposed: keep the plan's shots and
+     m = 0.20.**
+4. **Controls tier** (§3.4): added to `plan.json`, with QASM hashes, an upper bound of 38 s
+   and a hard cap of 45 s. Its TOSTs (benchmark ±0.02 against e0) and the Knee inequality
+   (§2.6) are descriptive checks of legs (i) and (iii), not gates.
+
 ## 5. Assumptions the claim inherits
 
-1. **D = 6.** Only classical models with ≤ 6 hidden states are excluded.
+1. **D = 6.** Only classical models with ≤ 6 hidden states are excluded. Stage 2b (§3.1):
+   a model with a phase-covariant hidden register (Z_8 × 2–4, d = 16–32) matches every
+   summary statistic. It loses on held-out likelihood only by less than the quantum model's
+   own misspecification margin, so it is *not* excluded.
 2. **Element-wise Markovianity.** Each physical element acts as the same stochastic map
    wherever it appears. A classical model whose pulse acts depending on context (the previous
    pulse, the step, the arm) is outside the class. This is what makes INV2 and the composition
@@ -465,6 +699,8 @@ Everything below is fixed before any data. Amendments are dated and hashed as in
 6. **Search completeness.** EM finds local optima. Four starts per d, with a monotone credit
    in d, is a heuristic, not a certificate. A better classical optimum at d = 6 would shrink
    the deficit. The power margin (about 30× in shots: 144,000 planned against 4,828 needed) is what protects against this.
+   Stage 2b (§3.3): on classical d = 6 truth the pipeline never rejected, with z far below
+   the threshold, so search incompleteness does not inflate the test's size.
 7. **The bits are independent of the memory.** The ancillas are fresh, separate and measured
    before the echo. §2.3's crosstalk alternatives are the check.
 
@@ -477,7 +713,22 @@ uv run python experiments/phase8_coherence.py --config experiments/configs/phase
 uv run --group hardware python experiments/phase8_coherence.py --config experiments/configs/phase8_coherence.toml --export-qasm
 uv run python experiments/phase8_coherence.py --config experiments/configs/phase8_coherence.toml --plan   # prints the UNSUBMITTED plan
 uv run pytest tests/test_coherence.py
+# Stage 2b (#34)
+uv run python experiments/phase8_coherence.py --config experiments/configs/phase8_coherence.toml --part register   # ~6.5 h, 2 workers, resumable
+uv run python experiments/phase8_coherence.py --config experiments/configs/phase8_coherence.toml --part null       # ~10 h, 2 workers, resumable
+uv run python experiments/phase8_coherence.py --config experiments/configs/phase8_coherence.toml --part contrast   # < 1 min
+uv run --group hardware python experiments/phase8_coherence.py --config experiments/configs/phase8_coherence.toml --export-controls
+uv run pytest tests/test_register.py
 ```
+
+Stage 2b's runs:
+- `results/phase8_coherence/20261110T020530Z` (register, 26 fits);
+- `…/20261110T082742Z` (null, 62 tasks).
+
+The register run started at 5b0561e with a clean tree; the null run started at abf9f82 (its `git_dirty` flag is set only by the register part's summaries, written seconds earlier and untracked; no code changed after abf9f82).
+Seeds: `[null] seed = 34` for both parts. Each task's data and starts derive from it, its
+`source_ids` (a = 1, b = 2, fixed = 3, fitted = 4), the replicate, d and the start. The
+contrast uses `[contrast] seed = 34`.
 
 - `--from-run <dir>` resumes the review or power part from its task files and EM checkpoints.
 - The machine was shared (load about 10) and the first runs were interrupted; they resumed
