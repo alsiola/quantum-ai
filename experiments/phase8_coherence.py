@@ -525,6 +525,9 @@ def main() -> None:
     ap.add_argument("--config", required=True)
     ap.add_argument("--part", choices=["review", "design", "power", "null", "register", "contrast"])
     ap.add_argument("--export-qasm", action="store_true")
+    ap.add_argument(
+        "--export-controls", action="store_true", help="#34's controls tier (hardware group)"
+    )
     ap.add_argument("--plan", action="store_true")
     ap.add_argument("--workers", type=int, default=None)
     ap.add_argument("--from-run", default=None, help="resume a run directory")
@@ -537,6 +540,11 @@ def main() -> None:
         import phase8_coherence_hw as HW
 
         HW.export(cfg)
+        return
+    if args.export_controls:
+        import phase8_coherence_hw as HW
+
+        HW.export_controls(cfg)
         return
     if args.plan:
         import phase8_coherence_design as DS

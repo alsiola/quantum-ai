@@ -745,6 +745,9 @@ def build_plan(cfg: dict[str, Any]) -> dict[str, Any]:
     circuits = json.loads((sd / "circuits.json").read_text())
     tiers = []
     for tier in pl["tiers"]:
+        if tier.get("kind") == "controls":
+            tiers.append(controls_tier(tier, sd, cm))
+            continue
         n_jobs = tier["jobs"]
         n_arm = tier.get("shots_per_arm", pl["shots_per_arm"])
         per_job = [F.Pub(0, i, a, 0, n_arm // n_jobs) for i, a in enumerate(tier["arms"])]
@@ -783,6 +786,36 @@ def build_plan(cfg: dict[str, Any]) -> dict[str, Any]:
     }
     save_json(sd / "plan.json", PC.jround(plan, 9))
     return plan
+
+
+def controls_tier(tier: dict[str, Any], sd: Path, cm: F.CostModel) -> dict[str, Any]:
+    """#34's controls tier: the circuits of ``--export-controls`` (``controls.json``: shots,
+    FakeKingston durations, QASM hashes), one pub per circuit, in ``jobs`` jobs."""
+    ctl = json.loads((sd / "controls.json").read_text())
+    rows = ctl["rows"]
+    n_jobs = tier["jobs"]
+    dur = {r["circuit"]: r["duration_s"] for r in rows}
+    pubs = [F.Pub(0, i, r["circuit"], 0, r["shots"] // n_jobs) for i, r in enumerate(rows)]
+    job = cm.job(pubs, dur)
+    by_kind: dict[str, Any] = {}
+    for r in rows:
+        k = by_kind.setdefault(r["kind"], {"circuits": 0, "shots": 0, "shot_s": 0.0})
+        k["circuits"] += 1
+        k["shots"] += r["shots"]
+        k["shot_s"] += cm.shot_seconds(r["shots"], r["duration_s"])
+    return {
+        "tier": tier["name"],
+        "purpose": tier["purpose"],
+        "circuits": {r["circuit"]: r["shots"] for r in rows},
+        "by_kind": by_kind,
+        "qasm_sha256": ctl["qasm_sha256"],
+        "jobs": n_jobs,
+        "per_job": job,
+        "estimate_s": n_jobs * job["estimate_s"],
+        "upper_s": n_jobs * job["upper_s"],
+        "hard_cap_s": tier["hard_cap_s"],
+        "within_cap": n_jobs * job["upper_s"] <= tier["hard_cap_s"],
+    }
 
 
 def print_plan(cfg: dict[str, Any]) -> None:

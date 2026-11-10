@@ -1,0 +1,921 @@
+{
+  "generators": {
+    "fitted": {
+      "preserve": {
+        "E00_noninferiority": {
+          "margin_80_at_plan": 0.15862049,
+          "power_plan_m0.1": 0.247038272,
+          "power_plan_m0.2": 0.972471484,
+          "power_plan_m0.3": 0.999996918,
+          "ratio": 0.936929907,
+          "shots_80_m0.1": 53554.81908177,
+          "shots_80_m0.2": 3895.456422319,
+          "shots_80_m0.3": 1301.113573672
+        },
+        "E00_tost": {
+          "margin_80_at_plan": 0.158623043,
+          "power_plan_m0.1": 0.24235889,
+          "power_plan_m0.2": 0.972471385,
+          "power_plan_m0.3": 0.999996918,
+          "ratio": 0.936929907,
+          "shots_80_m0.1": 53554.81908177,
+          "shots_80_m0.2": 3904.993075698,
+          "shots_80_m0.3": 1349.872362889
+        },
+        "pooled_noninferiority": {
+          "margin_80_at_plan": 0.146166387,
+          "power_plan_m0.1": 0.283352946,
+          "power_plan_m0.2": 0.993632132,
+          "power_plan_m0.3": 0.999999986,
+          "ratio": 0.934985297,
+          "shots_80_m0.1": 43044.129424879,
+          "shots_80_m0.2": 2891.426327649,
+          "shots_80_m0.3": 954.121508227
+        },
+        "pooled_tost": {
+          "margin_80_at_plan": 0.146166469,
+          "power_plan_m0.1": 0.283029524,
+          "power_plan_m0.2": 0.993632132,
+          "power_plan_m0.3": 0.999999986,
+          "ratio": 0.934985297,
+          "shots_80_m0.1": 43044.129424879,
+          "shots_80_m0.2": 2896.380559764,
+          "shots_80_m0.3": 985.818481274
+        }
+      },
+      "ratio_RS_E00": 0.936929907,
+      "ratio_RS_baseline": 0.93304734,
+      "vanish": {
+        "R2": {
+          "fraction_80_at_plan": 0.095690927,
+          "power_f0.1": {
+            "2000": 0.00075,
+            "20000": 0.9998,
+            "50000": 1.0,
+            "8000": 0.8541
+          },
+          "power_f0.25": {
+            "2000": 0.9762,
+            "20000": 1.0,
+            "50000": 1.0,
+            "8000": 1.0
+          },
+          "power_f0.5": {
+            "2000": 1.0,
+            "20000": 1.0,
+            "50000": 1.0,
+            "8000": 1.0
+          },
+          "ratio_to_RS": -0.000598476,
+          "shots_80_f0.1": 7338.636857958,
+          "shots_80_f0.25": 1247.892635214,
+          "shots_80_f0.5": 372.193056304,
+          "w0": 3.163e-06
+        },
+        "R4": {
+          "fraction_80_at_plan": 0.103835399,
+          "power_f0.1": {
+            "2000": 5e-05,
+            "20000": 0.9989,
+            "50000": 1.0,
+            "8000": 0.7455
+          },
+          "power_f0.25": {
+            "2000": 0.9469,
+            "20000": 1.0,
+            "50000": 1.0,
+            "8000": 1.0
+          },
+          "power_f0.5": {
+            "2000": 1.0,
+            "20000": 1.0,
+            "50000": 1.0,
+            "8000": 1.0
+          },
+          "ratio_to_RS": -0.000598476,
+          "shots_80_f0.1": 8613.135090883,
+          "shots_80_f0.25": 1453.156316951,
+          "shots_80_f0.5": 425.634899272,
+          "w0": 3.163e-06
+        }
+      },
+      "w0": {
+        "A2": 3.151e-06,
+        "E0": -0.005652277,
+        "E00": -0.005640554,
+        "R2": 3.163e-06,
+        "R4": 3.163e-06,
+        "RS": -0.005284804,
+        "baseline": -0.005664025
+      },
+      "w0_sd_per_shot": {
+        "A2": 0.009952379,
+        "E0": 0.013088243,
+        "E00": 0.013292326,
+        "R2": 0.008884101,
+        "R4": 0.009639582,
+        "RS": 0.014858066,
+        "baseline": 0.015254604
+      }
+    },
+    "fixed": {
+      "preserve": {
+        "E00_noninferiority": {
+          "margin_80_at_plan": 0.152897504,
+          "power_plan_m0.1": 0.257783425,
+          "power_plan_m0.2": 0.984996795,
+          "power_plan_m0.3": 0.999999698,
+          "ratio": 0.935269115,
+          "shots_80_m0.1": 49993.004741384,
+          "shots_80_m0.2": 3398.607904396,
+          "shots_80_m0.3": 1123.488217729
+        },
+        "E00_tost": {
+          "margin_80_at_plan": 0.152897949,
+          "power_plan_m0.1": 0.256437451,
+          "power_plan_m0.2": 0.984996792,
+          "power_plan_m0.3": 0.999999698,
+          "ratio": 0.935269115,
+          "shots_80_m0.1": 49993.004741384,
+          "shots_80_m0.2": 3404.750810858,
+          "shots_80_m0.3": 1161.48550095
+        },
+        "pooled_noninferiority": {
+          "margin_80_at_plan": 0.139399283,
+          "power_plan_m0.1": 0.306345414,
+          "power_plan_m0.2": 0.998220326,
+          "power_plan_m0.3": 1.0,
+          "ratio": 0.933282977,
+          "shots_80_m0.1": 38150.698921192,
+          "shots_80_m0.2": 2379.01655684,
+          "shots_80_m0.3": 776.570228079
+        },
+        "pooled_tost": {
+          "margin_80_at_plan": 0.139399286,
+          "power_plan_m0.1": 0.306320726,
+          "power_plan_m0.2": 0.998220326,
+          "power_plan_m0.3": 1.0,
+          "ratio": 0.933282977,
+          "shots_80_m0.1": 38150.698921192,
+          "shots_80_m0.2": 2381.94524142,
+          "shots_80_m0.3": 799.691168825
+        }
+      },
+      "ratio_RS_E00": 0.935269115,
+      "ratio_RS_baseline": 0.931303806,
+      "vanish": {
+        "R2": {
+          "fraction_80_at_plan": 0.085412057,
+          "power_f0.1": {
+            "2000": 0.01575,
+            "20000": 1.0,
+            "50000": 1.0,
+            "8000": 0.94815
+          },
+          "power_f0.25": {
+            "2000": 0.9956,
+            "20000": 1.0,
+            "50000": 1.0,
+            "8000": 1.0
+          },
+          "power_f0.5": {
+            "2000": 1.0,
+            "20000": 1.0,
+            "50000": 1.0,
+            "8000": 1.0
+          },
+          "ratio_to_RS": 0.0,
+          "shots_80_f0.1": 5857.747944541,
+          "shots_80_f0.25": 992.477378902,
+          "shots_80_f0.5": 294.340175631,
+          "w0": -0.0
+        },
+        "R4": {
+          "fraction_80_at_plan": 0.059287402,
+          "power_f0.1": {
+            "2000": 0.49605,
+            "20000": 1.0,
+            "50000": 1.0,
+            "8000": 0.99985
+          },
+          "power_f0.25": {
+            "2000": 1.0,
+            "20000": 1.0,
+            "50000": 1.0,
+            "8000": 1.0
+          },
+          "power_f0.5": {
+            "2000": 1.0,
+            "20000": 1.0,
+            "50000": 1.0,
+            "8000": 1.0
+          },
+          "ratio_to_RS": 0.0,
+          "shots_80_f0.1": 2857.138548397,
+          "shots_80_f0.25": 511.092029758,
+          "shots_80_f0.5": 169.116990153,
+          "w0": -0.0
+        }
+      },
+      "w0": {
+        "A2": 0.0,
+        "E0": -0.00666143,
+        "E00": -0.006647295,
+        "R2": -0.0,
+        "R4": -0.0,
+        "RS": -0.006217009,
+        "baseline": -0.006675597
+      },
+      "w0_sd_per_shot": {
+        "A2": 0.00895488,
+        "E0": 0.015165741,
+        "E00": 0.015539571,
+        "R2": 0.009332449,
+        "R4": 0.006477969,
+        "RS": 0.015271516,
+        "baseline": 0.016238941
+      }
+    }
+  },
+  "meta": {
+    "config": {
+      "alternatives": {
+        "ff_phase": 0.1,
+        "over": 0.01,
+        "q75_detuning": 0.04170796,
+        "reset_asym": [
+          0.008906575,
+          0.020857561
+        ],
+        "stark_rad": 0.2
+      },
+      "analysis": {
+        "burn": 16,
+        "k_max": 7,
+        "length": 64,
+        "offsets": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "z_fit": 1.96
+      },
+      "arms": {
+        "A2": {
+          "programs": [
+            [
+              "meas"
+            ]
+          ]
+        },
+        "ALT2": {
+          "programs": [
+            [
+              "e2"
+            ],
+            [
+              "e6"
+            ]
+          ],
+          "schedule": "alternate"
+        },
+        "COMP22": {
+          "programs": [
+            [
+              "e2",
+              "e2"
+            ]
+          ]
+        },
+        "COMP40": {
+          "programs": [
+            [
+              "e4",
+              "e0"
+            ]
+          ]
+        },
+        "E0": {
+          "programs": [
+            [
+              "e0"
+            ]
+          ]
+        },
+        "E00": {
+          "programs": [
+            [
+              "e0",
+              "e0"
+            ]
+          ]
+        },
+        "INV2": {
+          "programs": [
+            [
+              "e2",
+              "e6"
+            ]
+          ]
+        },
+        "P1": {
+          "programs": [
+            [
+              "e1"
+            ]
+          ]
+        },
+        "P2": {
+          "programs": [
+            [
+              "e2"
+            ]
+          ]
+        },
+        "P3": {
+          "programs": [
+            [
+              "e3"
+            ]
+          ]
+        },
+        "P4": {
+          "programs": [
+            [
+              "e4"
+            ]
+          ]
+        },
+        "P5": {
+          "programs": [
+            [
+              "e5"
+            ]
+          ]
+        },
+        "P6": {
+          "programs": [
+            [
+              "e6"
+            ]
+          ]
+        },
+        "P7": {
+          "programs": [
+            [
+              "e7"
+            ]
+          ]
+        },
+        "R2": {
+          "programs": [
+            [
+              "ff00",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff01",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff10",
+              "e4",
+              "e0"
+            ],
+            [
+              "ff11",
+              "e4",
+              "e0"
+            ]
+          ],
+          "schedule": "random"
+        },
+        "R4": {
+          "programs": [
+            [
+              "ff00",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff01",
+              "e0",
+              "e2"
+            ],
+            [
+              "ff10",
+              "e4",
+              "e0"
+            ],
+            [
+              "ff11",
+              "e4",
+              "e2"
+            ]
+          ],
+          "schedule": "random"
+        },
+        "RS": {
+          "programs": [
+            [
+              "ff00",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff01",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff10",
+              "e0",
+              "e0"
+            ],
+            [
+              "ff11",
+              "e0",
+              "e0"
+            ]
+          ],
+          "schedule": "random"
+        },
+        "baseline": {
+          "programs": [
+            [
+              "I"
+            ]
+          ]
+        }
+      },
+      "benchmark": {
+        "interventions": [
+          "e0",
+          "e2",
+          "e4",
+          "RS",
+          "R2",
+          "R4",
+          "A2",
+          "A1"
+        ],
+        "reps": [
+          0,
+          1,
+          2,
+          4,
+          8
+        ],
+        "spacing_s": 4.9e-06,
+        "states": [
+          "0",
+          "1",
+          "+",
+          "+i"
+        ]
+      },
+      "budget": {
+        "allowance_s": 600,
+        "baseline_circuit_s": 0.000321016,
+        "billing_round_s": 1.0,
+        "margin": 0.25,
+        "rep_delay_s": 0.00025,
+        "sub_job_overhead_s": 2.0
+      },
+      "contrast": {
+        "arms": [
+          "baseline",
+          "E0",
+          "E00",
+          "RS",
+          "R2",
+          "R4",
+          "A2"
+        ],
+        "fractions": [
+          0.1,
+          0.25,
+          0.5
+        ],
+        "jobs": 2,
+        "margins": [
+          0.1,
+          0.2,
+          0.3
+        ],
+        "n_mc": 20000,
+        "pooled_reference": [
+          "baseline",
+          "E0",
+          "E00"
+        ],
+        "sd_shots": 20000,
+        "seed": 34,
+        "shots_grid": [
+          2000,
+          8000,
+          20000,
+          50000
+        ],
+        "trade_options": [
+          {
+            "boost": [],
+            "drop": [],
+            "name": "plan"
+          },
+          {
+            "boost": [
+              "RS",
+              "E00"
+            ],
+            "drop": [
+              "P1",
+              "P3",
+              "P5",
+              "P7"
+            ],
+            "name": "drop odd scan points to RS, E00"
+          },
+          {
+            "boost": [
+              "RS",
+              "E00",
+              "R2"
+            ],
+            "drop": [
+              "P1",
+              "P3",
+              "P5",
+              "P7"
+            ],
+            "name": "drop odd scan points to RS, E00, R2"
+          },
+          {
+            "boost": [],
+            "drop": [],
+            "extra": {
+              "E00": 40000,
+              "RS": 40000
+            },
+            "name": "add 40k each to RS and E00"
+          }
+        ]
+      },
+      "design": {
+        "ancilla_bias": 0.02,
+        "ff_latency_s": 1e-06,
+        "ff_measure_s": 2.2e-06,
+        "held_out_arms": [
+          "INV2",
+          "COMP22",
+          "COMP40",
+          "ALT2"
+        ],
+        "phi_grid": 64,
+        "slot_window_s": 2.2e-06,
+        "x_s": 3.2e-08
+      },
+      "experiment": {
+        "classical_config": "experiments/configs/phase8_classical.toml",
+        "classical_summary": "results/summaries/phase8_classical/summary.json",
+        "name": "phase8_coherence",
+        "phase6_dir": "results/summaries/phase6",
+        "summary_dir": "results/summaries/phase8_coherence",
+        "workers": 2
+      },
+      "export": {
+        "control_arms": [
+          "P2",
+          "INV2",
+          "COMP22",
+          "ALT2"
+        ],
+        "qasm_arms": [
+          "E0",
+          "P2",
+          "P4",
+          "E00",
+          "INV2",
+          "COMP22",
+          "ALT2",
+          "RS",
+          "R2",
+          "R4"
+        ]
+      },
+      "knee": {
+        "interventions": {
+          "A2": [
+            "meas"
+          ],
+          "e2": [
+            "e2"
+          ],
+          "e4": [
+            "e4"
+          ]
+        },
+        "sham": [
+          "e0"
+        ],
+        "size": 4
+      },
+      "null": {
+        "alpha": 0.05,
+        "gen_b_eps": 0.02,
+        "gen_max_iters": 1500,
+        "jobs": 2,
+        "n_boot": 1000,
+        "per_job": 4000,
+        "replicates": 10,
+        "seed": 34,
+        "segment": 8,
+        "source_ids": {
+          "a": 1,
+          "b": 2,
+          "fitted": 4,
+          "fixed": 3
+        },
+        "sources": [
+          "a",
+          "b"
+        ]
+      },
+      "plan": {
+        "shots_per_arm": 8000,
+        "tiers": [
+          {
+            "arms": [
+              "baseline",
+              "E0",
+              "E00",
+              "P2",
+              "P4",
+              "INV2",
+              "RS",
+              "R2",
+              "A2"
+            ],
+            "hard_cap_s": 30,
+            "jobs": 1,
+            "name": "pilot",
+            "purpose": "population invariance (E0, E00, RS against baseline), the phase response at pi/2 and pi, inverse INV2 against E00, R2 against A2; gate before the main jobs",
+            "shots_per_arm": 2000
+          },
+          {
+            "arms": [
+              "baseline",
+              "E0",
+              "P1",
+              "P2",
+              "P3",
+              "P4",
+              "P5",
+              "P6",
+              "P7",
+              "E00",
+              "INV2",
+              "COMP22",
+              "COMP40",
+              "ALT2",
+              "RS",
+              "R2",
+              "R4",
+              "A2"
+            ],
+            "hard_cap_s": 150,
+            "jobs": 2,
+            "name": "main",
+            "purpose": "every arm: the phi scan (P1-P7, E0), inverse, composition and alternation (held out), the three equivalent dephasings (A2, R2, R4) and the feed-forward sham"
+          }
+        ]
+      },
+      "power": {
+        "dims": [
+          4,
+          6
+        ],
+        "generators": [
+          "fixed",
+          "fitted"
+        ],
+        "max_iters": 1500,
+        "n_test": 2000,
+        "n_train": 2000,
+        "planned_shots_per_arm": [
+          1000,
+          2000,
+          5000,
+          10000,
+          20000
+        ],
+        "refit_evals": 600,
+        "seed": 32,
+        "z_alpha": 1.644853627,
+        "z_beta": 0.841621234
+      },
+      "quantum_fit": {
+        "max_evals": 900,
+        "params": [
+          "dephase",
+          "damp",
+          "detune",
+          "flip",
+          "reset_e0",
+          "reset_e1",
+          "meas_decay",
+          "spec_dephase",
+          "spec_phase"
+        ],
+        "restarts": 2,
+        "step": 0.4
+      },
+      "register": {
+        "n_pop": [
+          2,
+          3,
+          4
+        ],
+        "sources": [
+          "fixed",
+          "fitted"
+        ],
+        "starts": [
+          "prism",
+          "random"
+        ]
+      },
+      "review": {
+        "checkpoint_every": 50,
+        "converge_dims": [
+          4,
+          5,
+          6
+        ],
+        "converge_max_iters": 4000,
+        "cv_dims": [
+          4,
+          5,
+          6
+        ],
+        "cv_max_iters": 3000,
+        "seed": 32,
+        "smooth": 0.01,
+        "tol": 0.0
+      }
+    },
+    "git_commit": "5b0561ec42d69c56ecbba8b859ffe9b98a625ce3",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 34,
+    "timestamp_utc": "2026-11-10T02:10:17+00:00",
+    "torch": "2.15.0"
+  },
+  "trade": {
+    "add 40k each to RS and E00": {
+      "boost": [],
+      "drop": [],
+      "estimate_s": 136.546112,
+      "fitted_margin80_noninf": 0.102078379,
+      "fitted_margin80_tost": 0.102078379,
+      "fitted_vanish_R2_fraction80": 0.095199919,
+      "fixed_margin80_noninf": 0.100724757,
+      "fixed_margin80_tost": 0.100724757,
+      "fixed_vanish_R2_fraction80": 0.085123462,
+      "shots": {
+        "A2": 8000,
+        "ALT2": 8000,
+        "COMP22": 8000,
+        "COMP40": 8000,
+        "E0": 8000,
+        "E00": 48000,
+        "INV2": 8000,
+        "P1": 8000,
+        "P2": 8000,
+        "P3": 8000,
+        "P4": 8000,
+        "P5": 8000,
+        "P6": 8000,
+        "P7": 8000,
+        "R2": 8000,
+        "R4": 8000,
+        "RS": 48000,
+        "baseline": 8000
+      },
+      "total_shots": 224000,
+      "upper_s": 172.68264
+    },
+    "drop odd scan points to RS, E00": {
+      "boost": [
+        "RS",
+        "E00"
+      ],
+      "drop": [
+        "P1",
+        "P3",
+        "P5",
+        "P7"
+      ],
+      "estimate_s": 89.132224,
+      "fitted_margin80_noninf": 0.118236141,
+      "fitted_margin80_tost": 0.118236141,
+      "fitted_vanish_R2_fraction80": 0.095323087,
+      "fixed_margin80_noninf": 0.115633906,
+      "fixed_margin80_tost": 0.115633906,
+      "fixed_vanish_R2_fraction80": 0.085091168,
+      "shots": {
+        "A2": 8000,
+        "ALT2": 8000,
+        "COMP22": 8000,
+        "COMP40": 8000,
+        "E0": 8000,
+        "E00": 24000,
+        "INV2": 8000,
+        "P2": 8000,
+        "P4": 8000,
+        "P6": 8000,
+        "R2": 8000,
+        "R4": 8000,
+        "RS": 24000,
+        "baseline": 8000
+      },
+      "total_shots": 144000,
+      "upper_s": 113.41528
+    },
+    "drop odd scan points to RS, E00, R2": {
+      "boost": [
+        "RS",
+        "E00",
+        "R2"
+      ],
+      "drop": [
+        "P1",
+        "P3",
+        "P5",
+        "P7"
+      ],
+      "estimate_s": 89.516009712,
+      "fitted_margin80_noninf": 0.125623628,
+      "fitted_margin80_tost": 0.125623628,
+      "fitted_vanish_R2_fraction80": 0.062434062,
+      "fixed_margin80_noninf": 0.122450517,
+      "fixed_margin80_tost": 0.122450517,
+      "fixed_vanish_R2_fraction80": 0.055750717,
+      "shots": {
+        "A2": 8000,
+        "ALT2": 8000,
+        "COMP22": 8000,
+        "COMP40": 8000,
+        "E0": 8000,
+        "E00": 18666,
+        "INV2": 8000,
+        "P2": 8000,
+        "P4": 8000,
+        "P6": 8000,
+        "R2": 18666,
+        "R4": 8000,
+        "RS": 18666,
+        "baseline": 8000
+      },
+      "total_shots": 143998,
+      "upper_s": 113.89501214
+    },
+    "plan": {
+      "boost": [],
+      "drop": [],
+      "estimate_s": 87.977152,
+      "fitted_margin80_noninf": 0.15862049,
+      "fitted_margin80_tost": 0.158623043,
+      "fitted_vanish_R2_fraction80": 0.095690927,
+      "fixed_margin80_noninf": 0.152897504,
+      "fixed_margin80_tost": 0.152897949,
+      "fixed_vanish_R2_fraction80": 0.085412057,
+      "shots": {
+        "A2": 8000,
+        "ALT2": 8000,
+        "COMP22": 8000,
+        "COMP40": 8000,
+        "E0": 8000,
+        "E00": 8000,
+        "INV2": 8000,
+        "P1": 8000,
+        "P2": 8000,
+        "P3": 8000,
+        "P4": 8000,
+        "P5": 8000,
+        "P6": 8000,
+        "P7": 8000,
+        "R2": 8000,
+        "R4": 8000,
+        "RS": 8000,
+        "baseline": 8000
+      },
+      "total_shots": 144000,
+      "upper_s": 111.97144
+    }
+  }
+}

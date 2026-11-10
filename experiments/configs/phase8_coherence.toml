@@ -154,7 +154,7 @@ planned_shots_per_arm = [1000, 2000, 5000, 10000, 20000]
 seed = 34
 sources = ["a", "b"]
 source_ids = { a = 1, b = 2, fixed = 3, fitted = 4 }
-replicates = 10                # per source (see docs/phase8-coherence.md section 3.3 for why)
+replicates = 6                 # per source: ~86 CPU-min each at 2 workers (docs section 3.3)
 per_job = 4000
 jobs = 2
 segment = 8
@@ -170,9 +170,54 @@ sources = ["fixed", "fitted"]
 n_pop = [2, 3, 4]
 starts = ["prism", "random"]
 
+[contrast]
+# --part contrast: Claim 3's direct contrast on w(0). Vanish: R2 (R4) against RS with #31's
+# rule (|w| + 1.96 SE < f |w_RS|, all jobs and every leave-one-job-out subset). Preserve: RS
+# against E00 (TOST of the ratio, and the one-sided non-inferiority form), also against the
+# pooled population-invariant shams. Per-shot SDs from sd_shots simulated shots per arm.
+seed = 34
+arms = ["baseline", "E0", "E00", "RS", "R2", "R4", "A2"]
+pooled_reference = ["baseline", "E0", "E00"]
+sd_shots = 20000
+jobs = 2
+n_mc = 20000
+fractions = [0.10, 0.25, 0.50]
+margins = [0.10, 0.20, 0.30]
+shots_grid = [2000, 8000, 20000, 50000]
+[[contrast.trade_options]]
+name = "plan"
+drop = []
+boost = []
+[[contrast.trade_options]]
+name = "drop odd scan points to RS, E00"
+drop = ["P1", "P3", "P5", "P7"]
+boost = ["RS", "E00"]
+[[contrast.trade_options]]
+name = "drop odd scan points to RS, E00, R2"
+drop = ["P1", "P3", "P5", "P7"]
+boost = ["RS", "E00", "R2"]
+[[contrast.trade_options]]
+name = "add 40k each to RS and E00"
+drop = []
+boost = []
+extra = { RS = 40000, E00 = 40000 }
+
 [export]                      # --export-qasm (hardware group, FakeKingston only)
 qasm_arms = ["E0", "P2", "P4", "E00", "INV2", "COMP22", "ALT2", "RS", "R2", "R4"]
 control_arms = ["P2", "INV2", "COMP22", "ALT2"]   # also built unfenced and with virtual rz
+
+[controls]                    # --export-controls (#34; hardware group, FakeKingston only)
+# section 2.5's direct q75 population benchmark: q75 alone, prepared in |0> or |1>, 8
+# repetitions of the intervention at the PMD step spacing, then read; each against the e0 sham
+# at the same preparation (TOST, margin 0.02 in P(1), 80% power: shots from the model).
+benchmark_interventions = ["e0", "e2", "e4", "R2", "A2"]
+benchmark_states = ["0", "1"]
+benchmark_reps = 8
+benchmark_margin = 0.02
+# section 2.6's Knee circuits: q75 prepared in step 0's slot, then one intervention or the sham
+knee_states = ["0", "1", "+", "+i"]
+knee_interventions = { e4 = ["e4"], e2 = ["e2"], A2 = ["meas"], sham = ["e0"] }
+knee_shots = 1000
 
 [budget]                      # qmem.followup's cost model (Phase 6/7)
 rep_delay_s = 250e-6
@@ -201,3 +246,9 @@ purpose = "every arm: the phi scan (P1-P7, E0), inverse, composition and alterna
 arms = ["baseline", "E0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "E00", "INV2", "COMP22", "COMP40", "ALT2", "RS", "R2", "R4", "A2"]
 jobs = 2
 hard_cap_s = 150
+[[plan.tiers]]                # #34: section 2.5's direct benchmark and section 2.6's Knee circuits
+name = "controls"
+kind = "controls"             # circuits and shots from --export-controls (controls.json)
+purpose = "direct q75 population benchmark (e0, e2, e4, R2, A2 from |0>, |1>, 8 repetitions, TOST +-0.02 against e0) and the Knee classical-disturbance circuits (|0>, |1>, |+>, |+i> x e4, e2, A2, sham; 1000 shots)"
+jobs = 1
+hard_cap_s = 45

@@ -100,8 +100,91 @@
       "tier": "main",
       "upper_s": 111.97144,
       "within_cap": true
+    },
+    {
+      "by_kind": {
+        "benchmark": {
+          "circuits": 10,
+          "shot_s": 18.04656,
+          "shots": 60000
+        },
+        "knee": {
+          "circuits": 16,
+          "shot_s": 9.183776,
+          "shots": 16000
+        }
+      },
+      "circuits": {
+        "bench_A2_0": 6000,
+        "bench_A2_1": 6000,
+        "bench_R2_0": 6000,
+        "bench_R2_1": 6000,
+        "bench_e0_0": 6000,
+        "bench_e0_1": 6000,
+        "bench_e2_0": 6000,
+        "bench_e2_1": 6000,
+        "bench_e4_0": 6000,
+        "bench_e4_1": 6000,
+        "knee_A2_+": 1000,
+        "knee_A2_+i": 1000,
+        "knee_A2_0": 1000,
+        "knee_A2_1": 1000,
+        "knee_e2_+": 1000,
+        "knee_e2_+i": 1000,
+        "knee_e2_0": 1000,
+        "knee_e2_1": 1000,
+        "knee_e4_+": 1000,
+        "knee_e4_+i": 1000,
+        "knee_e4_0": 1000,
+        "knee_e4_1": 1000,
+        "knee_sham_+": 1000,
+        "knee_sham_+i": 1000,
+        "knee_sham_0": 1000,
+        "knee_sham_1": 1000
+      },
+      "estimate_s": 29.230336,
+      "hard_cap_s": 45,
+      "jobs": 1,
+      "per_job": {
+        "estimate_s": 29.230336,
+        "shot_s": 27.230336,
+        "shots": 76000,
+        "upper_s": 37.53792
+      },
+      "purpose": "direct q75 population benchmark (e0, e2, e4, R2, A2 from |0>, |1>, 8 repetitions, TOST +-0.02 against e0) and the Knee classical-disturbance circuits (|0>, |1>, |+>, |+i> x e4, e2, A2, sham; 1000 shots)",
+      "qasm_sha256": {
+        "bench_A2_0": "5d97e28eebd0783553502d5832d07d2c823eda1314cf75d4f782e0d906f58c60",
+        "bench_A2_1": "9b5abba5a7150fba7e8c2a9450f17ca987bbf198e4062142da0d8f3b54e6fc47",
+        "bench_R2_0": "1e7274f3ebbc0a1714f9cbf1d38f84e77423471806312cecdaf1164d87e59629",
+        "bench_R2_1": "5345e6944a8243ea4023c453f1f683af8c9f4c0490d56dd670d46e37114c6f97",
+        "bench_e0_0": "f2951803807e4632dba373362622077ff34b1415431033f0356b8ec68191a4c1",
+        "bench_e0_1": "3654c9339b70f77a788032e3c24d8a25627c54fc5690ff64ce01ef71ad68f748",
+        "bench_e2_0": "dd2fc5fe366013aef897cb553dd0ef72bae8f33f90fd36d4fc0a6608eaffa5ce",
+        "bench_e2_1": "60a412fad9c1e0ffd386d87123c1ee9b0071825b8bb60f2194a4b49b0163e6cc",
+        "bench_e4_0": "4e78ab63be36471f11a5baada9d1996aa8f932f0782a8147834deefc50e0153b",
+        "bench_e4_1": "2f097ee0f77fd679350b30eb064a994fb75fbbead257d00d2771d796ba5b65c5",
+        "knee_A2_+": "c6f958d1f5bdc8b9b2116facc499f9985c4975c1d444410f282be18b4442c78d",
+        "knee_A2_+i": "dc6b605b8720a7f62f6e74a8d9c302fbb59d8b88232de98a14204666658abda7",
+        "knee_A2_0": "35a2e568eca5666ecb147a8df4e318ec37393c103ae6e81d50533b29e45dfd26",
+        "knee_A2_1": "658ebf1cca65d84486c59fb6852076421ef2e7bbe09df46bd64fc41ee354fdbf",
+        "knee_e2_+": "288c2588c7da4cf945ab3816f27d1bf20aec5fa45bb99b6872777027dca16e55",
+        "knee_e2_+i": "5db8192253d39e993e887436984100b46e967347bba2793b66a2cfbd2854f640",
+        "knee_e2_0": "8e170fbaf0141271eb6ea6f4ac272dff2a7b0ab346fedf94000ac3b9e75996f4",
+        "knee_e2_1": "e00e8f319df41f3f601f42b7c782a07fb115e4883eadb01be68645a609d668f7",
+        "knee_e4_+": "040087e4b855271757c2177c6315a2cc3a4fa15b373357e1e4b8c201f965a35f",
+        "knee_e4_+i": "0655f465d2f1e38e80db7f17f7eb4911479d9580eeb26cb03ce16f677b4f06db",
+        "knee_e4_0": "ade50059c00661b8ff954266a798df4fa0b25e7e2663857062190c64bd2d2745",
+        "knee_e4_1": "0251c5b7a30d45c17901476451d1c1d7dc62d187a7a85b8c1dda270f1f98504a",
+        "knee_sham_+": "68f35569beb1934d1c41408aaf99440e6b894f787c07cad2ad96585f0ab243ef",
+        "knee_sham_+i": "631b80ae6467f564a25e70db6dd02e8a764b76b0b548cda5121ff0cc2ec23e9a",
+        "knee_sham_0": "4da5c4098a6fc87ac59616b3ad2e6a212b1ed65a172a36f13aababbc6a3617d5",
+        "knee_sham_1": "84ad6d8a3d741e09844486998dfd4f41f27cf44282ac2d3336b2329c3fa18515"
+      },
+      "tier": "controls",
+      "upper_s": 37.53792,
+      "within_cap": true
     }
   ],
-  "total_upper_s": 128.68596,
+  "total_upper_s": 166.22388,
   "transpile": "optimization_level = 0, fixed layout (as Phase 7); every echo fenced"
 }

@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import warnings
 from collections import Counter
 from typing import Any
@@ -344,3 +345,182 @@ def export(cfg: dict[str, Any]) -> None:
     )
     PC.write_csv(sd / "circuits.csv", [PC.jround(r) for r in rows])
     print(json.dumps({"survive": ok, "ancillas": anc["chosen"]}, indent=1))
+
+
+# -- #34: the controls tier (direct q75 population benchmark, Knee circuits) ---------------------
+
+
+def _prep(qc, q, state: str) -> None:
+    """``qmem.coherence``'s ``prep<s>`` after a reset: |0>, |1>, |+> = Ry(pi/2)|0>,
+    |+i> = Rx(-pi/2)|0>."""
+    if state == "1":
+        qc.x(q)
+    elif state == "+":
+        qc.ry(math.pi / 2, q)
+    elif state == "+i":
+        qc.rx(-math.pi / 2, q)
+
+
+def benchmark_circuit(
+    n_qubits: int, name: str, state: str, reps: int, spacing_s: float, anc, static: bool = False
+):
+    """q75 alone (``qmem.coherence.benchmark``): prepare ``state``, then ``reps`` times the
+    intervention and ``spacing_s`` of idle, then read q75. ``e<k>`` fenced echoes; ``R2`` an
+    ancilla in |+> measured, then ``e4`` if its bit is 1 else ``e0``, then ``e0`` (the arm's
+    pulse count); ``A2`` a mid-circuit measurement of q75 (outcome recorded, not used).
+    ``static``: R2's ``if_else`` replaced by its ``e0`` branch (a duration twin only)."""
+    from qiskit import ClassicalRegister, QuantumCircuit
+
+    regs = [ClassicalRegister(1, "out")]
+    if name == "R2":
+        regs.append(ClassicalRegister(reps, "b1"))
+    if name == "A2":
+        regs.append(ClassicalRegister(reps, "m"))
+    qc = QuantumCircuit(n_qubits)
+    for r in regs:
+        qc.add_register(r)
+    q = qc.qubits[MEMORY]
+    _prep(qc, q, state)
+    for r in range(reps):
+        if name.startswith("e"):
+            _echo(qc, q, _phase(name))
+        elif name == "R2":
+            a = qc.qubits[anc[0]]
+            qc.reset(a)
+            qc.h(a)
+            qc.measure(a, regs[1][r])
+            if static:
+                _echo(qc, q, 0.0)
+            else:
+                with qc.if_test((regs[1][r], 1)) as else_:
+                    _echo(qc, q, math.pi)
+                with else_:
+                    _echo(qc, q, 0.0)
+            _echo(qc, q, 0.0)
+        elif name == "A2":
+            qc.measure(q, regs[1][r])
+        else:
+            raise ValueError(name)
+        qc.delay(spacing_s, q, unit="s")
+    qc.measure(q, regs[0][0])
+    return qc
+
+
+def knee_circuit(full, state: str, program, length: int):
+    """The PMD circuit with q75 reset and prepared in ``state`` in step 0's slot, then the
+    intervention ``program`` (``qmem.coherence.knee_disturbances``); later steps unchanged."""
+    from qiskit import ClassicalRegister
+
+    regs = {"m": ClassicalRegister(1, "m")} if "meas" in program else {}
+
+    def op(qc, t: int) -> None:
+        if t != 0:
+            return
+        q = qc.qubits[MEMORY]
+        qc.reset(q)
+        _prep(qc, q, state)
+        for e in program:
+            if e == "meas":
+                qc.measure(q, regs["m"][0])
+            else:
+                _echo(qc, q, _phase(e))
+
+    return A.restructure(
+        full, full.qubits[MEMORY], full.qubits[OUTPUT], op, extra_regs=list(regs.values())
+    )
+
+
+def benchmark_shots(cfg: dict[str, Any], ctx) -> dict[str, Any]:
+    """Shots per benchmark circuit: the TOST of each intervention against the e0 sham at the
+    same preparation, margin ``[controls] benchmark_margin`` in P(1), 80% power, from the
+    model's P(1) (binomial SDs); the maximum over circuits, rounded up to 1,000."""
+    cc, bc = cfg["controls"], cfg["benchmark"]
+    pc = ctx.quantum.pieces
+    b = Q.Benchmark(ctx.t1_q75, ctx.t2_q75, pc.p1_q75, bc["spacing_s"], ctx.quantum.readout)
+    z = 1.6448536269514722 + 1.2815515655446004  # TOST: alpha 0.05 per bound, 80% power
+    rows, worst = [], 0.0
+    for name in cc["benchmark_interventions"]:
+        for st in cc["benchmark_states"]:
+            p = Q.benchmark(name, st, cc["benchmark_reps"], b, ctx.quantum.decay)["p1"]
+            p0 = Q.benchmark("e0", st, cc["benchmark_reps"], b)["p1"]
+            sd = math.sqrt(p * (1 - p) + p0 * (1 - p0))
+            delta = cc["benchmark_margin"] - abs(p - p0)
+            n = (z * sd / delta) ** 2 if delta > 0 else math.inf
+            rows.append({"intervention": name, "state": st, "p1": p, "p1_e0": p0, "shots_80": n})
+            if name != "e0":
+                worst = max(worst, n)
+    shots = int(math.ceil(worst / 1000) * 1000)
+    return {"rows": rows, "shots_per_circuit": shots}
+
+
+def export_controls(cfg: dict[str, Any]) -> None:
+    """QASM, hashes and durations of the controls tier (FakeKingston only)."""
+    from qiskit import qasm3
+    from qiskit_ibm_runtime.fake_provider import FakeKingston
+
+    sd = PC.sdir(cfg)
+    qd = sd / "qasm" / "controls"
+    qd.mkdir(parents=True, exist_ok=True)
+    backend = FakeKingston()
+    tgt = backend.target
+    full = qasm3.loads((REPO_ROOT / cfg["experiment"]["phase6_dir"] / "circuit.qasm").read_text())
+    circuits = json.loads((sd / "circuits.json").read_text())
+    anc = tuple(circuits["ancillas"]["chosen"])
+    cc, ds = cfg["controls"], cfg["design"]
+    ctx = PC.Ctx(cfg)
+    shots_b = benchmark_shots(cfg, ctx)
+    built = []
+    for name in cc["benchmark_interventions"]:
+        for st in cc["benchmark_states"]:
+            qc = benchmark_circuit(
+                full.num_qubits, name, st, cc["benchmark_reps"], cfg["benchmark"]["spacing_s"], anc
+            )
+            twin = benchmark_circuit(
+                full.num_qubits,
+                name,
+                st,
+                cc["benchmark_reps"],
+                cfg["benchmark"]["spacing_s"],
+                anc,
+                static=True,
+            )
+            built.append(
+                ("benchmark", f"bench_{name}_{st}", qc, shots_b["shots_per_circuit"], twin)
+            )
+    for iv, prog in cc["knee_interventions"].items():
+        for st in cc["knee_states"]:
+            qc = knee_circuit(full, st, prog, cfg["analysis"]["length"])
+            built.append(("knee", f"knee_{iv}_{st}", qc, cc["knee_shots"], qc))
+    rows, hashes = [], {}
+    for kind, label, qc, shots, twin in built:
+        tq = isa(qc, backend, 0)
+        text = qasm3.dumps(tq)
+        hashes[label] = hashlib.sha256(text.encode()).hexdigest()
+        (qd / f"{label}.qasm").write_text(text)
+        row: dict[str, Any] = {"kind": kind, "circuit": label, "shots": shots}
+        row["x_on_q75"] = sum(1 for n, _ in q75_ops(tq) if n == "x")
+        try:
+            row["duration_s"] = tq.estimate_duration(tgt, unit="s")
+            row["duration_note"] = "FakeKingston estimate_duration (level 0)"
+        except Exception:  # control flow (R2): the e0-only twin plus the feed-forward time
+            # (conservative: the echo waits for the ancilla's readout and the latency)
+            dt = isa(twin, backend, 0).estimate_duration(tgt, unit="s")
+            ff = ds["ff_measure_s"] + ds["ff_latency_s"]
+            row["duration_s"] = dt + cc["benchmark_reps"] * ff
+            row["duration_note"] = (
+                "twin without if_else plus reps x ([design] ff_measure_s + ff_latency_s)"
+            )
+        rows.append(row)
+        print(f"controls: {label} {row['duration_s'] * 1e6:.1f} us", flush=True)
+    save_json(
+        sd / "controls.json",
+        {
+            "meta": run_metadata(cfg, 0),
+            "backend": backend.name,
+            "ancilla": anc[0],
+            "benchmark_shots": shots_b,
+            "rows": rows,
+            "qasm_sha256": hashes,
+        },
+    )
+    PC.write_csv(sd / "controls.csv", [PC.jround(r) for r in rows])
