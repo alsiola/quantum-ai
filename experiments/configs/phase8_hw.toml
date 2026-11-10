@@ -1,0 +1,108 @@
+# Phase 8 Stage 4 (issue #36): the combined pre-registration of the three hardware tiers and its
+# LOCAL dry-run harness. There is no live mode and no submit path: nothing here contacts IBM.
+# The live path (a backend with submit/result/usage) is a separate addition, made only after
+# the owner approves one tier and a CLAUDE.md exception on #28.
+#
+#   uv run python experiments/phase8_hw.py --config experiments/configs/phase8_hw.toml --dry-run-local
+#
+# Every rule below is fixed before any data (docs/phase8-preregistration.md). The stage designs
+# are read from their own configs and summaries, never restated here.
+
+[experiment]
+name = "phase8_hw"
+summary_dir = "results/summaries/phase8_prereg"
+workers = 2                                     # at most 2 on the shared machine
+device = "results/summaries/phase7_spectator/device.json"   # FakeKingston, 2026-04-15 (stale)
+reference_config = "experiments/configs/phase8_reference.toml"     # Tier 1 (#33)
+coherence_config = "experiments/configs/phase8_coherence.toml"     # Tier 2 (#32, #34)
+replication_config = "experiments/configs/phase8_replication.toml" # Tier 3 (#31)
+prereg = "docs/phase8-preregistration.md"
+
+[order]
+tiers = ["tier1", "tier2", "tier3"]             # #28's ranking; each runs only on its own approval
+deferrable = ["tier3"]
+
+[approval]
+# One issue-comment URL per tier, written by the owner's approval on #28 and never edited after a
+# run has used it (qmem.prereg.freeze_approval). Empty: not approved. This harness never reads
+# them for a submission: it has no submit path.
+tier1 = ""
+tier2 = ""
+tier3 = ""
+
+[allowance]
+# The Open plan's live remaining allowance is UNKNOWN until the owner reads the dashboard
+# (#28). It is a parameter: 531 s is #33's figure after #27, not a reading.
+remaining_s = 531
+scenarios_s = [600, 531, 400, 300, 200]
+reserve_s = 60                                  # held back from every tier (overruns, a re-pilot)
+prior_counted_s = 0.0                           # Phase 8 jobs already counted (none)
+allowed_plans = ["open"]
+
+[cost]                                          # qmem.followup.CostModel (Phase 6/7)
+overhead_s = 2.0
+rep_delay_s = 250e-6
+margin = 0.25
+billing_round_s = 1.0
+
+[tier1]                                         # Stage 3 (#33): Claim 4
+hard_cap_s = 30.0
+max_job_estimate_s = 20.0                       # Phase 6's per-job guard
+alpha = 0.05                                    # family-wise over the two co-primaries (Holm)
+secondary_alpha = 0.05
+spam_gate = 0.90
+min_branch_shots = 500
+mdi = true                                      # optional sub-tier, only after P&M passes
+power_target = 0.8
+
+[tier2]                                         # Stage 2 (#32, #34): Claim 3
+pilot_cap_s = 30.0
+main_cap_s = 150.0
+controls_cap_s = 45.0
+hard_cap_s = 225.0
+max_job_estimate_s = 20.0                       # the campaign's per-job guard (Phase 6, Tiers 1 and 3)
+# Amendment A1 (pre-data, docs/phase8-preregistration.md section 7): the designed main jobs
+# (44 s each) and controls job (29 s) exceed the per-job guard. Each main time block runs as
+# 3 consecutive sub-jobs and the controls tier as 2; the analysis's job = the time block.
+main_subjobs_per_block = 3
+controls_subjobs = 2
+
+[tier2.slot_1rad]                               # #35's 1 rad extension: NOT folded in
+status = "pending #35 (open when this was written); the coordinator folds it in if #35 recommends it"
+arms = 6
+added_main_upper_s = 34.0                       # #34 section 3.2 (contrast.json "separation")
+included = false
+
+[tier2.dry_run]
+seed = 3601
+n_boot = 200                                    # block bootstrap of the deficit (1000 in the real analysis)
+primary_per_job = 4000                          # shots per arm per job for the likelihood contrast (the main tier: all of them)
+em_iters = 300                                  # EM steps per start here (1500 in the real analysis)
+refit_evals = 200                               # quantum refit's Nelder-Mead evaluations here
+stat_boot = 200                                 # bootstrap resamples for the per-arm statistics here
+starts = { "4" = "klein", "6" = "octahedron" }  # one start per d here (four in the real analysis)
+
+[tier3]                                         # Stage 1 (#31): Claims 1-2 generality
+hard_cap_s = 120.0
+max_job_estimate_s = 12.0                       # #31's own per-job limit
+option = "two_parallel"                         # #31 section 4's recommended option, full arms
+deferrable = true
+
+[tier3.dry_run]
+seed = 3602
+n_boot = 200
+
+[reselection]
+# Pre-stated floors: if a live snapshot selects other qubits, the stage's QASM is re-exported and
+# re-hashed and its power re-checked against these; the tier aborts if a floor fails.
+tier1_bell_power_floor = 0.80                   # Bell route only (not in Tier 1's plan): deficit-matched model, 6,000 shots
+tier2_vanish_power_floor = 0.80                 # R2 and R4 vanish against RS, f = 0.25 (#34 section 4.1)
+tier2_preserve_power_floor = 0.80               # RS non-inferior to E00, m = 0.20
+tier2_ancilla_readout_max = 0.02                # conservative bias bound |P(b=1) - 1/2| <= readout error
+tier3_power_floor = 0.80                        # #31's power_min, P(H1 and H2) per pair
+n_mc = 20000
+seed = 3603
+
+[tier1_power]                                   # task 3: Tier 1 power under Stage 2's fitted model
+draws = 4000
+seed = 3604
