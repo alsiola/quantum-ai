@@ -4,8 +4,12 @@ Research campaign: measurement-induced memory in quantum-native sequence models
 (brief: issue #2). Simulation only: never call quantum cloud services. The exceptions are
 `experiments/phase6.py` (IBM hardware run, approved by the owner on #16, free Open plan) and
 `experiments/phase7_hw.py` (its pre-registered follow-up, #24; it submits only with the owner's
-approving comment on #17 in its config): never submit a job outside an issue where the owner asks for one, always `--dry-run` first,
-and keep within the plan's allowance. Credentials live in `.env` (gitignored; never commit it).
+approving comment on #17 in its config), and `experiments/phase8_hw.py` (Phase 8's three
+pre-registered tiers, `docs/phase8-preregistration.md`; the owner's standing approval on #28,
+https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170, covers the free Open plan
+from 2026-11-10: it is the `[approval]` URL for every tier). Never use a paid plan; never submit
+a job from a script without a CLAUDE.md entry and a pre-registered cap; always `--dry-run` first,
+and keep within the plan's allowance (reserve included). Credentials live in `.env` (gitignored; never commit it).
 
 ## Setup and checks
 

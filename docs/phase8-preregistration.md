@@ -293,9 +293,9 @@ snapshot can't reach a selection (tested).
   stops the run (`F.usage_guard`).
 - **Per-job estimate limits.** 20 s (Tiers 1 and 2) and 12 s (Tier 3).
 - **Caps.** Each tier has its own hard cap.
-- **Remaining allowance.** It is a parameter (`[allowance] remaining_s`). **The live value is
-  unknown until the owner reads the IBM dashboard (#28).** 531 s is #33's figure after #27, not
-  a reading.
+- **Remaining allowance.** It is a parameter (`[allowance] remaining_s`). **The owner's
+  dashboard reading on #28 (2026-11-10): 8.97 of 10 RU remaining, that is 538 s** (1 RU = 1 min
+  of the Open plan's 10 min per rolling 28 days). #33's estimate had been 531 s.
 - **Reserve.** 60 s is held back from every tier.
 - **Admission.** A tier is admitted only if the cumulative hard caps, through that tier, fit in
   remaining − reserve.
@@ -303,7 +303,8 @@ snapshot can't reach a selection (tested).
 | remaining allowance | Tier 1 (cap 30) | + Tier 2 (cap 225) | + Tier 3 (cap 120) |
 | --- | --- | --- | --- |
 | 600 s | yes | yes | yes |
-| 531 s (#33, unverified) | yes | yes | yes (375 ≤ 471) |
+| **538 s (reading, 2026-11-10)** | yes | yes | yes (375 ≤ 478; 409 ≤ 478 with the 1 rad slot) |
+| 531 s (#33's estimate) | yes | yes | yes (375 ≤ 471) |
 | 400 s | yes | yes | **defer** (375 > 340) |
 | 300 s | yes | **no** (255 > 240; the upper bounds, 209 s, would fit) | defer |
 | 200 s | yes | no | defer |
@@ -410,6 +411,15 @@ affects, with the hash guard of Phase 7 §9 (`F.amendment_check`) on the live pa
   - Claim 4 still rests on P&M at n = 1 alone; a branch-only rejection is *ambiguous* (§2.8).
   - Power is unchanged at 1.00 (§2.11).
 - **Slot, 2026-11-10, pre-data (Tier 2).** #35's 1 rad extension is not folded in (§3.9).
+- **A3, 2026-11-10, pre-data (approvals, budget).** The owner gave a standing approval for the
+  free Open plan on #28 (issuecomment-6782262170): "use the free plan however you see fit from
+  now on". Its URL fills `[approval] tier1`, `tier2` and `tier3`.
+  - §6's rules are otherwise unchanged. Tiers run in order. Each still passes its own
+    admission check, gates, caps and live re-selection, and runs `--dry-run` first. A later
+    tier's rules are never changed by an earlier tier's results without a dated amendment.
+  - The allowance is the owner's reading (538 s, §7), so all three tiers are admitted, with
+    the 1 rad slot too if #35 recommends it.
+  - MDI (§2) is still excluded until its q74 reset is fixed by an amendment with new hashes.
 
 ## Reproduction
 

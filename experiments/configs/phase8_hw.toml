@@ -25,15 +25,17 @@ deferrable = ["tier3"]
 [approval]
 # One issue-comment URL per tier, written by the owner's approval on #28 and never edited after a
 # run has used it (qmem.prereg.freeze_approval). Empty: not approved. This harness never reads
-# them for a submission: it has no submit path.
-tier1 = ""
-tier2 = ""
-tier3 = ""
+# them for a submission: it has no submit path. All three: the owner's standing approval (amendment A3).
+tier1 = "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170"
+tier2 = "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170"
+tier3 = "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170"
 
 [allowance]
-# The Open plan's live remaining allowance is UNKNOWN until the owner reads the dashboard
-# (#28). It is a parameter: 531 s is #33's figure after #27, not a reading.
-remaining_s = 531
+# The owner's dashboard reading on #28, 2026-11-10 (issuecomment-6782246125): used 1.03 RU,
+# remaining 8.97 RU of the Open plan's 10 RU = 10 min per rolling 28 days, so 1 RU = 60 s and
+# 8.97 RU = 538.2 s, rounded down. (#33's estimate was 531 s.)
+remaining_s = 538
+reading_date = "2026-11-10"
 scenarios_s = [600, 531, 400, 300, 200]
 reserve_s = 60                                  # held back from every tier (overruns, a re-pilot)
 prior_counted_s = 0.0                           # Phase 8 jobs already counted (none)
