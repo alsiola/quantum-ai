@@ -144,6 +144,32 @@ z_alpha = 1.6448536269514722  # one-sided alpha = 0.05 per d (Holm over d = 4, 6
 z_beta = 0.8416212335729143   # 80% power
 planned_shots_per_arm = [1000, 2000, 5000, 10000, 20000]
 
+# -- Stage 2b (#34): null calibration and the phase-register adversary ---------------------------
+[null]
+# --part null: section 4's pipeline (parity split, the four starts at [power] max_iters, the
+# quantum refit with [power] refit_evals, block bootstrap SE by job and 8-shot segment, Holm
+# over D = 4, 6) on data simulated from classical d = 6 generators at the main tier's shots
+# (8000 per arm in 2 jobs). (a) #32's fixed_d6_octahedron fit; (b) #30's general_d6 with
+# the new elements' maps fitted (its own maps frozen) to #32's fixed-generator shots.
+seed = 34
+sources = ["a", "b"]
+source_ids = { a = 1, b = 2, fixed = 3, fitted = 4 }
+replicates = 10                # per source (see docs/phase8-coherence.md section 3.3 for why)
+per_job = 4000
+jobs = 2
+segment = 8
+n_boot = 1000
+alpha = 0.05
+gen_max_iters = 1500           # generator (b)'s EM
+gen_b_eps = 0.02               # (b)'s new maps start at (1 - eps) I + eps / d
+
+[register]
+# --part register: the same pipeline on data from the two quantum generators (rep 0), plus
+# qmem.register's Z_8 x n_pop phase register (echoes fixed shifts) and a free d = 8 model.
+sources = ["fixed", "fitted"]
+n_pop = [2, 3, 4]
+starts = ["prism", "random"]
+
 [export]                      # --export-qasm (hardware group, FakeKingston only)
 qasm_arms = ["E0", "P2", "P4", "E00", "INV2", "COMP22", "ALT2", "RS", "R2", "R4"]
 control_arms = ["P2", "INV2", "COMP22", "ALT2"]   # also built unfenced and with virtual rz

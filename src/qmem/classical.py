@@ -1076,11 +1076,15 @@ class ProgramModel:
             return D.TimeVaryingProcess.constant(proc, length)
         return D.TimeVaryingProcess(self.init, bank[ch], np.ones(self.d))
 
-    def n_params(self) -> int:
+    def n_params(self, frozen: Sequence[str] = ()) -> int:
+        """Free parameters (``frozen`` parts not counted)."""
         d = self.d
-        k = (d - 1) + d * (d - 1) + d * (2 * d - 1)
-        k += len(self.maps) * d * (d - 1)
-        k += (len(self.labelled) + len(self.whole)) * d * (2 * d - 1)
+        fz = set(frozen)
+        k = 0 if "init" in fz else d - 1
+        k += 0 if "pre" in fz else d * (d - 1)
+        k += 0 if "post" in fz else d * (2 * d - 1)
+        k += sum(d * (d - 1) for m in self.maps if m not in fz)
+        k += sum(d * (2 * d - 1) for m in (*self.labelled, *self.whole) if m not in fz)
         return k
 
     def to_dict(self) -> dict[str, Any]:
@@ -1280,12 +1284,19 @@ def _mat(model: ProgramModel, kind: str, name: str, label: int | None) -> np.nda
 
 
 def program_em_step(
-    model: ProgramModel, arms: dict[str, ArmSpec], data: dict[str, ProgramData]
+    model: ProgramModel,
+    arms: dict[str, ArmSpec],
+    data: dict[str, ProgramData],
+    frozen: Sequence[str] = (),
 ) -> tuple[ProgramModel, float]:
     """One exact EM step over every arm jointly (Baum-Welch through each factor chain: the
     expected counts of factor ``F_i`` in ``L = A F_i B`` are ``F_i * (A^T R B^T)`` with
     ``R = C / L``, ``C`` the step's expected transition counts). Returns the new model and the
-    old model's log-likelihood."""
+    old model's log-likelihood.
+
+    ``frozen``: parts kept at their current value (``"init"``, ``"pre"``, ``"post"`` or an
+    element's name). The expected complete-data log-likelihood separates over the parts, so
+    maximising over the others with these fixed is still an ascent step (ECM)."""
     d = model.d
     n_pre = np.zeros((d, d))
     n_post = np.zeros((2, d, d))
@@ -1333,7 +1344,23 @@ def program_em_step(
         {k: _normalise(v, model.labelled[k], True) for k, v in n_lab.items()},
         {k: _normalise(v, model.whole[k], True) for k, v in n_whole.items()},
     )
-    return new, ll
+    return freeze(new, model, frozen), ll
+
+
+def freeze(new: ProgramModel, old: ProgramModel, frozen: Sequence[str]) -> ProgramModel:
+    """``new`` with the ``frozen`` parts taken from ``old`` (in place; returns ``new``)."""
+    for k in frozen:
+        if k in ("init", "pre", "post"):
+            setattr(new, k, getattr(old, k).copy())
+        elif k in old.maps:
+            new.maps[k] = old.maps[k].copy()
+        elif k in old.labelled:
+            new.labelled[k] = old.labelled[k].copy()
+        elif k in old.whole:
+            new.whole[k] = old.whole[k].copy()
+        else:
+            raise KeyError(f"no part {k!r} to freeze")
+    return new
 
 
 def _pm_flat(m: ProgramModel) -> list[np.ndarray]:
@@ -1388,17 +1415,19 @@ def fit_program_model(
     tol: float = 1e-10,
     accel: bool = True,
     callback=None,
+    frozen: Sequence[str] = (),
 ) -> ProgramFit:
     """EM with SQUAREM (as ``fit_em_model``) until a cycle improves the NLL per symbol by
     less than ``tol`` or ``max_iters`` EM steps; ``callback(iters, model, nll_per_symbol)``
-    after every cycle (checkpoints)."""
+    after every cycle (checkpoints). ``frozen`` parts are never changed (``program_em_step``;
+    the extrapolation leaves them where they are, and they are restored after it)."""
     n_sym = sum(a.n_symbols for a in data.values())
     ll = -math.inf
     it, conv = 0, False
     hist: list[float] = []
     while it < max_iters:
-        m1, ll0 = program_em_step(model, arms, data)
-        m2, _ = program_em_step(m1, arms, data)
+        m1, ll0 = program_em_step(model, arms, data, frozen)
+        m2, _ = program_em_step(m1, arms, data, frozen)
         it += 2
         cand = m2
         if accel:
@@ -1410,7 +1439,8 @@ def fit_program_model(
             if nv > 0:
                 alpha = -max(1.0, nr / nv)
                 pe = [a - 2 * alpha * x + alpha**2 * y for a, x, y in zip(p0, r, v, strict=True)]
-                ms, _ = program_em_step(_pm_unflat(pe, model), arms, data)
+                ext = freeze(_pm_unflat(pe, model), model, frozen)
+                ms, _ = program_em_step(ext, arms, data, frozen)
                 it += 1
                 if program_loglik(ms, arms, data) >= program_loglik(m2, arms, data):
                     cand = ms
@@ -1483,6 +1513,7 @@ __all__ += [
     "bank_sample",
     "brute_force_program_prob",
     "fit_program_model",
+    "freeze",
     "program_data_from_arm",
     "program_em_step",
     "program_loglik",

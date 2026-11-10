@@ -523,7 +523,7 @@ def write_review(cfg: dict[str, Any], summary: dict[str, Any]) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--config", required=True)
-    ap.add_argument("--part", choices=["review", "design", "power"])
+    ap.add_argument("--part", choices=["review", "design", "power", "null", "register", "contrast"])
     ap.add_argument("--export-qasm", action="store_true")
     ap.add_argument("--plan", action="store_true")
     ap.add_argument("--workers", type=int, default=None)
@@ -564,6 +564,18 @@ def main() -> None:
         summary = DS.part_power(cfg, cfg_path, out, workers, args.review_run, meta)
         summary["meta"] = meta
         save_json(out / "power_summary.json", summary)
+    elif args.part in ("null", "register"):
+        import phase8_coherence_null as NL
+
+        meta = run_metadata(cfg, cfg["null"]["seed"])
+        part = NL.part_null if args.part == "null" else NL.part_register
+        summary = part(cfg, cfg_path, out, workers, meta)
+        save_json(out / f"{args.part}_summary.json", summary)
+    elif args.part == "contrast":
+        import phase8_coherence_contrast as CT
+
+        summary = CT.part_contrast(cfg, out, run_metadata(cfg, cfg["contrast"]["seed"]))
+        save_json(out / "contrast_summary.json", summary)
     log(out, "done")
 
 

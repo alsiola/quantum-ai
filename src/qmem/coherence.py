@@ -434,6 +434,12 @@ def octahedron(a: float = 1.0, c: float = 1.0) -> np.ndarray:
     return np.array([[1.0, *x] for x in v]).T
 
 
+def cube(a: float = 1.0, c: float = 1.0) -> np.ndarray:
+    """(4, 8): vertices ``(+-a, +-a, +-c)``."""
+    v = [(x, y, z) for z in (c, -c) for x in (a, -a) for y in (a, -a)]
+    return np.array([[1.0, *x] for x in v]).T
+
+
 # -- arms -----------------------------------------------------------------------------------------
 
 
@@ -640,6 +646,172 @@ def shots_for_power(delta: float, sd: float, z_alpha: float, z_beta: float) -> f
     return ((z_alpha + z_beta) * sd / delta) ** 2
 
 
+# -- the pre-registered primary statistic (#34: section 4 of docs/phase8-coherence.md) ---------
+
+
+@dataclass(frozen=True)
+class PlanSplit:
+    """A tier's shots as the analysis sees them: ``jobs`` jobs of ``per_job`` shots per arm,
+    in shot order; even shots (within each job) train, odd shots test; blocks of ``segment``
+    consecutive shots within a job (#29/#31's drift-aware SE)."""
+
+    per_job: int = 4000
+    jobs: int = 2
+    segment: int = 8
+
+    @property
+    def n(self) -> int:
+        return self.per_job * self.jobs
+
+    def job(self) -> np.ndarray:
+        return np.repeat(np.arange(self.jobs), self.per_job)
+
+    def train(self) -> np.ndarray:
+        return np.tile(np.arange(self.per_job) % 2 == 0, self.jobs)
+
+    def test(self) -> np.ndarray:
+        return ~self.train()
+
+    def blocks(self, keep: np.ndarray) -> np.ndarray:
+        """Block id (``job * per_job + segment``) of each kept shot."""
+        idx = np.tile(np.arange(self.per_job), self.jobs)
+        return (self.job() * self.per_job + idx // self.segment)[keep]
+
+
+def block_bootstrap(
+    diffs: Sequence[np.ndarray],
+    blocks: Sequence[np.ndarray],
+    jobs: Sequence[np.ndarray],
+    n_boot: int,
+    seed: int,
+) -> dict[str, float]:
+    """Mean per shot of the pooled ``diffs`` (one array per arm) and its block-bootstrap SE:
+    blocks resampled with replacement within each (arm, job) stratum, the mean recomputed as
+    total over shots. Also the plain shot SE (``sd / sqrt(n)``)."""
+    rng = np.random.default_rng(seed)
+    strata = []
+    for d, b, j in zip(diffs, blocks, jobs, strict=True):
+        for job in np.unique(j):
+            sel = j == job
+            ub, inv = np.unique(b[sel], return_inverse=True)
+            sums = np.bincount(inv, weights=d[sel], minlength=len(ub))
+            counts = np.bincount(inv, minlength=len(ub)).astype(float)
+            strata.append((sums, counts))
+    num = np.zeros(n_boot)
+    den = np.zeros(n_boot)
+    for sums, counts in strata:
+        pick = rng.integers(0, len(sums), size=(n_boot, len(sums)))
+        num += sums[pick].sum(1)
+        den += counts[pick].sum(1)
+    allv = np.concatenate(list(diffs))
+    n = len(allv)
+    return {
+        "mean": float(allv.mean()),
+        "se_block": float(np.std(num / den, ddof=1)),
+        "se_shot": float(allv.std(ddof=1) / math.sqrt(n)),
+        "sd_per_shot": float(allv.std(ddof=1)),
+        "n": n,
+    }
+
+
+def holm(pvalues: dict[str, float], alpha: float = 0.05) -> dict[str, bool]:
+    """Holm's step-down rejections at family-wise ``alpha``."""
+    order = sorted(pvalues, key=lambda k: pvalues[k])
+    out = dict.fromkeys(pvalues, False)
+    m = len(order)
+    for i, k in enumerate(order):
+        if pvalues[k] <= alpha / (m - i):
+            out[k] = True
+        else:
+            break
+    return out
+
+
+# -- the Claim 3 contrast (#34): R2 vanishes against RS, RS preserved against E00 ---------------
+
+
+def vanish_lojo_power(
+    w_r: float,
+    sd_r: float,
+    w_s: float,
+    sd_s: float,
+    n_per_arm: int,
+    jobs: int,
+    fraction: float,
+    z: float,
+    n_mc: int,
+    seed: int,
+) -> float:
+    """Monte Carlo P(#31's vanish rule passes): ``|w_R| + z SE_R < fraction |w_S|`` on all
+    jobs *and* on every leave-one-job-out subset. ``w`` true values, ``sd`` per-shot SDs;
+    each job's estimate is independent with SE ``sd / sqrt(n_per_arm / jobs)``; a subset's
+    estimate is the mean of its jobs'."""
+    rng = np.random.default_rng(seed)
+    per = n_per_arm / jobs
+    er = w_r + sd_r / math.sqrt(per) * rng.standard_normal((n_mc, jobs))
+    es = w_s + sd_s / math.sqrt(per) * rng.standard_normal((n_mc, jobs))
+    subsets = [tuple(range(jobs))]
+    if jobs > 1:
+        subsets += [tuple(i for i in range(jobs) if i != j) for j in range(jobs)]
+    ok = np.ones(n_mc, dtype=bool)
+    for sub in subsets:
+        k = len(sub)
+        a = er[:, sub].mean(1)
+        b = es[:, sub].mean(1)
+        se = sd_r / math.sqrt(per * k)
+        ok &= np.abs(a) + z * se < fraction * np.abs(b)
+    return float(ok.mean())
+
+
+def ratio_power(
+    w_a: float,
+    sd_a: float,
+    w_b: float,
+    sd_b: float,
+    n_per_arm: float,
+    margin: float,
+    z: float,
+    two_sided: bool = True,
+) -> float:
+    """Power of a ratio test of ``r = w_a / w_b`` (delta-method SE): equivalence (TOST, the
+    ``1 - 2 alpha`` CI inside ``[1 - margin, 1 + margin]``) or, ``two_sided = False``,
+    non-inferiority (the lower bound above ``1 - margin``). Normal approximation."""
+    r = w_a / w_b
+    se = abs(r) * math.sqrt((sd_a / w_a) ** 2 + (sd_b / w_b) ** 2) / math.sqrt(n_per_arm)
+    lo = norm_cdf((r - (1 - margin)) / se - z)
+    if not two_sided:
+        return lo
+    hi = norm_cdf(((1 + margin) - r) / se - z)
+    return max(0.0, lo + hi - 1)
+
+
+def ratio_shots(
+    w_a: float,
+    sd_a: float,
+    w_b: float,
+    sd_b: float,
+    margin: float,
+    z: float,
+    power: float,
+    two_sided: bool = True,
+) -> float:
+    """Shots per arm for ``ratio_power`` to reach ``power`` (``inf`` if the true ratio is
+    outside the margin); by bisection on a log scale."""
+    r = w_a / w_b
+    if abs(r - 1) >= margin and (two_sided or r <= 1 - margin):
+        return math.inf
+    lo, hi = 1.0, 1e12
+    if ratio_power(w_a, sd_a, w_b, sd_b, hi, margin, z, two_sided) < power:
+        return math.inf
+    for _ in range(200):
+        mid = math.sqrt(lo * hi)
+        if ratio_power(w_a, sd_a, w_b, sd_b, mid, margin, z, two_sided) >= power:
+            hi = mid
+        else:
+            lo = mid
+    return hi
+
+
 @dataclass
 class DesignCost:
     """Per-shot circuit time of each arm (s), from the baseline and the slot's additions."""
@@ -661,13 +833,16 @@ __all__ = [
     "Benchmark",
     "DesignCost",
     "NoiseParams",
+    "PlanSplit",
     "QuantumModel",
     "StatSettings",
     "arm_elements",
     "benchmark",
     "bloch_maps",
+    "block_bootstrap",
     "coherence_factor",
     "compose",
+    "cube",
     "data_stats",
     "echo_angles",
     "echo_kraus",
@@ -675,6 +850,7 @@ __all__ = [
     "echo_unitary",
     "first_step_choice",
     "from_vector",
+    "holm",
     "intervention_kraus",
     "knee_disturbances",
     "kraus_channel",
@@ -685,11 +861,14 @@ __all__ = [
     "polytope_start",
     "power_one_sided",
     "randomised_channel",
+    "ratio_power",
+    "ratio_shots",
     "relax_kraus",
     "rx",
     "shots_for_power",
     "to_vector",
     "tv_stats",
     "tvd",
+    "vanish_lojo_power",
     "x_kraus",
 ]
