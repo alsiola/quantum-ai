@@ -564,6 +564,42 @@
           }
         ]
       },
+      "controls": {
+        "benchmark_interventions": [
+          "e0",
+          "e2",
+          "e4",
+          "R2",
+          "A2"
+        ],
+        "benchmark_margin": 0.02,
+        "benchmark_reps": 8,
+        "benchmark_states": [
+          "0",
+          "1"
+        ],
+        "knee_interventions": {
+          "A2": [
+            "meas"
+          ],
+          "e2": [
+            "e2"
+          ],
+          "e4": [
+            "e4"
+          ],
+          "sham": [
+            "e0"
+          ]
+        },
+        "knee_shots": 1000,
+        "knee_states": [
+          "0",
+          "1",
+          "+",
+          "+i"
+        ]
+      },
       "design": {
         "ancilla_bias": 0.02,
         "ff_latency_s": 1e-06,
@@ -630,7 +666,7 @@
         "jobs": 2,
         "n_boot": 1000,
         "per_job": 4000,
-        "replicates": 10,
+        "replicates": 6,
         "seed": 34,
         "segment": 8,
         "source_ids": {
@@ -690,6 +726,13 @@
             "jobs": 2,
             "name": "main",
             "purpose": "every arm: the phi scan (P1-P7, E0), inverse, composition and alternation (held out), the three equivalent dephasings (A2, R2, R4) and the feed-forward sham"
+          },
+          {
+            "hard_cap_s": 45,
+            "jobs": 1,
+            "kind": "controls",
+            "name": "controls",
+            "purpose": "direct q75 population benchmark (e0, e2, e4, R2, A2 from |0>, |1>, 8 repetitions, TOST +-0.02 against e0) and the Knee classical-disturbance circuits (|0>, |1>, |+>, |+i> x e4, e2, A2, sham; 1000 shots)"
           }
         ]
       },
@@ -765,15 +808,85 @@
         "seed": 32,
         "smooth": 0.01,
         "tol": 0.0
+      },
+      "separation": {
+        "options": [
+          {
+            "arms": 6,
+            "name": "incommensurate phase (1 rad)",
+            "phases": "e(1), e(-1), INV(1, -1), COMP(1, 1) vs e(2), e(1)^3 vs e(3)",
+            "tests": "no finite permutation group contains Rz(1 rad) exactly; INV(1, -1) = identity forces e(1) to be a permutation (#32's Lemma), whose powers repeat with a period the quantum response does not have"
+          },
+          {
+            "arms": 10,
+            "name": "finer scan (16 points)",
+            "phases": "e(k pi / 8) for odd k (8 arms), INV and COMP at pi / 8",
+            "tests": "a Z_8 register cannot represent pi / 8; a Z_16 one can (d >= 16 n_pop): raises D, no absolute exclusion"
+          },
+          {
+            "arms": 10,
+            "name": "irrational scan (golden angle)",
+            "phases": "e(j phi_g), j = 1..8, phi_g = 2.39996 rad; INV and COMP at phi_g",
+            "tests": "phases outside any small cyclic group; a register needs n large enough to approximate all of them at the plan's resolution"
+          },
+          {
+            "arms": 0,
+            "name": "dimension witness on the existing scan",
+            "phases": "none: the rank of the cross-arm Hankel matrix of the 8 scan points",
+            "tests": "a lower bound on the hidden dimension any model needs; weak (a d = 16 register has room)"
+          }
+        ]
       }
     },
-    "git_commit": "5b0561ec42d69c56ecbba8b859ffe9b98a625ce3",
+    "git_commit": "83e122b23f243d2d88a8dcb503298965f338adb8",
     "git_dirty": true,
     "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
     "python": "3.13.6",
     "seed": 34,
-    "timestamp_utc": "2026-11-10T02:10:17+00:00",
+    "timestamp_utc": "2026-11-10T02:14:47+00:00",
     "torch": "2.15.0"
+  },
+  "separation": {
+    "dimension witness on the existing scan": {
+      "added_to_main_estimate_s": 0.0,
+      "added_to_main_upper_s": 0.0,
+      "arms": 0,
+      "own_tier_estimate_s": 0.0,
+      "own_tier_upper_s": 0.0,
+      "phases": "none: the rank of the cross-arm Hankel matrix of the 8 scan points",
+      "shots": 0,
+      "what_it_tests": "a lower bound on the hidden dimension any model needs; weak (a d = 16 register has room)"
+    },
+    "finer scan (16 points)": {
+      "added_to_main_estimate_s": 45.68128,
+      "added_to_main_upper_s": 57.1016,
+      "arms": 10,
+      "own_tier_estimate_s": 47.68128,
+      "own_tier_upper_s": 60.6016,
+      "phases": "e(k pi / 8) for odd k (8 arms), INV and COMP at pi / 8",
+      "shots": 80000,
+      "what_it_tests": "a Z_8 register cannot represent pi / 8; a Z_16 one can (d >= 16 n_pop): raises D, no absolute exclusion"
+    },
+    "incommensurate phase (1 rad)": {
+      "added_to_main_estimate_s": 27.408768,
+      "added_to_main_upper_s": 34.26096,
+      "arms": 6,
+      "own_tier_estimate_s": 29.408768,
+      "own_tier_upper_s": 37.76096,
+      "phases": "e(1), e(-1), INV(1, -1), COMP(1, 1) vs e(2), e(1)^3 vs e(3)",
+      "shots": 48000,
+      "what_it_tests": "no finite permutation group contains Rz(1 rad) exactly; INV(1, -1) = identity forces e(1) to be a permutation (#32's Lemma), whose powers repeat with a period the quantum response does not have"
+    },
+    "irrational scan (golden angle)": {
+      "added_to_main_estimate_s": 45.68128,
+      "added_to_main_upper_s": 57.1016,
+      "arms": 10,
+      "own_tier_estimate_s": 47.68128,
+      "own_tier_upper_s": 60.6016,
+      "phases": "e(j phi_g), j = 1..8, phi_g = 2.39996 rad; INV and COMP at phi_g",
+      "shots": 80000,
+      "what_it_tests": "phases outside any small cyclic group; a register needs n large enough to approximate all of them at the plan's resolution"
+    }
   },
   "trade": {
     "add 40k each to RS and E00": {

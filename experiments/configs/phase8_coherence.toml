@@ -202,6 +202,30 @@ drop = []
 boost = []
 extra = { RS = 40000, E00 = 40000 }
 
+[separation]
+# --part contrast also prices the options that would separate the instrument from a Z_8
+# phase register (#34 task 2): echo arms at the plan's shots per arm (no added circuit time).
+[[separation.options]]
+name = "incommensurate phase (1 rad)"
+arms = 6
+phases = "e(1), e(-1), INV(1, -1), COMP(1, 1) vs e(2), e(1)^3 vs e(3)"
+tests = "no finite permutation group contains Rz(1 rad) exactly; INV(1, -1) = identity forces e(1) to be a permutation (#32's Lemma), whose powers repeat with a period the quantum response does not have"
+[[separation.options]]
+name = "finer scan (16 points)"
+arms = 10
+phases = "e(k pi / 8) for odd k (8 arms), INV and COMP at pi / 8"
+tests = "a Z_8 register cannot represent pi / 8; a Z_16 one can (d >= 16 n_pop): raises D, no absolute exclusion"
+[[separation.options]]
+name = "irrational scan (golden angle)"
+arms = 10
+phases = "e(j phi_g), j = 1..8, phi_g = 2.39996 rad; INV and COMP at phi_g"
+tests = "phases outside any small cyclic group; a register needs n large enough to approximate all of them at the plan's resolution"
+[[separation.options]]
+name = "dimension witness on the existing scan"
+arms = 0
+phases = "none: the rank of the cross-arm Hankel matrix of the 8 scan points"
+tests = "a lower bound on the hidden dimension any model needs; weak (a d = 16 register has room)"
+
 [export]                      # --export-qasm (hardware group, FakeKingston only)
 qasm_arms = ["E0", "P2", "P4", "E00", "INV2", "COMP22", "ALT2", "RS", "R2", "R4"]
 control_arms = ["P2", "INV2", "COMP22", "ALT2"]   # also built unfenced and with virtual rz

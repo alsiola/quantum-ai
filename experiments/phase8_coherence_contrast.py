@@ -91,6 +91,7 @@ def part_contrast(cfg: dict[str, Any], out: Path, meta: dict[str, Any]) -> dict[
         for a in names:
             rows.append({"generator": g, "arm": a, "w0": st[a], "w0_sd_per_shot": sd[a]})
     summary["trade"] = trade(cfg, summary)
+    summary["separation"] = separation(cfg)
     sdir = PC.sdir(cfg)
     PC.write_csv(sdir / "contrast_arms.csv", [PC.jround(r) for r in rows])
     save_json(sdir / "contrast.json", PC.jround(summary, 9))
@@ -183,4 +184,32 @@ def trade(cfg: dict[str, Any], summary: dict[str, Any]) -> dict[str, Any]:
                 sdx[a] = sd[a] * math.sqrt(n_plan / shots[a])
             row[f"{g}_vanish_R2_fraction80"] = _fraction_vanish(st, sdx, "R2", n_plan, jobs, cc)
         out[opt["name"]] = row
+    return out
+
+
+def separation(cfg: dict[str, Any]) -> dict[str, Any]:
+    """The cost of each option that would separate the quantum instrument from a cyclic
+    phase register (``[separation]``): its echo arms at the plan's shots per arm, added to the
+    main tier's jobs (no extra overhead) and as a tier of its own (one job)."""
+    bc = cfg["budget"]
+    cm = F.CostModel(
+        bc["sub_job_overhead_s"], bc["rep_delay_s"], bc["margin"], bc["billing_round_s"]
+    )
+    n = cfg["plan"]["shots_per_arm"]
+    dur = bc["baseline_circuit_s"]  # echo arms: no added time (inside q59's reset window)
+    out = {}
+    for opt in cfg["separation"]["options"]:
+        k = opt["arms"]
+        shot_s = k * cm.shot_seconds(n, dur)
+        own = cm.job([F.Pub(0, i, "x", 0, n) for i in range(k)], {"x": dur})
+        out[opt["name"]] = {
+            "arms": k,
+            "phases": opt["phases"],
+            "what_it_tests": opt["tests"],
+            "shots": k * n,
+            "added_to_main_estimate_s": shot_s,
+            "added_to_main_upper_s": (1 + cm.margin) * shot_s,
+            "own_tier_estimate_s": own["estimate_s"] if k else 0.0,
+            "own_tier_upper_s": own["upper_s"] if k else 0.0,
+        }
     return out
