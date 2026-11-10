@@ -1,0 +1,139 @@
+{
+  "committed": {
+    "tier1_reference": 79,
+    "tier2_ancillas": [
+      50,
+      21
+    ],
+    "tier3_pairs": [
+      "m67_o68",
+      "m149_o148"
+    ]
+  },
+  "powers_fakekingston": {
+    "m149_o148": 0.837,
+    "m67_o68": 0.839
+  },
+  "reproduces": {
+    "tier1_reference": true,
+    "tier2_ancillas": true,
+    "tier3_pairs": true
+  },
+  "snapshot": {
+    "backend": "fake_kingston",
+    "date": "2026-04-15 09:15:15+02:00",
+    "sha256": "e1fd36d778ea8f55cfdf3b2d834677a7ff7319126dfc4109a157c377010952b4"
+  },
+  "tier1_reference": {
+    "candidates": [
+      {
+        "admitted": false,
+        "excluded_because": "coupler to the output or its neighbour; path through the output; readout",
+        "path": "75-59-55-54",
+        "qubit": 54,
+        "score": 0.537384
+      },
+      {
+        "admitted": false,
+        "excluded_because": "coupler to the output or its neighbour; path through the output",
+        "path": "75-59-55",
+        "qubit": 55,
+        "score": 0.548477
+      },
+      {
+        "admitted": false,
+        "excluded_because": "readout",
+        "path": "75-74-73-72",
+        "qubit": 72,
+        "score": 0.524554
+      },
+      {
+        "admitted": false,
+        "excluded_because": "readout",
+        "path": "75-74-73",
+        "qubit": 73,
+        "score": 0.539358
+      },
+      {
+        "admitted": false,
+        "excluded_because": "coupler to the memory; coupler to the output or its neighbour",
+        "path": "75-74",
+        "qubit": 74,
+        "score": 0.559677
+      },
+      {
+        "admitted": true,
+        "excluded_because": "",
+        "path": "75-74-73-79",
+        "qubit": 79,
+        "score": 0.546267
+      }
+    ],
+    "chosen": [
+      79
+    ]
+  },
+  "tier2_ancillas": {
+    "candidates": 70,
+    "chosen": [
+      50,
+      21
+    ],
+    "distance_to_core": 6,
+    "snapshot_sha256": "e1fd36d778ea8f55cfdf3b2d834677a7ff7319126dfc4109a157c377010952b4",
+    "top10": [
+      {
+        "measure_error": 0.001831,
+        "qubit": 50,
+        "t1": 0.00036
+      },
+      {
+        "measure_error": 0.002808,
+        "qubit": 21,
+        "t1": 0.000336
+      },
+      {
+        "measure_error": 0.003418,
+        "qubit": 68,
+        "t1": 0.000178
+      },
+      {
+        "measure_error": 0.004272,
+        "qubit": 25,
+        "t1": 0.000421
+      },
+      {
+        "measure_error": 0.004272,
+        "qubit": 8,
+        "t1": 0.000315
+      }
+    ]
+  },
+  "tier3_pairs": {
+    "candidates": 352,
+    "chosen": [
+      "m67_o68",
+      "m149_o148"
+    ],
+    "footprints": [
+      [
+        67,
+        68,
+        57
+      ],
+      [
+        149,
+        148,
+        150
+      ]
+    ],
+    "power": {
+      "m149_o148": 0.837,
+      "m67_o68": 0.839
+    },
+    "qualified": 7,
+    "screened": 87,
+    "snapshot_sha256": "e1fd36d778ea8f55cfdf3b2d834677a7ff7319126dfc4109a157c377010952b4",
+    "statement": "2 pairs qualify and are chosen"
+  }
+}

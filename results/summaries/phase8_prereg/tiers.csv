@@ -1,0 +1,5 @@
+tier,jobs,estimate_s,upper_s,hard_cap_s,max_job_estimate_s,max_job_estimate_seen_s,problems
+tier1,2,18.462008,25.07751,30.0,20.0,11.329736,
+tier2 (as designed),4,129.779104,166.22388,225.0,20.0,43.988576,tier2 (as designed) main0: estimate 43.99 s > per-job limit 20.0 s; tier2 (as designed) main1: estimate 43.99 s > per-job limit 20.0 s; tier2 (as designed) controls0: estimate 29.23 s > per-job limit 20.0 s
+tier2,9,139.779104,183.72388,225.0,20.0,16.00319,
+tier3,8,87.107652,116.884565,120.0,12.0,11.998723,

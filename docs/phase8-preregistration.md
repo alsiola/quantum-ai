@@ -21,7 +21,7 @@ submit path, and no `qiskit_ibm_runtime` import. Its outputs are in
 `tests/test_prereg.py`.
 
 ```sh
-uv run python experiments/phase8_hw.py --config experiments/configs/phase8_hw.toml --dry-run-local   # about 40 min, 2 workers
+uv run python experiments/phase8_hw.py --config experiments/configs/phase8_hw.toml --dry-run-local   # about 45 min, 2 workers
 ```
 
 Sections:
@@ -325,8 +325,8 @@ raw shots kept and usage counted, then run through the tier's own analysis and d
 | 1 | Stage 4c pieces | Claim 4 at n = 1 (P&M 0.714, record 00 0.871; MDI payoff 0.071, rejects EB) | 25.1 s ≤ 30 |
 | 1 | Stage 2 fitted model | Claim 4 at n = 1 (P&M 0.709, record 00 0.859; MDI 0.038) | 25.1 s |
 | 1 | EB (q75 measured every step) | not supported: nothing rejects EB (P&M 0.577; record 00 0.491) | 25.1 s |
-| 2 | fixed quantum model | TIER2_Q | TIER2_QC |
-| 2 | classical d = 6 (the octahedron embedding of the instrument) | TIER2_C | TIER2_CC |
+| 2 | fixed quantum model | *supported*: the pilot passes; d ≤ 4 and d ≤ 6 rejected (deficit 0.239 and 0.063 nats per shot, z = 97 and 45); every leg passes (R2, R4 vanish with LOJO; RS/E00 = 1.01, lower bound 0.95); the Knee inequality is violated for e4, e2, A2 | 183.7 s ≤ 225 |
+| 2 | classical d = 6 (the octahedron embedding of the instrument) | *stopped at the pilot* (E0, E00, RS, P2, P4 off); run on in simulation: *not supported* (no D rejected, deficit −1.02 nats per shot; every leg fails; no Knee violation) | 183.7 s |
 | 3 | quantum (each pair's pieces, shortfall 0.75) | both pairs *replicate* | 116.9 s ≤ 120 |
 | 3 | memory not on the memory qubit (A2's process = the baseline's) | both pairs *partial: H1 only (A2 persists)* | 116.9 s |
 
@@ -338,6 +338,14 @@ The harness refuses, as it must (`summary.json` `guards`):
 - a charge over its upper bound.
 
 A resume never resubmits.
+
+**This classical truth is a weak adversary.** It is the octahedron embedding of the
+instrument, a convenient d = 6 generator built from the same maps, and it sits far from the
+quantum prediction. Here it checks the plumbing of the rule, not the test's size. The size
+check against the closest d = 6 adversaries is #34's null calibration (§3.3).
+
+One shot-order warning was raised, `duplicates` on P3 at the quantum truth. It is a warning,
+not an invalidation: a low-entropy arm repeats whole 64-step records by chance.
 
 **What the dry run shortens.** The Tier 2 primary contrast runs on the main tier's full shots
 (8,000 per arm), but with one start per d (Klein for d = 4, octahedron for d = 6), 300 EM
@@ -402,3 +410,11 @@ affects, with the hash guard of Phase 7 §9 (`F.amendment_check`) on the live pa
   - Claim 4 still rests on P&M at n = 1 alone; a branch-only rejection is *ambiguous* (§2.8).
   - Power is unchanged at 1.00 (§2.11).
 - **Slot, 2026-11-10, pre-data (Tier 2).** #35's 1 rad extension is not folded in (§3.9).
+
+## Reproduction
+
+The summaries in `results/summaries/phase8_prereg/` come from one full `--dry-run-local` (2,814 s
+on the shared machine, 2 workers) at `2392151`. Its `git_dirty` flag is set only by this note
+and the summaries themselves, which were uncommitted at the time; no code changed after
+`2392151`. Seeds: `[tier2.dry_run] seed = 3601` (Tier 1 and 2 shots, schedules),
+`[tier3.dry_run] seed = 3602`, `[reselection] seed = 3603`, `[tier1_power] seed = 3604`.

@@ -93,7 +93,7 @@ and keep within the plan's allowance. Credentials live in `.env` (gitignored; ne
   `uv run python experiments/phase8_reference.py --config experiments/configs/phase8_reference.toml`
 - Phase 8 Stage 4 (#36): the combined pre-registration's local dry-run harness for the three
   tiers (no QPU, no IBM service, no network; **no live mode and no submit path**; FakeKingston's
-  committed snapshot only; about 40 min with 2 workers; `--part` runs a subset):
+  committed snapshot only; about 45 min with 2 workers on the shared machine; `--part` runs a subset):
   `uv run python experiments/phase8_hw.py --config experiments/configs/phase8_hw.toml --dry-run-local`.
   Any live path is a separate addition, made only after the owner approves one tier and a
   CLAUDE.md exception on #28.

@@ -1,0 +1,297 @@
+{
+  "elapsed_s": 2814.093093,
+  "guards": {
+    "changed_approval_refused": true,
+    "designed_tier2_main_job_refused": "estimate 43.99 s > max_qpu_seconds 20.0",
+    "no_approval_refused": true,
+    "over_upper_charge_stops": true,
+    "resume_never_resubmits": true,
+    "wrong_tier_refused": true
+  },
+  "hashes": {
+    "ok": 169
+  },
+  "meta": {
+    "config": {
+      "allowance": {
+        "allowed_plans": [
+          "open"
+        ],
+        "prior_counted_s": 0.0,
+        "remaining_s": 531,
+        "reserve_s": 60,
+        "scenarios_s": [
+          600,
+          531,
+          400,
+          300,
+          200
+        ]
+      },
+      "approval": {
+        "tier1": "",
+        "tier2": "",
+        "tier3": ""
+      },
+      "cost": {
+        "billing_round_s": 1.0,
+        "margin": 0.25,
+        "overhead_s": 2.0,
+        "rep_delay_s": 0.00025
+      },
+      "experiment": {
+        "coherence_config": "experiments/configs/phase8_coherence.toml",
+        "device": "results/summaries/phase7_spectator/device.json",
+        "name": "phase8_hw",
+        "prereg": "docs/phase8-preregistration.md",
+        "reference_config": "experiments/configs/phase8_reference.toml",
+        "replication_config": "experiments/configs/phase8_replication.toml",
+        "summary_dir": "results/summaries/phase8_prereg",
+        "workers": 2
+      },
+      "order": {
+        "deferrable": [
+          "tier3"
+        ],
+        "tiers": [
+          "tier1",
+          "tier2",
+          "tier3"
+        ]
+      },
+      "reselection": {
+        "n_mc": 20000,
+        "seed": 3603,
+        "tier1_bell_power_floor": 0.8,
+        "tier2_ancilla_readout_max": 0.02,
+        "tier2_preserve_power_floor": 0.8,
+        "tier2_vanish_power_floor": 0.8,
+        "tier3_power_floor": 0.8
+      },
+      "tier1": {
+        "alpha": 0.05,
+        "hard_cap_s": 30.0,
+        "max_job_estimate_s": 20.0,
+        "mdi": true,
+        "min_branch_shots": 500,
+        "power_target": 0.8,
+        "secondary_alpha": 0.05,
+        "spam_gate": 0.9
+      },
+      "tier1_power": {
+        "draws": 4000,
+        "seed": 3604
+      },
+      "tier2": {
+        "controls_cap_s": 45.0,
+        "controls_subjobs": 2,
+        "dry_run": {
+          "em_iters": 300,
+          "n_boot": 200,
+          "primary_per_job": 4000,
+          "refit_evals": 200,
+          "seed": 3601,
+          "starts": {
+            "4": "klein",
+            "6": "octahedron"
+          },
+          "stat_boot": 200
+        },
+        "hard_cap_s": 225.0,
+        "main_cap_s": 150.0,
+        "main_subjobs_per_block": 3,
+        "max_job_estimate_s": 20.0,
+        "pilot_cap_s": 30.0,
+        "slot_1rad": {
+          "added_main_upper_s": 34.0,
+          "arms": 6,
+          "included": false,
+          "status": "pending #35 (open when this was written); the coordinator folds it in if #35 recommends it"
+        }
+      },
+      "tier3": {
+        "deferrable": true,
+        "dry_run": {
+          "n_boot": 200,
+          "seed": 3602
+        },
+        "hard_cap_s": 120.0,
+        "max_job_estimate_s": 12.0,
+        "option": "two_parallel"
+      }
+    },
+    "git_commit": "2392151c57e9e439f32d02a89f3a22a57653700d",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 3601,
+    "timestamp_utc": "2026-11-10T19:49:05+00:00",
+    "torch": "2.15.0"
+  },
+  "run_dir": "results/phase8_hw/20261110T194905Z",
+  "selection": {
+    "reproduces": {
+      "tier1_reference": true,
+      "tier2_ancillas": true,
+      "tier3_pairs": true
+    },
+    "tier1_reference": [
+      79
+    ],
+    "tier2_ancillas": [
+      50,
+      21
+    ],
+    "tier3_pairs": [
+      "m67_o68",
+      "m149_o148"
+    ],
+    "tier3_power": {
+      "m149_o148": 0.837,
+      "m67_o68": 0.839
+    }
+  },
+  "submitted": false,
+  "targets_V_max_diff": 0.0,
+  "tier1_power": [
+    {
+      "effect": 0.044105,
+      "model": "stage4c_pieces",
+      "planned_shots": 12000,
+      "pm_score": 0.711771,
+      "power_alpha_0.025": 1.0,
+      "power_mc_alpha_0.025": 1.0,
+      "shots_80_alpha_0.025": 661.355084,
+      "test": "pm_n1"
+    },
+    {
+      "effect": 0.192969,
+      "model": "stage4c_pieces",
+      "planned_shots": 6000,
+      "pm_score": 0.861636,
+      "power_alpha_0.025": 1.0,
+      "power_mc_alpha_0.025": 1.0,
+      "shots_80_alpha_0.025": 84.084959,
+      "test": "branch00_n2"
+    },
+    {
+      "effect": 0.035656,
+      "model": "deficit_matched",
+      "planned_shots": 12000,
+      "pm_score": 0.703323,
+      "power_alpha_0.025": 1.0,
+      "power_mc_alpha_0.025": 1.0,
+      "shots_80_alpha_0.025": 1032.24567,
+      "test": "pm_n1"
+    },
+    {
+      "effect": 0.155732,
+      "model": "deficit_matched",
+      "planned_shots": 6000,
+      "pm_score": 0.824398,
+      "power_alpha_0.025": 1.0,
+      "power_mc_alpha_0.025": 1.0,
+      "shots_80_alpha_0.025": 155.225116,
+      "test": "branch00_n2"
+    },
+    {
+      "effect": 0.044105,
+      "model": "stage2_fixed",
+      "planned_shots": 12000,
+      "pm_score": 0.711771,
+      "power_alpha_0.025": 1.0,
+      "power_mc_alpha_0.025": 1.0,
+      "shots_80_alpha_0.025": 661.355084,
+      "test": "pm_n1"
+    },
+    {
+      "effect": 0.192969,
+      "model": "stage2_fixed",
+      "planned_shots": 6000,
+      "pm_score": 0.861636,
+      "power_alpha_0.025": 1.0,
+      "power_mc_alpha_0.025": 1.0,
+      "shots_80_alpha_0.025": 84.084959,
+      "test": "branch00_n2"
+    },
+    {
+      "effect": 0.041042,
+      "model": "stage2_fitted",
+      "planned_shots": 12000,
+      "pm_score": 0.708709,
+      "power_alpha_0.025": 1.0,
+      "power_mc_alpha_0.025": 1.0,
+      "shots_80_alpha_0.025": 766.860809,
+      "test": "pm_n1"
+    },
+    {
+      "effect": 0.181865,
+      "model": "stage2_fitted",
+      "planned_shots": 6000,
+      "pm_score": 0.850532,
+      "power_alpha_0.025": 1.0,
+      "power_mc_alpha_0.025": 1.0,
+      "shots_80_alpha_0.025": 101.749156,
+      "test": "branch00_n2"
+    }
+  ],
+  "tier2_parts": {
+    "controls": {
+      "cap_s": 45.0,
+      "upper_s": 41.03792,
+      "within": true
+    },
+    "main": {
+      "cap_s": 150.0,
+      "upper_s": 125.97144,
+      "within": true
+    },
+    "pilot": {
+      "cap_s": 30.0,
+      "upper_s": 16.71452,
+      "within": true
+    }
+  },
+  "tiers": [
+    {
+      "estimate_s": 18.462008,
+      "hard_cap_s": 30.0,
+      "jobs": 2,
+      "max_job_estimate_s": 20.0,
+      "max_job_estimate_seen_s": 11.329736,
+      "problems": "",
+      "tier": "tier1",
+      "upper_s": 25.07751
+    },
+    {
+      "estimate_s": 129.779104,
+      "hard_cap_s": 225.0,
+      "jobs": 4,
+      "max_job_estimate_s": 20.0,
+      "max_job_estimate_seen_s": 43.988576,
+      "problems": "tier2 (as designed) main0: estimate 43.99 s > per-job limit 20.0 s; tier2 (as designed) main1: estimate 43.99 s > per-job limit 20.0 s; tier2 (as designed) controls0: estimate 29.23 s > per-job limit 20.0 s",
+      "tier": "tier2 (as designed)",
+      "upper_s": 166.22388
+    },
+    {
+      "estimate_s": 139.779104,
+      "hard_cap_s": 225.0,
+      "jobs": 9,
+      "max_job_estimate_s": 20.0,
+      "max_job_estimate_seen_s": 16.00319,
+      "problems": "",
+      "tier": "tier2",
+      "upper_s": 183.72388
+    },
+    {
+      "estimate_s": 87.107652,
+      "hard_cap_s": 120.0,
+      "jobs": 8,
+      "max_job_estimate_s": 12.0,
+      "max_job_estimate_seen_s": 11.998723,
+      "problems": "",
+      "tier": "tier3",
+      "upper_s": 116.884565
+    }
+  ]
+}

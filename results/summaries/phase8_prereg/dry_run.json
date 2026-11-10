@@ -1,0 +1,917 @@
+{
+  "meta": {
+    "config": {
+      "allowance": {
+        "allowed_plans": [
+          "open"
+        ],
+        "prior_counted_s": 0.0,
+        "remaining_s": 531,
+        "reserve_s": 60,
+        "scenarios_s": [
+          600,
+          531,
+          400,
+          300,
+          200
+        ]
+      },
+      "approval": {
+        "tier1": "",
+        "tier2": "",
+        "tier3": ""
+      },
+      "cost": {
+        "billing_round_s": 1.0,
+        "margin": 0.25,
+        "overhead_s": 2.0,
+        "rep_delay_s": 0.00025
+      },
+      "experiment": {
+        "coherence_config": "experiments/configs/phase8_coherence.toml",
+        "device": "results/summaries/phase7_spectator/device.json",
+        "name": "phase8_hw",
+        "prereg": "docs/phase8-preregistration.md",
+        "reference_config": "experiments/configs/phase8_reference.toml",
+        "replication_config": "experiments/configs/phase8_replication.toml",
+        "summary_dir": "results/summaries/phase8_prereg",
+        "workers": 2
+      },
+      "order": {
+        "deferrable": [
+          "tier3"
+        ],
+        "tiers": [
+          "tier1",
+          "tier2",
+          "tier3"
+        ]
+      },
+      "reselection": {
+        "n_mc": 20000,
+        "seed": 3603,
+        "tier1_bell_power_floor": 0.8,
+        "tier2_ancilla_readout_max": 0.02,
+        "tier2_preserve_power_floor": 0.8,
+        "tier2_vanish_power_floor": 0.8,
+        "tier3_power_floor": 0.8
+      },
+      "tier1": {
+        "alpha": 0.05,
+        "hard_cap_s": 30.0,
+        "max_job_estimate_s": 20.0,
+        "mdi": true,
+        "min_branch_shots": 500,
+        "power_target": 0.8,
+        "secondary_alpha": 0.05,
+        "spam_gate": 0.9
+      },
+      "tier1_power": {
+        "draws": 4000,
+        "seed": 3604
+      },
+      "tier2": {
+        "controls_cap_s": 45.0,
+        "controls_subjobs": 2,
+        "dry_run": {
+          "em_iters": 300,
+          "n_boot": 200,
+          "primary_per_job": 4000,
+          "refit_evals": 200,
+          "seed": 3601,
+          "starts": {
+            "4": "klein",
+            "6": "octahedron"
+          },
+          "stat_boot": 200
+        },
+        "hard_cap_s": 225.0,
+        "main_cap_s": 150.0,
+        "main_subjobs_per_block": 3,
+        "max_job_estimate_s": 20.0,
+        "pilot_cap_s": 30.0,
+        "slot_1rad": {
+          "added_main_upper_s": 34.0,
+          "arms": 6,
+          "included": false,
+          "status": "pending #35 (open when this was written); the coordinator folds it in if #35 recommends it"
+        }
+      },
+      "tier3": {
+        "deferrable": true,
+        "dry_run": {
+          "n_boot": 200,
+          "seed": 3602
+        },
+        "hard_cap_s": 120.0,
+        "max_job_estimate_s": 12.0,
+        "option": "two_parallel"
+      }
+    },
+    "git_commit": "2392151c57e9e439f32d02a89f3a22a57653700d",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 3601,
+    "timestamp_utc": "2026-11-10T19:49:05+00:00",
+    "torch": "2.15.0"
+  },
+  "tier1_classical_eb": {
+    "counted_s": 25.07751,
+    "mdi": {
+      "lower_bound": -0.1692,
+      "payoff": -0.139881,
+      "reject_eb": false,
+      "se": 0.017824
+    },
+    "mdi_would_run": false,
+    "order_warnings": [],
+    "pm": {
+      "branch_call": "not shown",
+      "call": "not supported: no co-primary rejects EB",
+      "model_check_n3": {
+        "below_two_thirds": true,
+        "score": 0.496333,
+        "se": 0.005986
+      },
+      "negative_control": {
+        "falsely_passes": false,
+        "lower_bound": 0.571769,
+        "score": 0.581333,
+        "se": 0.005815,
+        "threshold": 0.667667
+      },
+      "spam_gate": {
+        "pass": true,
+        "score": 0.979,
+        "threshold": 0.9
+      },
+      "tests": {
+        "branch00_n2": {
+          "branch_shots": 2212,
+          "estimate": 0.49141,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.01063,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch01_n2": {
+          "branch_shots": 1400,
+          "estimate": 0.490714,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.013361,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch0_n1": {
+          "branch_shots": 7336,
+          "estimate": 0.616821,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.005676,
+          "testable": true,
+          "threshold": 0.667667
+        },
+        "branch10_n2": {
+          "branch_shots": 1355,
+          "estimate": 0.511439,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.01358,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch11_n2": {
+          "branch_shots": 1033,
+          "estimate": 0.516941,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.015548,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch1_n1": {
+          "branch_shots": 4664,
+          "estimate": 0.513508,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.007319,
+          "testable": true,
+          "threshold": 0.667667
+        },
+        "pm_n1": {
+          "estimate": 0.576667,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.004098,
+          "threshold": 0.667667
+        },
+        "pm_n2": {
+          "estimate": 0.500167,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.005852,
+          "threshold": 0.668667
+        }
+      },
+      "valid": true
+    },
+    "truth": "classical_eb",
+    "within_cap": true
+  },
+  "tier1_stage2_fitted": {
+    "counted_s": 25.07751,
+    "mdi": {
+      "lower_bound": 0.009704,
+      "payoff": 0.03792,
+      "reject_eb": true,
+      "se": 0.017154
+    },
+    "mdi_would_run": true,
+    "order_warnings": [],
+    "pm": {
+      "branch_call": "instrument element M_00 (n = 2) not EB",
+      "call": "claim 4 at n = 1 under trusted SPAM: the step channel is not EB",
+      "model_check_n3": {
+        "below_two_thirds": true,
+        "score": 0.538833,
+        "se": 0.005755
+      },
+      "negative_control": {
+        "falsely_passes": false,
+        "lower_bound": 0.563427,
+        "score": 0.573,
+        "se": 0.00582,
+        "threshold": 0.667667
+      },
+      "spam_gate": {
+        "pass": true,
+        "score": 0.980333,
+        "threshold": 0.9
+      },
+      "tests": {
+        "branch00_n2": {
+          "branch_shots": 1798,
+          "estimate": 0.858732,
+          "p": 0.0,
+          "reject_eb": true,
+          "se": 0.008214,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch01_n2": {
+          "branch_shots": 1862,
+          "estimate": 0.502148,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.011587,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch0_n1": {
+          "branch_shots": 7352,
+          "estimate": 0.874184,
+          "p": 0.0,
+          "reject_eb": true,
+          "se": 0.003868,
+          "testable": true,
+          "threshold": 0.667667
+        },
+        "branch10_n2": {
+          "branch_shots": 822,
+          "estimate": 0.451338,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.017357,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch11_n2": {
+          "branch_shots": 1518,
+          "estimate": 0.51054,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.01283,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch1_n1": {
+          "branch_shots": 4648,
+          "estimate": 0.447719,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.007294,
+          "testable": true,
+          "threshold": 0.667667
+        },
+        "pm_n1": {
+          "estimate": 0.709,
+          "p": 0.0,
+          "reject_eb": true,
+          "se": 0.003685,
+          "threshold": 0.667667
+        },
+        "pm_n2": {
+          "estimate": 0.604167,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.005627,
+          "threshold": 0.668667
+        }
+      },
+      "valid": true
+    },
+    "truth": "stage2_fitted",
+    "within_cap": true
+  },
+  "tier1_stage4c_pieces": {
+    "counted_s": 25.07751,
+    "mdi": {
+      "lower_bound": 0.042856,
+      "payoff": 0.070894,
+      "reject_eb": true,
+      "se": 0.017045
+    },
+    "mdi_would_run": true,
+    "order_warnings": [],
+    "pm": {
+      "branch_call": "instrument element M_00 (n = 2) not EB",
+      "call": "claim 4 at n = 1 under trusted SPAM: the step channel is not EB",
+      "model_check_n3": {
+        "below_two_thirds": true,
+        "score": 0.5345,
+        "se": 0.005786
+      },
+      "negative_control": {
+        "falsely_passes": false,
+        "lower_bound": 0.569456,
+        "score": 0.579,
+        "se": 0.005802,
+        "threshold": 0.667667
+      },
+      "spam_gate": {
+        "pass": true,
+        "score": 0.978167,
+        "threshold": 0.9
+      },
+      "tests": {
+        "branch00_n2": {
+          "branch_shots": 1729,
+          "estimate": 0.871024,
+          "p": 0.0,
+          "reject_eb": true,
+          "se": 0.008061,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch01_n2": {
+          "branch_shots": 1923,
+          "estimate": 0.482059,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.011395,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch0_n1": {
+          "branch_shots": 7405,
+          "estimate": 0.875084,
+          "p": 0.0,
+          "reject_eb": true,
+          "se": 0.003842,
+          "testable": true,
+          "threshold": 0.667667
+        },
+        "branch10_n2": {
+          "branch_shots": 858,
+          "estimate": 0.444056,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.016963,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch11_n2": {
+          "branch_shots": 1490,
+          "estimate": 0.477181,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.01294,
+          "testable": true,
+          "threshold": 0.668667
+        },
+        "branch1_n1": {
+          "branch_shots": 4595,
+          "estimate": 0.453972,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.007345,
+          "testable": true,
+          "threshold": 0.667667
+        },
+        "pm_n1": {
+          "estimate": 0.713833,
+          "p": 0.0,
+          "reject_eb": true,
+          "se": 0.003688,
+          "threshold": 0.667667
+        },
+        "pm_n2": {
+          "estimate": 0.5875,
+          "p": 1.0,
+          "reject_eb": false,
+          "se": 0.005676,
+          "threshold": 0.668667
+        }
+      },
+      "valid": true
+    },
+    "truth": "stage4c_pieces",
+    "within_cap": true
+  },
+  "tier2_classical_d6": {
+    "call": "not supported: exclusion at D = 4, (i) population, (ii) response, (iii) dephasings, Claim 3 contrast failed",
+    "call_if_pilot_binding": "stopped: pilot gate failed (no main jobs; any rerun needs a dated amendment)",
+    "controls": {
+      "benchmark": {
+        "bench_A2_0": {
+          "equivalent": true,
+          "p1": 0.0095,
+          "p1_e0": 0.014167
+        },
+        "bench_A2_1": {
+          "equivalent": true,
+          "p1": 0.8835,
+          "p1_e0": 0.875333
+        },
+        "bench_R2_0": {
+          "equivalent": true,
+          "p1": 0.0135,
+          "p1_e0": 0.014167
+        },
+        "bench_R2_1": {
+          "equivalent": true,
+          "p1": 0.873833,
+          "p1_e0": 0.875333
+        },
+        "bench_e2_0": {
+          "equivalent": true,
+          "p1": 0.013833,
+          "p1_e0": 0.014167
+        },
+        "bench_e2_1": {
+          "equivalent": true,
+          "p1": 0.8775,
+          "p1_e0": 0.875333
+        },
+        "bench_e4_0": {
+          "equivalent": true,
+          "p1": 0.010667,
+          "p1_e0": 0.014167
+        },
+        "bench_e4_1": {
+          "equivalent": true,
+          "p1": 0.885167,
+          "p1_e0": 0.875333
+        }
+      },
+      "knee": {
+        "A2": {
+          "excess_plus": 0.013,
+          "sd": 0.023034,
+          "violates": false
+        },
+        "e2": {
+          "excess_plus": -0.02,
+          "sd": 0.022166,
+          "violates": false
+        },
+        "e4": {
+          "excess_plus": -0.003,
+          "sd": 0.025024,
+          "violates": false
+        }
+      }
+    },
+    "counted_s": 183.72388,
+    "legs": {
+      "claim3_contrast": {
+        "preserve": {
+          "lower": -0.390095,
+          "preserved": false,
+          "ratio": 0.06899,
+          "se": 0.279104
+        },
+        "vanish": {
+          "R2": {
+            "all_jobs": false,
+            "lojo": false,
+            "vanishes": false
+          },
+          "R4": {
+            "all_jobs": false,
+            "lojo": false,
+            "vanishes": false
+          }
+        }
+      },
+      "dephasing_tost": {
+        "A2_R2_lag1": false,
+        "A2_R2_p1": true,
+        "A2_R2_w0": false,
+        "A2_R4_lag1": true,
+        "A2_R4_p1": true,
+        "A2_R4_w0": false,
+        "R2_R4_lag1": true,
+        "R2_R4_p1": true,
+        "R2_R4_w0": false
+      },
+      "harmonic": {
+        "lag1": {
+          "amplitude_ok": false,
+          "data": {
+            "amplitude": 0.037819,
+            "amplitude_se": 0.00092,
+            "offset": 0.010797,
+            "phase": -0.518316,
+            "phase_se": 0.023075
+          },
+          "fixed": {
+            "amplitude": 0.129455,
+            "amplitude_se": 0.0,
+            "offset": 0.096143,
+            "phase": -0.829593,
+            "phase_se": 0.0
+          },
+          "phase_ok": false
+        },
+        "p1": {
+          "amplitude_ok": false,
+          "data": {
+            "amplitude": 0.074061,
+            "amplitude_se": 0.000416,
+            "offset": 0.398879,
+            "phase": -0.814585,
+            "phase_se": 0.005513
+          },
+          "fixed": {
+            "amplitude": 0.282131,
+            "amplitude_se": 0.0,
+            "offset": 0.364748,
+            "phase": -0.767396,
+            "phase_se": 0.0
+          },
+          "phase_ok": true
+        }
+      },
+      "leg_contrast": false,
+      "leg_i_population": false,
+      "leg_ii_response": false,
+      "leg_iii_dephasings": false,
+      "phase_tost": {
+        "COMP22_COMP40_lag1": true,
+        "COMP22_COMP40_p1": true,
+        "E0_baseline_lag1": false,
+        "E0_baseline_p1": false,
+        "INV2_E00_lag1": true,
+        "INV2_E00_p1": true
+      },
+      "population_tost": {
+        "E0": false,
+        "E00": false,
+        "RS": false
+      }
+    },
+    "pilot_gate": {
+      "checks": {
+        "E00_p1_vs_baseline": false,
+        "E0_p1_vs_baseline": false,
+        "INV2_lag1_vs_E00": true,
+        "INV2_p1_vs_E00": true,
+        "P2_p1_vs_fixed": false,
+        "P4_p1_vs_fixed": false,
+        "R2_lag1_vs_A2": true,
+        "R2_p1_vs_A2": true,
+        "RS_p1_vs_baseline": false
+      },
+      "go": false
+    },
+    "primary": {
+      "by_d": {
+        "4": {
+          "mean": -1.017309,
+          "n": 72000,
+          "p": 1.0,
+          "reject": false,
+          "sd_per_shot": 1.478192,
+          "se_block": 0.005196,
+          "se_shot": 0.005509,
+          "z": -195.768237
+        },
+        "6": {
+          "mean": -1.018372,
+          "n": 72000,
+          "p": 1.0,
+          "reject": false,
+          "sd_per_shot": 1.476492,
+          "se_block": 0.005175,
+          "se_shot": 0.005503,
+          "z": -196.80104
+        }
+      },
+      "refit_evals": 200,
+      "rejected": [],
+      "shots_per_arm": 8000
+    },
+    "primary_seconds": 1273.878372,
+    "shot_warnings": {},
+    "truth": "classical_d6",
+    "within_cap": true
+  },
+  "tier2_quantum_fixed": {
+    "call": "supported (under section 5): element-wise classical models with d <= 6 excluded",
+    "call_if_pilot_binding": "supported (under section 5): element-wise classical models with d <= 6 excluded",
+    "controls": {
+      "benchmark": {
+        "bench_A2_0": {
+          "equivalent": true,
+          "p1": 0.007167,
+          "p1_e0": 0.009333
+        },
+        "bench_A2_1": {
+          "equivalent": true,
+          "p1": 0.880167,
+          "p1_e0": 0.877833
+        },
+        "bench_R2_0": {
+          "equivalent": true,
+          "p1": 0.011,
+          "p1_e0": 0.009333
+        },
+        "bench_R2_1": {
+          "equivalent": true,
+          "p1": 0.8745,
+          "p1_e0": 0.877833
+        },
+        "bench_e2_0": {
+          "equivalent": true,
+          "p1": 0.011333,
+          "p1_e0": 0.009333
+        },
+        "bench_e2_1": {
+          "equivalent": true,
+          "p1": 0.877167,
+          "p1_e0": 0.877833
+        },
+        "bench_e4_0": {
+          "equivalent": true,
+          "p1": 0.0075,
+          "p1_e0": 0.009333
+        },
+        "bench_e4_1": {
+          "equivalent": true,
+          "p1": 0.873833,
+          "p1_e0": 0.877833
+        }
+      },
+      "knee": {
+        "A2": {
+          "excess_plus": 0.296,
+          "sd": 0.024011,
+          "violates": true
+        },
+        "e2": {
+          "excess_plus": 0.336,
+          "sd": 0.02111,
+          "violates": true
+        },
+        "e4": {
+          "excess_plus": 0.752,
+          "sd": 0.019829,
+          "violates": true
+        }
+      }
+    },
+    "counted_s": 183.72388,
+    "legs": {
+      "claim3_contrast": {
+        "preserve": {
+          "lower": 0.948324,
+          "preserved": true,
+          "ratio": 1.011431,
+          "se": 0.038366
+        },
+        "vanish": {
+          "R2": {
+            "all_jobs": true,
+            "lojo": true,
+            "vanishes": true
+          },
+          "R4": {
+            "all_jobs": true,
+            "lojo": true,
+            "vanishes": true
+          }
+        }
+      },
+      "dephasing_tost": {
+        "A2_R2_lag1": true,
+        "A2_R2_p1": true,
+        "A2_R2_w0": true,
+        "A2_R4_lag1": true,
+        "A2_R4_p1": true,
+        "A2_R4_w0": true,
+        "R2_R4_lag1": true,
+        "R2_R4_p1": true,
+        "R2_R4_w0": true
+      },
+      "harmonic": {
+        "lag1": {
+          "amplitude_ok": true,
+          "data": {
+            "amplitude": 0.145887,
+            "amplitude_se": 0.000846,
+            "offset": 0.101509,
+            "phase": -0.85956,
+            "phase_se": 0.006137
+          },
+          "fixed": {
+            "amplitude": 0.129455,
+            "amplitude_se": 0.0,
+            "offset": 0.096143,
+            "phase": -0.829593,
+            "phase_se": 0.0
+          },
+          "phase_ok": true
+        },
+        "p1": {
+          "amplitude_ok": true,
+          "data": {
+            "amplitude": 0.295604,
+            "amplitude_se": 0.000354,
+            "offset": 0.360483,
+            "phase": -0.773471,
+            "phase_se": 0.001396
+          },
+          "fixed": {
+            "amplitude": 0.282131,
+            "amplitude_se": 0.0,
+            "offset": 0.364748,
+            "phase": -0.767396,
+            "phase_se": 0.0
+          },
+          "phase_ok": true
+        }
+      },
+      "leg_contrast": true,
+      "leg_i_population": true,
+      "leg_ii_response": true,
+      "leg_iii_dephasings": true,
+      "phase_tost": {
+        "COMP22_COMP40_lag1": true,
+        "COMP22_COMP40_p1": true,
+        "E0_baseline_lag1": true,
+        "E0_baseline_p1": true,
+        "INV2_E00_lag1": true,
+        "INV2_E00_p1": true
+      },
+      "population_tost": {
+        "E0": true,
+        "E00": true,
+        "RS": true
+      }
+    },
+    "pilot_gate": {
+      "checks": {
+        "E00_p1_vs_baseline": true,
+        "E0_p1_vs_baseline": true,
+        "INV2_lag1_vs_E00": true,
+        "INV2_p1_vs_E00": true,
+        "P2_p1_vs_fixed": true,
+        "P4_p1_vs_fixed": true,
+        "R2_lag1_vs_A2": true,
+        "R2_p1_vs_A2": true,
+        "RS_p1_vs_baseline": true
+      },
+      "go": true
+    },
+    "primary": {
+      "by_d": {
+        "4": {
+          "mean": 0.238561,
+          "n": 72000,
+          "p": 0.0,
+          "reject": true,
+          "sd_per_shot": 0.723801,
+          "se_block": 0.00246,
+          "se_shot": 0.002697,
+          "z": 96.977419
+        },
+        "6": {
+          "mean": 0.062827,
+          "n": 72000,
+          "p": 0.0,
+          "reject": true,
+          "sd_per_shot": 0.357089,
+          "se_block": 0.001411,
+          "se_shot": 0.001331,
+          "z": 44.522893
+        }
+      },
+      "refit_evals": 200,
+      "rejected": [
+        4,
+        6
+      ],
+      "shots_per_arm": 8000
+    },
+    "primary_seconds": 1050.684911,
+    "shot_warnings": {
+      "P3": [
+        "duplicates"
+      ]
+    },
+    "truth": "quantum_fixed",
+    "within_cap": true
+  },
+  "tier3_classical_memory_elsewhere": {
+    "counted_s": 116.884565,
+    "pairs": {
+      "m149_o148": {
+        "a2_bound": 1.047897,
+        "flagged_jobs": [],
+        "h1": true,
+        "h2": false,
+        "h2_sham": true,
+        "label": "partial: H1 only (A2 persists)",
+        "vanish": false
+      },
+      "m67_o68": {
+        "a2_bound": 1.063665,
+        "flagged_jobs": [],
+        "h1": true,
+        "h2": false,
+        "h2_sham": true,
+        "label": "partial: H1 only (A2 persists)",
+        "vanish": false
+      }
+    },
+    "pilot_gate": {
+      "m149_o148": {
+        "a_ok": true,
+        "b_ok": true,
+        "p1": 0.580375,
+        "pred": 0.581641
+      },
+      "m67_o68": {
+        "a_ok": true,
+        "b_ok": true,
+        "p1": 0.579375,
+        "pred": 0.582051
+      }
+    },
+    "truth": "classical_memory_elsewhere",
+    "within_cap": true
+  },
+  "tier3_quantum": {
+    "counted_s": 116.884565,
+    "pairs": {
+      "m149_o148": {
+        "a2_bound": 0.03028,
+        "flagged_jobs": [],
+        "h1": true,
+        "h2": true,
+        "h2_sham": true,
+        "label": "replicates: H1 and H2 (A2 vanishes; shams equivalent)",
+        "vanish": true
+      },
+      "m67_o68": {
+        "a2_bound": 0.038089,
+        "flagged_jobs": [],
+        "h1": true,
+        "h2": true,
+        "h2_sham": true,
+        "label": "replicates: H1 and H2 (A2 vanishes; shams equivalent)",
+        "vanish": true
+      }
+    },
+    "pilot_gate": {
+      "m149_o148": {
+        "a_ok": true,
+        "b_ok": true,
+        "p1": 0.580375,
+        "pred": 0.581641
+      },
+      "m67_o68": {
+        "a_ok": true,
+        "b_ok": true,
+        "p1": 0.579375,
+        "pred": 0.582051
+      }
+    },
+    "truth": "quantum",
+    "within_cap": true
+  }
+}
