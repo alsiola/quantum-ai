@@ -523,7 +523,10 @@ def write_review(cfg: dict[str, Any], summary: dict[str, Any]) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--config", required=True)
-    ap.add_argument("--part", choices=["review", "design", "power", "null", "register", "contrast"])
+    ap.add_argument(
+        "--part",
+        choices=["review", "design", "power", "null", "register", "contrast", "incommensurate"],
+    )
     ap.add_argument("--export-qasm", action="store_true")
     ap.add_argument(
         "--export-controls", action="store_true", help="#34's controls tier (hardware group)"
@@ -590,6 +593,13 @@ def main() -> None:
         part = NL.part_null if args.part == "null" else NL.part_register
         summary = part(cfg, cfg_path, out, workers, meta)
         save_json(out / f"{args.part}_summary.json", summary)
+    elif args.part == "incommensurate":
+        import phase8_coherence_incommensurate as IC
+
+        summary = IC.part_incommensurate(
+            cfg, cfg_path, out, workers, run_metadata(cfg, cfg["null"]["seed"])
+        )
+        save_json(out / "incommensurate_summary.json", summary)
     elif args.part == "contrast":
         import phase8_coherence_contrast as CT
 

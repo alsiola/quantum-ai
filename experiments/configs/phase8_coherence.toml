@@ -226,6 +226,54 @@ arms = 0
 phases = "none: the rank of the cross-arm Hankel matrix of the 8 scan points"
 tests = "a lower bound on the hidden dimension any model needs; weak (a d = 16 register has room)"
 
+# -- Stage 2c (#35): the incommensurate-phase (1 rad) tier against Z_n phase registers -----------
+[incommensurate]
+# --part incommensurate: section 4's pipeline unchanged (parity split, the four starts at
+# [power] max_iters, the quantum refit, block bootstrap by job and 8-shot segment, Holm over
+# D = 4, 6) on the 18 arms plus the tier's 7 below, at the main tier's shots ([null] per_job,
+# jobs), on data from both quantum generators; the register classes of qmem.register at
+# Z_n x n_pop; then the size check from the best-fitting register. The data use [null] seed
+# and source_ids, so the 18 arms' shots are #34's register run's exactly (the new arms are
+# drawn after them). Elements r<k> / rm<k>: the physical echo with Rz(+k rad) / Rz(-k rad),
+# fenced and timed as e<k> (qmem.coherence.element_phase).
+sources = ["fixed", "fitted"]
+pipeline_starts = ["klein", "random", "octahedron", "split"]   # #34's four (D = 4, 6)
+free_d8_starts = ["cube"]
+free_rad = ["r1", "rm1", "r2", "r3"]   # the 1 rad echoes a relaxed / permutation class frees
+# register classes (variant: "nearest" = every echo its nearest Z_n shift; "relaxed" = the
+# 1 rad echoes free stochastic maps, warm-started from the nearest fit; "permutation" = e(1)
+# the permutation nearest the relaxed fit (Hungarian), e(-1) its inverse, e(2), e(3) free)
+# The grid is cut to fit about 12 h at 2 workers (#35's budget; one EM step on the 25 arms
+# costs about 0.25 + 0.045 d s): n = 12 is dropped (Z_24 contains Z_12 and Z_8's shifts and
+# the same 1 rad approximation, 0.047 rad), n_pop = 1 too (one ring cannot hold the
+# populations the echoes must leave invariant), and Z_32 (d >= 64 at n_pop = 2).
+classes = [
+  { n_phase = 8, n_pop = 3, variant = "nearest" },
+  { n_phase = 8, n_pop = 3, variant = "relaxed" },
+  { n_phase = 8, n_pop = 3, variant = "permutation" },
+  { n_phase = 16, n_pop = 2, variant = "nearest" },
+  { n_phase = 24, n_pop = 2, variant = "nearest" },
+]
+register_starts = ["prism"]
+warm_eps = 0.02               # a warm start's freed maps: (1 - eps) * map + eps / d
+null_replicates = 4           # the size check: replicates from the best-fitting register
+null_source_id = 5
+extra_shots = [16000, 32000, 64000]   # 1 rad shots per arm for the "more shots" option
+[incommensurate.arms.RAD1]    # Rz(1 rad) every step
+programs = [["r1"]]
+[incommensurate.arms.RADM1]   # Rz(-1 rad)
+programs = [["rm1"]]
+[incommensurate.arms.INV1]    # Rz(1) then Rz(-1): quantum = E00 (4 pulses)
+programs = [["r1", "rm1"]]
+[incommensurate.arms.COMP11]  # Rz(1)^2 against RAD2 = Rz(2) (4 pulses each)
+programs = [["r1", "r1"]]
+[incommensurate.arms.RAD2]
+programs = [["r2", "e0"]]
+[incommensurate.arms.CUBE1]   # Rz(1)^3 against RAD3 = Rz(3) (6 pulses each)
+programs = [["r1", "r1", "r1"]]
+[incommensurate.arms.RAD3]
+programs = [["r3", "e0", "e0"]]
+
 [export]                      # --export-qasm (hardware group, FakeKingston only)
 qasm_arms = ["E0", "P2", "P4", "E00", "INV2", "COMP22", "ALT2", "RS", "R2", "R4"]
 control_arms = ["P2", "INV2", "COMP22", "ALT2"]   # also built unfenced and with virtual rz

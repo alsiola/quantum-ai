@@ -42,6 +42,7 @@ the classical program models of ``qmem.classical``.
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field, replace
 from typing import Any
@@ -88,6 +89,23 @@ def x_kraus(p1: float = 0.0, over: float = 0.0) -> list[np.ndarray]:
 
 def echo_phase(k: int, n: int = N_PHASES) -> float:
     return 2 * math.pi * k / n
+
+
+_ECHO_PI4 = re.compile(r"^e(\d+)$")
+_ECHO_RAD = re.compile(r"^r(m?)(\d+)$")
+
+
+def element_phase(name: str) -> float | None:
+    """The ideal phase (rad) of an echo element: ``e<k>`` is ``Rz(k pi / 4)``; ``r<k>`` and
+    ``rm<k>`` (#35's incommensurate tier) are ``Rz(+k rad)`` and ``Rz(-k rad)``. ``None`` for
+    any other element."""
+    m = _ECHO_PI4.match(name)
+    if m:
+        return echo_phase(int(m.group(1)))
+    m = _ECHO_RAD.match(name)
+    if m:
+        return (-1.0 if m.group(1) else 1.0) * float(m.group(2))
+    return None
 
 
 def echo_angles(phi: float) -> tuple[float, float]:
@@ -257,8 +275,8 @@ class QuantumModel:
             out = np.eye(16, dtype=complex)
         elif name.startswith("p:"):  # the echo at any phase (prediction curves)
             out = A.on_q75(echo_kraus(float(name[2:]), pc.p1_q75, p.over))
-        elif name.startswith("e") and name[1:].isdigit():
-            out = A.on_q75(echo_kraus(echo_phase(int(name[1:])), pc.p1_q75, p.over))
+        elif (phase := element_phase(name)) is not None:
+            out = A.on_q75(echo_kraus(phase, pc.p1_q75, p.over))
         elif name == "spec":
             out = A.on_q75(compose(A.dephase_kraus(p.spec_dephase), [A.rz_unitary(p.spec_phase)]))
         elif name == "reset":
@@ -848,6 +866,7 @@ __all__ = [
     "echo_kraus",
     "echo_phase",
     "echo_unitary",
+    "element_phase",
     "first_step_choice",
     "from_vector",
     "holm",
