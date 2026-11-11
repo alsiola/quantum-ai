@@ -172,7 +172,7 @@ commit = "a161c1119271410dd8eae54523e51947d5fedc17"   # unchanged since #36/A3
 doc = "docs/phase8-preregistration.md"
 heading = "## 10. Amendment log"
 sha256 = "83208471f7164d48d16f545386860e92dc8d37020668cf8365f7890815db88b0"
-commit = ""                                     # A5's commit on main, filled once it is pushed
+commit = "02967c8af27f477a698a7396188d3608be87298b"   # A5 on main (#39)
 amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**"]
 
 [tier2.slot_1rad]                               # #35's 1 rad extension: NOT folded in
