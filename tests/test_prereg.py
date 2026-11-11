@@ -233,13 +233,12 @@ def test_order_warnings_and_chi2():
     assert P.order_warnings(drift)["warn"]
 
 
-def test_no_ibm_runtime_and_no_submit_path_in_the_harness():
+def test_no_ibm_runtime_in_the_rules_or_the_harness():
     for path in (ROOT / "src/qmem/prereg.py", ROOT / "experiments/phase8_hw.py"):
         text = path.read_text()
         assert "import qiskit_ibm_runtime" not in text and "from qiskit_ibm_runtime" not in text
         assert "QiskitRuntimeService" not in text
-    hw = (ROOT / "experiments/phase8_hw.py").read_text()
-    assert '"--submit"' not in hw and '"--dry-run"' not in hw
+    # #37: the live modes exist, in experiments/phase8_live.py (tests/test_phase8_live.py)
 
 
 # -- Tier 1: the decision rule at known truths ----------------------------------------------------

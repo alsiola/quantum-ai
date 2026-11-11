@@ -1,9 +1,10 @@
 # Phase 8 Stage 4 (issue #36): the combined pre-registration of the three hardware tiers and its
-# LOCAL dry-run harness. There is no live mode and no submit path: nothing here contacts IBM.
-# The live path (a backend with submit/result/usage) is a separate addition, made only after
-# the owner approves one tier and a CLAUDE.md exception on #28.
+# LOCAL dry-run harness; Stage 5 (#37): the live path (experiments/phase8_live.py), one tier at a
+# time, under the owner's standing Open-plan approval on #28 (CLAUDE.md exception).
 #
 #   uv run python experiments/phase8_hw.py --config experiments/configs/phase8_hw.toml --dry-run-local
+#   uv run --group hardware python experiments/phase8_hw.py --config experiments/configs/phase8_hw.toml --dry-run --tier tier1
+#   uv run --group hardware python experiments/phase8_hw.py --config experiments/configs/phase8_hw.toml --submit --tier tier1
 #
 # Every rule below is fixed before any data (docs/phase8-preregistration.md). The stage designs
 # are read from their own configs and summaries, never restated here.
@@ -41,6 +42,17 @@ reserve_s = 60                                  # held back from every tier (ove
 prior_counted_s = 0.0                           # Phase 8 jobs already counted (none)
 allowed_plans = ["open"]
 
+[ibm]                                           # the live path only (#37)
+env_file = ".env"                               # IBM_API_KEY, IBM_INSTANCE_CRN; read from this file only
+channel = "ibm_cloud"
+backend = "ibm_kingston"
+live_summary_dir = "results/summaries/phase8_hw"
+
+[sampler]                                       # as Phase 6/7: no error mitigation, classified bits
+dynamical_decoupling = false
+twirling_gates = false
+twirling_measure = false
+
 [cost]                                          # qmem.followup.CostModel (Phase 6/7)
 overhead_s = 2.0
 rep_delay_s = 250e-6
@@ -56,6 +68,35 @@ spam_gate = 0.90
 min_branch_shots = 500
 mdi = true                                      # optional sub-tier, only after P&M passes
 power_target = 0.8
+
+[tier1.live]                                    # #37: what the live path submits for Tier 1
+# P&M only: one job of 60 circuits, 36,000 shots, in #33's seeded pub order
+# (phase8_reference/summary.json plan.pm_primary). MDI is excluded (A3: its q74 reset is undecided).
+stages = ["pm_primary"]
+hard_cap_s = 20.0                               # #28's request for this job (the tier's 30 s held MDI too)
+qubits = [59, 75]                               # nothing else may appear in a submitted circuit
+qasm_dir = "results/summaries/phase8_reference/qasm"
+circuit_prefix = "pm_"
+# SHA-256 of the sorted "name sha256" lines (newline-terminated) of the 60 pm_* rows of
+# results/summaries/phase8_prereg/hashes.csv (#28, issuecomment-6778775029)
+qasm_digest = "4d17a4507e5a682f67f2ab173e1b27d53c7bdaacbd64efc80cdec76280365276"
+# Selections (section 5) that gate this tier. P&M and MDI use no re-selected qubit (the Bell
+# reference applies to the Bell route only), so none; every selection is still re-run and recorded.
+gating_selections = []
+
+# The pre-registration as it governs this tier: each section's hash at its commit on main
+# (qmem.followup.amendment_section/amendment_hash; the commit must be on origin/main).
+[[tier1.live.prereg]]
+doc = "docs/phase8-preregistration.md"
+heading = "## 2. Tier 1: Stage 3 (#33), Claim 4"
+sha256 = "00a8ab2f2592d8f20e0b6cfcee0bbd744c103fffa8bf6080cc4b5aea6acbaa35"
+commit = "a161c1119271410dd8eae54523e51947d5fedc17"
+[[tier1.live.prereg]]
+doc = "docs/phase8-preregistration.md"
+heading = "## 10. Amendment log"
+sha256 = "d0d9ca1ad04fd5dce069a794fc98493a5bf6be7be7aff056997c4f21e20be19e"
+commit = "a161c1119271410dd8eae54523e51947d5fedc17"
+amendments = ["**A2, 2026-11-10, pre-data (Tier 1).**", "**A3, 2026-11-10, pre-data (approvals, budget).**"]
 
 [tier2]                                         # Stage 2 (#32, #34): Claim 3
 pilot_cap_s = 30.0

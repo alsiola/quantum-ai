@@ -1,8 +1,11 @@
-"""Phase 8 Stage 4 (issue #36): the combined pre-registration's local dry-run harness.
+"""Phase 8 Stage 4 (issue #36): the combined pre-registration's harness; Stage 5 (#37): its
+live modes.
 
-**Local only.** There is no live mode and no submit path, and nothing here imports
-``qiskit_ibm_runtime`` or contacts IBM. ``--dry-run-local`` validates every tier of
-``docs/phase8-preregistration.md`` end to end on simulated data:
+``--dry-run-local`` (no network) validates every tier of ``docs/phase8-preregistration.md``
+end to end on simulated data. ``--dry-run`` (live target, submits nothing) and ``--submit``
+run one tier (``--tier``) through ``experiments/phase8_live.py``, the only code that imports
+``qiskit_ibm_runtime`` (inside functions), under the CLAUDE.md exception and the owner's
+standing approval on #28. The local dry run's steps:
 
 1. **Circuits.** Each tier's committed QASM is hashed against its stage summary (#33's
    ``manifest.json``, #32/#34's ``plan.json``, #31's ``circuits.json``).
@@ -21,13 +24,16 @@
    by id, raw shots kept, usage counted), then the tier's pre-registered analysis and decision
    rule.
 
-The live path is a separate, reviewable addition: a backend with ``submit``, ``result`` and
-``usage`` (``qmem.prereg.Backend``), a calibration reader returning a ``device.json``-shaped
-snapshot, and the CLI flags. It is added only after the owner approves one tier and a CLAUDE.md
-exception on #28.
+The live path (#37) is ``phase8_live.LiveBackend`` (``qmem.prereg.Backend`` on SamplerV2),
+a ``device.json``-shaped live calibration snapshot, section 5's rules re-run on it
+(``live_selection``), and the guards listed in ``phase8_live``'s docstring.
 
     uv run python experiments/phase8_hw.py --config experiments/configs/phase8_hw.toml \
         --dry-run-local
+    uv run --group hardware python experiments/phase8_hw.py \
+        --config experiments/configs/phase8_hw.toml --dry-run --tier tier1
+    uv run --group hardware python experiments/phase8_hw.py \
+        --config experiments/configs/phase8_hw.toml --submit --tier tier1 [--from-run <dir>]
 """
 
 from __future__ import annotations
@@ -373,7 +379,14 @@ def pair_powers(rcfg, dev_obj: REP.Device, t3, keys: list[str] | None, workers: 
 def selection_part(cfg, subs, t1: Tier1Ctx, t2, out: Path, workers: int) -> dict[str, Any]:
     """The three selection functions on the FakeKingston snapshot, and on perturbed ones."""
     dev = device(cfg)
-    rs = cfg["reselection"]
+    res, powers, t3 = select_all(cfg, subs, t1, dev, out, workers)
+    return select_scenarios(cfg, subs, t1, t2, dev, out, workers, res, powers, t3)
+
+
+def select_all(cfg, subs, t1: Tier1Ctx, dev, out: Path | None, workers: int, live=False):
+    """Section 5's three selection rules on one snapshot, against the committed choices.
+    ``live``: pairs screened in without committed FakeKingston pieces get no power here (a live
+    Tier 3 rebuilds every pair's pieces from the live snapshot first: hardware group)."""
     ccfg, rcfg = subs["tier2"], subs["tier3"]
     res: dict[str, Any] = {
         "snapshot": {
@@ -410,10 +423,21 @@ def selection_part(cfg, subs, t1: Tier1Ctx, t2, out: Path, workers: int) -> dict
     t3 = tier3_inputs(rcfg)
     dev_obj = REP.Device.from_snapshot(dev)
     t0 = time.time()
-    powers = pair_powers(rcfg, dev_obj, t3, None, workers)
+    keys = None
+    if live:
+        screened = [
+            PRp.key(r["memory"], r["output"])
+            for r in REP.screen(dev_obj, PRp.selection_rules(rcfg))
+            if not r["screen_reasons"]
+        ]
+        keys = [k for k in screened if k in t3["pieces"]]
+        res["tier3_no_pieces"] = [k for k in screened if k not in t3["pieces"]]
+    powers = pair_powers(rcfg, dev_obj, t3, keys, workers)
     log(out, f"[selection] #31 power of {len(powers)} screened pairs in {time.time() - t0:.0f} s")
     pairs = P.select_pairs(
-        dev, PRp.selection_rules(rcfg), lambda r: powers[PRp.key(r["memory"], r["output"])]
+        dev,
+        PRp.selection_rules(rcfg),
+        lambda r: powers.get(PRp.key(r["memory"], r["output"]), {"power_joint": 0.0}),
     )
     res["tier3_pairs"] = {k: v for k, v in pairs.items() if k != "rows"}
     res["reproduces"] = {
@@ -421,6 +445,17 @@ def selection_part(cfg, subs, t1: Tier1Ctx, t2, out: Path, workers: int) -> dict
         "tier2_ancillas": anc["chosen"] == committed["tier2_ancillas"],
         "tier3_pairs": pairs["chosen"] == committed["tier3_pairs"],
     }
+    res["powers_committed_pairs"] = {
+        k: powers.get(k, {}).get("power_joint") for k in committed["tier3_pairs"]
+    }
+    return res, powers, t3
+
+
+def select_scenarios(cfg, subs, t1: Tier1Ctx, t2, dev, out, workers, res, powers, t3):
+    """The perturbed snapshots through the predeclared consequences (the local dry run)."""
+    rs = cfg["reselection"]
+    ccfg, rcfg = subs["tier2"], subs["tier3"]
+    committed = res["committed"]
     # perturbed snapshots through the predeclared consequences
     pol = policies(cfg)
     scen = []
@@ -773,6 +808,39 @@ def guard_for(cfg, ledger: P.Ledger, tbud: P.TierBudget):
     return g
 
 
+#: P&M arm -> steps n (``pm_neg``: one step, A2's, an EB channel)
+PM_STEPS = {"pm_n0": 0, "pm_n1": 1, "pm_n2": 2, "pm_n3": 3, "pm_neg": 1}
+
+
+def tier1_rule(cfg: dict[str, Any]) -> P.Tier1Rule:
+    t = cfg["tier1"]
+    return P.Tier1Rule(t["alpha"], t["secondary_alpha"], t["spam_gate"], t["min_branch_shots"])
+
+
+def tier1_pm_counts(pubs, arr: dict[str, np.ndarray]) -> dict[str, dict[str, np.ndarray]]:
+    """``P.tier1_analyse``'s counts from the P&M job's raw bits: ``arr[pub.key]`` is
+    ``(shots, n + 1)`` (q59's record ``y0..y{n-1}``, then q75's ``m``); circuit ``c = 2 k + b``,
+    success when ``m == b``; records big-endian, step 1 first."""
+    counts: dict[str, dict[str, np.ndarray]] = {}
+    for arm, n in PM_STEPS.items():
+        nr = 2**n if n else 1
+        succ = np.zeros((nr, 12), dtype=np.int64)
+        tot = np.zeros((nr, 12), dtype=np.int64)
+        for p in pubs:
+            if p.arm != arm:
+                continue
+            bits = arr[p.key]
+            rec = np.zeros(len(bits), dtype=np.int64)
+            for t in range(n):
+                rec = 2 * rec + bits[:, t]
+            ok = bits[:, n] == (p.chunk % 2)
+            np.add.at(tot[:, p.chunk], rec, 1)
+            np.add.at(succ[:, p.chunk], rec[ok], 1)
+        recs = [""] if n == 0 else [f"{r:0{n}b}" for r in range(nr)]
+        counts[arm] = {"succ": succ, "tot": tot, "records": np.array(recs)}
+    return counts
+
+
 def tier1_run(cfg, t1: Tier1Ctx, t2, truth: str, out: Path, tbud: P.TierBudget) -> dict[str, Any]:
     """Tier 1 on simulated shots at one truth: the P&M job, then (if it passes, or always here
     to exercise it) the MDI job; decode, analyse, decide."""
@@ -786,7 +854,7 @@ def tier1_run(cfg, t1: Tier1Ctx, t2, truth: str, out: Path, tbud: P.TierBudget) 
     )["plan"]
     salt = {"stage4c_pieces": 1, "stage2_fitted": 2, "stage2_fixed": 3, "classical_eb": 4}[truth]
     rng = np.random.default_rng([cfg["tier2"]["dry_run"]["seed"], salt])
-    n_of = {"pm_n0": 0, "pm_n1": 1, "pm_n2": 2, "pm_n3": 3, "pm_neg": 1}
+    n_of = PM_STEPS
 
     def sim(stage: str, pubs) -> dict[str, np.ndarray]:
         arrays = {}
@@ -828,7 +896,6 @@ def tier1_run(cfg, t1: Tier1Ctx, t2, truth: str, out: Path, tbud: P.TierBudget) 
     est = {o: plan[o]["costs"][0]["estimate_s"] for o in ("pm_primary", "mdi_game")}
     backend = P.LocalBackend(sim, lambda st, pubs: est[st], rd / "server")
     res: dict[str, Any] = {"truth": truth}
-    counts: dict[str, dict[str, np.ndarray]] = {}
     warn = []
     for opt in ("pm_primary", "mdi_game"):
         pubs = [
@@ -844,30 +911,8 @@ def tier1_run(cfg, t1: Tier1Ctx, t2, truth: str, out: Path, tbud: P.TierBudget) 
             if w["warn"]:
                 warn.append(p.key)
         if opt == "pm_primary":
-            for arm in n_of:
-                n = n_of[arm]
-                nr = 2**n if n else 1
-                succ = np.zeros((nr, 12), dtype=np.int64)
-                tot = np.zeros((nr, 12), dtype=np.int64)
-                for p in pubs:
-                    if p.arm != arm:
-                        continue
-                    bits = arr[p.key]
-                    rec = np.zeros(len(bits), dtype=np.int64)
-                    for t in range(n):
-                        rec = 2 * rec + bits[:, t]
-                    ok = bits[:, n] == (p.chunk % 2)
-                    np.add.at(tot[:, p.chunk], rec, 1)
-                    np.add.at(succ[:, p.chunk], rec[ok], 1)
-                recs = [""] if n == 0 else [f"{r:0{n}b}" for r in range(nr)]
-                counts[arm] = {"succ": succ, "tot": tot, "records": np.array(recs)}
-            rule = P.Tier1Rule(
-                cfg["tier1"]["alpha"],
-                cfg["tier1"]["secondary_alpha"],
-                cfg["tier1"]["spam_gate"],
-                cfg["tier1"]["min_branch_shots"],
-            )
-            res["pm"] = P.tier1_analyse(counts, rule)
+            counts = tier1_pm_counts(pubs, arr)
+            res["pm"] = P.tier1_analyse(counts, tier1_rule(cfg))
             res["mdi_would_run"] = bool(
                 res["pm"]["tests"]["pm_n1"]["reject_eb"] and res["pm"]["valid"]
             )
@@ -1484,15 +1529,68 @@ def dry_run_local(cfg: dict[str, Any], args: argparse.Namespace) -> None:
     log(out, f"done in {time.time() - t_start:.0f} s; summaries in {sd.relative_to(REPO_ROOT)}")
 
 
+# -- 6. the live path (#37): phase8_live.py; network only in --dry-run and --submit --------------
+
+
+def live_selection(cfg: dict[str, Any]):
+    """Section 5's selection rules as the live path calls them: ``sel(dev, out, workers)``."""
+    subs = sub_cfgs(cfg)
+    t1 = Tier1Ctx(subs["tier1"])
+
+    def sel(dev: dict[str, Any], out: Path, workers: int) -> dict[str, Any]:
+        res, _, _ = select_all(cfg, subs, t1, dev, out, min(workers, 2), live=True)
+        return r6(res)
+
+    return sel
+
+
+def live_mode(cfg: dict[str, Any], args: argparse.Namespace) -> None:
+    """``--dry-run`` / ``--submit`` for ``--tier`` (``experiments/phase8_live.py``); summaries
+    to ``[ibm] live_summary_dir``."""
+    import shutil
+
+    import phase8_live as L
+
+    r = L.run(cfg, args, live_selection(cfg))
+    out, res = r["out"], r["res"]
+    sd = REPO_ROOT / cfg["ibm"]["live_summary_dir"]
+    sd.mkdir(parents=True, exist_ok=True)
+    tag = f"{args.tier}_{'live' if args.submit else 'livedry'}"
+    save_json(sd / f"{tag}.json", r6(res | {"run_dir": str(out.relative_to(REPO_ROOT))}))
+    cals = sorted(out.glob("calibration_live*.json"))
+    shutil.copy(cals[0], sd / f"{tag}_calibration.json")  # the snapshot the checks used
+    if args.submit:
+        td = sd / args.tier
+        td.mkdir(exist_ok=True)
+        for st in r["stages"]:
+            for f in ("job.json", "shots.npz"):
+                shutil.copy(out / st.stage / f, td / f"{st.stage}_{f}")
+        shutil.copy(out / "live_jobs.json", td / "live_jobs.json")
+        save_json(td / "decision.json", r6(res["analysis"]))
+        save_json(td / "ledger.json", r6(res["ledger"]))
+    log(out, f"summaries in {sd.relative_to(REPO_ROOT)}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--config", required=True)
-    ap.add_argument(
+    mode = ap.add_mutually_exclusive_group(required=True)
+    mode.add_argument(
         "--dry-run-local",
         action="store_true",
-        required=True,
-        help="the only mode: local simulation, no network, nothing submitted",
+        help="local simulation of every tier: no network, nothing submitted",
     )
+    mode.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="live target (hardware group): every check and the cost; submits nothing",
+    )
+    mode.add_argument(
+        "--submit",
+        action="store_true",
+        help="submit --tier's jobs (hardware group; its approval, gates, caps; resumable)",
+    )
+    ap.add_argument("--tier", default="tier1", help="the tier for --dry-run / --submit")
     ap.add_argument(
         "--part",
         default="all",
@@ -1501,7 +1599,11 @@ def main() -> None:
     ap.add_argument("--workers", type=int, default=None)
     ap.add_argument("--from-run", default=None, help="write into an existing run directory")
     args = ap.parse_args()
-    dry_run_local(load_config(Path(args.config)), args)
+    cfg = load_config(Path(args.config))
+    if args.dry_run_local:
+        dry_run_local(cfg, args)
+    else:
+        live_mode(cfg, args)
 
 
 if __name__ == "__main__":
