@@ -143,6 +143,38 @@ max_job_estimate_s = 20.0                       # the campaign's per-job guard (
 main_subjobs_per_block = 3
 controls_subjobs = 2
 
+[tier2.live]                                    # #39: what the live path submits for Tier 2
+# Amendment A5 (docs/phase8-preregistration.md section 10): the PILOT ONLY, one job of 9 arms x
+# 2,000 shots in the harness's seeded pub order (tier2_schedules, [tier2.dry_run] seed), cap 30 s.
+# Main (18 arms, cap 150 s) and the controls (cap 45 s) are not live stages here: they wait for
+# #35's verdict on the 1 rad slot and the coordinator's review of the pilot.
+stages = ["pilot"]
+hard_cap_s = 30.0                               # the pilot's cap ([tier2] pilot_cap_s)
+ancillas = [13, 50]                             # section 5 on ibm_kingston's 2026-11-11 02:51 UTC snapshot (A5)
+qubits = [13, 50, 59, 75]                       # nothing else may appear in a submitted circuit
+qasm_dir = "results/summaries/phase8_hw/tier2/qasm"   # A5's re-exports of RS, R2, R4 on [13, 50]
+# A5's SHA-256 of the re-exported feed-forward arms (#32's, on [50, 21], are in plan.json)
+ancilla_sha256 = { RS = "a2cab1886210987c3bd35d76a456250666ebdddb8a018f2e675868bd0b6b7439", R2 = "82ae2743f1ebdd807d049ee3f130213b77ede1660c852f2e5ae472733de05d00", R4 = "195aa5b7960d10ed38003d387ba34fc4217bb2353d117293d0915a61e1afdd17" }
+# SHA-256 of the sorted "name sha256" lines (newline-terminated) of the pilot's 9 circuits:
+# the 7 committed arms' plan.json hashes and A5's RS and R2
+qasm_digest = "6a3fea5abb301fd872dcfb6e5fd425e4599d10512869e13d5dbc8a97c2180cef"
+gating_selections = []                          # the ancillas are gated by A5's own check (phase8_live.tier2_selection_check)
+# Tier 1's committed ledgers: admission counts them (already in [allowance] prior_counted_s)
+earlier_ledgers = ["results/summaries/phase8_hw/tier1/ledger.json", "results/summaries/phase8_hw/tier1_mdi/ledger.json"]
+# The pre-registration as it governs Tier 2's pilot: section 3 (unchanged since #36) and
+# section 10 with A1 and A5, each hashed at its commit on main.
+[[tier2.live.prereg]]
+doc = "docs/phase8-preregistration.md"
+heading = "## 3. Tier 2: Stage 2 (#32, #34), Claim 3"
+sha256 = "9dd639485f4e5513ec78482179f56595fd0666a64578974a03760810e8453ad7"
+commit = "a161c1119271410dd8eae54523e51947d5fedc17"   # unchanged since #36/A3
+[[tier2.live.prereg]]
+doc = "docs/phase8-preregistration.md"
+heading = "## 10. Amendment log"
+sha256 = "83208471f7164d48d16f545386860e92dc8d37020668cf8365f7890815db88b0"
+commit = ""                                     # A5's commit on main, filled once it is pushed
+amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**"]
+
 [tier2.slot_1rad]                               # #35's 1 rad extension: NOT folded in
 status = "pending #35 (open when this was written); the coordinator folds it in if #35 recommends it"
 arms = 6

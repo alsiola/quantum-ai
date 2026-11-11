@@ -146,7 +146,17 @@ def test_run_refuses_before_any_network_call_without_approval():
     with pytest.raises(F.Refused):
         L.run(cfg(approval__tier1=""), args, None, no_network)
     with pytest.raises(F.Refused, match="no live plan"):
-        L.tier_entry("tier2")
+        L.tier_entry("tier3")
+    # Tier 2 (#39): the pre-registration guard refuses before any network call too
+    c = cfg()
+    c["tier2"]["live"]["prereg"][0]["sha256"] = "0" * 64
+    with pytest.raises(F.Refused, match="recorded hash"):
+        L.run(
+            c,
+            SimpleNamespace(tier="tier2", submit=True, from_run=None, workers=1),
+            None,
+            no_network,
+        )
 
 
 # -- 2. the pre-registration's sections ------------------------------------------------------------
@@ -156,20 +166,25 @@ def test_prereg_guard_refuses_a_changed_section_and_an_unmerged_commit():
     def here(doc, commit):
         return (ROOT / doc).read_text()
 
-    assert len(L.prereg_guard(cfg(), "tier1_mdi", here)) == 2
-    # A4 appended to section 10, so P&M's recorded section 10 (#37, run and done) now refuses
-    with pytest.raises(F.Refused, match="recorded hash"):
-        L.prereg_guard(cfg(), "tier1", here)
+    assert len(L.prereg_guard(cfg(), "tier2", here)) == 2
+    # A4, then A5, appended to section 10, so the recorded section 10 of P&M (#37) and of MDI
+    # (#38), both run and done, now refuses
+    for t in ("tier1", "tier1_mdi"):
+        with pytest.raises(F.Refused, match="recorded hash"):
+            L.prereg_guard(cfg(), t, here)
     c = cfg()
-    c["tier1"]["live"]["prereg"][1]["sha256"] = c["tier1"]["mdi_live"]["prereg"][1]["sha256"]
+    new10 = c["tier2"]["live"]["prereg"][1]["sha256"]
+    c["tier1"]["live"]["prereg"][1]["sha256"] = new10
+    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = new10
     assert len(L.prereg_guard(c, "tier1", here)) == 2
-    c = cfg()
+    assert len(L.prereg_guard(c, "tier1_mdi", here)) == 2
     c["tier1"]["mdi_live"]["prereg"][0]["sha256"] = "0" * 64
     with pytest.raises(F.Refused, match="recorded hash"):
         L.prereg_guard(c, "tier1_mdi", here)
     with pytest.raises(F.Refused, match="not on main"):
-        L.prereg_guard(cfg(), "tier1_mdi", lambda d, c: None)
+        L.prereg_guard(cfg(), "tier2", lambda d, c: None)
     c = cfg()
+    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = c["tier2"]["live"]["prereg"][1]["sha256"]
     c["tier1"]["mdi_live"]["prereg"][1]["amendments"] = ["**A9, 2026-11-11, pre-data.**"]
     with pytest.raises(F.Refused, match="A9"):
         L.prereg_guard(c, "tier1_mdi", here)
@@ -383,8 +398,9 @@ def test_mdi_prereg_refuses_until_a4_has_its_commit_on_main():
     if not c["tier1"]["mdi_live"]["prereg"][1]["commit"]:
         with pytest.raises(F.Refused, match="not on main"):
             L.prereg_guard(c, "tier1_mdi")
-    c["tier1"]["mdi_live"]["prereg"][1]["amendments"] = ["**A5, 2026-11-12, pre-data.**"]
-    with pytest.raises(F.Refused, match="A5"):
+    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = c["tier2"]["live"]["prereg"][1]["sha256"]
+    c["tier1"]["mdi_live"]["prereg"][1]["amendments"] = ["**A8, 2026-11-12, pre-data.**"]
+    with pytest.raises(F.Refused, match="A8"):
         L.prereg_guard(c, "tier1_mdi", lambda d, k: (ROOT / d).read_text())
 
 
@@ -544,3 +560,244 @@ def test_mdi_analysis_rejects_eb_on_shots_from_a_good_channel():
         res = L.tier1_mdi_analyse(cfg(), [st], {"mdi_game": arr})
         assert res["n1"]["reject_eb"] is expect
         assert res["call"].startswith("claim 4" if expect else "MDI inconclusive")
+
+
+# -- #39: the CZ duration and Tier 2's live pilot (amendment A5) ---------------------------------
+
+
+def test_cz_duration_survives_the_summary_rounding():
+    """#37's summary showed the q59-q75 CZ as 0.0 s: ``r6`` rounded 6.8e-8 s to 6 decimals.
+    The snapshot itself (and the live cost, from ``estimate_duration``) had 68 ns."""
+    import phase8_hw as H
+
+    assert H.r6(6.8e-08) == 6.8e-08 and H.r6(2.212e-06) == 2.212e-06
+    assert H.r6(12.5716161) == 12.571616 and H.r6(0.0) == 0.0 and H.r6(float("nan")) == "nan"
+    cal = json.loads(
+        (ROOT / "results/summaries/phase8_hw/tier1_mdi_live_calibration.json").read_text()
+    )
+    assert cal["cz"]["59-75"]["duration"] == pytest.approx(6.8e-08)
+    assert L.cz_check(cal, [59, 75])["59-75"]["duration_ns"] == 68.0
+    for bad in (0.0, None):
+        dev = copy.deepcopy(cal)
+        dev["cz"]["59-75"]["duration"] = bad
+        with pytest.raises(F.Refused, match="positive live duration"):
+            L.cz_check(dev, [59, 75])
+
+
+def test_live_cost_uses_the_live_durations_and_refuses_a_missing_or_zero_one():
+    st = L.tier1_stages(cfg())[0]
+    names = set(st.names.values())
+    base = {n: 3.2e-4 for n in names}
+    lc = L.live_cost(cfg(), st, base)
+    longer = L.live_cost(cfg(), st, {n: 6.4e-4 for n in names})
+    assert longer["live_estimate_s"] > lc["live_estimate_s"]
+    assert longer["estimate_s"] == longer["live_estimate_s"] > st.cost["estimate_s"]  # the max
+    n0 = sorted(names)[0]
+    for bad in (0.0, None, float("nan")):
+        with pytest.raises(F.Refused, match="positive live duration"):
+            L.live_cost(cfg(), st, base | {n0: bad})
+
+
+def tier2_stage(c=None) -> L.LiveStage:
+    (st,) = L.tier2_stages(c or cfg())
+    return st
+
+
+def test_tier2_live_is_the_pilot_only_with_a1s_schedule_and_cost():
+    st = tier2_stage()
+    assert st.stage == "pilot" and len(st.pubs) == 18 and st.cost["shots"] == 18000
+    arms = {p.arm for p in st.pubs}
+    assert arms == {"baseline", "E0", "E00", "P2", "P4", "INV2", "RS", "R2", "A2"}
+    assert all(sum(p.shots for p in st.pubs if p.arm == a) == 2000 for a in arms)
+    assert st.cost["upper_s"] == pytest.approx(16.71452, abs=1e-5)
+    assert st.cost["estimate_s"] <= 20.0
+    c = cfg()
+    c["tier2"]["live"]["stages"] = ["pilot", "main_b0_s0"]
+    with pytest.raises(F.Refused, match="not a live stage"):
+        L.tier2_stages(c)
+    tb = L.tier_budget(cfg(), "tier2", [st])
+    assert tb.hard_cap_s == 30.0 and tb.max_job_estimate_s == 20.0 and not tb.problems()
+
+
+def test_tier2_circuits_are_the_committed_arms_and_a5s_reexports():
+    st = tier2_stage()
+    names = sorted(set(st.names.values()))
+    ok = L.tier2_circuit_check(cfg(), "tier2", names)
+    assert ok["files"] == 9 and ok["digest"].startswith("6a3fea5a")
+    plan = json.loads((ROOT / "results/summaries/phase8_coherence/plan.json").read_text())
+    for n in names:
+        if n in ("RS", "R2"):  # moved from #32's [50, 21] to the live [13, 50]
+            assert ok["sha256"][n] != plan["qasm_sha256"][n]
+            assert "$13;" in ok["texts"][n] and "$21;" not in ok["texts"][n]
+        else:
+            assert ok["sha256"][n] == plan["qasm_sha256"][n]
+    c = cfg()
+    c["tier2"]["live"]["ancilla_sha256"]["RS"] = plan["qasm_sha256"]["RS"]
+    with pytest.raises(F.Refused, match="hash mismatch"):
+        L.tier2_circuit_check(c, "tier2", names)
+    c = cfg()
+    c["tier2"]["live"]["qasm_digest"] = "0" * 64
+    with pytest.raises(F.Refused, match="digest"):
+        L.tier2_circuit_check(c, "tier2", names)
+    c = cfg()
+    c["tier2"]["live"]["ancillas"] = [50, 21]
+    with pytest.raises(F.Refused, match="manifest ancillas"):
+        L.tier2_circuit_check(c, "tier2", names)
+
+
+def _prep_dev() -> dict:
+    return json.loads(
+        (ROOT / "results/summaries/phase8_hw/tier2_prepare_calibration.json").read_text()
+    )
+
+
+def test_tier2_selection_gate_and_floor():
+    dev = _prep_dev()
+    sel = {"tier2_ancillas": {"chosen": [13, 50]}}
+    fl = L.tier2_selection_check(cfg(), "tier2", dev, sel)
+    assert fl["pass"] and fl["bias_bound"] == pytest.approx(0.0029296875)
+    assert fl["vanish_power"] >= 0.8 and fl["preserve_power"] >= 0.8
+    with pytest.raises(F.Refused, match="new dated amendment"):
+        L.tier2_selection_check(cfg(), "tier2", dev, {"tier2_ancillas": {"chosen": [13, 69]}})
+    bad = copy.deepcopy(dev)
+    bad["qubits"]["50"]["readout"] = 0.03
+    with pytest.raises(F.Refused, match="floor"):
+        L.tier2_selection_check(cfg(), "tier2", bad, sel)
+
+
+def test_tier2_durations_fill_the_feed_forward_arms_from_the_design():
+    dev = _prep_dev()
+    static = {a: 3.2108e-4 for a in ("E0", "E00", "P2", "P4", "INV2")}
+    dur = {"baseline": 3.21016e-4, "A2": 3.233e-4, **static, "RS": None, "R2": None}
+    out = L.tier2_durations(cfg(), dur, dev)
+    assert all(out[k] == dur[k] for k in static)
+    assert out["RS"] == pytest.approx(3.919e-4, abs=2e-7) and out["R2"] == out["RS"]
+    slow = copy.deepcopy(dev)
+    for q in ("13", "50"):
+        slow["qubits"][q]["measure_time"] = 3.2e-6  # live 2.18 us -> 3.2 us per step
+    out2 = L.tier2_durations(cfg(), dur, slow)
+    assert out2["RS"] - out["RS"] == pytest.approx(64 * (3.2e-6 - 2.18e-6), rel=1e-6)
+    with pytest.raises(F.Refused, match="baseline"):
+        L.tier2_durations(cfg(), dur | {"baseline": None}, dev)
+
+
+def test_tier2_admission_counts_tier1s_ledgers_and_the_whole_tier_cap(tmp_path):
+    e = L.earlier_counted(cfg(), "tier2")
+    assert e["counted_s"] == pytest.approx(15.16217 + 9.97314) and e["counted_s"] <= 25.2
+    with pytest.raises(F.Refused, match="prior_counted_s"):
+        L.earlier_counted(cfg(allowance__prior_counted_s=20.0), "tier2")
+    import phase8_hw as H
+
+    tb2 = H.tier_budgets(cfg(), H.sub_cfgs(cfg()))["tier2"]
+    assert tb2.hard_cap_s == 225.0
+    assert L.admission_after(cfg(), "tier2", tb2, 511.0)["fits_cap"]  # 225 <= 511 - 60
+    with pytest.raises(F.Refused, match="not admitted"):
+        L.admission_after(cfg(), "tier2", tb2, 280.0)  # 225 > 220
+    st = tier2_stage()
+    tb = L.tier_budget(cfg(), "tier2", [st])
+    L.job_guard(cfg(), "tier2", tb, P.Ledger(), FakeService(), st.cost)({})
+    with pytest.raises(F.Refused, match="paid plan"):
+        L.job_guard(cfg(), "tier2", tb, P.Ledger(), FakeService(plan="premium"), st.cost)({})
+    led = P.Ledger()  # a second pilot would pass the pilot's 30 s cap
+    led.add("tier2", F.job_charge("tier2:pilot", st.cost["upper_s"], {"job_usage": 12.0}))
+    with pytest.raises(F.Refused, match="hard cap"):
+        L.job_guard(cfg(), "tier2", tb, led, FakeService(), st.cost)({})
+
+
+def _tier2_regs(arm: str) -> list:
+    regs: list = [f"y{t}" for t in range(64)]
+    if arm == "A2":
+        regs.append(("m", 64))
+    if arm in ("RS", "R2", "R4"):
+        regs += [("b1", 64), ("b2", 64)]
+    return regs
+
+
+def test_tier2_pilot_submits_once_resumes_by_id_and_decodes(tmp_path):
+    c = cfg()
+    st = tier2_stage(c)
+    svc = FakeService(charge=11.0)
+    lb = L.LiveBackend(
+        c,
+        svc,
+        svc.backend("ibm_kingston"),
+        lambda p: _tier2_regs(p.arm),
+        L.tier2_decode,
+        tmp_path,
+        svc.sampler,
+    )
+    lb.pubs = st.pubs
+    tb = L.tier_budget(c, "tier2", [st])
+    led = P.Ledger()
+    g = L.job_guard(c, "tier2", tb, led, svc, st.cost)
+    arr = P.run_stage("tier2", st.stage, st.pubs, lb, tmp_path, st.cost, led, g)
+    assert lb.submissions == 1
+    rec = json.loads((tmp_path / "pilot" / "job.json").read_text())
+    assert rec["approval_url"] == URL and rec["charge"]["counted_s"] == pytest.approx(16.71452)
+    rs = next(p for p in st.pubs if p.arm == "RS")
+    a2 = next(p for p in st.pubs if p.arm == "A2")
+    assert arr[f"{rs.key}__y"].shape == (rs.shots, 64) and arr[f"{rs.key}__b2"].shape == (
+        rs.shots,
+        64,
+    )
+    assert arr[f"{a2.key}__m"].shape == (a2.shots, 64) and f"{a2.key}__b1" not in arr
+    res = L.tier2_analyse(c, [st], {"pilot": arr})  # random bits: far from the prediction
+    assert not res["gate"]["go"] and res["call"].startswith("pilot gate fails")
+    lb2 = L.LiveBackend(
+        c,
+        svc,
+        svc.backend("ibm_kingston"),
+        lambda p: _tier2_regs(p.arm),
+        L.tier2_decode,
+        tmp_path,
+        svc.sampler,
+    )
+    lb2.pubs = st.pubs
+    P.run_stage("tier2", st.stage, st.pubs, lb2, tmp_path, st.cost, P.Ledger(), g)
+    assert lb2.submissions == 0 and len(svc.jobs) == 1
+
+
+def test_tier2_pilot_gate_passes_on_the_fixed_models_shots_and_fails_on_a_shift():
+    """Shots simulated from Stage 2's fixed quantum model pass section 3.6's gate (as the local
+    dry run's quantum truth does); RS's P(1) moved by +0.05 fails its +-0.02 check only."""
+    import phase8_coherence_design as DS
+    import phase8_hw as H
+
+    from qmem import coherence as Q
+
+    c = cfg()
+    st = tier2_stage(c)
+    ccfg = L.tier2_ccfg(c)
+    t2 = H.tier2_model_ctx(ccfg)
+    qm = t2["model"](t2["fixed"])
+    arms = Q.parse_arms(ccfg["arms"])
+    rng = np.random.default_rng(39)
+    arr = {f"{p.key}__y": DS.simulate(qm, arms[p.arm], p.shots, 64, rng).y for p in st.pubs}
+    res = L.tier2_analyse(c, [st], {"pilot": arr})
+    assert res["gate"]["go"], res["table"]
+    assert len(res["table"]) == 9 and all(r["pass"] for r in res["table"])
+    shifted = dict(arr)
+    for p in st.pubs:
+        if p.arm == "RS":
+            y = arr[f"{p.key}__y"].copy()
+            zeros = np.argwhere(y == 0)
+            pick = zeros[rng.random(len(zeros)) < 0.05 / (1 - y.mean())]
+            y[pick[:, 0], pick[:, 1]] = 1
+            shifted[f"{p.key}__y"] = y
+    res2 = L.tier2_analyse(c, [st], {"pilot": shifted})
+    assert not res2["gate"]["go"]
+    assert [r["check"] for r in res2["table"] if not r["pass"]] == ["RS_p1_vs_baseline"]
+
+
+def test_tier2_prereg_names_a1_and_a5_and_refuses_until_a5_is_on_main():
+    c = cfg()
+    secs = c["tier2"]["live"]["prereg"]
+    assert [s["heading"][:5] for s in secs] == ["## 3.", "## 10"]
+    assert any(a.startswith("**A5, 2026-11-11") for a in secs[1]["amendments"])
+    L.prereg_guard(c, "tier2", lambda d, k: (ROOT / d).read_text())  # the working copy matches
+    if not secs[1]["commit"]:
+        with pytest.raises(F.Refused, match="not on main"):
+            L.prereg_guard(c, "tier2")
+    secs[1]["amendments"] = ["**A6, 2026-11-12, pre-data.**"]
+    with pytest.raises(F.Refused, match="A6"):
+        L.prereg_guard(c, "tier2", lambda d, k: (ROOT / d).read_text())

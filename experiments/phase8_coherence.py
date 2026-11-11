@@ -528,6 +528,13 @@ def main() -> None:
     ap.add_argument(
         "--export-controls", action="store_true", help="#34's controls tier (hardware group)"
     )
+    ap.add_argument(
+        "--ancillas",
+        default=None,
+        help="with --export-qasm: re-export RS, R2, R4 on this live pair, e.g. 13,50 (#39)",
+    )
+    ap.add_argument("--out-dir", default="results/summaries/phase8_hw/tier2/qasm")
+    ap.add_argument("--snapshot", default=None, help="the live snapshot the pair came from")
     ap.add_argument("--plan", action="store_true")
     ap.add_argument("--workers", type=int, default=None)
     ap.add_argument("--from-run", default=None, help="resume a run directory")
@@ -539,7 +546,11 @@ def main() -> None:
     if args.export_qasm:
         import phase8_coherence_hw as HW
 
-        HW.export(cfg)
+        if args.ancillas:  # #39 (A5): the feed-forward arms on the live ancillas only
+            pair = tuple(int(q) for q in args.ancillas.split(","))
+            HW.export_live(cfg, pair, Path(args.out_dir), args.snapshot or "")
+        else:
+            HW.export(cfg)
         return
     if args.export_controls:
         import phase8_coherence_hw as HW

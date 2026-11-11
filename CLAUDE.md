@@ -111,7 +111,11 @@ and keep within the plan's allowance (reserve included). Credentials live in `.e
   run on #37) and `tier1_mdi` (#38: Tier 1's MDI sub-tier, `[tier1.mdi_live]`, amendment A4's
   q74 reset; it runs on Tier 1's approval, its cap is cumulative with P&M's committed ledger,
   and it has a pre-data power gate at the run's own snapshot). Tiers 2 and 3 need their own
-  `[tierN.live]` table and a `TIERS` entry first:
+  `[tierN.live]` table and a `TIERS` entry first. `tier2` (#39, amendment A5: the **pilot
+  only**, `[tier2.live]`, ancillas [13, 50] re-exported into `results/summaries/phase8_hw/tier2/qasm/`
+  with `phase8_coherence.py --export-qasm --ancillas 13,50`) also has `--prepare`: read-only,
+  the live snapshot, ancilla re-selection and floor (about 6 min). Tier 2 main and the controls
+  need their own stages after #35 and the coordinator's review:
   `uv run --group hardware python experiments/phase8_hw.py --config experiments/configs/phase8_hw.toml --dry-run --tier tier1_mdi`.
   MDI's power check at a saved snapshot (about 15 s):
   `uv run --group hardware python experiments/phase8_mdi_power.py --config experiments/configs/phase8_hw.toml --snapshot <calibration.json> --search`

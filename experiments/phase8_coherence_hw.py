@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 import warnings
 from collections import Counter
 from typing import Any
@@ -345,6 +346,79 @@ def export(cfg: dict[str, Any]) -> None:
     )
     PC.write_csv(sd / "circuits.csv", [PC.jround(r) for r in rows])
     print(json.dumps({"survive": ok, "ancillas": anc["chosen"]}, indent=1))
+
+
+# -- #39: the feed-forward arms on the live ancillas (amendment A5) -------------------------------
+
+#: the arms that use the ``ff`` ancillas (``schedule = "random"``)
+ANCILLA_ARMS = ("RS", "R2", "R4")
+
+
+def export_live(cfg: dict[str, Any], pair: tuple[int, int], out_dir, snapshot: str = "") -> dict:
+    """Re-export the feed-forward arms (RS, R2, R4) with the live ``pair`` of ancillas, exactly
+    as ``export`` builds them (FakeKingston, level 0, fixed layout); section 5's replace rule.
+
+    Self-check first: the same builder with the committed pair must reproduce the committed
+    hashes (``circuits.json``) byte for byte, so the only change is the ancilla pair. Each new
+    file must also equal the committed file with the two ancilla indices substituted, up to
+    the order of the ancillas' leading preparation, and keep the level-0 x count per step.
+    Writes ``<arm>.qasm`` and ``manifest.json`` into ``out_dir``."""
+    from pathlib import Path
+
+    from qiskit import qasm3
+    from qiskit_ibm_runtime.fake_provider import FakeKingston
+
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    sd = PC.sdir(cfg)
+    committed = json.loads((sd / "circuits.json").read_text())
+    old_pair = tuple(committed["ancillas"]["chosen"])
+    backend = FakeKingston()
+    full = qasm3.loads((REPO_ROOT / cfg["experiment"]["phase6_dir"] / "circuit.qasm").read_text())
+    length = cfg["analysis"]["length"]
+    arms = Q.parse_arms(cfg["arms"])
+    base_x = sum(1 for n, _ in q75_ops(isa(full, backend, 0)) if n == "x")
+    rows = {}
+    for name in ANCILLA_ARMS:
+        arm = arms[name]
+        old_text = qasm3.dumps(isa(build(full, arm, length, "physical", old_pair), backend, 0))
+        old_h = hashlib.sha256(old_text.encode()).hexdigest()
+        if old_h != committed["qasm_sha256"][name]:
+            raise RuntimeError(f"{name}: the builder no longer reproduces the committed hash")
+        tq = isa(build(full, arm, length, "physical", pair), backend, 0)
+        text = qasm3.dumps(tq)
+        n_echo = max(sum(1 for e in p if e.startswith("e")) for p in arm.programs)
+        chk = slot_checks(tq, 2 * 2 * n_echo + base_x / length, length)
+        if chk["x_per_step"] != chk["expected_x_per_step"]:
+            raise RuntimeError(f"{name}: x per step {chk['x_per_step']} on the live pair")
+        sub = {f"${old_pair[0]};": f"${pair[0]};", f"${old_pair[1]};": f"${pair[1]};"}
+        swapped = "\n".join(
+            next((ln.replace(k, v) for k, v in sub.items() if ln.endswith(k)), ln)
+            for ln in old_text.split("\n")
+        )
+        used = sorted({int(q) for q in re.findall(r"\$(\d+)", text)})
+        (out_dir / f"{name}.qasm").write_text(text)
+        rows[name] = {
+            "sha256": hashlib.sha256(text.encode()).hexdigest(),
+            "committed_sha256": old_h,
+            "qubits": used,
+            "x_per_step": chk["x_per_step"],
+            "if_else_blocks": chk["if_else_blocks"],
+            "same_lines_as_committed_with_ancillas_substituted": sorted(swapped.split("\n"))
+            == sorted(text.split("\n")),
+        }
+        print(f"export_live: {name} {rows[name]['sha256'][:12]} qubits {used}", flush=True)
+    man = {
+        "meta": run_metadata(cfg, 0),
+        "rule": "docs/phase8-preregistration.md section 5 (replace): FakeKingston, level 0, "
+        "fixed layout, phase8_coherence_hw.build with the live ancilla pair",
+        "ancillas": list(pair),
+        "committed_ancillas": list(old_pair),
+        "snapshot": snapshot,
+        "circuits": rows,
+    }
+    save_json(out_dir / "manifest.json", man)
+    return man
 
 
 # -- #34: the controls tier (direct q75 population benchmark, Knee circuits) ---------------------

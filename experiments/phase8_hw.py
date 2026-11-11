@@ -91,8 +91,12 @@ def log(out: Path | None, msg: str) -> None:
 
 
 def r6(v: Any) -> Any:
+    """Round floats for the summaries: 6 decimals, but 6 significant digits below 1e-3, so
+    that gate and readout times survive (#39: 6 decimals had written the 68 ns CZ as 0.0)."""
     if isinstance(v, float):
-        return round(v, 6) if math.isfinite(v) else str(v)
+        if not math.isfinite(v):
+            return str(v)
+        return round(v, 6) if v == 0 or abs(v) >= 1e-3 else float(f"{v:.6g}")
     if isinstance(v, (np.floating, np.integer, np.bool_)):
         return r6(v.item())
     if isinstance(v, dict):
@@ -1553,10 +1557,18 @@ def live_mode(cfg: dict[str, Any], args: argparse.Namespace) -> None:
 
     import phase8_live as L
 
-    r = L.run(cfg, args, live_selection(cfg))
-    out, res = r["out"], r["res"]
     sd = REPO_ROOT / cfg["ibm"]["live_summary_dir"]
     sd.mkdir(parents=True, exist_ok=True)
+    if args.prepare:  # #39: read-only snapshot, selection and floor for A5
+        r = L.prepare(cfg, args, live_selection(cfg))
+        out, res = r["out"], r["res"]
+        tag = f"{args.tier}_prepare"
+        save_json(sd / f"{tag}.json", r6(res | {"run_dir": str(out.relative_to(REPO_ROOT))}))
+        shutil.copy(out / "calibration_live.json", sd / f"{tag}_calibration.json")
+        log(out, f"summaries in {sd.relative_to(REPO_ROOT)}")
+        return
+    r = L.run(cfg, args, live_selection(cfg))
+    out, res = r["out"], r["res"]
     tag = f"{args.tier}_{'live' if args.submit else 'livedry'}"
     save_json(sd / f"{tag}.json", r6(res | {"run_dir": str(out.relative_to(REPO_ROOT))}))
     cals = sorted(out.glob("calibration_live*.json"))
@@ -1586,6 +1598,12 @@ def main() -> None:
         "--dry-run",
         action="store_true",
         help="live target (hardware group): every check and the cost; submits nothing",
+    )
+    mode.add_argument(
+        "--prepare",
+        action="store_true",
+        help="tier2 (#39): read the live calibration, re-select the ancillas, check the floor; "
+        "read-only, submits nothing",
     )
     mode.add_argument(
         "--submit",

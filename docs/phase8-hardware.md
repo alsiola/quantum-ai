@@ -309,3 +309,38 @@ residual assumptions are:
 
 It is still one step, on one pair, on one day. It says nothing about whether the emitted-symbol
 witness uses q75's coherence (Claim 3).
+
+## 6. Stage 5c: Tier 2 preparation and the pilot (#39)
+
+The rules are amendment A5 ([phase8-preregistration.md](phase8-preregistration.md) §10). It was
+written and landed on `main` before any Tier 2 job. Only the pilot runs here. Main and the
+controls wait for #35's verdict on the 1 rad slot and the coordinator's review of the pilot.
+
+### 6.1 Preparation (A5)
+
+- **Live ancillas.** `phase8_hw.py --prepare --tier tier2` is read-only and submits nothing.
+  It read `ibm_kingston`'s calibration of 2026-11-11 02:51 UTC (selection hash `c7aed81c…`, as
+  #37's and #38's). §5's rule picks **[13, 50]**, with readout 0.0020 and 0.0029. The
+  FakeKingston pick was [50, 21]. Files: `phase8_hw/tier2_prepare.json` and
+  `tier2_prepare_calibration.json`.
+- **Floor.** The bias bound is 0.0029, within 0.02. The R2/R4 vanish power is 1.00 and the RS
+  non-inferiority power 0.985, both ≥ 0.80. The tier proceeds.
+- **Circuits.** RS, R2 and R4 were re-exported on [13, 50] (`phase8_coherence.py --export-qasm
+  --ancillas 13,50`, FakeKingston, level 0, fixed layout) into `phase8_hw/tier2/qasm/`.
+  - The builder with [50, 21] reproduces #32's hashes byte for byte.
+  - The new files have #32's lines with q50 → q13 and q21 → q50.
+  - The other seven pilot arms are the committed files.
+  - The pilot digest is `6a3fea5a…`.
+- **The CZ `0.0` in #37's summary** was the summary writer's rounding to 6 decimals, not the
+  Target. The snapshot holds 68 ns, and the live cost always used the full-precision
+  `estimate_duration`. No cost changed. `r6` now keeps 6 significant digits below 1e-3.
+  `live_cost` refuses a missing or zero duration, and `cz_check` refuses a coupler without a
+  positive duration.
+- **Cost.** The feed-forward arms have no static duration (`if_else`). They get #32's design
+  duration, moved by the live baseline and the live ancilla readout time. The pilot's
+  pre-registered estimate is 12.57 s and its upper bound 16.71 s. The guard uses max(pre-registered, live).
+  The per-job limit is 20 s and the pilot cap 30 s.
+- **Admission.** Tier 1's ledgers count 25.14 s, within the 25.2 s already taken off the
+  reading. Tier 2's whole 225 s cap must fit in the remaining allowance less the 60 s reserve.
+- **Code.** `phase8_live.TIERS["tier2"]`, `[tier2.live]` with `stages = ["pilot"]`, so the run
+  stops after the pilot by construction. The guard tests are in `tests/test_phase8_live.py`.

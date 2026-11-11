@@ -484,6 +484,84 @@ affects, with the hash guard of Phase 7 §9 (`F.amendment_check`) on the live pa
       including their leakage); the reset's residual excitation, which may depend on q74's
       state before it; and q74's ZZ with q75 while ψ_y is prepared.
     - The payoff does not reject 0: MDI is **inconclusive**. It does not undo the P&M result.
+- **A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).** This amendment is written
+  before any Tier 2 job. It comes after Tier 1's two jobs, P&M (#37) and MDI (#38), and changes
+  nothing about them. It fixes the live ancillas, circuits and cost of the Tier 2 **pilot**
+  (#39). Main and the controls are not run under it (see the last item).
+  - **Live ancillas (§5).** `phase8_hw.py --prepare --tier tier2` read `ibm_kingston`'s
+    calibration of 2026-11-11 02:51 UTC at 03:06 UTC (`phase8_hw/tier2_prepare.json`,
+    `tier2_prepare_calibration.json`). It is read-only and submits nothing. The snapshot hash
+    is `c7aed81c…`, the same as #37's and #38's. `select_ancillas` picks **[13, 50]**: readout
+    0.0020 and 0.0029, T1 413 and 335 µs, 6 hops from q59 and q75. FakeKingston's pick was
+    [50, 21]. In the live circuits, b1 is read from q13 and b2 from q50.
+  - **Re-export (§5's replace rule).** RS, R2 and R4 are re-exported on [13, 50] with
+    `phase8_coherence --export-qasm --ancillas 13,50`. That uses #32's builder on
+    FakeKingston, level 0, fixed layout, into `phase8_hw/tier2/qasm/` (with `manifest.json`).
+    - Self-check: the same builder with [50, 21] reproduces #32's three hashes byte for byte.
+    - Each new file has the same lines as #32's file with q50 → q13 and q21 → q50: 8 x per
+      step on q75 and 256 `if_else` blocks.
+    - The SHA-256s are RS `a2cab188…`, R2 `82ae2743…` and R4 `195aa5b7…` (full values in
+      `[tier2.live] ancilla_sha256`). #32's files and `plan.json` are kept as the FakeKingston
+      record.
+    - The pilot's other seven arms (baseline, E0, E00, P2, P4, INV2, A2) are the committed
+      files with `plan.json`'s hashes, unchanged.
+    - **The Tier 2 pilot digest** (the sorted `name sha256` lines of the 9 pilot circuits) is
+      `6a3fea5abb301fd872dcfb6e5fd425e4599d10512869e13d5dbc8a97c2180cef`.
+  - **Floor (§5), at the same snapshot.** The bias bound is the larger readout error, 0.0029,
+    which is ≤ 0.02. The R2/R4 vanish power (f = 0.25) is 1.00 and the RS non-inferiority power
+    (m = 0.20) is 0.985, both ≥ 0.80 (`phase8_hw.ancilla_power`, fixed model, 8,000 shots per
+    arm). The tier proceeds.
+  - **The CZ duration (#37's `0.0`).** It is a rounding artefact in the summaries, not a Target
+    quirk or a real zero. `phase8_hw.r6` rounded every float to 6 decimals, so the 68 ns CZ
+    became 0.0. The raw snapshot (`calibration_live.json`) holds 6.8e-8 s, and the live cost
+    always came from `estimate_duration` on the live Target at full precision. **No cost
+    changes.**
+    - Fixes: `r6` now keeps 6 significant digits below 1e-3.
+    - `live_cost` refuses a missing, zero or non-finite circuit duration.
+    - The live checks record each CZ among the tier's qubits and refuse one without a
+      positive duration (`cz_check`). The q59–q75 CZ is 68 ns.
+  - **Cost.** The feed-forward arms have no static duration (`if_else`). Their live duration
+    is #32's design duration plus two live corrections:
+    - the baseline's live duration less the design's;
+    - per `ff` element and step, the live ancilla readout time less the design's 2.2 µs
+      (`phase8_live.tier2_durations`).
+
+    The pilot is 18,000 shots in one job. Its pre-registered estimate is 12.57 s and its upper
+    bound 16.71 s. A preview at the prepare snapshot gives 12.57 s and 16.71 s. The guard uses
+    max(pre-registered, live). Limits: per-job estimate 20 s, pilot cap 30 s
+    (`[tier2.live] hard_cap_s`), Tier 2 cap 225 s.
+  - **Admission (§7).** Tier 1's committed ledgers count 25.14 s (P&M 15.16 s, MDI 9.97 s).
+    That is within the 25.2 s that `[allowance] prior_counted_s` already takes off the owner's
+    reading; the live path refuses if the ledgers exceed it. Tier 2 is admitted only if its
+    whole cap (225 s) fits in the remaining allowance less the 60 s reserve. The remaining
+    allowance is the reading less what was counted, capped by IBM's live reading: 511 s at the
+    prepare, so 225 ≤ 451.
+  - **What the live run must reproduce, else stop and report.** `--dry-run` and `--submit`
+    (`[tier2.live]`, `phase8_live.TIERS["tier2"]`) re-read the snapshot and re-run §5. They
+    refuse if:
+    - the rule picks other ancillas than [13, 50] (a new dated amendment is needed first);
+    - the floor fails (abort);
+    - any hash or the digest differs;
+    - the level-0 transpile on the live target changes a file or touches a qubit outside
+      {13, 50, 59, 75};
+    - a CZ duration is missing;
+    - the cost breaks a limit.
+  - **Order and scope.** `--dry-run` first, then `--submit` with `stages = ["pilot"]` only. The
+    run stops after the pilot by construction: no other stage is a live stage. The pilot gate
+    is §3.6's, unchanged (`P.tier2_pilot_gate`, as the local dry run computes it):
+    - point estimates of P(1) and lag 1 after the 16-step burn-in, over each arm's 2,000 shots;
+    - E0, E00 and RS within ±0.02 of the baseline in P(1);
+    - P2 and P4 within ±0.10 of Stage 2's fixed-model prediction;
+    - INV2 within ±0.03 of E00 and R2 within ±0.03 of A2, in P(1) and lag 1.
+
+    A failed gate stops the tier, and any rerun needs a dated amendment.
+  - **Not covered.** Main (18 arms, cap 150 s) and the controls (cap 45 s) wait for #35's verdict
+    on the 1 rad slot and the coordinator's review of the pilot. Each needs its own config
+    stages and, if anything changes, an amendment.
+    - R4 is re-exported here for main.
+    - The controls tier's `bench_R2_*` circuits also use an ancilla (FakeKingston's q50). They
+      are re-exported, with the live pick of their own day, before the controls run.
+    - Tier 2's analysis rules are unchanged.
 
 ## Reproduction
 
