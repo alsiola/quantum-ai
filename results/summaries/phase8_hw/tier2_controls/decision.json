@@ -1,0 +1,90 @@
+{
+  "benchmark": {
+    "bench_A2_0": {
+      "equivalent": false,
+      "p1": 0.004167,
+      "p1_e0": 0.051667
+    },
+    "bench_A2_1": {
+      "equivalent": false,
+      "p1": 0.746167,
+      "p1_e0": 0.812333
+    },
+    "bench_R2_0": {
+      "equivalent": false,
+      "p1": 0.026667,
+      "p1_e0": 0.051667
+    },
+    "bench_R2_1": {
+      "equivalent": true,
+      "p1": 0.8205,
+      "p1_e0": 0.812333
+    },
+    "bench_e2_0": {
+      "equivalent": false,
+      "p1": 0.01,
+      "p1_e0": 0.051667
+    },
+    "bench_e2_1": {
+      "equivalent": false,
+      "p1": 0.851333,
+      "p1_e0": 0.812333
+    },
+    "bench_e4_0": {
+      "equivalent": false,
+      "p1": 0.009333,
+      "p1_e0": 0.051667
+    },
+    "bench_e4_1": {
+      "equivalent": false,
+      "p1": 0.859167,
+      "p1_e0": 0.812333
+    }
+  },
+  "call": "descriptive (section 3.4): not a gate, not part of section 3.7's call",
+  "knee": {
+    "A2": {
+      "excess_plus": 0.259,
+      "sd": 0.028512,
+      "violates": true
+    },
+    "e2": {
+      "excess_plus": 0.281,
+      "sd": 0.021272,
+      "violates": true
+    },
+    "e4": {
+      "excess_plus": 0.683,
+      "sd": 0.021361,
+      "violates": true
+    }
+  },
+  "shots": {
+    "bench_A2_0": 6000,
+    "bench_A2_1": 6000,
+    "bench_R2_0": 6000,
+    "bench_R2_1": 6000,
+    "bench_e0_0": 6000,
+    "bench_e0_1": 6000,
+    "bench_e2_0": 6000,
+    "bench_e2_1": 6000,
+    "bench_e4_0": 6000,
+    "bench_e4_1": 6000,
+    "knee_A2_+": 1000,
+    "knee_A2_+i": 1000,
+    "knee_A2_0": 1000,
+    "knee_A2_1": 1000,
+    "knee_e2_+": 1000,
+    "knee_e2_+i": 1000,
+    "knee_e2_0": 1000,
+    "knee_e2_1": 1000,
+    "knee_e4_+": 1000,
+    "knee_e4_+i": 1000,
+    "knee_e4_0": 1000,
+    "knee_e4_1": 1000,
+    "knee_sham_+": 1000,
+    "knee_sham_+i": 1000,
+    "knee_sham_0": 1000,
+    "knee_sham_1": 1000
+  }
+}

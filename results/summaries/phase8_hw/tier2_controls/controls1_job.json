@@ -1,0 +1,73 @@
+{
+ "tier": "tier2_controls",
+ "stage": "controls1",
+ "backend": "ibm_kingston",
+ "estimate_s": 15.61516799999999,
+ "upper_s": 20.518959999999986,
+ "shots": 38000,
+ "prereg_estimate_s": 15.61516799999999,
+ "prereg_upper_s": 20.518959999999986,
+ "live_estimate_s": 15.504407999999993,
+ "live_upper_s": 20.38050999999999,
+ "pubs": [
+  "j1_p000_knee_e2_+i_c0",
+  "j1_p001_knee_e4_0_c0",
+  "j1_p002_bench_e4_0_c0",
+  "j1_p003_bench_e2_0_c0",
+  "j1_p004_bench_A2_0_c0",
+  "j1_p005_bench_R2_0_c0",
+  "j1_p006_bench_e0_1_c0",
+  "j1_p007_knee_A2_+i_c0",
+  "j1_p008_knee_sham_1_c0",
+  "j1_p009_bench_R2_1_c0",
+  "j1_p010_knee_e2_+_c0",
+  "j1_p011_knee_sham_+i_c0",
+  "j1_p012_knee_e4_1_c0",
+  "j1_p013_knee_A2_1_c0",
+  "j1_p014_knee_sham_0_c0",
+  "j1_p015_bench_e2_1_c0",
+  "j1_p016_knee_sham_+_c0",
+  "j1_p017_knee_A2_+_c0",
+  "j1_p018_knee_e2_1_c0",
+  "j1_p019_knee_A2_0_c0",
+  "j1_p020_bench_e0_0_c0",
+  "j1_p021_knee_e2_0_c0",
+  "j1_p022_knee_e4_+_c0",
+  "j1_p023_bench_A2_1_c0",
+  "j1_p024_knee_e4_+i_c0",
+  "j1_p025_bench_e4_1_c0"
+ ],
+ "plan": "open",
+ "usage_before": {
+  "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+  "usage_consumed_seconds": 221,
+  "usage_consumed_ru": 3.495449,
+  "usage_period": {
+   "start_time": "2026-10-14T22:27:17.358Z",
+   "end_time": "2026-11-11T22:27:17.358Z"
+  },
+  "usage_limit_seconds": 600,
+  "usage_limit_ru": 10,
+  "usage_limit_reached": false,
+  "usage_remaining_seconds": 379
+ },
+ "remaining_s": 349.58104000000003,
+ "guarded_at": "2026-11-11T22:27:17+0000",
+ "approval_url": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+ "job_id": "dbqenhgk09pc73at5crg",
+ "submitted_at": "2026-11-11T22:27:18",
+ "charge": {
+  "stage": "tier2_controls:controls1",
+  "upper_s": 20.518959999999986,
+  "readings": {
+   "job_usage": 16.0,
+   "job_metrics": 16.0,
+   "account_delta": 16.0
+  },
+  "charged_s": 16.0,
+  "status": "charged",
+  "counted_s": 20.518959999999986,
+  "exceeded": false
+ },
+ "resumed": false
+}

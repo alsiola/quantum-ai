@@ -1,0 +1,41 @@
+{
+  "allowance_reading_s": 538,
+  "base_tier": "tier2",
+  "base_tier_counted_s": 183.72388,
+  "base_tier_hard_cap_s": 225.0,
+  "base_tier_prior_counted_s": 142.68596,
+  "charges": [
+    {
+      "charged_s": 16.0,
+      "counted_s": 20.51896,
+      "exceeded": false,
+      "readings": {
+        "account_delta": 16.0,
+        "job_metrics": 16.0,
+        "job_usage": 16.0
+      },
+      "stage": "tier2_controls:controls0",
+      "status": "charged",
+      "upper_s": 20.51896
+    },
+    {
+      "charged_s": 16.0,
+      "counted_s": 20.51896,
+      "exceeded": false,
+      "readings": {
+        "account_delta": 16.0,
+        "job_metrics": 16.0,
+        "job_usage": 16.0
+      },
+      "stage": "tier2_controls:controls1",
+      "status": "charged",
+      "upper_s": 20.51896
+    }
+  ],
+  "counted_s": 41.03792,
+  "prior_ledgers": [
+    "results/summaries/phase8_hw/tier2/ledger.json",
+    "results/summaries/phase8_hw/tier2_main/ledger.json"
+  ],
+  "remaining_after_s": 329.06208
+}

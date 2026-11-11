@@ -54,8 +54,8 @@
   },
   "floor": {
     "ancillas": [
-      13,
-      50
+      64,
+      56
     ],
     "bias_bound": 0.00293,
     "checks": {
@@ -70,8 +70,8 @@
     "pass": true,
     "preserve_power": 0.984997,
     "readout": {
-      "13": 0.001953,
-      "50": 0.00293
+      "56": 0.00293,
+      "64": 0.00293
     },
     "readout_max": 0.02,
     "vanish_power": 1.0,
@@ -87,7 +87,7 @@
       "approval_url": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
       "estimate_s": 15.615168,
       "guard": "would pass",
-      "guarded_at": "2026-11-11T18:59:51+0000",
+      "guarded_at": "2026-11-11T22:11:23+0000",
       "live_estimate_s": 15.504408,
       "live_upper_s": 20.38051,
       "plan": "open",
@@ -98,14 +98,24 @@
       "stage": "controls0",
       "upper_s": 20.51896,
       "usage_before": {
-        "error": "RequestsApiError('HTTPSConnectionPool(host=\\'quantum.cloud.ibm.com\\', port=443): Max retries exceeded with url: /api/v1/instances/usage (Caused by NewConnectionError(\"HTTPSConnection(host=\\'quantum.cloud.ibm.com\\', port=443): Failed to establish a new connection: [Errno 51] Network is unreachable\"))')"
+        "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+        "usage_consumed_ru": 3.237459,
+        "usage_consumed_seconds": 205,
+        "usage_limit_reached": false,
+        "usage_limit_ru": 10,
+        "usage_limit_seconds": 600,
+        "usage_period": {
+          "end_time": "2026-11-11T22:11:23.864Z",
+          "start_time": "2026-10-14T22:11:23.864Z"
+        },
+        "usage_remaining_seconds": 395
       }
     },
     {
       "approval_url": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
       "estimate_s": 15.615168,
       "guard": "would pass",
-      "guarded_at": "2026-11-11T18:59:54+0000",
+      "guarded_at": "2026-11-11T22:11:24+0000",
       "live_estimate_s": 15.504408,
       "live_upper_s": 20.38051,
       "plan": "open",
@@ -116,7 +126,17 @@
       "stage": "controls1",
       "upper_s": 20.51896,
       "usage_before": {
-        "error": "RequestsApiError('HTTPSConnectionPool(host=\\'quantum.cloud.ibm.com\\', port=443): Max retries exceeded with url: /api/v1/instances/usage (Caused by NewConnectionError(\"HTTPSConnection(host=\\'quantum.cloud.ibm.com\\', port=443): Failed to establish a new connection: [Errno 51] Network is unreachable\"))')"
+        "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+        "usage_consumed_ru": 3.237459,
+        "usage_consumed_seconds": 205,
+        "usage_limit_reached": false,
+        "usage_limit_ru": 10,
+        "usage_limit_seconds": 600,
+        "usage_period": {
+          "end_time": "2026-11-11T22:11:24.282Z",
+          "start_time": "2026-10-14T22:11:24.282Z"
+        },
+        "usage_remaining_seconds": 395
       }
     }
   ],
@@ -124,7 +144,7 @@
     "all_ok": true,
     "n": 169,
     "same_as_prereg": true,
-    "tier_digest": "9b8df9499b73b5fab758db33af230a7508dbdf9d9161998508e1b57e5c705571",
+    "tier_digest": "c645561e3100ddbe115574e4ab4101cade6c26d651b3d940bcbc178718ec9a5d",
     "tier_files": 26
   },
   "isa": {
@@ -192,14 +212,14 @@
       "sha256": "9dd639485f4e5513ec78482179f56595fd0666a64578974a03760810e8453ad7"
     },
     {
-      "commit": "c6076bb238bab66c482c7c0fb198ae475ac328bb",
+      "commit": "1a23a77867a66495d65f7cf643cd96e0ee5d6c0e",
       "heading": "## 10. Amendment log",
-      "sha256": "b0eeca3a50502584350629ef7bc4b9160fdf36f03d61da02c1855fb3b34556ec"
+      "sha256": "32f2616b99a07e3a1193c051c9e7e59a790ef6fd42435bdedd7713dff97629a5"
     }
   ],
   "prior_counted_s": 142.68596,
-  "read_at": "2026-11-11T18:57:19+0000",
-  "run_dir": "results/phase8_hw_livedry_tier2_controls/20261111T185713Z",
+  "read_at": "2026-11-11T22:10:33+0000",
+  "run_dir": "results/phase8_hw_livedry_tier2_controls/20261111T221025Z",
   "selection": {
     "committed": {
       "tier1_reference": 79,
@@ -217,14 +237,14 @@
       "m67_o68": 0.839
     },
     "reproduces": {
-      "tier1_reference": false,
+      "tier1_reference": true,
       "tier2_ancillas": false,
       "tier3_pairs": true
     },
     "snapshot": {
       "backend": "ibm_kingston",
-      "date": "2026-11-11 18:33:02+00:00",
-      "sha256": "f9e806a47b2f5111d5f3b97cd53c8ddc8122e54b299233465b5637c86c181b62"
+      "date": "2026-11-11 21:32:02+00:00",
+      "sha256": "0d81f343c2e4d53217c31890358820acc1265e287b8b6f8a53ec1a9bbbb48c3c"
     },
     "tier1_reference": {
       "candidates": [
@@ -233,71 +253,66 @@
           "excluded_because": "coupler to the output or its neighbour; path through the output",
           "path": "75-59-55-54",
           "qubit": 54,
-          "score": 0.546138
+          "score": 0.544312
         },
         {
           "admitted": false,
           "excluded_because": "coupler to the output or its neighbour; path through the output",
           "path": "75-59-55",
           "qubit": 55,
-          "score": 0.549646
+          "score": 0.541933
         },
         {
           "admitted": false,
           "excluded_because": "readout",
           "path": "75-74-73-72",
           "qubit": 72,
-          "score": 0.535488
+          "score": 0.532502
         },
         {
           "admitted": true,
           "excluded_because": "",
           "path": "75-74-73",
           "qubit": 73,
-          "score": 0.553942
+          "score": 0.546275
         },
         {
           "admitted": false,
           "excluded_because": "coupler to the memory; coupler to the output or its neighbour",
           "path": "75-74",
           "qubit": 74,
-          "score": 0.559369
+          "score": 0.559677
         },
         {
           "admitted": true,
           "excluded_because": "",
           "path": "75-74-73-79",
           "qubit": 79,
-          "score": 0.546978
+          "score": 0.548449
         }
       ],
       "chosen": [
-        73
+        79
       ]
     },
     "tier2_ancillas": {
       "candidates": 70,
       "chosen": [
-        13,
-        50
+        64,
+        56
       ],
-      "distance_to_core": 6,
-      "snapshot_sha256": "f9e806a47b2f5111d5f3b97cd53c8ddc8122e54b299233465b5637c86c181b62",
+      "distance_to_core": 11,
+      "snapshot_sha256": "0d81f343c2e4d53217c31890358820acc1265e287b8b6f8a53ec1a9bbbb48c3c",
       "top10": [
         {
-          "measure_error": 0.001953,
-          "qubit": 13,
-          "t1": 0.000289484
+          "measure_error": 0.00293,
+          "qubit": 64,
+          "t1": 0.000256363
         },
         {
           "measure_error": 0.00293,
-          "qubit": 50,
-          "t1": 0.00031812
-        },
-        {
-          "measure_error": 0.003418,
-          "qubit": 69,
-          "t1": 0.00031134
+          "qubit": 56,
+          "t1": 0.000190585
         },
         {
           "measure_error": 0.003418,
@@ -305,50 +320,51 @@
           "t1": 0.000221102
         },
         {
-          "measure_error": 0.003418,
-          "qubit": 62,
-          "t1": 0.000158583
+          "measure_error": 0.003906,
+          "qubit": 13,
+          "t1": 0.000289484
+        },
+        {
+          "measure_error": 0.003906,
+          "qubit": 17,
+          "t1": 0.000253371
         }
       ]
     },
     "tier3_no_pieces": [
+      "m1_o2",
       "m2_o1",
       "m2_o3",
       "m3_o16",
       "m16_o3",
-      "m13_o14",
       "m15_o19",
       "m16_o23",
       "m28_o29",
-      "m32_o33",
       "m33_o34",
-      "m34_o33",
       "m44_o45",
       "m45_o44",
       "m45_o46",
       "m46_o45",
+      "m46_o47",
       "m47_o46",
       "m47_o57",
+      "m57_o47",
       "m50_o51",
-      "m51_o52",
       "m58_o51",
       "m57_o67",
+      "m64_o65",
       "m69_o70",
       "m70_o69",
       "m70_o71",
       "m71_o70",
       "m81_o80",
+      "m82_o81",
       "m92_o91",
       "m92_o93",
-      "m95_o94",
-      "m117_o105",
+      "m103_o96",
       "m108_o107",
       "m110_o111",
-      "m125_o117",
-      "m125_o124",
-      "m125_o126",
-      "m133_o132",
-      "m154_o155"
+      "m133_o132"
     ],
     "tier3_pairs": {
       "candidates": 348,
@@ -360,7 +376,7 @@
         [
           67,
           68,
-          57
+          66
         ],
         [
           149,
@@ -373,8 +389,8 @@
         "m67_o68": 0.839
       },
       "qualified": 6,
-      "screened": 90,
-      "snapshot_sha256": "f9e806a47b2f5111d5f3b97cd53c8ddc8122e54b299233465b5637c86c181b62",
+      "screened": 79,
+      "snapshot_sha256": "0d81f343c2e4d53217c31890358820acc1265e287b8b6f8a53ec1a9bbbb48c3c",
       "statement": "2 pairs qualify and are chosen"
     }
   },
@@ -383,7 +399,7 @@
     "gating": []
   },
   "snapshot": {
-    "calibration_date": "2026-11-11 18:33:02+00:00",
+    "calibration_date": "2026-11-11 21:32:02+00:00",
     "cz_59_75": {
       "duration": 6.8e-08,
       "error": 0.00154
@@ -391,7 +407,7 @@
     "qubits": {
       "59": {
         "measure_time": 2.18e-06,
-        "readout": 0.004395,
+        "readout": 0.006836,
         "reset_time": 2.212e-06,
         "sx": 0.000176264,
         "t1": 0.000186996,
@@ -399,7 +415,7 @@
       },
       "74": {
         "measure_time": 2.18e-06,
-        "readout": 0.008789,
+        "readout": 0.008301,
         "reset_time": 2.212e-06,
         "sx": 0.000222945,
         "t1": 0.00031473,
@@ -407,15 +423,15 @@
       },
       "75": {
         "measure_time": 2.18e-06,
-        "readout": 0.009277,
+        "readout": 0.057129,
         "reset_time": 2.212e-06,
         "sx": 0.000100247,
         "t1": 0.000191751,
         "t2": 0.000118009
       }
     },
-    "read_at": "2026-11-11T18:57:21+0000",
-    "sha256": "f9e806a47b2f5111d5f3b97cd53c8ddc8122e54b299233465b5637c86c181b62"
+    "read_at": "2026-11-11T22:10:35+0000",
+    "sha256": "0d81f343c2e4d53217c31890358820acc1265e287b8b6f8a53ec1a9bbbb48c3c"
   },
   "submitted": false,
   "tier": "tier2_controls",
@@ -452,8 +468,8 @@
     "usage_limit_ru": 10,
     "usage_limit_seconds": 600,
     "usage_period": {
-      "end_time": "2026-11-11T18:57:19.208Z",
-      "start_time": "2026-10-14T18:57:19.208Z"
+      "end_time": "2026-11-11T22:10:33.084Z",
+      "start_time": "2026-10-14T22:10:33.084Z"
     },
     "usage_remaining_seconds": 395
   }

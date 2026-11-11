@@ -1,0 +1,583 @@
+{
+  "admission": {
+    "allowance_s": 370.1,
+    "cumulative_cap_s": 225.0,
+    "cumulative_upper_s": 183.72388,
+    "estimate_s": 139.779104,
+    "fits_cap": true,
+    "fits_upper": true,
+    "hard_cap_s": 225.0,
+    "jobs": 9,
+    "problems": "",
+    "reserve_s": 60,
+    "tier": "tier2",
+    "upper_s": 183.72388
+  },
+  "analysis": {
+    "benchmark": {
+      "bench_A2_0": {
+        "equivalent": false,
+        "p1": 0.004167,
+        "p1_e0": 0.051667
+      },
+      "bench_A2_1": {
+        "equivalent": false,
+        "p1": 0.746167,
+        "p1_e0": 0.812333
+      },
+      "bench_R2_0": {
+        "equivalent": false,
+        "p1": 0.026667,
+        "p1_e0": 0.051667
+      },
+      "bench_R2_1": {
+        "equivalent": true,
+        "p1": 0.8205,
+        "p1_e0": 0.812333
+      },
+      "bench_e2_0": {
+        "equivalent": false,
+        "p1": 0.01,
+        "p1_e0": 0.051667
+      },
+      "bench_e2_1": {
+        "equivalent": false,
+        "p1": 0.851333,
+        "p1_e0": 0.812333
+      },
+      "bench_e4_0": {
+        "equivalent": false,
+        "p1": 0.009333,
+        "p1_e0": 0.051667
+      },
+      "bench_e4_1": {
+        "equivalent": false,
+        "p1": 0.859167,
+        "p1_e0": 0.812333
+      }
+    },
+    "call": "descriptive (section 3.4): not a gate, not part of section 3.7's call",
+    "knee": {
+      "A2": {
+        "excess_plus": 0.259,
+        "sd": 0.028512,
+        "violates": true
+      },
+      "e2": {
+        "excess_plus": 0.281,
+        "sd": 0.021272,
+        "violates": true
+      },
+      "e4": {
+        "excess_plus": 0.683,
+        "sd": 0.021361,
+        "violates": true
+      }
+    },
+    "shots": {
+      "bench_A2_0": 6000,
+      "bench_A2_1": 6000,
+      "bench_R2_0": 6000,
+      "bench_R2_1": 6000,
+      "bench_e0_0": 6000,
+      "bench_e0_1": 6000,
+      "bench_e2_0": 6000,
+      "bench_e2_1": 6000,
+      "bench_e4_0": 6000,
+      "bench_e4_1": 6000,
+      "knee_A2_+": 1000,
+      "knee_A2_+i": 1000,
+      "knee_A2_0": 1000,
+      "knee_A2_1": 1000,
+      "knee_e2_+": 1000,
+      "knee_e2_+i": 1000,
+      "knee_e2_0": 1000,
+      "knee_e2_1": 1000,
+      "knee_e4_+": 1000,
+      "knee_e4_+i": 1000,
+      "knee_e4_0": 1000,
+      "knee_e4_1": 1000,
+      "knee_sham_+": 1000,
+      "knee_sham_+i": 1000,
+      "knee_sham_0": 1000,
+      "knee_sham_1": 1000
+    }
+  },
+  "approval": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+  "backend": "ibm_kingston",
+  "base_tier": "tier2",
+  "calibration_after": {
+    "measure_time": 2.18e-06,
+    "readout": 0.057129,
+    "reset_time": 2.212e-06,
+    "sx": 0.000100247,
+    "t1": 0.000191751,
+    "t2": 0.000118009
+  },
+  "calibration_after_qubits": {
+    "59": {
+      "measure_time": 2.18e-06,
+      "readout": 0.006836,
+      "reset_time": 2.212e-06,
+      "sx": 0.000176264,
+      "t1": 0.000186996,
+      "t2": 0.00031544
+    },
+    "64": {
+      "measure_time": 2.18e-06,
+      "readout": 0.00293,
+      "reset_time": 2.212e-06,
+      "sx": 0.000327636,
+      "t1": 0.000256363,
+      "t2": 0.000166788
+    },
+    "75": {
+      "measure_time": 2.18e-06,
+      "readout": 0.057129,
+      "reset_time": 2.212e-06,
+      "sx": 0.000100247,
+      "t1": 0.000191751,
+      "t2": 0.000118009
+    }
+  },
+  "costs": {
+    "controls0": {
+      "estimate_s": 15.615168,
+      "live_estimate_s": 15.504408,
+      "live_upper_s": 20.38051,
+      "prereg_estimate_s": 15.615168,
+      "prereg_upper_s": 20.51896,
+      "shots": 38000,
+      "upper_s": 20.51896
+    },
+    "controls1": {
+      "estimate_s": 15.615168,
+      "live_estimate_s": 15.504408,
+      "live_upper_s": 20.38051,
+      "prereg_estimate_s": 15.615168,
+      "prereg_upper_s": 20.51896,
+      "shots": 38000,
+      "upper_s": 20.51896
+    }
+  },
+  "cz_durations": {
+    "59-75": {
+      "duration_ns": 68.0,
+      "duration_s": 6.8e-08
+    }
+  },
+  "earlier_tiers": {
+    "counted_s": 167.82127,
+    "ledgers": {
+      "results/summaries/phase8_hw/tier1/ledger.json": 15.16217,
+      "results/summaries/phase8_hw/tier1_mdi/ledger.json": 9.97314,
+      "results/summaries/phase8_hw/tier2/ledger.json": 16.71452,
+      "results/summaries/phase8_hw/tier2_main/ledger.json": 125.97144
+    },
+    "prior_counted_s": 167.9
+  },
+  "floor": {
+    "ancillas": [
+      64,
+      56
+    ],
+    "bias_bound": 0.00293,
+    "checks": {
+      "preserve": true,
+      "readout": true,
+      "vanish": true
+    },
+    "floors": {
+      "preserve": 0.8,
+      "vanish": 0.8
+    },
+    "pass": true,
+    "preserve_power": 0.984997,
+    "readout": {
+      "56": 0.00293,
+      "64": 0.00293
+    },
+    "readout_max": 0.02,
+    "vanish_power": 1.0,
+    "w0": {
+      "E00": -0.006647,
+      "R2": -3.34396e-06,
+      "R4": -2.27065e-06,
+      "RS": -0.006217
+    }
+  },
+  "hashes": {
+    "all_ok": true,
+    "n": 169,
+    "same_as_prereg": true,
+    "tier_digest": "c645561e3100ddbe115574e4ab4101cade6c26d651b3d940bcbc178718ec9a5d",
+    "tier_files": 26
+  },
+  "isa": {
+    "duration_s": {
+      "bench_A2_0": 5.882e-05,
+      "bench_A2_1": 5.8852e-05,
+      "bench_R2_0": 6.7944e-05,
+      "bench_R2_1": 6.7976e-05,
+      "bench_e0_0": 4.1892e-05,
+      "bench_e0_1": 4.1924e-05,
+      "bench_e2_0": 4.1892e-05,
+      "bench_e2_1": 4.1924e-05,
+      "bench_e4_0": 4.1892e-05,
+      "bench_e4_1": 4.1924e-05,
+      "knee_A2_+": 0.000312772,
+      "knee_A2_+i": 0.000312772,
+      "knee_A2_0": 0.000312708,
+      "knee_A2_1": 0.00031274,
+      "knee_e2_+": 0.000310656,
+      "knee_e2_+i": 0.000310656,
+      "knee_e2_0": 0.000310592,
+      "knee_e2_1": 0.000310624,
+      "knee_e4_+": 0.000310656,
+      "knee_e4_+i": 0.000310656,
+      "knee_e4_0": 0.000310592,
+      "knee_e4_1": 0.000310624,
+      "knee_sham_+": 0.000310656,
+      "knee_sham_+i": 0.000310656,
+      "knee_sham_0": 0.000310592,
+      "knee_sham_1": 0.000310624
+    },
+    "static": [
+      "bench_A2_0",
+      "bench_A2_1",
+      "bench_e0_0",
+      "bench_e0_1",
+      "bench_e2_0",
+      "bench_e2_1",
+      "bench_e4_0",
+      "bench_e4_1",
+      "knee_A2_+",
+      "knee_A2_+i",
+      "knee_A2_0",
+      "knee_A2_1",
+      "knee_e2_+",
+      "knee_e2_+i",
+      "knee_e2_0",
+      "knee_e2_1",
+      "knee_e4_+",
+      "knee_e4_+i",
+      "knee_e4_0",
+      "knee_e4_1",
+      "knee_sham_+",
+      "knee_sham_+i",
+      "knee_sham_0",
+      "knee_sham_1"
+    ],
+    "unchanged": true
+  },
+  "ledger": {
+    "allowance_reading_s": 538,
+    "base_tier": "tier2",
+    "base_tier_counted_s": 183.72388,
+    "base_tier_hard_cap_s": 225.0,
+    "base_tier_prior_counted_s": 142.68596,
+    "charges": [
+      {
+        "charged_s": 16.0,
+        "counted_s": 20.51896,
+        "exceeded": false,
+        "readings": {
+          "account_delta": 16.0,
+          "job_metrics": 16.0,
+          "job_usage": 16.0
+        },
+        "stage": "tier2_controls:controls0",
+        "status": "charged",
+        "upper_s": 20.51896
+      },
+      {
+        "charged_s": 16.0,
+        "counted_s": 20.51896,
+        "exceeded": false,
+        "readings": {
+          "account_delta": 16.0,
+          "job_metrics": 16.0,
+          "job_usage": 16.0
+        },
+        "stage": "tier2_controls:controls1",
+        "status": "charged",
+        "upper_s": 20.51896
+      }
+    ],
+    "counted_s": 41.03792,
+    "prior_ledgers": [
+      "results/summaries/phase8_hw/tier2/ledger.json",
+      "results/summaries/phase8_hw/tier2_main/ledger.json"
+    ],
+    "remaining_after_s": 329.06208
+  },
+  "plan": "open",
+  "prereg": [
+    {
+      "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+      "heading": "## 3. Tier 2: Stage 2 (#32, #34), Claim 3",
+      "sha256": "9dd639485f4e5513ec78482179f56595fd0666a64578974a03760810e8453ad7"
+    },
+    {
+      "commit": "1a23a77867a66495d65f7cf643cd96e0ee5d6c0e",
+      "heading": "## 10. Amendment log",
+      "sha256": "32f2616b99a07e3a1193c051c9e7e59a790ef6fd42435bdedd7713dff97629a5"
+    }
+  ],
+  "prior_counted_s": 142.68596,
+  "read_at": "2026-11-11T22:11:40+0000",
+  "run_dir": "results/phase8_hw_live_tier2_controls/20261111T221134Z",
+  "selection": {
+    "committed": {
+      "tier1_reference": 79,
+      "tier2_ancillas": [
+        50,
+        21
+      ],
+      "tier3_pairs": [
+        "m67_o68",
+        "m149_o148"
+      ]
+    },
+    "powers_committed_pairs": {
+      "m149_o148": 0.837,
+      "m67_o68": 0.839
+    },
+    "reproduces": {
+      "tier1_reference": true,
+      "tier2_ancillas": false,
+      "tier3_pairs": true
+    },
+    "snapshot": {
+      "backend": "ibm_kingston",
+      "date": "2026-11-11 21:32:02+00:00",
+      "sha256": "0d81f343c2e4d53217c31890358820acc1265e287b8b6f8a53ec1a9bbbb48c3c"
+    },
+    "tier1_reference": {
+      "candidates": [
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the output or its neighbour; path through the output",
+          "path": "75-59-55-54",
+          "qubit": 54,
+          "score": 0.544312
+        },
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the output or its neighbour; path through the output",
+          "path": "75-59-55",
+          "qubit": 55,
+          "score": 0.541933
+        },
+        {
+          "admitted": false,
+          "excluded_because": "readout",
+          "path": "75-74-73-72",
+          "qubit": 72,
+          "score": 0.532502
+        },
+        {
+          "admitted": true,
+          "excluded_because": "",
+          "path": "75-74-73",
+          "qubit": 73,
+          "score": 0.546275
+        },
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the memory; coupler to the output or its neighbour",
+          "path": "75-74",
+          "qubit": 74,
+          "score": 0.559677
+        },
+        {
+          "admitted": true,
+          "excluded_because": "",
+          "path": "75-74-73-79",
+          "qubit": 79,
+          "score": 0.548449
+        }
+      ],
+      "chosen": [
+        79
+      ]
+    },
+    "tier2_ancillas": {
+      "candidates": 70,
+      "chosen": [
+        64,
+        56
+      ],
+      "distance_to_core": 11,
+      "snapshot_sha256": "0d81f343c2e4d53217c31890358820acc1265e287b8b6f8a53ec1a9bbbb48c3c",
+      "top10": [
+        {
+          "measure_error": 0.00293,
+          "qubit": 64,
+          "t1": 0.000256363
+        },
+        {
+          "measure_error": 0.00293,
+          "qubit": 56,
+          "t1": 0.000190585
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 68,
+          "t1": 0.000221102
+        },
+        {
+          "measure_error": 0.003906,
+          "qubit": 13,
+          "t1": 0.000289484
+        },
+        {
+          "measure_error": 0.003906,
+          "qubit": 17,
+          "t1": 0.000253371
+        }
+      ]
+    },
+    "tier3_no_pieces": [
+      "m1_o2",
+      "m2_o1",
+      "m2_o3",
+      "m3_o16",
+      "m16_o3",
+      "m15_o19",
+      "m16_o23",
+      "m28_o29",
+      "m33_o34",
+      "m44_o45",
+      "m45_o44",
+      "m45_o46",
+      "m46_o45",
+      "m46_o47",
+      "m47_o46",
+      "m47_o57",
+      "m57_o47",
+      "m50_o51",
+      "m58_o51",
+      "m57_o67",
+      "m64_o65",
+      "m69_o70",
+      "m70_o69",
+      "m70_o71",
+      "m71_o70",
+      "m81_o80",
+      "m82_o81",
+      "m92_o91",
+      "m92_o93",
+      "m103_o96",
+      "m108_o107",
+      "m110_o111",
+      "m133_o132"
+    ],
+    "tier3_pairs": {
+      "candidates": 348,
+      "chosen": [
+        "m67_o68",
+        "m149_o148"
+      ],
+      "footprints": [
+        [
+          67,
+          68,
+          66
+        ],
+        [
+          149,
+          148,
+          150
+        ]
+      ],
+      "power": {
+        "m149_o148": 0.837,
+        "m67_o68": 0.839
+      },
+      "qualified": 6,
+      "screened": 79,
+      "snapshot_sha256": "0d81f343c2e4d53217c31890358820acc1265e287b8b6f8a53ec1a9bbbb48c3c",
+      "statement": "2 pairs qualify and are chosen"
+    }
+  },
+  "selection_gate": {
+    "changed": [],
+    "gating": []
+  },
+  "snapshot": {
+    "calibration_date": "2026-11-11 21:32:02+00:00",
+    "cz_59_75": {
+      "duration": 6.8e-08,
+      "error": 0.00154
+    },
+    "qubits": {
+      "59": {
+        "measure_time": 2.18e-06,
+        "readout": 0.006836,
+        "reset_time": 2.212e-06,
+        "sx": 0.000176264,
+        "t1": 0.000186996,
+        "t2": 0.00031544
+      },
+      "74": {
+        "measure_time": 2.18e-06,
+        "readout": 0.008301,
+        "reset_time": 2.212e-06,
+        "sx": 0.000222945,
+        "t1": 0.00031473,
+        "t2": 0.000229856
+      },
+      "75": {
+        "measure_time": 2.18e-06,
+        "readout": 0.057129,
+        "reset_time": 2.212e-06,
+        "sx": 0.000100247,
+        "t1": 0.000191751,
+        "t2": 0.000118009
+      }
+    },
+    "read_at": "2026-11-11T22:11:41+0000",
+    "sha256": "0d81f343c2e4d53217c31890358820acc1265e287b8b6f8a53ec1a9bbbb48c3c"
+  },
+  "submitted": true,
+  "tier": "tier2_controls",
+  "tier_budget": {
+    "hard_cap_s": 45.0,
+    "jobs": [
+      {
+        "estimate_s": 15.615168,
+        "live_estimate_s": 15.504408,
+        "live_upper_s": 20.38051,
+        "prereg_estimate_s": 15.615168,
+        "prereg_upper_s": 20.51896,
+        "shots": 38000,
+        "upper_s": 20.51896
+      },
+      {
+        "estimate_s": 15.615168,
+        "live_estimate_s": 15.504408,
+        "live_upper_s": 20.38051,
+        "prereg_estimate_s": 15.615168,
+        "prereg_upper_s": 20.51896,
+        "shots": 38000,
+        "upper_s": 20.51896
+      }
+    ],
+    "max_job_estimate_s": 20.0,
+    "problems": []
+  },
+  "usage": {
+    "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+    "usage_consumed_ru": 3.237459,
+    "usage_consumed_seconds": 205,
+    "usage_limit_reached": false,
+    "usage_limit_ru": 10,
+    "usage_limit_seconds": 600,
+    "usage_period": {
+      "end_time": "2026-11-11T22:11:39.952Z",
+      "start_time": "2026-10-14T22:11:39.952Z"
+    },
+    "usage_remaining_seconds": 395
+  }
+}
