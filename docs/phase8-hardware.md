@@ -1,4 +1,4 @@
-# Phase 8 Stage 5: the live path, Tier 1 (#37, #38) and the Tier 2 pilot (#39) on ibm_kingston
+# Phase 8 Stage 5: the live path, Tier 1 (#37, #38) and Tier 2 (#39, #40) on ibm_kingston
 
 **Outcome: Claim 4 at n = 1, under trusted SPAM. One application of the trained step on q75 is
 not entanglement-breaking.** Both co-primaries reject EB, with Holm at a family-wise α of 0.05:
@@ -17,8 +17,16 @@ payoff is 0.067 ± 0.017, with a lower bound of 0.039 > 0. It cost 8 s charged a
 so Tier 1 has counted 25.14 s of its 30 s.
 
 **Tier 2 pilot (#39, §6): the gate passes, 9 of 9.** The live ancillas are [13, 50] (amendment
-A5). It cost 14 s charged and 16.71 s counted, of the pilot's 30 s cap. Main and the controls
-wait for #35 and the coordinator.
+A5). It cost 14 s charged and 16.71 s counted, of the pilot's 30 s cap.
+
+**Tier 2 main (#40, §7): Claim 3 is not supported.** Legs (ii) phase response, (iii)
+equivalent dephasings and §4.1's Claim 3 contrast fail as pre-registered. Leg (i) passes.
+- The primary rejects d ≤ 4 (z = 46.5) but **not d ≤ 6**: the best d = 6 classical model beats
+  the quantum refit on held-out shots by 0.034 nats per shot (z = −10.7).
+- Nothing is excluded. The class the tier would have excluded is element-wise classical models
+  with d ≤ 6.
+- Cost: main 102 s charged and 125.97 s counted of 150 s; the controls (descriptive) 32 s
+  charged and 41.04 s counted of 45 s. Tier 2 has counted 183.72 s of its 225 s.
 
 The pre-registration is [phase8-preregistration.md](phase8-preregistration.md): §2 for Tier 1,
 §5 for live re-selection, §7 for the budget, and amendments A2 and A3 in §10.
@@ -396,3 +404,126 @@ it. Tier 2's analysis rules are unchanged; any change would be a dated amendment
 **Decision: the pilot passes.** Tier 2 main and the controls may run after #35's verdict on the
 1 rad slot and the coordinator's review. Each needs its own live stages, and the controls need
 their `bench_R2` circuits re-exported on the ancillas of their day.
+
+## 7. Stage 5d: Tier 2 main, the controls and the Claim 3 decision (#40)
+
+The rules are amendments A6 and A6b ([phase8-preregistration.md](phase8-preregistration.md)
+§10). Each was landed on `main` before the data it governs: A6 at `c6076bb` before main's first
+job, and A6b at `1a23a77` before the controls'. Neither changes an analysis rule.
+
+### 7.1 Before main (A6)
+
+- **#35's verdict: drop the 1 rad slot.** Main is #32's 18 arms, and Tier 2's cap stays 225 s.
+- **Ancillas.** A read-only `--prepare` (calibration 16:57 UTC, `tier2_main_prepare.json`), the
+  dry run (17:25 UTC) and the submission (17:47 UTC) all pick [13, 50]. The floor passes at
+  each: vanish 1.00, preserve 0.985. Main reuses A5's RS, R2 and R4 (main digest `76a51186…`).
+- **Schedule.** A1's six sub-jobs, all 18 arms in each, 144,000 shots. The pre-registered
+  cost governed: estimates ≤ 16.00 s each, 125.97 s upper bound against a 150 s cap. The live
+  estimate was 15.69 s per sub-job.
+- **Jobs** (`tier2_main/`, `tier2_main_live*.json`):
+  - `dbqash0k09pc73asu0ug` (b0_s0), `dbqba3ujjaos73agvr2g` (b0_s1), `dbqbac0k09pc73asup00` (b0_s2);
+  - `dbqbaogk09pc73asupn0` (b1_s0), `dbqbb0ejjaos73agvsgg` (b1_s1), `dbqbffmjjaos73ah0580` (b1_s2).
+
+  They were submitted from 18:04 to 18:45 UTC and each was charged 17 s, **102 s** in all.
+  The ledger counts **125.97 s** (the upper bounds).
+  - The first submission's session ended while b0_s0 was queued. The run was resumed with
+    `--from-run`, which re-fetched that job by its id; nothing was resubmitted.
+
+### 7.2 The legs, as pre-registered
+
+The legs use 8,000 shots per arm in two time blocks, with §3.5's drift-conditional SEs (1,000
+resamples, seed 3601) and the fixed model's predictions. They are in `tier2_main/decision.json`,
+and `decision_final.json` reproduces them from the committed shots. The TOSTs are 90% CIs of the
+difference against the margin.
+
+| leg | check | difference | 90% CI | margin | pass |
+| --- | --- | --- | --- | --- | --- |
+| (i) | E0 vs baseline, P(1) | +0.0049 | [+0.0025, +0.0074] | ±0.01 | yes |
+| (i) | E00 vs baseline, P(1) | −0.0004 | [−0.0037, +0.0028] | ±0.01 | yes |
+| (i) | RS vs baseline, P(1) | +0.0024 | [−0.0000, +0.0048] | ±0.01 | yes |
+| (ii) | E0 vs baseline, lag 1 | −0.0009 | [−0.0057, +0.0040] | ±0.02 | yes |
+| (ii) | COMP22 vs COMP40, P(1) | −0.0057 | [−0.0086, −0.0028] | ±0.01 | yes |
+| (ii) | COMP22 vs COMP40, lag 1 | −0.0023 | [−0.0093, +0.0047] | ±0.02 | yes |
+| (ii) | **INV2 vs E00, P(1)** | +0.0131 | [+0.0095, +0.0168] | ±0.01 | **no** |
+| (ii) | INV2 vs E00, lag 1 | +0.0146 | [+0.0107, +0.0184] | ±0.02 | yes |
+| (iii) | A2 vs R2, P(1) / lag 1 | −0.0020 / +0.0047 | | ±0.01 | yes / yes |
+| (iii) | **A2 vs R2, w(0)** | +0.00028 | [−0.00004, +0.00060] | ±0.00053 | **no** |
+| (iii) | A2 vs R4, P(1) / lag 1 | +0.0007 / −0.0012 | | ±0.01 | yes / yes |
+| (iii) | **A2 vs R4, w(0)** | +0.00032 | [−0.00004, +0.00069] | ±0.00053 | **no** |
+| (iii) | R2 vs R4, P(1) / lag 1 / w(0) | +0.0027 / −0.0058 / +0.00004 | | | yes |
+
+- **(ii) the harmonic.** Both amplitudes agree with the fixed model's. P(1) has 0.2743 ± 0.0005
+  against 0.2821, and lag 1 has 0.1433 ± 0.0014 against 0.1295. **Both phases fail.** P(1)'s
+  phase is off by 0.089 rad, beyond the 0.056 rad limit (3 SE + 0.05). Lag 1's is off by
+  0.131 rad, beyond its 0.074 rad limit.
+- **(iii)** fails on A2's w(0) alone. A2 keeps +0.00024 ± 0.00012, while R2 and R4 are within
+  0.0001 of 0. The margin, 10% of the baseline's |w(0)| (0.0053), is about two SEs wide.
+- **§4.1's contrast.**
+  - *Vanish* passes: R2 and R4 vanish against RS on all jobs and on each LOJO subset. For R2,
+    |w| + 1.96 SE = 0.00029, below the bound of 0.0012.
+  - *Preserve* **fails at its boundary.** w_RS(0)/w_E00(0) = 0.872 ± 0.044, and its lower
+    one-sided 95% bound is 0.79998, against the 0.80 the rule needs.
+- **Shots.** The ancilla bits read 1 with frequency 0.493–0.498. The guards' "duplicates" flag
+  was raised on P3, P4 and COMP40 and is informational, as in the dry run.
+
+The pilot had pointed to INV2 against E00 and to the harmonic (#39). Both fail on main. They
+are reported as results, with no margin changed.
+
+### 7.3 The primary (§3.2) and the call
+
+The primary runs #34's pipeline on the committed shots (`experiments/phase8_tier2.py --part
+primary`; `tier2_main/primary.json`): the parity split by time block, four starts at 1,500 EM
+steps, the refit, and the block bootstrap with 1,000 resamples.
+
+| D | best start | deficit vs refit (nats/shot) | block SE | z | Holm | vs fixed model |
+| --- | --- | --- | --- | --- | --- | --- |
+| 4 | Klein | +0.1668 | 0.0036 | **46.5** | rejected | +0.099 (z 23.6) |
+| 6 | octahedron | −0.0338 | 0.0032 | **−10.7** | not rejected | −0.101 (z −25.9) |
+
+- At d = 6 the classical fit is better than the quantum model on held-out shots, against the
+  refit as well as the fixed prediction.
+- The refit moved mainly the detuning (0.062) and the reset errors (0.007, 0.032).
+- None of the fits is flagged converged at the 1,500-step cap. The last gain per symbol is
+  ≤ 4e−7.
+
+**The call (§3.7, `P.tier2_decide`): Claim 3 not supported.** Legs (ii), (iii) and the Claim 3
+contrast failed. The exclusion holds at D = 4 only, but "partial" also needs the other legs.
+Nothing is excluded by this tier. The class it would have excluded is element-wise classical
+hidden-state models with d ≤ 6 (#34 §4.1 item 2), which never included a phase register or
+free d = 8. Per §3.7, the (iii) failure points to an implementation artefact: A2's measurement
+leaves w(0) that the randomised dephasings do not.
+
+**Not run: the register and free d = 8 secondary** (`--part secondary`). It is reported-only and
+about 4 h of local fits. The owner paused further work on #28 before it started.
+
+### 7.4 The controls (A6b; descriptive)
+
+- **Why A6b.** The controls' first live check read the 21:32 UTC calibration, where §5 picks
+  [64, 56]: q50's readout had risen to 0.012. It refused before submitting.
+- **A6b** re-exported `bench_R2_*` on q64 (controls digest `c645561e…`). The floor still
+  passes, and the cost is unchanged.
+- **Jobs.** `dbqegjpabdes73fo55p0` and `dbqenhgk09pc73at5crg` finished by 22:28 UTC: 32 s
+  charged, 41.04 s counted (`tier2_controls/`). This was before the owner's pause on #28 at
+  22:53 UTC reached the issue.
+- **q75's readout was 0.057 at that calibration**, against 0.009 at main's. The controls'
+  reads of q75 carry it.
+- **Benchmarks.** The e0 sham from |0⟩ reads P(1) = 0.052, against 0.009–0.027 for e2, e4 and
+  R2. Seven of eight benchmark TOSTs (±0.02 against e0) fail; R2 from |1⟩ passes.
+- **Knee.** The inequality is violated for e4, e2 and A2: the excess is 0.68, 0.28 and 0.26, at
+  24, 13 and 9 SDs.
+
+These are descriptive (§3.4) and not part of the call. They were taken 3.5 h after main on a
+worse calibration, so they say little about main's legs.
+
+### 7.5 Budget
+
+| part | charged | counted | cap |
+| --- | --- | --- | --- |
+| pilot (#39) | 14 s | 16.71 s | 30 s |
+| main | 102 s | 125.97 s | 150 s |
+| controls | 32 s | 41.04 s | 45 s |
+| **Tier 2** | 148 s | **183.72 s** | 225 s |
+
+- **Phase 8 so far:** 208.86 s counted (Tier 1 25.14 s and Tier 2 183.72 s).
+- **Remaining on the owner's reading:** 538 − 167.9 − 41.04 = 329.1 s.
+- **IBM's reading** before the controls was 395 s, so about 363 s after them.

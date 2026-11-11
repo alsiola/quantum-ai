@@ -1,0 +1,494 @@
+{
+  "alpha": 0.05,
+  "by_d": {
+    "4": {
+      "fit": "hw_r0_d4_klein",
+      "fixed_mean": 0.09946,
+      "fixed_z": 23.570091,
+      "mean": 0.166772,
+      "p": 0.0,
+      "reject": true,
+      "se_block": 0.003585,
+      "z": 46.518872
+    },
+    "6": {
+      "fit": "hw_r0_d6_octahedron",
+      "fixed_mean": -0.101109,
+      "fixed_z": -25.875182,
+      "mean": -0.033797,
+      "p": 1.0,
+      "reject": false,
+      "se_block": 0.003152,
+      "z": -10.720909
+    }
+  },
+  "evaluator": "refit (section 3.2); fixed reported",
+  "fits": {
+    "hw_r0_d4_klein": {
+      "converged": false,
+      "iters": 1500,
+      "last_gain_per_symbol": 6.21748e-10,
+      "train_nll_per_shot": 39.024079
+    },
+    "hw_r0_d4_random": {
+      "converged": false,
+      "iters": 1500,
+      "last_gain_per_symbol": 5.81909e-09,
+      "train_nll_per_shot": 39.110795
+    },
+    "hw_r0_d6_octahedron": {
+      "converged": false,
+      "iters": 1500,
+      "last_gain_per_symbol": 2.66815e-08,
+      "train_nll_per_shot": 38.819177
+    },
+    "hw_r0_d6_split": {
+      "converged": false,
+      "iters": 1500,
+      "last_gain_per_symbol": 3.68135e-07,
+      "train_nll_per_shot": 38.915888
+    }
+  },
+  "meta": {
+    "config": {
+      "allowance": {
+        "allowed_plans": [
+          "open"
+        ],
+        "prior_counted_s": 167.9,
+        "reading_date": "2026-11-10",
+        "remaining_s": 538,
+        "reserve_s": 60,
+        "scenarios_s": [
+          600,
+          531,
+          400,
+          300,
+          200
+        ]
+      },
+      "approval": {
+        "tier1": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+        "tier2": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+        "tier3": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170"
+      },
+      "cost": {
+        "billing_round_s": 1.0,
+        "margin": 0.25,
+        "overhead_s": 2.0,
+        "rep_delay_s": 0.00025
+      },
+      "experiment": {
+        "coherence_config": "experiments/configs/phase8_coherence.toml",
+        "device": "results/summaries/phase7_spectator/device.json",
+        "name": "phase8_hw",
+        "prereg": "docs/phase8-preregistration.md",
+        "reference_config": "experiments/configs/phase8_reference.toml",
+        "replication_config": "experiments/configs/phase8_replication.toml",
+        "summary_dir": "results/summaries/phase8_prereg",
+        "workers": 2
+      },
+      "ibm": {
+        "backend": "ibm_kingston",
+        "channel": "ibm_cloud",
+        "env_file": ".env",
+        "live_summary_dir": "results/summaries/phase8_hw"
+      },
+      "order": {
+        "deferrable": [
+          "tier3"
+        ],
+        "tiers": [
+          "tier1",
+          "tier2",
+          "tier3"
+        ]
+      },
+      "reselection": {
+        "n_mc": 20000,
+        "seed": 3603,
+        "tier1_bell_power_floor": 0.8,
+        "tier2_ancilla_readout_max": 0.02,
+        "tier2_preserve_power_floor": 0.8,
+        "tier2_vanish_power_floor": 0.8,
+        "tier3_power_floor": 0.8
+      },
+      "sampler": {
+        "dynamical_decoupling": false,
+        "twirling_gates": false,
+        "twirling_measure": false
+      },
+      "tier1": {
+        "alpha": 0.05,
+        "hard_cap_s": 30.0,
+        "live": {
+          "circuit_prefix": "pm_",
+          "gating_selections": [],
+          "hard_cap_s": 20.0,
+          "prereg": [
+            {
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 2. Tier 1: Stage 3 (#33), Claim 4",
+              "sha256": "00a8ab2f2592d8f20e0b6cfcee0bbd744c103fffa8bf6080cc4b5aea6acbaa35"
+            },
+            {
+              "amendments": [
+                "**A2, 2026-11-10, pre-data (Tier 1).**",
+                "**A3, 2026-11-10, pre-data (approvals, budget).**"
+              ],
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 10. Amendment log",
+              "sha256": "d0d9ca1ad04fd5dce069a794fc98493a5bf6be7be7aff056997c4f21e20be19e"
+            }
+          ],
+          "qasm_digest": "4d17a4507e5a682f67f2ab173e1b27d53c7bdaacbd64efc80cdec76280365276",
+          "qasm_dir": "results/summaries/phase8_reference/qasm",
+          "qubits": [
+            59,
+            75
+          ],
+          "stages": [
+            "pm_primary"
+          ]
+        },
+        "max_job_estimate_s": 20.0,
+        "mdi": true,
+        "mdi_alpha": 0.05,
+        "mdi_live": {
+          "circuit_prefix": "mdi_",
+          "gating_selections": [],
+          "power_gate": true,
+          "precondition": "results/summaries/phase8_hw/tier1/decision.json",
+          "prereg": [
+            {
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 2. Tier 1: Stage 3 (#33), Claim 4",
+              "sha256": "00a8ab2f2592d8f20e0b6cfcee0bbd744c103fffa8bf6080cc4b5aea6acbaa35"
+            },
+            {
+              "amendments": [
+                "**A4, 2026-11-11, pre-data for MDI (Tier 1; after P&M's data).**"
+              ],
+              "commit": "17d213ef521d26bbf4227a87b3937990cc57c186",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 10. Amendment log",
+              "sha256": "e4b8269c9dcb1b10ab3d39fec221f0c69d9f64e6589e899b1dce6acbd1fe2301"
+            }
+          ],
+          "prior_ledgers": [
+            "results/summaries/phase8_hw/tier1/ledger.json"
+          ],
+          "qasm_digest": "c36a119e950020da52e8635c9d5998ce06a1d980eeda3afffed1d07467102c0b",
+          "qasm_dir": "results/summaries/phase8_reference/qasm",
+          "qubits": [
+            59,
+            74,
+            75
+          ],
+          "stages": [
+            "mdi_game"
+          ]
+        },
+        "min_branch_shots": 500,
+        "power_target": 0.8,
+        "secondary_alpha": 0.05,
+        "spam_gate": 0.9
+      },
+      "tier1_power": {
+        "draws": 4000,
+        "seed": 3604
+      },
+      "tier2": {
+        "controls_cap_s": 45.0,
+        "controls_live": {
+          "ancilla_sha256": {
+            "bench_R2_0": "30e7f0a64a1831020d458438c86538f71d0d7e1d3ee8cdf1df73ccddf086fb37",
+            "bench_R2_1": "671138c9b239a3d41caf71da9ea752118dbf856c0516dc9d001bfda4dee00617"
+          },
+          "ancillas": [
+            64,
+            56
+          ],
+          "earlier_ledgers": [
+            "results/summaries/phase8_hw/tier1/ledger.json",
+            "results/summaries/phase8_hw/tier1_mdi/ledger.json",
+            "results/summaries/phase8_hw/tier2/ledger.json",
+            "results/summaries/phase8_hw/tier2_main/ledger.json"
+          ],
+          "gating_selections": [],
+          "hard_cap_s": 45.0,
+          "prereg": [
+            {
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 3. Tier 2: Stage 2 (#32, #34), Claim 3",
+              "sha256": "9dd639485f4e5513ec78482179f56595fd0666a64578974a03760810e8453ad7"
+            },
+            {
+              "amendments": [
+                "**A1, 2026-11-10, pre-data (Tier 2).**",
+                "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**",
+                "**A6, 2026-11-11, pre-data for Tier 2 main and the controls (after the pilot's data).**",
+                "**A6b, 2026-11-11, pre-data for the controls (after main's data).**"
+              ],
+              "commit": "1a23a77867a66495d65f7cf643cd96e0ee5d6c0e",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 10. Amendment log",
+              "sha256": "32f2616b99a07e3a1193c051c9e7e59a790ef6fd42435bdedd7713dff97629a5"
+            }
+          ],
+          "prior_ledgers": [
+            "results/summaries/phase8_hw/tier2/ledger.json",
+            "results/summaries/phase8_hw/tier2_main/ledger.json"
+          ],
+          "qasm_digest": "c645561e3100ddbe115574e4ab4101cade6c26d651b3d940bcbc178718ec9a5d",
+          "qasm_dir": "results/summaries/phase8_hw/tier2/qasm_a6b/controls",
+          "qubits": [
+            64,
+            59,
+            75
+          ],
+          "stages": [
+            "controls0",
+            "controls1"
+          ]
+        },
+        "controls_subjobs": 2,
+        "dry_run": {
+          "em_iters": 300,
+          "n_boot": 200,
+          "primary_per_job": 4000,
+          "refit_evals": 200,
+          "seed": 3601,
+          "starts": {
+            "4": "klein",
+            "6": "octahedron"
+          },
+          "stat_boot": 200
+        },
+        "hard_cap_s": 225.0,
+        "live": {
+          "ancilla_sha256": {
+            "R2": "82ae2743f1ebdd807d049ee3f130213b77ede1660c852f2e5ae472733de05d00",
+            "R4": "195aa5b7960d10ed38003d387ba34fc4217bb2353d117293d0915a61e1afdd17",
+            "RS": "a2cab1886210987c3bd35d76a456250666ebdddb8a018f2e675868bd0b6b7439"
+          },
+          "ancillas": [
+            13,
+            50
+          ],
+          "earlier_ledgers": [
+            "results/summaries/phase8_hw/tier1/ledger.json",
+            "results/summaries/phase8_hw/tier1_mdi/ledger.json"
+          ],
+          "gating_selections": [],
+          "hard_cap_s": 30.0,
+          "prereg": [
+            {
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 3. Tier 2: Stage 2 (#32, #34), Claim 3",
+              "sha256": "9dd639485f4e5513ec78482179f56595fd0666a64578974a03760810e8453ad7"
+            },
+            {
+              "amendments": [
+                "**A1, 2026-11-10, pre-data (Tier 2).**",
+                "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**"
+              ],
+              "commit": "02967c8af27f477a698a7396188d3608be87298b",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 10. Amendment log",
+              "sha256": "83208471f7164d48d16f545386860e92dc8d37020668cf8365f7890815db88b0"
+            }
+          ],
+          "qasm_digest": "6a3fea5abb301fd872dcfb6e5fd425e4599d10512869e13d5dbc8a97c2180cef",
+          "qasm_dir": "results/summaries/phase8_hw/tier2/qasm",
+          "qubits": [
+            13,
+            50,
+            59,
+            75
+          ],
+          "stages": [
+            "pilot"
+          ]
+        },
+        "main_cap_s": 150.0,
+        "main_live": {
+          "analysis_seed": 3601,
+          "ancilla_sha256": {
+            "R2": "82ae2743f1ebdd807d049ee3f130213b77ede1660c852f2e5ae472733de05d00",
+            "R4": "195aa5b7960d10ed38003d387ba34fc4217bb2353d117293d0915a61e1afdd17",
+            "RS": "a2cab1886210987c3bd35d76a456250666ebdddb8a018f2e675868bd0b6b7439"
+          },
+          "ancillas": [
+            13,
+            50
+          ],
+          "earlier_ledgers": [
+            "results/summaries/phase8_hw/tier1/ledger.json",
+            "results/summaries/phase8_hw/tier1_mdi/ledger.json",
+            "results/summaries/phase8_hw/tier2/ledger.json"
+          ],
+          "gating_selections": [],
+          "hard_cap_s": 150.0,
+          "prereg": [
+            {
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 3. Tier 2: Stage 2 (#32, #34), Claim 3",
+              "sha256": "9dd639485f4e5513ec78482179f56595fd0666a64578974a03760810e8453ad7"
+            },
+            {
+              "amendments": [
+                "**A1, 2026-11-10, pre-data (Tier 2).**",
+                "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**",
+                "**A6, 2026-11-11, pre-data for Tier 2 main and the controls (after the pilot's data).**"
+              ],
+              "commit": "c6076bb238bab66c482c7c0fb198ae475ac328bb",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 10. Amendment log",
+              "sha256": "b0eeca3a50502584350629ef7bc4b9160fdf36f03d61da02c1855fb3b34556ec"
+            }
+          ],
+          "primary_source_id": 40,
+          "prior_ledgers": [
+            "results/summaries/phase8_hw/tier2/ledger.json"
+          ],
+          "qasm_digest": "76a51186aa53252d9e3101952376e65d4b649dcd3079fdbbe26a83004f1741a8",
+          "qasm_dir": "results/summaries/phase8_hw/tier2/qasm",
+          "qubits": [
+            13,
+            50,
+            59,
+            75
+          ],
+          "stages": [
+            "main_b0_s0",
+            "main_b0_s1",
+            "main_b0_s2",
+            "main_b1_s0",
+            "main_b1_s1",
+            "main_b1_s2"
+          ]
+        },
+        "main_subjobs_per_block": 3,
+        "max_job_estimate_s": 20.0,
+        "pilot_cap_s": 30.0,
+        "slot_1rad": {
+          "added_main_upper_s": 34.0,
+          "arms": 6,
+          "included": false,
+          "status": "dropped: #35 recommends against it (docs/phase8-coherence.md section 4.2); amendment A6"
+        }
+      },
+      "tier3": {
+        "deferrable": true,
+        "dry_run": {
+          "n_boot": 200,
+          "seed": 3602
+        },
+        "hard_cap_s": 120.0,
+        "max_job_estimate_s": 12.0,
+        "option": "two_parallel"
+      }
+    },
+    "git_commit": "88cf6c31dc068560b99a1ab20279a4307f3de9e5",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 40,
+    "timestamp_utc": "2026-11-11T22:12:48+00:00",
+    "torch": "2.15.0"
+  },
+  "pipeline": {
+    "fixed": {
+      "d4": {
+        "fit": "hw_r0_d4_klein",
+        "mean": 0.09946,
+        "n": 72000,
+        "p": 0.0,
+        "reject_holm": true,
+        "reject_unadjusted": true,
+        "sd_per_shot": 1.187821,
+        "se_block": 0.00422,
+        "se_shot": 0.004427,
+        "train_nll_per_shot": 39.024079,
+        "z": 23.570091
+      },
+      "d6": {
+        "fit": "hw_r0_d6_octahedron",
+        "mean": -0.101109,
+        "n": 72000,
+        "p": 1.0,
+        "reject_holm": false,
+        "reject_unadjusted": false,
+        "sd_per_shot": 1.076242,
+        "se_block": 0.003908,
+        "se_shot": 0.004011,
+        "train_nll_per_shot": 38.819177,
+        "z": -25.875182
+      }
+    },
+    "refit": {
+      "d4": {
+        "fit": "hw_r0_d4_klein",
+        "mean": 0.166772,
+        "n": 72000,
+        "p": 0.0,
+        "reject_holm": true,
+        "reject_unadjusted": true,
+        "sd_per_shot": 1.02212,
+        "se_block": 0.003585,
+        "se_shot": 0.003809,
+        "train_nll_per_shot": 39.024079,
+        "z": 46.518872
+      },
+      "d6": {
+        "fit": "hw_r0_d6_octahedron",
+        "mean": -0.033797,
+        "n": 72000,
+        "p": 1.0,
+        "reject_holm": false,
+        "reject_unadjusted": false,
+        "sd_per_shot": 0.882207,
+        "se_block": 0.003152,
+        "se_shot": 0.003288,
+        "train_nll_per_shot": 38.819177,
+        "z": -10.720909
+      }
+    },
+    "rep": 0,
+    "source": "hw"
+  },
+  "refit_evals": 325,
+  "refit_params": {
+    "damp": 6.71664e-07,
+    "dephase": 6.64123e-07,
+    "detune": 0.062338,
+    "ff_idle_s": 1.128e-06,
+    "ff_phase": [
+      0.0,
+      0.0
+    ],
+    "flip": 2.56766e-06,
+    "meas_decay": 1.45272e-07,
+    "meas_decay_first": null,
+    "over": -0.007465,
+    "reset_e0": 0.007151,
+    "reset_e1": 0.032463,
+    "spec_dephase": 0.0,
+    "spec_phase": 0.0,
+    "stark": [
+      0.0,
+      0.0
+    ]
+  },
+  "rejected": [
+    4
+  ],
+  "run_dir": "results/phase8_tier2/20261111T221248Z"
+}
