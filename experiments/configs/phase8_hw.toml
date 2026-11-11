@@ -230,7 +230,7 @@ commit = "a161c1119271410dd8eae54523e51947d5fedc17"   # unchanged since #36/A3
 doc = "docs/phase8-preregistration.md"
 heading = "## 10. Amendment log"
 sha256 = "32f2616b99a07e3a1193c051c9e7e59a790ef6fd42435bdedd7713dff97629a5"
-commit = ""                                     # A6b on main (#40)
+commit = "1a23a77867a66495d65f7cf643cd96e0ee5d6c0e"   # A6b on main (#40)
 amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**", "**A6, 2026-11-11, pre-data for Tier 2 main and the controls (after the pilot's data).**", "**A6b, 2026-11-11, pre-data for the controls (after main's data).**"]
 
 
