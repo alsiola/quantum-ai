@@ -268,7 +268,8 @@ def test_remaining_allowance_and_admission():
     led.add("tier1", F.job_charge("x", 15.16, {"job_usage": 3.0}))
     assert L.remaining_allowance(c, led, None) == pytest.approx(538 - 15.16)
     # earlier Phase 8 jobs (the config's ledger entry) are taken off the owner's reading
-    assert L.remaining_allowance(cfg(), P.Ledger(), {}) == pytest.approx(538 - 41.9)
+    p = CFG["allowance"]["prior_counted_s"]
+    assert L.remaining_allowance(cfg(), P.Ledger(), {}) == pytest.approx(538 - p)
     assert L.remaining_allowance(cfg(allowance__remaining_s=None), led, {}) is None
     tb = {"tier1": tier1_budget(c)}
     assert L.admission(c, "tier1", tb, 538)["fits_cap"]

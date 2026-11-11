@@ -1,0 +1,646 @@
+{
+  "admission": {
+    "allowance_s": 496.1,
+    "cumulative_cap_s": 225.0,
+    "cumulative_upper_s": 183.72388,
+    "estimate_s": 139.779104,
+    "fits_cap": true,
+    "fits_upper": true,
+    "hard_cap_s": 225.0,
+    "jobs": 9,
+    "problems": "",
+    "reserve_s": 60,
+    "tier": "tier2",
+    "upper_s": 183.72388
+  },
+  "approval": null,
+  "backend": "ibm_kingston",
+  "base_tier": "tier2",
+  "costs": {
+    "main_b0_s0": {
+      "estimate_s": 16.00319,
+      "live_estimate_s": 15.694433,
+      "live_upper_s": 20.618041,
+      "prereg_estimate_s": 16.00319,
+      "prereg_upper_s": 21.003988,
+      "shots": 24012,
+      "upper_s": 21.003988
+    },
+    "main_b0_s1": {
+      "estimate_s": 15.992693,
+      "live_estimate_s": 15.684167,
+      "live_upper_s": 20.605209,
+      "prereg_estimate_s": 15.992693,
+      "prereg_upper_s": 20.990866,
+      "shots": 23994,
+      "upper_s": 20.990866
+    },
+    "main_b0_s2": {
+      "estimate_s": 15.992693,
+      "live_estimate_s": 15.684167,
+      "live_upper_s": 20.605209,
+      "prereg_estimate_s": 15.992693,
+      "prereg_upper_s": 20.990866,
+      "shots": 23994,
+      "upper_s": 20.990866
+    },
+    "main_b1_s0": {
+      "estimate_s": 16.00319,
+      "live_estimate_s": 15.694433,
+      "live_upper_s": 20.618041,
+      "prereg_estimate_s": 16.00319,
+      "prereg_upper_s": 21.003988,
+      "shots": 24012,
+      "upper_s": 21.003988
+    },
+    "main_b1_s1": {
+      "estimate_s": 15.992693,
+      "live_estimate_s": 15.684167,
+      "live_upper_s": 20.605209,
+      "prereg_estimate_s": 15.992693,
+      "prereg_upper_s": 20.990866,
+      "shots": 23994,
+      "upper_s": 20.990866
+    },
+    "main_b1_s2": {
+      "estimate_s": 15.992693,
+      "live_estimate_s": 15.684167,
+      "live_upper_s": 20.605209,
+      "prereg_estimate_s": 15.992693,
+      "prereg_upper_s": 20.990866,
+      "shots": 23994,
+      "upper_s": 20.990866
+    }
+  },
+  "cz_durations": {
+    "59-75": {
+      "duration_ns": 68.0,
+      "duration_s": 6.8e-08
+    }
+  },
+  "earlier_tiers": {
+    "counted_s": 41.84983,
+    "ledgers": {
+      "results/summaries/phase8_hw/tier1/ledger.json": 15.16217,
+      "results/summaries/phase8_hw/tier1_mdi/ledger.json": 9.97314,
+      "results/summaries/phase8_hw/tier2/ledger.json": 16.71452
+    },
+    "prior_counted_s": 41.9
+  },
+  "floor": {
+    "ancillas": [
+      13,
+      50
+    ],
+    "bias_bound": 0.00293,
+    "checks": {
+      "preserve": true,
+      "readout": true,
+      "vanish": true
+    },
+    "floors": {
+      "preserve": 0.8,
+      "vanish": 0.8
+    },
+    "pass": true,
+    "preserve_power": 0.984997,
+    "readout": {
+      "13": 0.001953,
+      "50": 0.00293
+    },
+    "readout_max": 0.02,
+    "vanish_power": 1.0,
+    "w0": {
+      "E00": -0.006647,
+      "R2": -3.34396e-06,
+      "R4": -2.27065e-06,
+      "RS": -0.006217
+    }
+  },
+  "guards": [
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+      "estimate_s": 16.00319,
+      "guard": "would pass",
+      "guarded_at": "2026-11-11T18:00:59+0000",
+      "live_estimate_s": 15.694433,
+      "live_upper_s": 20.618041,
+      "plan": "open",
+      "prereg_estimate_s": 16.00319,
+      "prereg_upper_s": 21.003988,
+      "remaining_s": 496.1,
+      "shots": 24012,
+      "stage": "main_b0_s0",
+      "upper_s": 21.003988,
+      "usage_before": {
+        "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+        "usage_consumed_ru": 1.560568,
+        "usage_consumed_seconds": 103,
+        "usage_limit_reached": false,
+        "usage_limit_ru": 10,
+        "usage_limit_seconds": 600,
+        "usage_period": {
+          "end_time": "2026-11-11T18:00:59.071Z",
+          "start_time": "2026-10-14T18:00:59.071Z"
+        },
+        "usage_remaining_seconds": 497
+      }
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+      "estimate_s": 15.992693,
+      "guard": "would pass",
+      "guarded_at": "2026-11-11T18:00:59+0000",
+      "live_estimate_s": 15.684167,
+      "live_upper_s": 20.605209,
+      "plan": "open",
+      "prereg_estimate_s": 15.992693,
+      "prereg_upper_s": 20.990866,
+      "remaining_s": 496.1,
+      "shots": 23994,
+      "stage": "main_b0_s1",
+      "upper_s": 20.990866,
+      "usage_before": {
+        "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+        "usage_consumed_ru": 1.560568,
+        "usage_consumed_seconds": 103,
+        "usage_limit_reached": false,
+        "usage_limit_ru": 10,
+        "usage_limit_seconds": 600,
+        "usage_period": {
+          "end_time": "2026-11-11T18:00:59.518Z",
+          "start_time": "2026-10-14T18:00:59.518Z"
+        },
+        "usage_remaining_seconds": 497
+      }
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+      "estimate_s": 15.992693,
+      "guard": "would pass",
+      "guarded_at": "2026-11-11T18:01:00+0000",
+      "live_estimate_s": 15.684167,
+      "live_upper_s": 20.605209,
+      "plan": "open",
+      "prereg_estimate_s": 15.992693,
+      "prereg_upper_s": 20.990866,
+      "remaining_s": 496.1,
+      "shots": 23994,
+      "stage": "main_b0_s2",
+      "upper_s": 20.990866,
+      "usage_before": {
+        "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+        "usage_consumed_ru": 1.560568,
+        "usage_consumed_seconds": 103,
+        "usage_limit_reached": false,
+        "usage_limit_ru": 10,
+        "usage_limit_seconds": 600,
+        "usage_period": {
+          "end_time": "2026-11-11T18:00:59.921Z",
+          "start_time": "2026-10-14T18:00:59.921Z"
+        },
+        "usage_remaining_seconds": 497
+      }
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+      "estimate_s": 16.00319,
+      "guard": "would pass",
+      "guarded_at": "2026-11-11T18:01:00+0000",
+      "live_estimate_s": 15.694433,
+      "live_upper_s": 20.618041,
+      "plan": "open",
+      "prereg_estimate_s": 16.00319,
+      "prereg_upper_s": 21.003988,
+      "remaining_s": 496.1,
+      "shots": 24012,
+      "stage": "main_b1_s0",
+      "upper_s": 21.003988,
+      "usage_before": {
+        "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+        "usage_consumed_ru": 1.560568,
+        "usage_consumed_seconds": 103,
+        "usage_limit_reached": false,
+        "usage_limit_ru": 10,
+        "usage_limit_seconds": 600,
+        "usage_period": {
+          "end_time": "2026-11-11T18:01:00.142Z",
+          "start_time": "2026-10-14T18:01:00.142Z"
+        },
+        "usage_remaining_seconds": 497
+      }
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+      "estimate_s": 15.992693,
+      "guard": "would pass",
+      "guarded_at": "2026-11-11T18:01:00+0000",
+      "live_estimate_s": 15.684167,
+      "live_upper_s": 20.605209,
+      "plan": "open",
+      "prereg_estimate_s": 15.992693,
+      "prereg_upper_s": 20.990866,
+      "remaining_s": 496.1,
+      "shots": 23994,
+      "stage": "main_b1_s1",
+      "upper_s": 20.990866,
+      "usage_before": {
+        "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+        "usage_consumed_ru": 1.560568,
+        "usage_consumed_seconds": 103,
+        "usage_limit_reached": false,
+        "usage_limit_ru": 10,
+        "usage_limit_seconds": 600,
+        "usage_period": {
+          "end_time": "2026-11-11T18:01:00.561Z",
+          "start_time": "2026-10-14T18:01:00.561Z"
+        },
+        "usage_remaining_seconds": 497
+      }
+    },
+    {
+      "approval_url": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+      "estimate_s": 15.992693,
+      "guard": "would pass",
+      "guarded_at": "2026-11-11T18:01:01+0000",
+      "live_estimate_s": 15.684167,
+      "live_upper_s": 20.605209,
+      "plan": "open",
+      "prereg_estimate_s": 15.992693,
+      "prereg_upper_s": 20.990866,
+      "remaining_s": 496.1,
+      "shots": 23994,
+      "stage": "main_b1_s2",
+      "upper_s": 20.990866,
+      "usage_before": {
+        "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+        "usage_consumed_ru": 1.560568,
+        "usage_consumed_seconds": 103,
+        "usage_limit_reached": false,
+        "usage_limit_ru": 10,
+        "usage_limit_seconds": 600,
+        "usage_period": {
+          "end_time": "2026-11-11T18:01:00.968Z",
+          "start_time": "2026-10-14T18:01:00.968Z"
+        },
+        "usage_remaining_seconds": 497
+      }
+    }
+  ],
+  "hashes": {
+    "all_ok": true,
+    "n": 169,
+    "same_as_prereg": true,
+    "tier_digest": "76a51186aa53252d9e3101952376e65d4b649dcd3079fdbbe26a83004f1741a8",
+    "tier_files": 18
+  },
+  "isa": {
+    "duration_s": {
+      "A2": 0.000310496,
+      "ALT2": 0.00030838,
+      "COMP22": 0.000308444,
+      "COMP40": 0.000308444,
+      "E0": 0.00030838,
+      "E00": 0.000308444,
+      "INV2": 0.000308444,
+      "P1": 0.00030838,
+      "P2": 0.00030838,
+      "P3": 0.00030838,
+      "P4": 0.00030838,
+      "P5": 0.00030838,
+      "P6": 0.00030838,
+      "P7": 0.00030838,
+      "R2": 0.000379228,
+      "R4": 0.000379228,
+      "RS": 0.000379228,
+      "baseline": 0.000308316
+    },
+    "static": [
+      "A2",
+      "ALT2",
+      "COMP22",
+      "COMP40",
+      "E0",
+      "E00",
+      "INV2",
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7",
+      "baseline"
+    ],
+    "unchanged": true
+  },
+  "plan": "open",
+  "prereg": [
+    {
+      "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+      "heading": "## 3. Tier 2: Stage 2 (#32, #34), Claim 3",
+      "sha256": "9dd639485f4e5513ec78482179f56595fd0666a64578974a03760810e8453ad7"
+    },
+    {
+      "commit": "c6076bb238bab66c482c7c0fb198ae475ac328bb",
+      "heading": "## 10. Amendment log",
+      "sha256": "b0eeca3a50502584350629ef7bc4b9160fdf36f03d61da02c1855fb3b34556ec"
+    }
+  ],
+  "prior_counted_s": 16.71452,
+  "read_at": "2026-11-11T17:58:37+0000",
+  "run_dir": "results/phase8_hw_livedry_tier2_main/20261111T175830Z",
+  "selection": {
+    "committed": {
+      "tier1_reference": 79,
+      "tier2_ancillas": [
+        50,
+        21
+      ],
+      "tier3_pairs": [
+        "m67_o68",
+        "m149_o148"
+      ]
+    },
+    "powers_committed_pairs": {
+      "m149_o148": 0.837,
+      "m67_o68": 0.839
+    },
+    "reproduces": {
+      "tier1_reference": false,
+      "tier2_ancillas": false,
+      "tier3_pairs": true
+    },
+    "snapshot": {
+      "backend": "ibm_kingston",
+      "date": "2026-11-11 17:25:34+00:00",
+      "sha256": "4b427532f904bca189f292ab33ce163412cb931f768dbf0a95f1423bb8ba8f92"
+    },
+    "tier1_reference": {
+      "candidates": [
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the output or its neighbour; path through the output",
+          "path": "75-59-55-54",
+          "qubit": 54,
+          "score": 0.545137
+        },
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the output or its neighbour; path through the output",
+          "path": "75-59-55",
+          "qubit": 55,
+          "score": 0.548854
+        },
+        {
+          "admitted": false,
+          "excluded_because": "readout",
+          "path": "75-74-73-72",
+          "qubit": 72,
+          "score": 0.535376
+        },
+        {
+          "admitted": true,
+          "excluded_because": "",
+          "path": "75-74-73",
+          "qubit": 73,
+          "score": 0.553696
+        },
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the memory; coupler to the output or its neighbour",
+          "path": "75-74",
+          "qubit": 74,
+          "score": 0.559099
+        },
+        {
+          "admitted": true,
+          "excluded_because": "",
+          "path": "75-74-73-79",
+          "qubit": 79,
+          "score": 0.547539
+        }
+      ],
+      "chosen": [
+        73
+      ]
+    },
+    "tier2_ancillas": {
+      "candidates": 70,
+      "chosen": [
+        13,
+        50
+      ],
+      "distance_to_core": 6,
+      "snapshot_sha256": "4b427532f904bca189f292ab33ce163412cb931f768dbf0a95f1423bb8ba8f92",
+      "top10": [
+        {
+          "measure_error": 0.001953,
+          "qubit": 13,
+          "t1": 0.000289484
+        },
+        {
+          "measure_error": 0.00293,
+          "qubit": 50,
+          "t1": 0.00031812
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 69,
+          "t1": 0.00031134
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 68,
+          "t1": 0.000221102
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 62,
+          "t1": 0.000158583
+        }
+      ]
+    },
+    "tier3_no_pieces": [
+      "m2_o1",
+      "m2_o3",
+      "m3_o16",
+      "m16_o3",
+      "m13_o14",
+      "m15_o14",
+      "m15_o19",
+      "m16_o23",
+      "m28_o29",
+      "m33_o34",
+      "m34_o33",
+      "m44_o45",
+      "m45_o44",
+      "m45_o46",
+      "m46_o45",
+      "m47_o46",
+      "m47_o57",
+      "m50_o51",
+      "m51_o52",
+      "m58_o51",
+      "m57_o67",
+      "m69_o70",
+      "m70_o69",
+      "m70_o71",
+      "m71_o70",
+      "m81_o80",
+      "m92_o91",
+      "m92_o93",
+      "m95_o94",
+      "m117_o105",
+      "m108_o107",
+      "m110_o111",
+      "m125_o117",
+      "m125_o124",
+      "m125_o126",
+      "m133_o132",
+      "m154_o155"
+    ],
+    "tier3_pairs": {
+      "candidates": 348,
+      "chosen": [
+        "m67_o68",
+        "m149_o148"
+      ],
+      "footprints": [
+        [
+          67,
+          68,
+          57
+        ],
+        [
+          149,
+          148,
+          150
+        ]
+      ],
+      "power": {
+        "m149_o148": 0.837,
+        "m67_o68": 0.839
+      },
+      "qualified": 5,
+      "screened": 89,
+      "snapshot_sha256": "4b427532f904bca189f292ab33ce163412cb931f768dbf0a95f1423bb8ba8f92",
+      "statement": "2 pairs qualify and are chosen"
+    }
+  },
+  "selection_gate": {
+    "changed": [],
+    "gating": []
+  },
+  "snapshot": {
+    "calibration_date": "2026-11-11 17:25:34+00:00",
+    "cz_59_75": {
+      "duration": 6.8e-08,
+      "error": 0.001938
+    },
+    "qubits": {
+      "59": {
+        "measure_time": 2.18e-06,
+        "readout": 0.004395,
+        "reset_time": 2.212e-06,
+        "sx": 0.000176264,
+        "t1": 0.000186996,
+        "t2": 0.00031544
+      },
+      "74": {
+        "measure_time": 2.18e-06,
+        "readout": 0.008789,
+        "reset_time": 2.212e-06,
+        "sx": 0.000222945,
+        "t1": 0.00031473,
+        "t2": 0.000229856
+      },
+      "75": {
+        "measure_time": 2.18e-06,
+        "readout": 0.009277,
+        "reset_time": 2.212e-06,
+        "sx": 0.000100247,
+        "t1": 0.000191751,
+        "t2": 0.000118009
+      }
+    },
+    "read_at": "2026-11-11T17:58:39+0000",
+    "sha256": "4b427532f904bca189f292ab33ce163412cb931f768dbf0a95f1423bb8ba8f92"
+  },
+  "submitted": false,
+  "tier": "tier2_main",
+  "tier_budget": {
+    "hard_cap_s": 150.0,
+    "jobs": [
+      {
+        "estimate_s": 16.00319,
+        "live_estimate_s": 15.694433,
+        "live_upper_s": 20.618041,
+        "prereg_estimate_s": 16.00319,
+        "prereg_upper_s": 21.003988,
+        "shots": 24012,
+        "upper_s": 21.003988
+      },
+      {
+        "estimate_s": 15.992693,
+        "live_estimate_s": 15.684167,
+        "live_upper_s": 20.605209,
+        "prereg_estimate_s": 15.992693,
+        "prereg_upper_s": 20.990866,
+        "shots": 23994,
+        "upper_s": 20.990866
+      },
+      {
+        "estimate_s": 15.992693,
+        "live_estimate_s": 15.684167,
+        "live_upper_s": 20.605209,
+        "prereg_estimate_s": 15.992693,
+        "prereg_upper_s": 20.990866,
+        "shots": 23994,
+        "upper_s": 20.990866
+      },
+      {
+        "estimate_s": 16.00319,
+        "live_estimate_s": 15.694433,
+        "live_upper_s": 20.618041,
+        "prereg_estimate_s": 16.00319,
+        "prereg_upper_s": 21.003988,
+        "shots": 24012,
+        "upper_s": 21.003988
+      },
+      {
+        "estimate_s": 15.992693,
+        "live_estimate_s": 15.684167,
+        "live_upper_s": 20.605209,
+        "prereg_estimate_s": 15.992693,
+        "prereg_upper_s": 20.990866,
+        "shots": 23994,
+        "upper_s": 20.990866
+      },
+      {
+        "estimate_s": 15.992693,
+        "live_estimate_s": 15.684167,
+        "live_upper_s": 20.605209,
+        "prereg_estimate_s": 15.992693,
+        "prereg_upper_s": 20.990866,
+        "shots": 23994,
+        "upper_s": 20.990866
+      }
+    ],
+    "max_job_estimate_s": 20.0,
+    "problems": []
+  },
+  "usage": {
+    "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+    "usage_consumed_ru": 1.560568,
+    "usage_consumed_seconds": 103,
+    "usage_limit_reached": false,
+    "usage_limit_ru": 10,
+    "usage_limit_seconds": 600,
+    "usage_period": {
+      "end_time": "2026-11-11T17:58:37.138Z",
+      "start_time": "2026-10-14T17:58:37.138Z"
+    },
+    "usage_remaining_seconds": 497
+  }
+}

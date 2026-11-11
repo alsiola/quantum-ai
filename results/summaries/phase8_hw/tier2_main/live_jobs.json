@@ -1,0 +1,2084 @@
+{
+  "dbqash0k09pc73asu0ug": {
+    "execution_seconds": 15.932488,
+    "execution_spans": "ExecutionSpans([DoubleSliceSpan(<start='2026-11-11 18:28:50', stop='2026-11-11 18:29:05', size=24012>)])",
+    "fetched_at": "2026-11-11T18:33:38+0000",
+    "metrics": {
+      "caller": "qiskit_ibm_runtime~sampler.py",
+      "circuits_execution_time_ns": 15004168704,
+      "qiskit_version": "qiskit_ibm_runtime-0.51.0,qiskit-2.6.2*,qiskit_aer-0.18.2",
+      "timestamps": {
+        "created": "2026-11-11T18:04:52.914853Z",
+        "finished": "2026-11-11T18:29:10.388831Z",
+        "running": "2026-11-11T18:28:44.693573Z"
+      },
+      "usage": {
+        "details": [
+          {
+            "metric": {
+              "id": "caffe3ca-729c-5750-8777-df63bbf8bfd9",
+              "value": 17
+            },
+            "unit": "resource_units",
+            "value": 0.279609
+          }
+        ],
+        "qpu_charge_time_seconds": 17,
+        "status": "complete",
+        "unit": "resource_units",
+        "value": 0.279609
+      }
+    },
+    "pub_metadata": [
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      }
+    ],
+    "pubs": [
+      "j0_p000_P7_c0",
+      "j0_p001_baseline_c0",
+      "j0_p002_P7_c1",
+      "j0_p003_P6_c0",
+      "j0_p004_ALT2_c1",
+      "j0_p005_A2_c1",
+      "j0_p006_P5_c1",
+      "j0_p007_ALT2_c0",
+      "j0_p008_P1_c0",
+      "j0_p009_baseline_c1",
+      "j0_p010_E0_c1",
+      "j0_p011_R2_c1",
+      "j0_p012_P4_c1",
+      "j0_p013_P3_c1",
+      "j0_p014_P5_c0",
+      "j0_p015_E00_c1",
+      "j0_p016_RS_c0",
+      "j0_p017_RS_c1",
+      "j0_p018_R2_c0",
+      "j0_p019_R4_c1",
+      "j0_p020_P2_c1",
+      "j0_p021_P2_c0",
+      "j0_p022_P1_c1",
+      "j0_p023_INV2_c0",
+      "j0_p024_E0_c0",
+      "j0_p025_R4_c0",
+      "j0_p026_A2_c0",
+      "j0_p027_COMP22_c0",
+      "j0_p028_INV2_c1",
+      "j0_p029_COMP40_c1",
+      "j0_p030_COMP40_c0",
+      "j0_p031_P6_c1",
+      "j0_p032_COMP22_c1",
+      "j0_p033_E00_c0",
+      "j0_p034_P3_c0",
+      "j0_p035_P4_c0"
+    ],
+    "result_metadata": {
+      "version": 2
+    },
+    "stage": "main_b0_s0",
+    "status": "DONE",
+    "usage_before": {
+      "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+      "usage_consumed_ru": 1.560568,
+      "usage_consumed_seconds": 103,
+      "usage_limit_reached": false,
+      "usage_limit_ru": 10,
+      "usage_limit_seconds": 600,
+      "usage_period": {
+        "end_time": "2026-11-11T18:04:48.744Z",
+        "start_time": "2026-10-14T18:04:48.744Z"
+      },
+      "usage_remaining_seconds": 497
+    },
+    "usage_read_at": "2026-11-11T18:33:45+0000",
+    "usage_readings": {
+      "account_delta": 17.0,
+      "job_metrics": 17.0,
+      "job_usage": 17.0
+    }
+  },
+  "dbqba3ujjaos73agvr2g": {
+    "execution_seconds": 18.518576,
+    "execution_spans": "ExecutionSpans([DoubleSliceSpan(<start='2026-11-11 18:33:58', stop='2026-11-11 18:34:08', size=11988>), DoubleSliceSpan(<start='2026-11-11 18:34:08', stop='2026-11-11 18:34:16', size=12006>)])",
+    "fetched_at": "2026-11-11T18:34:21+0000",
+    "metrics": {
+      "caller": "qiskit_ibm_runtime~sampler.py",
+      "circuits_execution_time_ns": 14992661504,
+      "qiskit_version": "qiskit_ibm_runtime-0.51.0,qiskit-2.6.2*,qiskit_aer-0.18.2",
+      "timestamps": {
+        "created": "2026-11-11T18:33:51.333941Z",
+        "finished": "2026-11-11T18:34:19.914949Z",
+        "running": "2026-11-11T18:33:53.359456Z"
+      },
+      "usage": {
+        "details": [
+          {
+            "metric": {
+              "id": "caffe3ca-729c-5750-8777-df63bbf8bfd9",
+              "value": 17
+            },
+            "unit": "resource_units",
+            "value": 0.279417
+          }
+        ],
+        "qpu_charge_time_seconds": 17,
+        "status": "complete",
+        "unit": "resource_units",
+        "value": 0.279417
+      }
+    },
+    "pub_metadata": [
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      }
+    ],
+    "pubs": [
+      "j1_p000_P4_c1",
+      "j1_p001_baseline_c1",
+      "j1_p002_P5_c1",
+      "j1_p003_INV2_c1",
+      "j1_p004_E0_c1",
+      "j1_p005_P3_c1",
+      "j1_p006_ALT2_c0",
+      "j1_p007_ALT2_c1",
+      "j1_p008_RS_c0",
+      "j1_p009_R2_c1",
+      "j1_p010_COMP40_c1",
+      "j1_p011_E0_c0",
+      "j1_p012_P6_c0",
+      "j1_p013_P7_c1",
+      "j1_p014_R2_c0",
+      "j1_p015_R4_c0",
+      "j1_p016_P2_c1",
+      "j1_p017_P7_c0",
+      "j1_p018_COMP40_c0",
+      "j1_p019_R4_c1",
+      "j1_p020_P6_c1",
+      "j1_p021_P2_c0",
+      "j1_p022_COMP22_c1",
+      "j1_p023_baseline_c0",
+      "j1_p024_A2_c0",
+      "j1_p025_P5_c0",
+      "j1_p026_P3_c0",
+      "j1_p027_E00_c0",
+      "j1_p028_P1_c0",
+      "j1_p029_INV2_c0",
+      "j1_p030_RS_c1",
+      "j1_p031_E00_c1",
+      "j1_p032_COMP22_c0",
+      "j1_p033_A2_c1",
+      "j1_p034_P4_c0",
+      "j1_p035_P1_c1"
+    ],
+    "result_metadata": {
+      "version": 2
+    },
+    "stage": "main_b0_s1",
+    "status": "DONE",
+    "usage_before": {
+      "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+      "usage_consumed_ru": 1.840177,
+      "usage_consumed_seconds": 120,
+      "usage_limit_reached": false,
+      "usage_limit_ru": 10,
+      "usage_limit_seconds": 600,
+      "usage_period": {
+        "end_time": "2026-11-11T18:33:45.645Z",
+        "start_time": "2026-10-14T18:33:45.645Z"
+      },
+      "usage_remaining_seconds": 480
+    },
+    "usage_read_at": "2026-11-11T18:34:22+0000",
+    "usage_readings": {
+      "account_delta": 17.0,
+      "job_metrics": 17.0,
+      "job_usage": 17.0
+    }
+  },
+  "dbqbac0k09pc73asup00": {
+    "execution_seconds": 16.786991999999998,
+    "execution_spans": "ExecutionSpans([DoubleSliceSpan(<start='2026-11-11 18:34:50', stop='2026-11-11 18:34:58', size=11988>), DoubleSliceSpan(<start='2026-11-11 18:34:59', stop='2026-11-11 18:35:07', size=12006>)])",
+    "fetched_at": "2026-11-11T18:35:11+0000",
+    "metrics": {
+      "caller": "qiskit_ibm_runtime~sampler.py",
+      "circuits_execution_time_ns": 14992659200,
+      "qiskit_version": "qiskit_ibm_runtime-0.51.0,qiskit-2.6.2*,qiskit_aer-0.18.2",
+      "timestamps": {
+        "created": "2026-11-11T18:34:24.619313Z",
+        "finished": "2026-11-11T18:35:10.383511Z",
+        "running": "2026-11-11T18:34:45.763633Z"
+      },
+      "usage": {
+        "details": [
+          {
+            "metric": {
+              "id": "caffe3ca-729c-5750-8777-df63bbf8bfd9",
+              "value": 17
+            },
+            "unit": "resource_units",
+            "value": 0.279417
+          }
+        ],
+        "qpu_charge_time_seconds": 17,
+        "status": "complete",
+        "unit": "resource_units",
+        "value": 0.279417
+      }
+    },
+    "pub_metadata": [
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      }
+    ],
+    "pubs": [
+      "j2_p000_R2_c0",
+      "j2_p001_baseline_c1",
+      "j2_p002_P3_c0",
+      "j2_p003_INV2_c0",
+      "j2_p004_baseline_c0",
+      "j2_p005_P5_c0",
+      "j2_p006_P7_c1",
+      "j2_p007_COMP40_c0",
+      "j2_p008_R2_c1",
+      "j2_p009_COMP22_c1",
+      "j2_p010_INV2_c1",
+      "j2_p011_RS_c1",
+      "j2_p012_R4_c1",
+      "j2_p013_ALT2_c1",
+      "j2_p014_COMP40_c1",
+      "j2_p015_R4_c0",
+      "j2_p016_P2_c1",
+      "j2_p017_E00_c1",
+      "j2_p018_P1_c1",
+      "j2_p019_E0_c0",
+      "j2_p020_P6_c1",
+      "j2_p021_E00_c0",
+      "j2_p022_E0_c1",
+      "j2_p023_P3_c1",
+      "j2_p024_A2_c0",
+      "j2_p025_ALT2_c0",
+      "j2_p026_P7_c0",
+      "j2_p027_P4_c1",
+      "j2_p028_P4_c0",
+      "j2_p029_P1_c0",
+      "j2_p030_P5_c1",
+      "j2_p031_COMP22_c0",
+      "j2_p032_P6_c0",
+      "j2_p033_P2_c0",
+      "j2_p034_RS_c0",
+      "j2_p035_A2_c1"
+    ],
+    "result_metadata": {
+      "version": 2
+    },
+    "stage": "main_b0_s2",
+    "status": "DONE",
+    "usage_before": {
+      "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+      "usage_consumed_ru": 2.119594,
+      "usage_consumed_seconds": 137,
+      "usage_limit_reached": false,
+      "usage_limit_ru": 10,
+      "usage_limit_seconds": 600,
+      "usage_period": {
+        "end_time": "2026-11-11T18:34:23.037Z",
+        "start_time": "2026-10-14T18:34:23.037Z"
+      },
+      "usage_remaining_seconds": 463
+    },
+    "usage_read_at": "2026-11-11T18:35:13+0000",
+    "usage_readings": {
+      "account_delta": 17.0,
+      "job_metrics": 17.0,
+      "job_usage": 17.0
+    }
+  },
+  "dbqbaogk09pc73asupn0": {
+    "execution_seconds": 15.919688,
+    "execution_spans": "ExecutionSpans([DoubleSliceSpan(<start='2026-11-11 18:35:21', stop='2026-11-11 18:35:37', size=24012>)])",
+    "fetched_at": "2026-11-11T18:35:42+0000",
+    "metrics": {
+      "caller": "qiskit_ibm_runtime~sampler.py",
+      "circuits_execution_time_ns": 15004476672,
+      "qiskit_version": "qiskit_ibm_runtime-0.51.0,qiskit-2.6.2*,qiskit_aer-0.18.2",
+      "timestamps": {
+        "created": "2026-11-11T18:35:14.986076Z",
+        "finished": "2026-11-11T18:35:41.18256Z",
+        "running": "2026-11-11T18:35:16.474084Z"
+      },
+      "usage": {
+        "details": [
+          {
+            "metric": {
+              "id": "caffe3ca-729c-5750-8777-df63bbf8bfd9",
+              "value": 17
+            },
+            "unit": "resource_units",
+            "value": 0.279614
+          }
+        ],
+        "qpu_charge_time_seconds": 17,
+        "status": "complete",
+        "unit": "resource_units",
+        "value": 0.279614
+      }
+    },
+    "pub_metadata": [
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      }
+    ],
+    "pubs": [
+      "j0_p000_P6_c0",
+      "j0_p001_ALT2_c1",
+      "j0_p002_P3_c0",
+      "j0_p003_P5_c1",
+      "j0_p004_R4_c1",
+      "j0_p005_P4_c0",
+      "j0_p006_COMP40_c0",
+      "j0_p007_P7_c0",
+      "j0_p008_baseline_c0",
+      "j0_p009_P2_c1",
+      "j0_p010_E00_c0",
+      "j0_p011_INV2_c0",
+      "j0_p012_P2_c0",
+      "j0_p013_COMP22_c1",
+      "j0_p014_P3_c1",
+      "j0_p015_R2_c0",
+      "j0_p016_P7_c1",
+      "j0_p017_A2_c1",
+      "j0_p018_P4_c1",
+      "j0_p019_P6_c1",
+      "j0_p020_ALT2_c0",
+      "j0_p021_E00_c1",
+      "j0_p022_R2_c1",
+      "j0_p023_baseline_c1",
+      "j0_p024_INV2_c1",
+      "j0_p025_A2_c0",
+      "j0_p026_P1_c1",
+      "j0_p027_E0_c0",
+      "j0_p028_COMP40_c1",
+      "j0_p029_COMP22_c0",
+      "j0_p030_R4_c0",
+      "j0_p031_RS_c0",
+      "j0_p032_E0_c1",
+      "j0_p033_RS_c1",
+      "j0_p034_P1_c0",
+      "j0_p035_P5_c0"
+    ],
+    "result_metadata": {
+      "version": 2
+    },
+    "stage": "main_b1_s0",
+    "status": "DONE",
+    "usage_before": {
+      "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+      "usage_consumed_ru": 2.399011,
+      "usage_consumed_seconds": 154,
+      "usage_limit_reached": false,
+      "usage_limit_ru": 10,
+      "usage_limit_seconds": 600,
+      "usage_period": {
+        "end_time": "2026-11-11T18:35:13.327Z",
+        "start_time": "2026-10-14T18:35:13.327Z"
+      },
+      "usage_remaining_seconds": 446
+    },
+    "usage_read_at": "2026-11-11T18:35:43+0000",
+    "usage_readings": {
+      "account_delta": 17.0,
+      "job_metrics": 17.0,
+      "job_usage": 17.0
+    }
+  },
+  "dbqbb0ejjaos73agvsgg": {
+    "execution_seconds": 16.847836,
+    "execution_spans": "ExecutionSpans([DoubleSliceSpan(<start='2026-11-11 18:44:55', stop='2026-11-11 18:45:03', size=12006>), DoubleSliceSpan(<start='2026-11-11 18:45:03', stop='2026-11-11 18:45:12', size=11988>)])",
+    "fetched_at": "2026-11-11T18:45:15+0000",
+    "metrics": {
+      "caller": "qiskit_ibm_runtime~sampler.py",
+      "circuits_execution_time_ns": 14992661504,
+      "qiskit_version": "qiskit_ibm_runtime-0.51.0,qiskit-2.6.2*,qiskit_aer-0.18.2",
+      "timestamps": {
+        "created": "2026-11-11T18:35:45.701777Z",
+        "finished": "2026-11-11T18:45:14.497758Z",
+        "running": "2026-11-11T18:44:38.327878Z"
+      },
+      "usage": {
+        "details": [
+          {
+            "metric": {
+              "id": "caffe3ca-729c-5750-8777-df63bbf8bfd9",
+              "value": 17
+            },
+            "unit": "resource_units",
+            "value": 0.279417
+          }
+        ],
+        "qpu_charge_time_seconds": 17,
+        "status": "pending",
+        "unit": "resource_units",
+        "value": 0.279417
+      }
+    },
+    "pub_metadata": [
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      }
+    ],
+    "pubs": [
+      "j1_p000_R4_c0",
+      "j1_p001_P6_c0",
+      "j1_p002_P6_c1",
+      "j1_p003_ALT2_c0",
+      "j1_p004_P3_c1",
+      "j1_p005_baseline_c1",
+      "j1_p006_INV2_c1",
+      "j1_p007_P5_c1",
+      "j1_p008_R2_c0",
+      "j1_p009_baseline_c0",
+      "j1_p010_P2_c1",
+      "j1_p011_A2_c0",
+      "j1_p012_A2_c1",
+      "j1_p013_P1_c0",
+      "j1_p014_COMP40_c0",
+      "j1_p015_RS_c0",
+      "j1_p016_P4_c1",
+      "j1_p017_E00_c0",
+      "j1_p018_P7_c0",
+      "j1_p019_R4_c1",
+      "j1_p020_INV2_c0",
+      "j1_p021_P5_c0",
+      "j1_p022_COMP22_c1",
+      "j1_p023_P2_c0",
+      "j1_p024_E0_c0",
+      "j1_p025_P7_c1",
+      "j1_p026_ALT2_c1",
+      "j1_p027_E00_c1",
+      "j1_p028_RS_c1",
+      "j1_p029_P1_c1",
+      "j1_p030_COMP40_c1",
+      "j1_p031_P3_c0",
+      "j1_p032_E0_c1",
+      "j1_p033_P4_c0",
+      "j1_p034_COMP22_c0",
+      "j1_p035_R2_c1"
+    ],
+    "result_metadata": {
+      "version": 2
+    },
+    "stage": "main_b1_s1",
+    "status": "DONE",
+    "usage_before": {
+      "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+      "usage_consumed_ru": 2.678625,
+      "usage_consumed_seconds": 171,
+      "usage_limit_reached": false,
+      "usage_limit_ru": 10,
+      "usage_limit_seconds": 600,
+      "usage_period": {
+        "end_time": "2026-11-11T18:35:44.150Z",
+        "start_time": "2026-10-14T18:35:44.150Z"
+      },
+      "usage_remaining_seconds": 429
+    },
+    "usage_read_at": "2026-11-11T18:45:16+0000",
+    "usage_readings": {
+      "account_delta": 17.0,
+      "job_metrics": 17.0,
+      "job_usage": 17.0
+    }
+  },
+  "dbqbffmjjaos73ah0580": {
+    "execution_seconds": 16.869207000000003,
+    "execution_spans": "ExecutionSpans([DoubleSliceSpan(<start='2026-11-11 18:54:12', stop='2026-11-11 18:54:20', size=12006>), DoubleSliceSpan(<start='2026-11-11 18:54:20', stop='2026-11-11 18:54:29', size=11988>)])",
+    "fetched_at": "2026-11-11T18:54:33+0000",
+    "metrics": {
+      "caller": "qiskit_ibm_runtime~sampler.py",
+      "circuits_execution_time_ns": 14992661504,
+      "qiskit_version": "qiskit_ibm_runtime-0.51.0,qiskit-2.6.2*,qiskit_aer-0.18.2",
+      "timestamps": {
+        "created": "2026-11-11T18:45:18.612194Z",
+        "finished": "2026-11-11T18:54:32.488589Z",
+        "running": "2026-11-11T18:45:20.268425Z"
+      },
+      "usage": {
+        "details": [
+          {
+            "metric": {
+              "id": "caffe3ca-729c-5750-8777-df63bbf8bfd9",
+              "value": 17
+            },
+            "unit": "resource_units",
+            "value": 0.279417
+          }
+        ],
+        "qpu_charge_time_seconds": 17,
+        "status": "complete",
+        "unit": "resource_units",
+        "value": 0.279417
+      }
+    },
+    "pub_metadata": [
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      },
+      {
+        "circuit_metadata": {},
+        "compilation": {
+          "scheduler_timing": null,
+          "stretch_values": null
+        }
+      }
+    ],
+    "pubs": [
+      "j2_p000_E0_c0",
+      "j2_p001_E00_c0",
+      "j2_p002_A2_c0",
+      "j2_p003_COMP22_c0",
+      "j2_p004_R4_c1",
+      "j2_p005_R4_c0",
+      "j2_p006_A2_c1",
+      "j2_p007_P4_c0",
+      "j2_p008_RS_c1",
+      "j2_p009_P5_c1",
+      "j2_p010_P7_c0",
+      "j2_p011_ALT2_c0",
+      "j2_p012_INV2_c0",
+      "j2_p013_R2_c1",
+      "j2_p014_P4_c1",
+      "j2_p015_RS_c0",
+      "j2_p016_P1_c1",
+      "j2_p017_INV2_c1",
+      "j2_p018_COMP22_c1",
+      "j2_p019_baseline_c1",
+      "j2_p020_E0_c1",
+      "j2_p021_P3_c1",
+      "j2_p022_ALT2_c1",
+      "j2_p023_P2_c0",
+      "j2_p024_E00_c1",
+      "j2_p025_P6_c0",
+      "j2_p026_P2_c1",
+      "j2_p027_P3_c0",
+      "j2_p028_P1_c0",
+      "j2_p029_R2_c0",
+      "j2_p030_P6_c1",
+      "j2_p031_baseline_c0",
+      "j2_p032_P7_c1",
+      "j2_p033_COMP40_c1",
+      "j2_p034_P5_c0",
+      "j2_p035_COMP40_c0"
+    ],
+    "result_metadata": {
+      "version": 2
+    },
+    "stage": "main_b1_s2",
+    "status": "DONE",
+    "usage_before": {
+      "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+      "usage_consumed_ru": 2.958042,
+      "usage_consumed_seconds": 188,
+      "usage_limit_reached": false,
+      "usage_limit_ru": 10,
+      "usage_limit_seconds": 600,
+      "usage_period": {
+        "end_time": "2026-11-11T18:45:17.342Z",
+        "start_time": "2026-10-14T18:45:17.342Z"
+      },
+      "usage_remaining_seconds": 412
+    },
+    "usage_read_at": "2026-11-11T18:54:35+0000",
+    "usage_readings": {
+      "account_delta": 17.0,
+      "job_metrics": 17.0,
+      "job_usage": 17.0
+    }
+  }
+}
