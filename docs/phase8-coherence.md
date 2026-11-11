@@ -1,4 +1,4 @@
-# Phase 8 Stage 2: a coherence-specific test on q75/q59 (#32, #34)
+# Phase 8 Stage 2: a coherence-specific test on q75/q59 (#32, #34, #35)
 
 Local theory, simulation, QASM and an unsubmitted plan only: no QPU, no IBM service. This note
 asks whether any feasible experiment on q75/q59 makes a classical hidden-state model with ≤ D
@@ -29,8 +29,32 @@ assumptions, against the bar of §4 there.
   `register_classes.csv`, `contrast.json`, `contrast_arms.csv`, `controls.json`,
   `controls.csv`, `qasm/controls/`, and the updated `plan.json`. Tests `tests/test_register.py`.
   The amendment is §4.1; the new results are §§3.1–3.4.
+- Stage 2c (#35): `qmem.register` for any Z_n (nearest shifts, freed echoes, the Hungarian
+  projection onto a free permutation); `qmem.coherence`'s 1 rad echoes `r<k>` / `rm<k>`.
+  Script `experiments/phase8_coherence_incommensurate.py` (part `incommensurate`). Outputs
+  `incommensurate.json`, `incommensurate_classes.csv`, `incommensurate_predictions.csv`,
+  `incommensurate_null.csv`. Tests `tests/test_incommensurate.py`. The amendment is §4.2; the
+  results are §3.5.
 
 ## Headline
+
+**Stage 2c (#35; 2026-11-11, pre-data): drop the 1 rad tier. It does not make the register
+exclusion robust.**
+- **The tier has seven arms** (Rz(±1), INV(1, −1), Rz(1)² against Rz(2), Rz(1)³ against
+  Rz(3)), not §3.2's six. Its composition contrasts are exactly zero under both quantum
+  models. It would add 56,000 shots and 40 s of upper bound (§3.5).
+- **Against the *other* quantum model, Z_16 × 2 and Z_24 × 2 registers (nearest shift) still
+  win**, by 0.009–0.012 nats per shot (z −11 to −14). So does Z_8 × 3 with free 1 rad maps,
+  by 0.016–0.019. That is the same gap #34 found. On the tier's own arms Z_16 and Z_24 also
+  win (−0.001 to −0.007). Against the refit every class is rejected (z ≥ 8).
+- **It excludes only what Z_8 cannot fit:** a Z_8 register with e(1) as the nearest shift or
+  the best free permutation (#32's Lemma) loses by 0.065–0.106 even against the other model.
+- **More shots do not help** (the gap is a per-shot bias; at 64,000 per arm, 320 s, every
+  unexcluded class still wins). A second incommensurate angle is not expected to help either,
+  because the misspecification, not the angle, sets the gap. **Size check:** SIZE_HEAD
+- **The grid was cut** to Z_8 × 3 (three variants), Z_16 × 2 and Z_24 × 2. The run took about
+  22 h on the shared machine, against the issue's ~12 h.
+- §4.2 records the decision; `plan.json` is unchanged.
 
 **Stage 2b (#34; 2026-11-10, pre-data): the Go stands at D = 6, but the exclusion is
 narrower than the paragraphs below it suggest.**
@@ -580,6 +604,123 @@ The plan's tiers are now:
 against the Open plan's 600 s. `plan.json` is UNSUBMITTED and needs the owner's explicit
 approval on #28.
 
+### 3.5 The 1 rad tier against Z_n phase registers (#35, `--part incommensurate`)
+
+**The tier** (`[incommensurate.arms]`) has seven arms. The issue said six, but each of its two
+composition tests needs both sides, so seven arms are needed to test the four relations of
+§3.2: RAD1 = Rz(1), RADM1 = Rz(−1), INV1 = Rz(1)·Rz(−1), COMP11 = Rz(1)² against RAD2 = Rz(2),
+and CUBE1 = Rz(1)³ against RAD3 = Rz(3). The elements `r<k>` and `rm<k>` are the physical echo
+with Rz(±k rad), fenced and timed as `e<k>` (`qmem.coherence.element_phase`), so the tier adds
+no circuit time. RAD2 and RAD3 pad with `e0` to the same pulse count as COMP11 and CUBE1.
+Under both quantum models the three composition contrasts are exactly zero in P(1), lag 1 and
+w(0): INV1 = E00, COMP11 = RAD2 and CUBE1 = RAD3 (`incommensurate.json` `predictions`;
+`tests/test_incommensurate.py` checks them against brute-force density matrices). RAD1's P(1)
+differs from the nearest Z_n shift angle's by 0.069 (Z_8, error 0.21 rad), 0.059 (Z_16,
+0.18 rad), 0.016 (Z_12 and Z_24, 0.047 rad) and 0.006 (Z_32, 0.018 rad).
+
+**The adversary** (`qmem.register` extended to any Z_n). Three variants:
+- *nearest shift:* every echo, the 1 rad ones included, is the nearest Z_n shift;
+- *1 rad maps free:* r1, rm1, r2 and r3 are free stochastic maps, warm-started from the
+  nearest fit (an element-wise classical model, not a register in the strict sense);
+- *e(1) a free permutation:* e(1) is the permutation nearest the relaxed fit (Hungarian),
+  e(−1) is its inverse, so INV(1, −1) = identity exactly, and r2 and r3 are free. This is the
+  strongest adversary #32's Lemma allows.
+
+**The grid is cut** to fit the issue's budget (one EM step on the 25 arms costs about
+0.25 + 0.045 d s). It covers Z_8 × 3 (all three variants), Z_16 × 2 and Z_24 × 2 (nearest
+shift). Dropped: n = 12, because Z_24 contains Z_12's shifts and the same 0.047 rad
+approximation of 1 rad; n = 32 (d ≥ 64 at n_pop = 2); n_pop = 1; and the free-permutation
+variant above n = 8. A Z_24 nearest-shift register is itself an e(1) permutation with
+INV(1, −1) = identity, so the free-permutation class at n = 24 does at least as well in
+training as the row below. Even so, the full run took about 22 h on the shared machine:
+13.4 h for power, then about 8.5 h for the size check. The issue's budget was about 12 h.
+
+**Method.** #34's §4 pipeline unchanged: parity split, the four starts at D = 4 and 6, and
+free d = 8 from the cube start. Registers start from the prism. Each fit runs 1,500 steps,
+followed by the quantum refit, the block bootstrap by job and 8-shot segment, and Holm. The
+data come from both quantum generators (rep 0) on the 18 + 7 arms at 8,000 shots per arm in
+two jobs. The 18 arms' shots are #34's register run's exactly; the new arms are drawn after
+them. No fit converged at 1,500 steps; the last gains were ≤ 3e−6 nats per symbol.
+
+Results (`incommensurate_classes.csv`). Held-out deficit in nats per shot, classical minus
+quantum, over all 25 arms. "Tier (other)" is the deficit against the other model on the seven
+new arms alone. "Stats out" counts the 350 per-arm statistics outside Bonferroni:
+
+| generator | class | params | truth | refit | other | z (refit) | z (other) | tier (other) | shots for 80% (refit, total) | stats out |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| fixed | free d ≤ 4 | 263 | 0.230 | 0.230 | 0.207 | 109.7 | 102.7 | 0.160 | 59 | 160 |
+| fixed | free d ≤ 6 | 647 | 0.076 | 0.076 | 0.053 | 60.7 | 41.5 | 0.055 | 172 | 71 |
+| fixed | free d ≤ 8 | 1,199 | 0.026 | 0.026 | 0.0030 | 37.1 | 3.5 | −0.0021 | 458 | 25 |
+| fixed | Z_8 × 3, nearest | 5,039 | 0.121 | 0.121 | 0.098 | 101.8 | 76.1 | 0.243 | 72 | 93 |
+| fixed | Z_8 × 3, 1 rad maps free | 7,247 | 0.0071 | 0.0071 | **−0.0161** | 18.7 | −21.9 | −0.0227 | 1,773 | 2 |
+| fixed | Z_8 × 3, e(1) free perm | 6,143 | 0.099 | 0.099 | 0.075 | 95.5 | 65.1 | 0.154 | 86 | 72 |
+| fixed | Z_16 × 2, nearest | 9,023 | 0.0136 | 0.0136 | **−0.0096** | 24.9 | −11.2 | −0.0043 | 978 | 29 |
+| fixed | Z_24 × 2, nearest | 20,447 | 0.0129 | 0.0129 | **−0.0103** | 25.8 | −12.7 | −0.0062 | 957 | 18 |
+| fitted | free d ≤ 4 | 263 | 0.204 | 0.202 | 0.180 | 98.4 | 81.1 | 0.133 | 70 | 160 |
+| fitted | free d ≤ 6 | 647 | 0.065 | 0.063 | 0.041 | 54.4 | 30.2 | 0.050 | 225 | 67 |
+| fitted | free d ≤ 8 | 1,199 | 0.026 | 0.024 | 0.0023 | 32.2 | 2.3 | 0.0070 | 616 | 28 |
+| fitted | Z_8 × 3, nearest | 5,039 | 0.129 | 0.128 | 0.106 | 90.3 | 63.1 | 0.257 | 95 | 91 |
+| fitted | Z_8 × 3, 1 rad maps free | 7,247 | 0.0049 | 0.0030 | **−0.0190** | 8.2 | −25.6 | −0.0233 | 9,058 | 0 |
+| fitted | Z_8 × 3, e(1) free perm | 6,143 | 0.089 | 0.087 | 0.065 | 87.1 | 51.0 | 0.131 | 103 | 65 |
+| fitted | Z_16 × 2, nearest | 9,023 | 0.0146 | 0.0127 | **−0.0093** | 21.8 | −10.8 | −0.0014 | 1,292 | 34 |
+| fitted | Z_24 × 2, nearest | 20,447 | 0.0121 | 0.0102 | **−0.0118** | 19.2 | −14.3 | −0.0072 | 1,674 | 15 |
+
+**The outcome, plainly.**
+- **The extension does not make the register exclusion robust.** Against the refit, every
+  class is rejected (z ≥ 8). Against the *other* quantum model, Z_16 × 2 and Z_24 × 2 with
+  nearest shifts still beat the quantum prediction by 0.009–0.012 nats per shot (z −11 to
+  −14), and Z_8 × 3 with free 1 rad maps beats it by 0.016–0.019. That is the decisive column,
+  and it has the same sign and size as #34's −0.014 to −0.018.
+- **The tier's own arms do not break even against the other model.** On the seven new arms
+  alone, Z_16 and Z_24 score −0.001 to −0.007 against the other model, and the relaxed class
+  −0.023. The 1 rad response that the quantum model predicts is matched well enough by a Z_16
+  or Z_24 ring (shift errors 0.18 and 0.047 rad), or by free maps. What remains is smaller than
+  the fixed-versus-fitted gap.
+- **What the tier does exclude:** a Z_8 register, whether its 1 rad echo is the nearest
+  shift or the best free permutation (deficit against other 0.065–0.106, z ≥ 51). That
+  confirms #32's Lemma for n = 8: e(1)'s powers repeat with Z_8's period, and COMP11 and CUBE1
+  expose it: they score 0.38–0.70 nats per shot on those arms against the other model. It also lifts free d = 8 slightly:
+  against other it goes from +0.0005 / −0.003 (#34) to +0.0030 / +0.0023, with z of 3.5 and
+  2.3. Neither of these is the gap #34 asked the tier to close.
+- **Which n stays unexcluded:** n = 16 and n = 24 at n_pop = 2 (nearest shift), and any n
+  with free 1 rad maps (shown at Z_8 × 3). n = 12 and n = 32 were not fitted; n = 24
+  contains Z_12, and n = 32 approximates 1 rad more closely (0.018 rad), so neither is
+  expected to fare worse for the register.
+
+**Options** (`incommensurate.json` `options`, priced with `qmem.followup`'s cost model).
+"More 1 rad shots" keeps each arm's simulated held-out deficit per shot and its variance,
+and reweights the tier's arms to that many shots per arm. The fits are not rerun, so this is
+a projection, and a refit on more 1 rad data could move either side:
+
+| option | shots | added upper bound (main tier) | Z_16 × 2 against other (fixed / fitted) | Z_24 × 2 against other | relaxed Z_8 × 3 against other |
+| --- | --- | --- | --- | --- | --- |
+| tier at the plan's 8,000 per arm | 56,000 | 40 s (own tier: 43 s) | −0.0096 / −0.0093 | −0.0103 / −0.0118 | −0.0161 / −0.0190 |
+| tier at 16,000 per arm | 112,000 | 80 s | −0.0084 / −0.0076 | −0.0094 / −0.0108 | −0.0176 / −0.0199 |
+| tier at 32,000 per arm | 224,000 | 160 s | −0.0072 / −0.0057 | −0.0084 / −0.0097 | −0.0191 / −0.0210 |
+| tier at 64,000 per arm | 448,000 | 320 s | −0.0061 / −0.0041 | −0.0076 / −0.0087 | −0.0205 / −0.0219 |
+| a second incommensurate angle (7 arms, not simulated) | 56,000 | 40 s | | | |
+
+- **More shots do not close the gap.** The deficit against the other model is a bias per
+  shot, not noise, so its sign does not change with shots. At 64,000 shots per arm (320 s,
+  more than half the Open plan's 600 s on this tier alone) every unexcluded class still wins.
+- **A second angle is not expected to close it either.** The tier's own arms already lose
+  against the other model at 1 rad. A second angle gives a Z_24 or larger ring, or free maps,
+  the same room: any angle lies within π/24 of a Z_24 shift. The gap is set by how well the
+  9-parameter quantum model is specified (about 0.02 nats per shot), not by the angles. It
+  was not simulated, so this is an argument, not a result.
+- **What would close it** is a tighter quantum model, not a larger design: the register
+  exclusion holds against the refit at z ≥ 8 in every class. A device characterisation that
+  pins the quantum model to well within 0.01 nats per shot would make the refit column the
+  operative one. That is outside Stage 2's scope.
+
+**Size check** (`incommensurate.json` `null`, `incommensurate_null.csv`). The generator is the
+best-fitting exact register on the fixed generator's data (smallest held-out deficit against
+the refit, INV(1, −1) = identity): SIZE_GEN. SIZE_RESULT
+
+**Recommendation: drop the tier.** It costs 40 s of upper bound in the main tier (43 s as
+its own tier) and does not do what #34 asked of it. The register exclusion stays conditional
+on the quantum model's specification, as §4.1 item 2 already states. `plan.json` is unchanged.
+
 ## 4. Pre-registration draft (Stage 4, if approved)
 
 Everything below is fixed before any data. Amendments are dated and hashed as in Phase 7
@@ -676,12 +817,33 @@ only (§§3.1–3.4). It changes the draft above in four places.
    and a hard cap of 45 s. Its TOSTs (benchmark ±0.02 against e0) and the Knee inequality
    (§2.6) are descriptive checks of legs (i) and (iii), not gates.
 
+### 4.2 Amendment of 2026-11-11 (#35; pre-data)
+
+**Pre-data.** It was written before any Stage 2 job was approved or submitted, from
+simulation only (§3.5). It changes nothing in the draft or in §4.1. It records a decision
+not to add a tier.
+
+1. **The 1 rad tier is not added.** §3.2's incommensurate-phase extension (seven arms,
+   56,000 shots, 40 s upper bound in the main tier) was power-tested against Z_8, Z_16 and
+   Z_24 registers. Against the refit, every register is rejected. Against the other quantum
+   model, Z_16 × 2 and Z_24 × 2 (nearest shift) and Z_8 × 3 with free 1 rad maps still win, by
+   0.009–0.019 nats per shot. More 1 rad shots (up to 64,000 per arm, 320 s) do not change
+   the sign. `plan.json` is unchanged.
+2. **§4.1 item 2 stands, with its last sentence replaced:** a phase register is excluded
+   only conditional on the quantum model's specification. "Add §3.2's 1 rad tier" is
+   withdrawn as the remedy, because §3.5 shows it does not remove the condition. A register
+   exclusion that is robust to misspecification would need a quantum model pinned to well
+   within 0.01 nats per shot, not more phase arms.
+3. **Secondary report** (unchanged in kind from §4.1 item 2): the register and free d = 8
+   fits on the 18 arms, with the deficit against the refit and the fixed model.
+
 ## 5. Assumptions the claim inherits
 
 1. **D = 6.** Only classical models with ≤ 6 hidden states are excluded. Stage 2b (§3.1):
    a model with a phase-covariant hidden register (Z_8 × 2–4, d = 16–32) matches every
    summary statistic. It loses on held-out likelihood only by less than the quantum model's
-   own misspecification margin, so it is *not* excluded.
+   own misspecification margin, so it is *not* excluded. Stage 2c (§3.5): a 1 rad tier does not change
+   this; Z_16 × 2 and Z_24 × 2 registers survive it against the other quantum model.
 2. **Element-wise Markovianity.** Each physical element acts as the same stochastic map
    wherever it appears. A classical model whose pulse acts depending on context (the previous
    pulse, the step, the arm) is outside the class. This is what makes INV2 and the composition
@@ -719,7 +881,14 @@ uv run python experiments/phase8_coherence.py --config experiments/configs/phase
 uv run python experiments/phase8_coherence.py --config experiments/configs/phase8_coherence.toml --part contrast   # < 1 min
 uv run --group hardware python experiments/phase8_coherence.py --config experiments/configs/phase8_coherence.toml --export-controls
 uv run pytest tests/test_register.py
+# Stage 2c (#35)
+uv run python experiments/phase8_coherence.py --config experiments/configs/phase8_coherence.toml --part incommensurate   # ~22 h, 2 workers, resumable
+uv run pytest tests/test_incommensurate.py
 ```
+
+Stage 2c's run: `results/phase8_coherence/20261110T185852Z` (24 power tasks, then 8 size-check
+tasks), started at 69da38e with a clean tree (29a273a, after it, added only tests). Seeds: `[null] seed = 34`, with `source_ids` fixed = 3,
+fitted = 4 (so the 18 arms' shots are #34's register run's) and `reg = 5` for the size check.
 
 Stage 2b's runs:
 - `results/phase8_coherence/20261110T020530Z` (register, 26 fits);
