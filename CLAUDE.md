@@ -120,8 +120,13 @@ and keep within the plan's allowance (reserve included). Credentials live in `.e
   `[tierN.live]` table and a `TIERS` entry first. `tier2` (#39, amendment A5: the **pilot
   only**, run on #39 (gate passed), `[tier2.live]`, ancillas [13, 50] re-exported into `results/summaries/phase8_hw/tier2/qasm/`
   with `phase8_coherence.py --export-qasm --ancillas 13,50`) also has `--prepare`: read-only,
-  the live snapshot, ancilla re-selection and floor (about 6 min). Tier 2 main and the controls
-  need their own stages after #35 and the coordinator's review:
+  the live snapshot, ancilla re-selection and floor (about 6 min). `tier2_main` (#40, amendment
+  A6: #35's 1 rad slot dropped, cap 225 s; `[tier2.main_live]`, A1's six sub-jobs whole and in
+  order) and then `tier2_controls` (`[tier2.controls_live]`, after main's ledger is committed;
+  `bench_R2_*` re-exported on q13 with `phase8_coherence.py --export-controls --ancillas 13,50`).
+  Main's primary contrast, the register/d = 8 secondary and the section 3.7 call run afterwards
+  on the committed shots, no QPU: `experiments/phase8_tier2.py --part primary` (about 1 h with 2
+  workers), `--part secondary` (about 4 h, `--from-run` the primary's run), `--part decide`:
   `uv run --group hardware python experiments/phase8_hw.py --config experiments/configs/phase8_hw.toml --dry-run --tier tier1_mdi`.
   MDI's power check at a saved snapshot (about 15 s):
   `uv run --group hardware python experiments/phase8_mdi_power.py --config experiments/configs/phase8_hw.toml --snapshot <calibration.json> --search`

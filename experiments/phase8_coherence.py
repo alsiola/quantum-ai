@@ -534,7 +534,8 @@ def main() -> None:
     ap.add_argument(
         "--ancillas",
         default=None,
-        help="with --export-qasm: re-export RS, R2, R4 on this live pair, e.g. 13,50 (#39)",
+        help="with --export-qasm: re-export RS, R2, R4 on this live pair, e.g. 13,50 (#39); with "
+        "--export-controls: bench_R2_* on the pair's first ancilla (#40)",
     )
     ap.add_argument("--out-dir", default="results/summaries/phase8_hw/tier2/qasm")
     ap.add_argument("--snapshot", default=None, help="the live snapshot the pair came from")
@@ -558,7 +559,12 @@ def main() -> None:
     if args.export_controls:
         import phase8_coherence_hw as HW
 
-        HW.export_controls(cfg)
+        if args.ancillas:  # #40 (A6): bench_R2_* on the live first ancilla only
+            anc = int(args.ancillas.split(",")[0])
+            out_dir = Path(args.out_dir) / "controls"
+            HW.export_controls_live(cfg, anc, out_dir, args.snapshot or "")
+        else:
+            HW.export_controls(cfg)
         return
     if args.plan:
         import phase8_coherence_design as DS

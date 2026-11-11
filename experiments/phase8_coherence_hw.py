@@ -598,3 +598,64 @@ def export_controls(cfg: dict[str, Any]) -> None:
         },
     )
     PC.write_csv(sd / "controls.csv", [PC.jround(r) for r in rows])
+
+
+#: the controls tier's circuits that use an ancilla (``benchmark_circuit``'s R2: the first one)
+CONTROLS_ANCILLA = ("bench_R2_0", "bench_R2_1")
+
+
+def export_controls_live(cfg: dict[str, Any], anc: int, out_dir, snapshot: str = "") -> dict:
+    """#40 (A6): re-export the controls tier's ancilla circuits (``bench_R2_*``) on the live
+    first ancilla ``anc``, exactly as ``export_controls`` builds them (FakeKingston, level 0,
+    fixed layout); section 5's replace rule. Self-check first: the builder with #34's ancilla
+    must reproduce ``controls.json``'s hashes byte for byte. Each new file must equal the
+    committed one with the ancilla index substituted (as a multiset of lines) and touch only
+    ``anc`` and q75. Writes ``<name>.qasm`` and ``manifest.json`` into ``out_dir``."""
+    from pathlib import Path
+
+    from qiskit import qasm3
+    from qiskit_ibm_runtime.fake_provider import FakeKingston
+
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    sd = PC.sdir(cfg)
+    ctl = json.loads((sd / "controls.json").read_text())
+    old = int(ctl["ancilla"])
+    backend = FakeKingston()
+    n_q = qasm3.loads(
+        (REPO_ROOT / cfg["experiment"]["phase6_dir"] / "circuit.qasm").read_text()
+    ).num_qubits
+    cc = cfg["controls"]
+    rows = {}
+    for label in CONTROLS_ANCILLA:
+        _, name, st = label.split("_")
+        args = (n_q, name, st, cc["benchmark_reps"], cfg["benchmark"]["spacing_s"])
+        old_text = qasm3.dumps(isa(benchmark_circuit(*args, (old,)), backend, 0))
+        old_h = hashlib.sha256(old_text.encode()).hexdigest()
+        if old_h != ctl["qasm_sha256"][label]:
+            raise RuntimeError(f"{label}: the builder no longer reproduces the committed hash")
+        text = qasm3.dumps(isa(benchmark_circuit(*args, (anc,)), backend, 0))
+        swapped = [ln.replace(f"${old};", f"${anc};") for ln in old_text.split("\n")]
+        used = sorted({int(q) for q in re.findall(r"\$(\d+)", text)})
+        if used != sorted({anc, MEMORY}):
+            raise RuntimeError(f"{label}: qubits {used} on the live ancilla")
+        (out_dir / f"{label}.qasm").write_text(text)
+        rows[label] = {
+            "sha256": hashlib.sha256(text.encode()).hexdigest(),
+            "committed_sha256": old_h,
+            "qubits": used,
+            "same_lines_as_committed_with_ancilla_substituted": sorted(swapped)
+            == sorted(text.split("\n")),
+        }
+        print(f"export_controls_live: {label} {rows[label]['sha256'][:12]} qubits {used}")
+    man = {
+        "meta": run_metadata(cfg, 0),
+        "rule": "docs/phase8-preregistration.md section 5 (replace), A6: FakeKingston, level 0, "
+        "fixed layout, phase8_coherence_hw.benchmark_circuit with the live first ancilla",
+        "ancilla": anc,
+        "committed_ancilla": old,
+        "snapshot": snapshot,
+        "circuits": rows,
+    }
+    save_json(out_dir / "manifest.json", man)
+    return man

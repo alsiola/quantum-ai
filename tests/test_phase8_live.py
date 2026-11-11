@@ -166,14 +166,15 @@ def test_prereg_guard_refuses_a_changed_section_and_an_unmerged_commit():
     def here(doc, commit):
         return (ROOT / doc).read_text()
 
-    assert len(L.prereg_guard(cfg(), "tier2", here)) == 2
-    # A4, then A5, appended to section 10, so the recorded section 10 of P&M (#37) and of MDI
-    # (#38), both run and done, now refuses
-    for t in ("tier1", "tier1_mdi"):
+    assert len(L.prereg_guard(cfg(), "tier2_main", here)) == 2
+    assert len(L.prereg_guard(cfg(), "tier2_controls", here)) == 2
+    # A4, A5, then A6, appended to section 10, so the recorded section 10 of P&M (#37), MDI
+    # (#38) and the Tier 2 pilot (#39), all run and done, now refuses
+    for t in ("tier1", "tier1_mdi", "tier2"):
         with pytest.raises(F.Refused, match="recorded hash"):
             L.prereg_guard(cfg(), t, here)
     c = cfg()
-    new10 = c["tier2"]["live"]["prereg"][1]["sha256"]
+    new10 = c["tier2"]["main_live"]["prereg"][1]["sha256"]
     c["tier1"]["live"]["prereg"][1]["sha256"] = new10
     c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = new10
     assert len(L.prereg_guard(c, "tier1", here)) == 2
@@ -182,9 +183,9 @@ def test_prereg_guard_refuses_a_changed_section_and_an_unmerged_commit():
     with pytest.raises(F.Refused, match="recorded hash"):
         L.prereg_guard(c, "tier1_mdi", here)
     with pytest.raises(F.Refused, match="not on main"):
-        L.prereg_guard(cfg(), "tier2", lambda d, c: None)
+        L.prereg_guard(cfg(), "tier2_main", lambda d, c: None)
     c = cfg()
-    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = c["tier2"]["live"]["prereg"][1]["sha256"]
+    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = c["tier2"]["main_live"]["prereg"][1]["sha256"]
     c["tier1"]["mdi_live"]["prereg"][1]["amendments"] = ["**A9, 2026-11-11, pre-data.**"]
     with pytest.raises(F.Refused, match="A9"):
         L.prereg_guard(c, "tier1_mdi", here)
@@ -398,7 +399,7 @@ def test_mdi_prereg_refuses_until_a4_has_its_commit_on_main():
     if not c["tier1"]["mdi_live"]["prereg"][1]["commit"]:
         with pytest.raises(F.Refused, match="not on main"):
             L.prereg_guard(c, "tier1_mdi")
-    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = c["tier2"]["live"]["prereg"][1]["sha256"]
+    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = c["tier2"]["main_live"]["prereg"][1]["sha256"]
     c["tier1"]["mdi_live"]["prereg"][1]["amendments"] = ["**A8, 2026-11-12, pre-data.**"]
     with pytest.raises(F.Refused, match="A8"):
         L.prereg_guard(c, "tier1_mdi", lambda d, k: (ROOT / d).read_text())
@@ -613,7 +614,7 @@ def test_tier2_live_is_the_pilot_only_with_a1s_schedule_and_cost():
     assert st.cost["estimate_s"] <= 20.0
     c = cfg()
     c["tier2"]["live"]["stages"] = ["pilot", "main_b0_s0"]
-    with pytest.raises(F.Refused, match="not a live stage"):
+    with pytest.raises(F.Refused, match="live stages"):
         L.tier2_stages(c)
     tb = L.tier_budget(cfg(), "tier2", [st])
     assert tb.hard_cap_s == 30.0 and tb.max_job_estimate_s == 20.0 and not tb.problems()
@@ -790,14 +791,200 @@ def test_tier2_pilot_gate_passes_on_the_fixed_models_shots_and_fails_on_a_shift(
 
 
 def test_tier2_prereg_names_a1_and_a5_and_refuses_until_a5_is_on_main():
+    """The pilot's record (A5) and main's (A6): A5's section 10 at its commit still hashes to
+    the pilot's record; main's names A1, A5 and A6 and refuses until A6 is on main."""
     c = cfg()
     secs = c["tier2"]["live"]["prereg"]
     assert [s["heading"][:5] for s in secs] == ["## 3.", "## 10"]
     assert any(a.startswith("**A5, 2026-11-11") for a in secs[1]["amendments"])
-    L.prereg_guard(c, "tier2", lambda d, k: (ROOT / d).read_text())  # the working copy matches
-    if not secs[1]["commit"]:
+    old = L.committed_doc(secs[1]["doc"], secs[1]["commit"])
+    if old is not None:  # A5 at its commit (needs origin/main fetched)
+        assert F.amendment_hash(F.amendment_section(old, secs[1]["heading"])) == secs[1]["sha256"]
+    m = c["tier2"]["main_live"]["prereg"]
+    assert any(a.startswith("**A6, 2026-11-11") for a in m[1]["amendments"])
+    L.prereg_guard(c, "tier2_main", lambda d, k: (ROOT / d).read_text())  # the working copy
+    if not m[1]["commit"]:
         with pytest.raises(F.Refused, match="not on main"):
-            L.prereg_guard(c, "tier2")
-    secs[1]["amendments"] = ["**A6, 2026-11-12, pre-data.**"]
-    with pytest.raises(F.Refused, match="A6"):
-        L.prereg_guard(c, "tier2", lambda d, k: (ROOT / d).read_text())
+            L.prereg_guard(c, "tier2_main")
+    m[1]["amendments"] = ["**A7, 2026-11-12, pre-data.**"]
+    with pytest.raises(F.Refused, match="A7"):
+        L.prereg_guard(c, "tier2_main", lambda d, k: (ROOT / d).read_text())
+
+
+# -- Tier 2 main and the controls (#40, amendment A6) ----------------------------------------------
+
+
+def test_tier2_main_is_a1s_six_sub_jobs_whole_and_in_order():
+    sts = L.TIERS["tier2_main"]["stages"](cfg())
+    assert [s.stage for s in sts] == [f"main_b{b}_s{k}" for b in (0, 1) for k in (0, 1, 2)]
+    assert sum(s.cost["shots"] for s in sts) == 144000
+    assert all(s.cost["estimate_s"] <= 20.0 for s in sts)
+    assert sum(s.cost["upper_s"] for s in sts) == pytest.approx(125.97144, abs=1e-4)
+    for b in (0, 1):
+        per = {}
+        for s in sts[3 * b : 3 * b + 3]:
+            for p in s.pubs:
+                per[p.arm] = per.get(p.arm, 0) + p.shots
+        assert len(per) == 18 and set(per.values()) == {4000}
+    for bad in (["main_b0_s0"], ["main_b1_s0", "main_b0_s0"], ["pilot"]):
+        c = cfg()
+        c["tier2"]["main_live"]["stages"] = bad
+        with pytest.raises(F.Refused, match="live stages"):
+            L.tier2_stages(c, "tier2_main")
+    tb = L.tier_budget(cfg(), "tier2_main", sts)  # 150 s, within 225 - the pilot's 16.71 s
+    assert tb.hard_cap_s == 150.0 and not tb.problems()
+    assert L.base_tier("tier2_main") == "tier2" and L.live_table("tier2_main") == "main_live"
+
+
+def test_tier2_main_circuits_are_a5s_and_a6s_digest():
+    sts = L.TIERS["tier2_main"]["stages"](cfg())
+    names = sorted({n for s in sts for n in s.names.values()})
+    ok = L.tier2_circuit_check(cfg(), "tier2_main", names)
+    assert ok["files"] == 18 and ok["digest"].startswith("76a51186")
+    lc = cfg()["tier2"]["main_live"]
+    assert all(ok["sha256"][a] == lc["ancilla_sha256"][a] for a in ("RS", "R2", "R4"))
+    c = cfg()
+    c["tier2"]["main_live"]["qasm_digest"] = cfg()["tier2"]["live"]["qasm_digest"]
+    with pytest.raises(F.Refused, match="digest"):
+        L.tier2_circuit_check(c, "tier2_main", names)
+
+
+def test_tier2_controls_are_34s_files_with_a6s_bench_r2_on_q13():
+    import phase8_hw as H
+
+    c = cfg()
+    tb = H.tier_budgets(c, H.sub_cfgs(c))
+    pubs = dict(tb["tier2_sched"]["stages"])
+    names = sorted({p.arm for k in ("controls0", "controls1") for p in pubs[k]})
+    ok = L.tier2_controls_circuit_check(c, "tier2_controls", names)
+    assert ok["files"] == 26 and ok["digest"].startswith("9b8df949")
+    for n in ("bench_R2_0", "bench_R2_1"):
+        assert "$13;" in ok["texts"][n] and "$50;" not in ok["texts"][n]
+    assert all("$13;" not in t and "$50;" not in t for n, t in ok["texts"].items() if "R2" not in n)
+    c["tier2"]["controls_live"]["ancillas"] = [50, 21]
+    with pytest.raises(F.Refused, match="manifest ancilla"):
+        L.tier2_controls_circuit_check(c, "tier2_controls", names)
+    # the controls need main's committed ledger first
+    if not (ROOT / "results/summaries/phase8_hw/tier2_main/ledger.json").exists():
+        with pytest.raises(F.Refused, match="not committed yet"):
+            L.tier_budget(cfg(), "tier2_controls", [])
+
+
+def test_tier2_controls_durations_move_bench_r2_by_the_live_readout():
+    dev = _prep_dev()
+    out = L.tier2_controls_durations(
+        cfg(), {"bench_e0_0": 4.2e-5, "bench_R2_0": None}, dev, "tier2_controls"
+    )
+    assert out["bench_e0_0"] == 4.2e-5
+    assert out["bench_R2_0"] == pytest.approx(6.8104e-5 + 8 * (2.18e-6 - 2.2e-6), rel=1e-6)
+
+
+def test_tier2_choice_is_2_b1_plus_b2_and_the_feed_forward_programs_agree():
+    """The analysis's program index must be the one the circuit runs (``make_op``): element 1
+    follows b1, element 2 follows b2, and ``programs[2 b1 + b2]`` has exactly those elements."""
+    from qmem import coherence as Q
+
+    arms = Q.parse_arms(L.tier2_ccfg(cfg())["arms"])
+    b1 = np.array([[0, 0, 1, 1]], dtype=np.uint8)
+    b2 = np.array([[0, 1, 0, 1]], dtype=np.uint8)
+    ch = L.tier2_choice(arms["R4"], {"k__b1": b1, "k__b2": b2}, "k", 1)
+    assert ch.tolist() == [[0, 1, 2, 3]]
+    for a in ("RS", "R2", "R4"):
+        pr = arms[a].programs
+        for i1 in (0, 1):
+            for i2 in (0, 1):
+                e1 = pr[2 if i1 else 0][1]
+                e2 = pr[1 if i2 else 0][2]
+                assert tuple(pr[2 * i1 + i2][1:]) == (e1, e2)
+    assert L.tier2_choice(arms["ALT2"], {}, "k", 2)[0, :4].tolist() == [0, 1, 0, 1]
+    assert not L.tier2_choice(arms["P3"], {}, "k", 2).any()
+
+
+def test_tier2_controls_decode_and_descriptive_analysis():
+    c = cfg()
+    import phase8_hw as H
+
+    tb = H.tier_budgets(c, H.sub_cfgs(c))
+    sched = dict(tb["tier2_sched"]["stages"])
+    rng = np.random.default_rng(40)
+    stages, arrays = [], {}
+    for k in ("controls0", "controls1"):
+        pubs = sched[k]
+        arr = {}
+        for p in pubs:
+            if p.arm.startswith("bench_"):
+                regs = ["out"] + ([("b1", 8)] if "R2" in p.arm else [])
+                regs += [("m", 8)] if "A2" in p.arm else []
+            else:
+                regs = [f"y{t}" for t in range(64)]
+            regs = [r if isinstance(r, tuple) else (r, 1) for r in regs]
+            data = SimpleNamespace(**{r: Bits(rng.integers(0, 2, (p.shots, w))) for r, w in regs})
+            arr |= L.tier2_controls_decode(p, data)
+        stages.append(L.LiveStage(k, pubs, {p.key: p.arm for p in pubs}, {}))
+        arrays[k] = arr
+    one = next(p for p in sched["controls0"] if p.arm.startswith("knee_"))
+    assert arrays["controls0"][one.key].shape == (one.shots, 4)
+    assert arrays["controls0"][f"{one.key}__y"].shape == (one.shots, 64)
+    res = L.tier2_controls_analyse(c, stages, arrays)
+    assert res["shots"]["bench_R2_0"] == 6000 and res["shots"]["knee_e4_+"] == 1000
+    assert set(res["knee"]) == {"e4", "e2", "A2"} and "bench_e0_0" not in res["benchmark"]
+    assert len(res["benchmark"]) == 8 and abs(res["benchmark"]["bench_e4_1"]["p1"] - 0.5) < 0.03
+    assert res["call"].startswith("descriptive")
+
+
+def test_tier2_main_legs_on_the_fixed_models_shots_and_the_hw_split(tmp_path):
+    """Main's live analysis on shots simulated from Stage 2's fixed model (b1, b2 the program
+    bits): the rows go block by block in shot order, every leg passes, and the hardware source
+    of #34's pipeline splits them as ``PlanSplit`` does."""
+    import phase8_coherence_design as DS
+    import phase8_coherence_null as NULL
+    import phase8_hw as H
+    import phase8_tier2 as T
+
+    from qmem import coherence as Q
+
+    c = cfg()
+    ccfg = L.tier2_ccfg(c)
+    t2 = H.tier2_model_ctx(ccfg)
+    qm = t2["model"](t2["fixed"])
+    arms = Q.parse_arms(ccfg["arms"])
+    sts = L.tier2_stages(c, "tier2_main")
+    rng = np.random.default_rng(40)
+    arrays = {}
+    for st in sts:
+        a = {}
+        for p in st.pubs:
+            d = DS.simulate(qm, arms[p.arm], p.shots, 64, rng)
+            a[f"{p.key}__y"] = d.y
+            if d.m is not None:
+                a[f"{p.key}__m"] = d.m
+            if arms[p.arm].schedule == "random":
+                a[f"{p.key}__b1"] = (d.choice // 2).astype(np.uint8)
+                a[f"{p.key}__b2"] = (d.choice % 2).astype(np.uint8)
+        arrays[st.stage] = a
+    res = L.tier2_main_analyse(c, sts, arrays)
+    lg = res["legs"]
+    assert lg["leg_i_population"] and lg["leg_iii_dephasings"] and lg["leg_contrast"]
+    assert all(lg["phase_tost"].values())
+    assert res["statistics"]["R2"]["shots"] == 8000 and len(res["statistics"]["R2"]["lojo_w0"]) == 2
+    for st in sts:
+        np.savez(tmp_path / f"{st.stage}_shots.npz", **arrays[st.stage])
+        (tmp_path / f"{st.stage}_job.json").write_text(
+            json.dumps({"pubs": [p.key for p in st.pubs]})
+        )
+    orig = T.main_dir
+    T.main_dir = lambda cfg: tmp_path
+    try:
+        T.write_hw_data(c, ccfg, tmp_path)
+        assert T.legs_from_committed(c, ccfg)["legs"]["leg_contrast"]
+    finally:
+        T.main_dir = orig
+    assert json.loads((tmp_path / "hw_meta.json").read_text())["source_id"] == 40
+    _, train, test = NULL.plan_data(tmp_path, ccfg, None, "hw", 0)
+    rows = L.tier2_main_rows(sts, arrays, arms)["RS"]
+    rows.sort(key=lambda r: (r[0], r[1], r[2]))
+    y = np.concatenate([r[3] for r in rows])
+    ch = np.concatenate([r[4] for r in rows])
+    assert np.array_equal(train["RS"].y, y[np.tile(np.arange(4000) % 2 == 0, 2)])
+    assert np.array_equal(test["RS"].choice, ch[np.tile(np.arange(4000) % 2 == 1, 2)])
+    assert train["A2"].m is not None and train["RS"].m is None

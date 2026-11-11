@@ -175,8 +175,67 @@ sha256 = "83208471f7164d48d16f545386860e92dc8d37020668cf8365f7890815db88b0"
 commit = "02967c8af27f477a698a7396188d3608be87298b"   # A5 on main (#39)
 amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**"]
 
+[tier2.main_live]                               # #40: Tier 2 main, `--tier tier2_main` (amendment A6)
+# A1's six sub-jobs in order: time block 0 (main_b0_s0..s2), then block 1 (main_b1_s0..s2); each
+# holds all 18 arms (1,334/1,333/1,333 shots per arm per block) in the harness's seeded pub order
+# (tier2_schedules, [tier2.dry_run] seed). The analysis's job is the time block.
+stages = ["main_b0_s0", "main_b0_s1", "main_b0_s2", "main_b1_s0", "main_b1_s1", "main_b1_s2"]
+hard_cap_s = 150.0                              # main's cap ([tier2] main_cap_s)
+ancillas = [13, 50]                             # section 5 on ibm_kingston's 2026-11-11 16:57 UTC snapshot (A6): unchanged from A5
+qubits = [13, 50, 59, 75]
+qasm_dir = "results/summaries/phase8_hw/tier2/qasm"   # A5's re-exports of RS, R2, R4 on [13, 50]
+ancilla_sha256 = { RS = "a2cab1886210987c3bd35d76a456250666ebdddb8a018f2e675868bd0b6b7439", R2 = "82ae2743f1ebdd807d049ee3f130213b77ede1660c852f2e5ae472733de05d00", R4 = "195aa5b7960d10ed38003d387ba34fc4217bb2353d117293d0915a61e1afdd17" }
+# SHA-256 of the sorted "name sha256" lines of main's 18 circuits (15 plan.json hashes, A5's RS, R2, R4)
+qasm_digest = "76a51186aa53252d9e3101952376e65d4b649dcd3079fdbbe26a83004f1741a8"
+gating_selections = []                          # the ancillas are gated by tier2_selection_check
+earlier_ledgers = ["results/summaries/phase8_hw/tier1/ledger.json", "results/summaries/phase8_hw/tier1_mdi/ledger.json", "results/summaries/phase8_hw/tier2/ledger.json"]
+prior_ledgers = ["results/summaries/phase8_hw/tier2/ledger.json"]   # the pilot counts against Tier 2's 225 s
+analysis_seed = 3601                            # section 3.5's bootstrap (REP.AnalysisSettings, 1,000 resamples)
+primary_source_id = 40                          # seeds the random start of #34's pipeline ([null] seed 34, this id)
+# The pre-registration as it governs this stage: section 3 (unchanged since #36) and section 10
+# with A1, A5 and A6, each hashed at its commit on main (the commit is A6's, once it is on main).
+[[tier2.main_live.prereg]]
+doc = "docs/phase8-preregistration.md"
+heading = "## 3. Tier 2: Stage 2 (#32, #34), Claim 3"
+sha256 = "9dd639485f4e5513ec78482179f56595fd0666a64578974a03760810e8453ad7"
+commit = "a161c1119271410dd8eae54523e51947d5fedc17"   # unchanged since #36/A3
+[[tier2.main_live.prereg]]
+doc = "docs/phase8-preregistration.md"
+heading = "## 10. Amendment log"
+sha256 = "b0eeca3a50502584350629ef7bc4b9160fdf36f03d61da02c1855fb3b34556ec"
+commit = ""                                     # A6 on main (#40)
+amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**", "**A6, 2026-11-11, pre-data for Tier 2 main and the controls (after the pilot's data).**"]
+
+
+[tier2.controls_live]                           # #40: the controls, `--tier tier2_controls`, after main (A6)
+stages = ["controls0", "controls1"]
+hard_cap_s = 45.0                               # the controls' cap ([tier2] controls_cap_s)
+ancillas = [13, 50]                             # bench_R2_* use the first; a different pick on their day needs A6b
+qubits = [13, 59, 75]
+qasm_dir = "results/summaries/phase8_hw/tier2/qasm/controls"   # A6's re-exports of bench_R2_0, bench_R2_1 on q13
+ancilla_sha256 = { bench_R2_0 = "8f19e9662996facb78e76f368206b79871521e9f905cea66f692eb1e922c84ea", bench_R2_1 = "1b3e27c14792fdda674856831274bd6f16392a5b945a32c1269e72b466f9be49" }
+# SHA-256 of the sorted "name sha256" lines of the 26 controls (24 of #34's, A6's two bench_R2_*)
+qasm_digest = "9b8df9499b73b5fab758db33af230a7508dbdf9d9161998508e1b57e5c705571"
+gating_selections = []
+earlier_ledgers = ["results/summaries/phase8_hw/tier1/ledger.json", "results/summaries/phase8_hw/tier1_mdi/ledger.json", "results/summaries/phase8_hw/tier2/ledger.json", "results/summaries/phase8_hw/tier2_main/ledger.json"]
+prior_ledgers = ["results/summaries/phase8_hw/tier2/ledger.json", "results/summaries/phase8_hw/tier2_main/ledger.json"]
+# The pre-registration as it governs this stage: section 3 (unchanged since #36) and section 10
+# with A1, A5 and A6, each hashed at its commit on main (the commit is A6's, once it is on main).
+[[tier2.controls_live.prereg]]
+doc = "docs/phase8-preregistration.md"
+heading = "## 3. Tier 2: Stage 2 (#32, #34), Claim 3"
+sha256 = "9dd639485f4e5513ec78482179f56595fd0666a64578974a03760810e8453ad7"
+commit = "a161c1119271410dd8eae54523e51947d5fedc17"   # unchanged since #36/A3
+[[tier2.controls_live.prereg]]
+doc = "docs/phase8-preregistration.md"
+heading = "## 10. Amendment log"
+sha256 = "b0eeca3a50502584350629ef7bc4b9160fdf36f03d61da02c1855fb3b34556ec"
+commit = ""                                     # A6 on main (#40)
+amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**", "**A6, 2026-11-11, pre-data for Tier 2 main and the controls (after the pilot's data).**"]
+
+
 [tier2.slot_1rad]                               # #35's 1 rad extension: NOT folded in
-status = "pending #35 (open when this was written); the coordinator folds it in if #35 recommends it"
+status = "dropped: #35 recommends against it (docs/phase8-coherence.md section 4.2); amendment A6"
 arms = 6
 added_main_upper_s = 34.0                       # #34 section 3.2 (contrast.json "separation")
 included = false

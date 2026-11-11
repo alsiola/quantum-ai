@@ -64,10 +64,43 @@ def source_model(run: Path, cfg, ctx, src: str):
     return C.ProgramModel.from_dict(json.loads(path.read_text())["model"])
 
 
+#: #40: the hardware source, Tier 2 main's shots on ibm_kingston (``experiments/phase8_tier2.py``
+#: writes them to ``<run>/hw_data.npz`` and its seed id to ``<run>/hw_meta.json``)
+HW = "hw"
+
+
+def source_id(cfg, run: Path, src: str) -> int:
+    if src == HW:
+        return int(json.loads((run / "hw_meta.json").read_text())["source_id"])
+    return cfg["null"]["source_ids"][src]
+
+
+def hw_data(run: Path, arms) -> dict[str, C.ProgramData]:
+    """The hardware shots per arm (``y``, ``choice``, ``m``), in shot order."""
+    with np.load(run / "hw_data.npz") as z:
+        return {
+            a: C.ProgramData(
+                z[f"{a}|y"], z[f"{a}|choice"], z[f"{a}|m"] if f"{a}|m" in z.files else None
+            )
+            for a in arms
+        }
+
+
 def plan_data(run: Path, cfg, ctx, src: str, rep: int):
-    """(arms, train, test) for one replicate: ``split.n`` shots per arm, in shot order."""
+    """(arms, train, test) for one replicate: ``split.n`` shots per arm, in shot order.
+    ``src == "hw"``: the hardware shots, split the same way (#40)."""
     arms = Q.parse_arms(cfg["arms"])
     sp = split_of(cfg)
+    if src == HW:
+        data = hw_data(run, arms)
+        for a, d in data.items():
+            if len(d.y) != sp.n:
+                raise ValueError(f"hw {a}: {len(d.y)} shots, the split needs {sp.n}")
+        return (
+            arms,
+            {a: d.subset(sp.train()) for a, d in data.items()},
+            {a: d.subset(sp.test()) for a, d in data.items()},
+        )
     model = source_model(run, cfg, ctx, src)
     sid = cfg["null"]["source_ids"][src]
     rng = np.random.default_rng([cfg["null"]["seed"], sid, rep])
@@ -230,7 +263,7 @@ def task_fit(task) -> dict[str, Any]:
     els, lab = Q.arm_elements(arms)
     salt = {"klein": 1, "random": 2, "octahedron": 3, "split": 4, "cube": 5, "prism": 6}
     rng = np.random.default_rng(
-        [cfg["null"]["seed"], cfg["null"]["source_ids"][src], rep, task["d"], salt[task["start"]]]
+        [cfg["null"]["seed"], source_id(cfg, run, src), rep, task["d"], salt[task["start"]]]
     )
     frozen: list[str] = []
     if task["family"] == "register":

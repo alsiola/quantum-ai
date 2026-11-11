@@ -1028,23 +1028,8 @@ def tier2_run(cfg, subs, t2, truth: str, out: Path, tb: dict[str, Any]) -> dict[
     res["pilot_gate"] = P.tier2_pilot_gate(pst, pred, P.Tier2Rule())
     # main: every arm in block-then-position order, analysis job = time block
     s = REP.AnalysisSettings(n_boot=dr["stat_boot"], seed=dr["seed"])
-    est, full, warn = {}, {}, {}
-    for a, chunks in data.items():
-        chunks.sort(key=lambda c: (c[0], c[1], c[2]))
-        y = np.concatenate([c[3] for c in chunks])
-        jobs = np.concatenate([np.full(len(c[3]), c[0]) for c in chunks])
-        pubs_ = np.concatenate([np.full(len(c[3]), c[1] * 1000 + c[2]) for c in chunks])
-        ch = np.concatenate([c[4] for c in chunks])
-        m = None if chunks[0][5] is None else np.concatenate([c[5] for c in chunks])
-        full[a] = (C.ProgramData(y, ch, m), jobs)
-        e = REP.arm_statistics(y, jobs, pubs_, s, s.seed + 13 * len(est))
-        sh = y[:, st.burn :].mean(1)
-        e["p1_se"] = max(float(sh.std(ddof=1) / math.sqrt(len(sh))), _chunk_re(sh, pubs_))
-        est[a] = e
-        g = F.guard(y, None, F.AnalysisSettings(), dr["seed"])
-        warn[a] = g["decoding_warn"] + g["integrity_fail"]
-    phases = {"E0": 0.0, **{f"P{k}": k * math.pi / 4 for k in range(1, 8)}}
-    res["legs"] = P.tier2_legs(est, pred, phases, P.Tier2Rule())
+    est, full, warn = tier2_main_estimates(data, st.burn, s, dr["seed"])
+    res["legs"] = P.tier2_legs(est, pred, TIER2_PHASES, P.Tier2Rule())
     res["shot_warnings"] = {a: w for a, w in warn.items() if w}
     t0 = time.time()
     res["primary"] = tier2_primary_contrast(cfg, ccfg, t2, arms, full, dr, out)
@@ -1056,6 +1041,35 @@ def tier2_run(cfg, subs, t2, truth: str, out: Path, tb: dict[str, Any]) -> dict[
     )
     res["within_cap"] = res["counted_s"] <= tb["tier2"].hard_cap_s
     return res
+
+
+#: the phase scan's arms and their phases (section 4's harmonic fit)
+TIER2_PHASES = {"E0": 0.0, **{f"P{k}": k * math.pi / 4 for k in range(1, 8)}}
+
+
+def tier2_main_estimates(data: dict[str, list], burn: int, s: REP.AnalysisSettings, guard_seed):
+    """Section 3.5's per-arm statistics of the main tier, as the dry run and the live analysis
+    compute them. ``data[arm]``: ``(block, job, position, y, choice, m)`` per pub; shots are
+    ordered by block, then sub-job, then position, and the analysis's job is the time block
+    (A1). Each arm: ``REP.arm_statistics`` (the drift-conditional SE, LOJO), P(1)'s SE as the
+    larger of the shot SE and the pub-chunk random effect, and the shot guards' warnings.
+    Returns ``(est, full, warn)``; ``full[arm] = (ProgramData, block per shot)``."""
+    est, full, warn = {}, {}, {}
+    for a, chunks in data.items():
+        chunks.sort(key=lambda c: (c[0], c[1], c[2]))
+        y = np.concatenate([c[3] for c in chunks])
+        jobs = np.concatenate([np.full(len(c[3]), c[0]) for c in chunks])
+        pubs_ = np.concatenate([np.full(len(c[3]), c[1] * 1000 + c[2]) for c in chunks])
+        ch = np.concatenate([c[4] for c in chunks])
+        m = None if chunks[0][5] is None else np.concatenate([c[5] for c in chunks])
+        full[a] = (C.ProgramData(y, ch, m), jobs)
+        e = REP.arm_statistics(y, jobs, pubs_, s, s.seed + 13 * len(est))
+        sh = y[:, burn:].mean(1)
+        e["p1_se"] = max(float(sh.std(ddof=1) / math.sqrt(len(sh))), _chunk_re(sh, pubs_))
+        est[a] = e
+        g = F.guard(y, None, F.AnalysisSettings(), guard_seed)
+        warn[a] = g["decoding_warn"] + g["integrity_fail"]
+    return est, full, warn
 
 
 def _lag1(y: np.ndarray, burn: int) -> float:

@@ -85,6 +85,8 @@ def prior_counted(cfg: dict[str, Any], tier: str) -> float:
     """Seconds the base tier has already counted in committed ledgers (``prior_ledgers``)."""
     total = 0.0
     for path in live_cfg(cfg, tier).get("prior_ledgers", []):
+        if not (REPO_ROOT / path).is_file():
+            raise F.Refused(f"{tier}: {path} is not committed yet (an earlier stage runs first)")
         led = json.loads((REPO_ROOT / path).read_text())
         total += float(F.usage_guard([F.Charge(**c) for c in led["charges"]]))
     return total
@@ -745,44 +747,70 @@ def tier2_ccfg(cfg: dict[str, Any]) -> dict[str, Any]:
     return PC.load_config(REPO_ROOT / cfg["experiment"]["coherence_config"])
 
 
-def tier2_stages(cfg: dict[str, Any]) -> list[LiveStage]:
-    """Amendment A1's pilot: one job, 9 arms x 2,000 shots in the harness's seeded pub order
-    (``phase8_hw.tier2_schedules``), costed with #32's design durations. Only ``pilot`` may be a
-    live stage here: main and the controls wait for #35 and the coordinator (#39)."""
-    import phase8_coherence_design as DS
-    import phase8_hw as H
+def tier2_stages(cfg: dict[str, Any], tier: str = "tier2") -> list[LiveStage]:
+    """Tier 2's live jobs under amendment A1, in the harness's seeded pub order
+    (``phase8_hw.tier2_schedules``), each costed exactly as the pre-registration costed it
+    (``phase8_hw.tier_budgets``: #32's design durations; the controls' ``controls.json``).
 
-    from qmem import coherence as Q
+    ``tier2`` (#39, A5): the pilot only. ``tier2_main`` (#40, A6): main's six sub-jobs, all of
+    them and in A1's order (block 0's three, then block 1's), so the analysis always sees both
+    time blocks whole. ``tier2_controls`` (#40, A6): the controls' two jobs. Any other stage, a
+    schedule or a cost that differs from the pre-registered one, refuses."""
+    import phase8_hw as H
 
     ccfg = tier2_ccfg(cfg)
     if ccfg["analysis"]["length"] != TIER2_LENGTH:
         raise F.Refused(f"tier2: length {ccfg['analysis']['length']} != {TIER2_LENGTH}")
-    sched = dict(H.tier2_schedules(cfg, ccfg)["stages"])
-    dur = {r["arm"]: r["circuit_s"] for r in DS.budget(ccfg, Q.parse_arms(ccfg["arms"]))["arms"]}
+    tb = H.tier_budgets(cfg, H.sub_cfgs(cfg))
+    sched = dict(tb["tier2_sched"]["stages"])
+    pre = dict(zip(tb["tier2"].labels, tb["tier2"].jobs, strict=True))
     plan = {t["tier"]: t for t in json.loads((REPO_ROOT / PLAN2).read_text())["tiers"]}
+    want = TIER2_STAGES[tier](list(sched))
+    got = list(live_cfg(cfg, tier)["stages"])
+    if got != want:
+        raise F.Refused(f"{tier}: live stages {got} are not {want} (A1's order; #39, #40)")
     out = []
-    for st in live_cfg(cfg, "tier2")["stages"]:
-        if st != "pilot":
-            raise F.Refused(f"tier2: {st!r} is not a live stage (the pilot only; #39)")
+    for st in got:
         pubs = sched[st]
-        cost = H.cost_model(cfg).job(pubs, dur)
-        pj = plan["pilot"]["per_job"]
-        arms = {p.arm for p in pubs}
-        if (
-            arms != set(plan["pilot"]["arms"])
-            or cost["shots"] != pj["shots"]
-            or abs(cost["upper_s"] - pj["upper_s"]) > 1e-6
-            or any(
-                sum(p.shots for p in pubs if p.arm == a) != plan["pilot"]["shots_per_arm"]
-                for a in arms
-            )
-        ):
-            raise F.Refused(f"tier2 pilot: the schedule or its cost differs from plan.json: {cost}")
+        d = tb["tier2_dur"] if not st.startswith("controls") else tb["tier2_sched"]["controls_dur"]
+        cost = H.cost_model(cfg).job(pubs, d)
+        if abs(cost["upper_s"] - pre[st]["upper_s"]) > 1e-6 or cost["shots"] != pre[st]["shots"]:
+            raise F.Refused(f"{tier} {st}: the cost differs from the pre-registered one: {cost}")
         out.append(LiveStage(st, pubs, {p.key: p.arm for p in pubs}, cost))
+    part = "pilot" if tier == "tier2" else ("main" if tier == "tier2_main" else "controls")
+    shots: dict[str, int] = {}
+    for s_ in out:
+        for p in s_.pubs:
+            shots[p.arm] = shots.get(p.arm, 0) + p.shots
+    if part == "controls":
+        ctl = json.loads((REPO_ROOT / CONTROLS2).read_text())["rows"]
+        ok = shots == {r["circuit"]: r["shots"] for r in ctl} and set(shots) == set(
+            plan[part]["qasm_sha256"]
+        )
+    else:
+        ok = set(shots) == set(plan[part]["arms"]) and all(
+            v == plan[part]["shots_per_arm"] for v in shots.values()
+        )
+    upper = sum(s_.cost["upper_s"] for s_ in out)
+    if not ok or upper > cfg["tier2"][f"{part}_cap_s"]:
+        raise F.Refused(f"{tier}: the schedule differs from plan.json or breaks its cap ({upper})")
     return out
 
 
+def _main_stages(names: list[str]) -> list[str]:
+    return [n for n in names if n.startswith("main_")]
+
+
+#: the live stages each Tier 2 entry must run, from the harness's stage names (A1's order)
+TIER2_STAGES: dict[str, Callable[[list[str]], list[str]]] = {
+    "tier2": lambda names: ["pilot"],
+    "tier2_main": _main_stages,
+    "tier2_controls": lambda names: [n for n in names if n.startswith("controls")],
+}
+
+
 PLAN2 = "results/summaries/phase8_coherence/plan.json"
+CONTROLS2 = "results/summaries/phase8_coherence/controls.json"
 
 
 def tier2_circuit_check(cfg: dict[str, Any], tier: str, names: Sequence[str]) -> dict[str, Any]:
@@ -827,7 +855,7 @@ def tier2_circuit_check(cfg: dict[str, Any], tier: str, names: Sequence[str]) ->
 
 
 def tier2_durations(
-    cfg: dict[str, Any], dur: dict[str, float | None], dev: dict[str, Any]
+    cfg: dict[str, Any], dur: dict[str, float | None], dev: dict[str, Any], tier: str = "tier2"
 ) -> dict[str, float]:
     """Live circuit durations for the cost. A static circuit's is the live target's
     ``estimate_duration``. A feed-forward arm (``if_else``: no static duration) gets #32's
@@ -842,7 +870,7 @@ def tier2_durations(
     arms = Q.parse_arms(ccfg["arms"])
     design = {r["arm"]: r["circuit_s"] for r in DS.budget(ccfg, arms)["arms"]}
     ds = ccfg["design"]
-    anc = live_cfg(cfg, "tier2")["ancillas"]
+    anc = live_cfg(cfg, tier)["ancillas"]
     meas = max(float(dev["qubits"][str(q)]["measure_time"]) for q in anc)
     live_ds = {**ccfg, "design": {**ds, "ff_measure_s": meas}}
     d_ff = DS.ff_idle_s(live_ds) - DS.ff_idle_s(ccfg)
@@ -1002,6 +1030,187 @@ def tier2_analyse(cfg: dict[str, Any], stages: list[LiveStage], arrays: dict) ->
     return res
 
 
+# -- Tier 2 main (#40, amendment A6): six sub-jobs in two time blocks -----------------------------
+
+
+def tier2_choice(arm: Any, arr: dict[str, np.ndarray], key: str, n: int) -> np.ndarray:
+    """The program index per shot and step, as the analysis's ``ProgramData`` reads it: a
+    random arm's is ``2 b1 + b2`` (``phase8_coherence_hw.make_op``: element 1 follows b1,
+    element 2 follows b2), an alternating arm's the step parity, a constant arm's zeros."""
+    if arm.schedule == "random":
+        return (2 * arr[f"{key}__b1"].astype(np.int64) + arr[f"{key}__b2"]).astype(np.int64)
+    return arm.choices(n, TIER2_LENGTH)
+
+
+def tier2_main_rows(
+    stages: Sequence[LiveStage], arrays: dict[str, dict], arms: dict[str, Any]
+) -> dict[str, list]:
+    """Per arm, ``(block, sub-job, position, y, choice, m)`` per pub, as
+    ``phase8_hw.tier2_main_estimates`` takes them (A1: the stage ``main_b<b>_s<k>`` is sub-job
+    ``k`` of time block ``b``; the analysis's job is the block)."""
+    data: dict[str, list] = {}
+    for st in stages:
+        b = int(st.stage.split("_")[1].removeprefix("b"))
+        arr = arrays[st.stage]
+        for p in st.pubs:
+            y = arr[f"{p.key}__y"]
+            ch = tier2_choice(arms[p.arm], arr, p.key, len(y))
+            data.setdefault(p.arm, []).append((b, p.job, p.position, y, ch, arr.get(f"{p.key}__m")))
+    return data
+
+
+def tier2_main_legs(cfg: dict[str, Any], data: dict[str, list]) -> dict[str, Any]:
+    """Every non-likelihood leg (section 3.2: (i), (ii), (iii) and section 4.1's contrast)
+    exactly as the dry run computes them (``phase8_hw.tier2_main_estimates``,
+    ``P.tier2_legs``), with section 3.5's SEs at their full settings: ``REP.AnalysisSettings``
+    (block 500, 1,000 resamples) seeded by ``[tier2.main_live] analysis_seed``."""
+    import phase8_coherence_design as DS
+    import phase8_hw as H
+
+    from qmem import coherence as Q
+    from qmem import replication as REP
+
+    ccfg = tier2_ccfg(cfg)
+    st = DS.settings(ccfg)
+    t2 = H.tier2_model_ctx(ccfg)
+    arms = Q.parse_arms(ccfg["arms"])
+    qfix = t2["model"](t2["fixed"])
+    seed = int(live_cfg(cfg, "tier2_main")["analysis_seed"])
+    s = REP.AnalysisSettings(seed=seed)
+    est, full, warn = H.tier2_main_estimates(data, st.burn, s, seed)
+    pred = {a: Q.model_arm_stats(qfix, arms[a], st) for a in est}
+    legs = P.tier2_legs(est, pred, H.TIER2_PHASES, P.Tier2Rule())
+    stats = {}
+    for a, e in est.items():
+        stats[a] = {
+            "shots": int(e["n"]),
+            "p1": e["p1"],
+            "p1_se": e["p1_se"],
+            **{f"{k}": float(e["value"][i]) for i, k in enumerate(REP.STATS)},
+            **{f"{k}_se": float(e["se"][i]) for i, k in enumerate(REP.STATS)},
+            "lojo_w0": [float(v) for v in e["lojo_value"][:, REP.STATS.index("w0")]],
+            "lojo_w0_se": [float(v) for v in e["lojo_se"][:, REP.STATS.index("w0")]],
+        }
+    return {
+        "legs": legs,
+        "statistics": stats,
+        "fixed_prediction": {a: {k: float(pred[a][k]) for k in ("p1", "lag1", "w0")} for a in pred},
+        "shot_warnings": {a: w for a, w in warn.items() if w},
+        "settings": dataclasses.asdict(s),
+        "burn": st.burn,
+        "full": full,
+    }
+
+
+def tier2_main_analyse(cfg: dict[str, Any], stages: list[LiveStage], arrays: dict) -> dict:
+    """Main's legs on the live data, and the ancilla bits' bias. The primary contrast (section
+    3.2: #34's pipeline at 1,500 steps, the four starts and the refit) takes hours, so it runs
+    on the committed shots afterwards (``experiments/phase8_tier2.py``), which also makes the
+    section 3.7 call. Nothing here is a gate: main has no stop rule after its pilot."""
+    from qmem import coherence as Q
+
+    data = tier2_main_rows(stages, arrays, Q.parse_arms(tier2_ccfg(cfg)["arms"]))
+    r = tier2_main_legs(cfg, data)
+    r.pop("full")
+    bits: dict[str, list] = {}
+    for st in stages:
+        for p in st.pubs:
+            for reg in ("b1", "b2"):
+                x = arrays[st.stage].get(f"{p.key}__{reg}")
+                if x is not None:
+                    bits.setdefault(f"{p.arm}:{reg}", []).append(x)
+    r["ancilla_bit_mean"] = {k: float(np.concatenate(v).mean()) for k, v in bits.items()}
+    r["primary"] = "pending: experiments/phase8_tier2.py on the committed shots (section 3.2)"
+    r["call"] = "pending the primary contrast (section 3.7)"
+    return r
+
+
+def tier2_controls_circuit_check(cfg: dict[str, Any], tier: str, names: Sequence[str]) -> dict:
+    """The controls' 26 circuits (no Qiskit): #34's committed files (``controls.json``,
+    ``plan.json``, ``hashes.csv``), except the ancilla circuits (``bench_R2_*``), which are A6's
+    re-exports in ``[tier2.controls_live] qasm_dir`` on the first live ancilla. The digest of
+    the job's sorted ``name sha256`` lines must equal ``qasm_digest``."""
+    import phase8_coherence_hw as HW
+    import phase8_hw as H
+
+    lc = live_cfg(cfg, tier)
+    qd = REPO_ROOT / lc["qasm_dir"]
+    man = json.loads((qd / "manifest.json").read_text())
+    if man["ancilla"] != int(lc["ancillas"][0]):
+        raise F.Refused(f"{tier}: manifest ancilla {man['ancilla']} != {lc['ancillas'][0]}")
+    rows = {r["circuit"]: r for r in H.hash_rows(cfg) if r["tier"] == "tier2:controls"}
+    pre = prereg_hashes()
+    texts, shas, bad = {}, {}, []
+    for n in names:
+        if n in HW.CONTROLS_ANCILLA:
+            f, want = qd / f"{n}.qasm", lc["ancilla_sha256"].get(n)
+            ok_ref = man["circuits"].get(n, {}).get("sha256") == want
+        else:
+            r = rows.get(n, {})
+            f, want = REPO_ROOT / r.get("file", "/nonexistent"), r.get("sha256")
+            ok_ref = r.get("status") == "ok" and pre.get(n) == want
+        text = f.read_text() if f.is_file() else ""
+        h = sha_text(text)
+        if not text or not ok_ref or h != want:
+            bad.append(n)
+        texts[n], shas[n] = text, h
+    if bad:
+        raise F.Refused(f"{tier}: circuit hash mismatch: {bad}")
+    if set(names) != set(rows):
+        raise F.Refused(f"{tier}: the job's circuits are not exactly the controls tier")
+    if name_digest(sorted(shas.items())) != lc["qasm_digest"]:
+        raise F.Refused(f"{tier}: the digest of the job's circuits differs from A6's")
+    return {"texts": texts, "digest": lc["qasm_digest"], "files": len(texts), "sha256": shas}
+
+
+def tier2_controls_durations(
+    cfg: dict[str, Any], dur: dict[str, float | None], dev: dict[str, Any], tier: str
+) -> dict[str, float]:
+    """Live durations of the controls: a static circuit's from the live target; ``bench_R2_*``
+    (``if_else``) gets ``controls.json``'s design duration moved, per repetition, by the live
+    ancilla readout time less the design's 2.2 us."""
+    ccfg = tier2_ccfg(cfg)
+    ctl = {r["circuit"]: r for r in json.loads((REPO_ROOT / CONTROLS2).read_text())["rows"]}
+    anc = int(live_cfg(cfg, tier)["ancillas"][0])
+    d_meas = float(dev["qubits"][str(anc)]["measure_time"]) - ccfg["design"]["ff_measure_s"]
+    reps = ccfg["controls"]["benchmark_reps"]
+    return {
+        n: float(d) if d is not None else ctl[n]["duration_s"] + reps * d_meas
+        for n, d in dur.items()
+    }
+
+
+def tier2_controls_decode(pub: F.Pub, data: Any) -> dict[str, np.ndarray]:
+    """A benchmark circuit: ``<key>`` = ``(shots, 1)``, q75's final read (``out``), and its
+    ``b1``/``m`` registers when present. A Knee circuit: ``<key>`` = ``(shots, 4)``, the first
+    four outputs (section 2.6's block), and ``<key>__y`` all 64."""
+    if pub.arm.startswith("bench_"):
+        out = {pub.key: bits_of(data, "out")[:, :1]}
+        for reg in ("b1", "m"):
+            if hasattr(data, reg):
+                out[f"{pub.key}__{reg}"] = bits_of(data, reg)
+        return out
+    y = np.stack([bits_of(data, f"y{t}")[:, 0] for t in range(TIER2_LENGTH)], 1).astype(np.uint8)
+    return {pub.key: y[:, :4], f"{pub.key}__y": y}
+
+
+def tier2_controls_analyse(cfg: dict[str, Any], stages: list[LiveStage], arrays: dict) -> dict:
+    """The controls' descriptive checks exactly as pre-registered (section 3.4, #34 section
+    4.1 item 4; ``phase8_hw.controls_analysis``): each benchmark circuit against e0 at the same
+    preparation (TOST +-0.02), and the Knee inequality. Never a gate, never part of the call."""
+    import phase8_hw as H
+
+    arr: dict[str, np.ndarray] = {}
+    for st in stages:
+        for p in sorted(st.pubs, key=lambda q: q.position):
+            x = arrays[st.stage][p.key]
+            arr[p.arm] = x if p.arm not in arr else np.concatenate([arr[p.arm], x])
+    res = H.controls_analysis(tier2_ccfg(cfg), arr)
+    res["shots"] = {k: len(v) for k, v in arr.items()}
+    res["call"] = "descriptive (section 3.4): not a gate, not part of section 3.7's call"
+    return res
+
+
 TIERS: dict[str, dict[str, Any]] = {
     "tier1": {"stages": tier1_stages, "decode": tier1_decode, "analyse": tier1_analyse},
     "tier2": {
@@ -1012,6 +1221,26 @@ TIERS: dict[str, dict[str, Any]] = {
         "durations": tier2_durations,
         "selection_check": tier2_selection_check,
         "admit_whole_tier": True,
+    },
+    "tier2_main": {
+        "stages": lambda cfg: tier2_stages(cfg, "tier2_main"),
+        "decode": tier2_decode,
+        "analyse": tier2_main_analyse,
+        "circuit_check": tier2_circuit_check,
+        "durations": tier2_durations,
+        "selection_check": tier2_selection_check,
+        "base": "tier2",
+        "table": "main_live",
+    },
+    "tier2_controls": {
+        "stages": lambda cfg: tier2_stages(cfg, "tier2_controls"),
+        "decode": tier2_controls_decode,
+        "analyse": tier2_controls_analyse,
+        "circuit_check": tier2_controls_circuit_check,
+        "durations": tier2_controls_durations,
+        "selection_check": tier2_selection_check,
+        "base": "tier2",
+        "table": "controls_live",
     },
     "tier1_mdi": {
         "stages": tier1_mdi_stages,
@@ -1157,7 +1386,11 @@ def checks(cfg, tier: str, svc: Any, backend: Any, out: Path, workers: int, sele
     if "selection_check" in ent:
         res["floor"] = ent["selection_check"](cfg, tier, dev, sel)
     isa = isa_check(cc["texts"], backend, lc["qubits"])
-    dur = ent["durations"](cfg, isa["duration_s"], dev) if "durations" in ent else isa["duration_s"]
+    dur = (
+        ent["durations"](cfg, isa["duration_s"], dev, tier)
+        if "durations" in ent
+        else isa["duration_s"]
+    )
     res["isa"] = {
         "unchanged": True,
         "duration_s": dict(sorted(dur.items())),
@@ -1174,8 +1407,8 @@ def prepare(cfg: dict[str, Any], args: Any, selection, svc_factory=service) -> d
     what A5 records; the later ``--dry-run`` and ``--submit`` must reproduce the pick."""
     import phase8_hw as H
 
-    if args.tier != "tier2":
-        raise F.Refused(f"--prepare is defined for tier2 only, not {args.tier}")
+    if base_tier(args.tier) != "tier2":
+        raise F.Refused(f"--prepare is defined for tier2 and its stages only, not {args.tier}")
     out = (
         Path(args.from_run)
         if args.from_run

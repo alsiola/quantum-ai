@@ -1,0 +1,285 @@
+{
+  "ancillas": [
+    13,
+    50
+  ],
+  "backend": "ibm_kingston",
+  "committed_ancillas": [
+    50,
+    21
+  ],
+  "cz_durations": {
+    "59-75": {
+      "duration_ns": 68.0,
+      "duration_s": 6.8e-08
+    }
+  },
+  "floor": {
+    "ancillas": [
+      13,
+      50
+    ],
+    "bias_bound": 0.00293,
+    "checks": {
+      "preserve": true,
+      "readout": true,
+      "vanish": true
+    },
+    "floors": {
+      "preserve": 0.8,
+      "vanish": 0.8
+    },
+    "pass": true,
+    "preserve_power": 0.984997,
+    "readout": {
+      "13": 0.001953,
+      "50": 0.00293
+    },
+    "readout_max": 0.02,
+    "vanish_power": 1.0,
+    "w0": {
+      "E00": -0.006647,
+      "R2": -3.34396e-06,
+      "R4": -2.27065e-06,
+      "RS": -0.006217
+    }
+  },
+  "plan": "open",
+  "run_dir": "results/phase8_hw_prepare_tier2_main/20261111T172556Z",
+  "selection": {
+    "committed": {
+      "tier1_reference": 79,
+      "tier2_ancillas": [
+        50,
+        21
+      ],
+      "tier3_pairs": [
+        "m67_o68",
+        "m149_o148"
+      ]
+    },
+    "powers_committed_pairs": {
+      "m149_o148": 0.837,
+      "m67_o68": 0.839
+    },
+    "reproduces": {
+      "tier1_reference": false,
+      "tier2_ancillas": false,
+      "tier3_pairs": true
+    },
+    "snapshot": {
+      "backend": "ibm_kingston",
+      "date": "2026-11-11 16:57:55+00:00",
+      "sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f"
+    },
+    "tier1_reference": {
+      "candidates": [
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the output or its neighbour; path through the output",
+          "path": "75-59-55-54",
+          "qubit": 54,
+          "score": 0.543338
+        },
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the output or its neighbour; path through the output",
+          "path": "75-59-55",
+          "qubit": 55,
+          "score": 0.550273
+        },
+        {
+          "admitted": false,
+          "excluded_because": "readout",
+          "path": "75-74-73-72",
+          "qubit": 72,
+          "score": 0.537474
+        },
+        {
+          "admitted": true,
+          "excluded_because": "",
+          "path": "75-74-73",
+          "qubit": 73,
+          "score": 0.552627
+        },
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the memory; coupler to the output or its neighbour",
+          "path": "75-74",
+          "qubit": 74,
+          "score": 0.556934
+        },
+        {
+          "admitted": true,
+          "excluded_because": "",
+          "path": "75-74-73-79",
+          "qubit": 79,
+          "score": 0.548959
+        }
+      ],
+      "chosen": [
+        73
+      ]
+    },
+    "tier2_ancillas": {
+      "candidates": 70,
+      "chosen": [
+        13,
+        50
+      ],
+      "distance_to_core": 6,
+      "snapshot_sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f",
+      "top10": [
+        {
+          "measure_error": 0.001953,
+          "qubit": 13,
+          "t1": 0.000412601
+        },
+        {
+          "measure_error": 0.00293,
+          "qubit": 50,
+          "t1": 0.000335385
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 69,
+          "t1": 0.000254397
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 68,
+          "t1": 0.000189913
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 62,
+          "t1": 0.000158583
+        }
+      ]
+    },
+    "tier3_no_pieces": [
+      "m2_o1",
+      "m2_o3",
+      "m3_o16",
+      "m16_o3",
+      "m13_o14",
+      "m15_o14",
+      "m15_o19",
+      "m16_o23",
+      "m21_o20",
+      "m28_o29",
+      "m33_o34",
+      "m34_o33",
+      "m49_o38",
+      "m44_o45",
+      "m45_o44",
+      "m45_o46",
+      "m47_o46",
+      "m47_o57",
+      "m49_o50",
+      "m50_o51",
+      "m51_o52",
+      "m58_o51",
+      "m57_o67",
+      "m69_o70",
+      "m70_o69",
+      "m70_o71",
+      "m71_o70",
+      "m81_o80",
+      "m92_o91",
+      "m92_o93",
+      "m95_o94",
+      "m106_o105",
+      "m106_o107",
+      "m108_o107",
+      "m110_o111",
+      "m125_o117",
+      "m125_o124",
+      "m125_o126",
+      "m133_o132",
+      "m152_o151",
+      "m154_o155"
+    ],
+    "tier3_pairs": {
+      "candidates": 348,
+      "chosen": [
+        "m67_o68",
+        "m149_o148"
+      ],
+      "footprints": [
+        [
+          67,
+          68,
+          57
+        ],
+        [
+          149,
+          148,
+          150
+        ]
+      ],
+      "power": {
+        "m149_o148": 0.837,
+        "m67_o68": 0.839
+      },
+      "qualified": 6,
+      "screened": 95,
+      "snapshot_sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f",
+      "statement": "2 pairs qualify and are chosen"
+    }
+  },
+  "snapshot": {
+    "calibration_date": "2026-11-11 16:57:55+00:00",
+    "qubits": {
+      "13": {
+        "measure_time": 2.18e-06,
+        "readout": 0.001953,
+        "reset_time": 2.212e-06,
+        "sx": 0.000270546,
+        "t1": 0.000412601,
+        "t2": 0.000664796
+      },
+      "50": {
+        "measure_time": 2.18e-06,
+        "readout": 0.00293,
+        "reset_time": 2.212e-06,
+        "sx": 0.000243315,
+        "t1": 0.000335385,
+        "t2": 0.000231764
+      },
+      "59": {
+        "measure_time": 2.18e-06,
+        "readout": 0.004395,
+        "reset_time": 2.212e-06,
+        "sx": 0.000176264,
+        "t1": 0.0003715,
+        "t2": 4.0536e-05
+      },
+      "75": {
+        "measure_time": 2.18e-06,
+        "readout": 0.009277,
+        "reset_time": 2.212e-06,
+        "sx": 0.000100247,
+        "t1": 0.000243764,
+        "t2": 0.000123787
+      }
+    },
+    "read_at": "2026-11-11T17:26:12+0000",
+    "sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f"
+  },
+  "submitted": false,
+  "tier": "tier2_main",
+  "usage": {
+    "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+    "usage_consumed_ru": 1.560568,
+    "usage_consumed_seconds": 103,
+    "usage_limit_reached": false,
+    "usage_limit_ru": 10,
+    "usage_limit_seconds": 600,
+    "usage_period": {
+      "end_time": "2026-11-11T17:26:10.796Z",
+      "start_time": "2026-10-14T17:26:10.796Z"
+    },
+    "usage_remaining_seconds": 497
+  }
+}

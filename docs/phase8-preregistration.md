@@ -562,6 +562,116 @@ affects, with the hash guard of Phase 7 §9 (`F.amendment_check`) on the live pa
     - The controls tier's `bench_R2_*` circuits also use an ancilla (FakeKingston's q50). They
       are re-exported, with the live pick of their own day, before the controls run.
     - Tier 2's analysis rules are unchanged.
+- **A6, 2026-11-11, pre-data for Tier 2 main and the controls (after the pilot's data).** This
+  amendment is written before any main or controls job. It comes after Tier 2's pilot (#39, job
+  `dbpuqd8qtr0c738f1c4g`, gate passed 9 of 9) and changes nothing about the pilot or its gate. It
+  fixes main and the controls (#40). **It changes no analysis rule:** the pilot is data, so no
+  margin, leg, SE policy or decision rule moves in light of it. The coordinator's review on #39
+  notes that two legs of (ii) may fail as written (INV2 against E00 in TOST, and the harmonic
+  fit against the fixed prediction). If they fail, that is the result.
+  - **#35's verdict: drop the 1 rad slot.** #35 (phase8-coherence.md §3.5 and its §4.2
+    amendment) found that the tier does not make the register exclusion robust. Against the
+    other quantum model, Z_16 × 2 and Z_24 × 2 (nearest shift) and Z_8 × 3 with free 1 rad maps
+    still win, by 0.009–0.019 nats per shot, and more shots do not change the sign. No 1 rad arm
+    is added. Main stays at #32's 18 arms and **Tier 2's cap stays 225 s** (30 + 150 + 45).
+    `[tier2.slot_1rad] included = false`.
+  - **The day's ancillas (§5).** A fresh read-only `--prepare` (`--tier tier2_main`) read
+    `ibm_kingston`'s calibration of 2026-11-11 16:57:55 UTC at 17:26 UTC
+    (`phase8_hw/tier2_main_prepare.json`, `tier2_main_prepare_calibration.json`). The snapshot
+    hash is `c7aed81c…`, the same as A5's. `select_ancillas` picks **[13, 50]** again: readout
+    0.0020 and 0.0029, T1 413 and 335 µs. **Nothing is re-exported for main.** RS, R2 and R4 are
+    A5's files with A5's hashes (`[tier2.main_live] ancilla_sha256`).
+    - Floor at this snapshot: bias bound 0.0029 ≤ 0.02, vanish power (f = 0.25) 1.00 and
+      preserve power (m = 0.20) 0.985, both ≥ 0.80. The tier proceeds.
+    - **The main digest** (the sorted `name sha256` lines of main's 18 circuits: 15 `plan.json`
+      hashes and A5's RS, R2, R4) is
+      `76a51186aa53252d9e3101952376e65d4b649dcd3079fdbbe26a83004f1741a8`.
+  - **Main's schedule (A1).** Six sub-jobs, run in order: time block 0 (`main_b0_s0`, `s1`,
+    `s2`), then time block 1 (`main_b1_s0`, `s1`, `s2`). Each holds all 18 arms
+    (1,334/1,333/1,333 shots per arm per block) in the harness's seeded pub order
+    (`phase8_hw.tier2_schedules`, seed 3601), 144,000 shots in all.
+
+    | sub-job | shots | estimate | upper bound |
+    | --- | --- | --- | --- |
+    | `main_b<b>_s0` | 24,012 | 16.00 s | 21.00 s |
+    | `main_b<b>_s1`, `_s2` | 23,994 | 15.99 s | 20.99 s |
+    | **main (6 sub-jobs)** | 144,000 | 95.98 s | **125.97 s** |
+
+    Each estimate is ≤ the 20 s per-job limit. Main's cap is 150 s (`[tier2.main_live]
+    hard_cap_s`), within the 208.29 s left of Tier 2's 225 s after the pilot's 16.71 s. The
+    guard and the ledger use max(pre-registered, live) per sub-job (`phase8_live.live_cost`,
+    with the feed-forward arms' live durations as in A5). The live path runs all six or none:
+    `TIERS["tier2_main"]` refuses any other stage list.
+  - **The controls.** The controls tier's two ancilla circuits, `bench_R2_0` and `bench_R2_1`,
+    used FakeKingston's q50. They are re-exported on the day's first ancilla, **q13** (main's
+    b1 qubit), with `phase8_coherence --export-controls --ancillas 13,50` into
+    `phase8_hw/tier2/qasm/controls/` (with `manifest.json`). That is #34's builder on
+    FakeKingston, level 0, fixed layout.
+    - Self-check: the builder with q50 reproduces #34's two hashes byte for byte.
+    - Each new file has #34's lines with q50 → q13, and acts only on q13 and q75.
+    - The SHA-256s are `bench_R2_0` `8f19e966…` and `bench_R2_1` `1b3e27c1…` (full values in
+      `[tier2.controls_live] ancilla_sha256`). The other 24 controls are #34's committed files,
+      unchanged: no other control uses an ancilla.
+    - **The controls digest** (the sorted `name sha256` lines of the 26) is
+      `9b8df9499b73b5fab758db33af230a7508dbdf9d9161998508e1b57e5c705571`.
+    - Cost: 2 jobs of 38,000 shots, each with an estimate of 15.62 s and an upper bound of
+      20.52 s, so **41.04 s against the 45 s cap**. `bench_R2_*`'s live duration is
+      `controls.json`'s design duration moved per repetition by the live ancilla readout
+      time less the design's 2.2 µs.
+    - The controls run only after main (their live entry needs main's committed ledger). They
+      are descriptive (§3.4, phase8-coherence.md §4.1 item 4): never a gate, never part of the
+      call.
+    - The live check re-runs §5 on the controls' own snapshot. If it picks other ancillas
+      than [13, 50], the controls stop, and a short dated **A6b** with the new re-export and
+      hashes comes before they run.
+  - **Admission (§7).** The committed ledgers count Tier 1 at 25.14 s (P&M 15.16, MDI 9.97) and
+    the pilot at 16.71 s, 41.84 s in all. That is within `[allowance] prior_counted_s` = 41.9 s,
+    which the live path checks (`earlier_ledgers`). The remaining allowance is 538 − 41.9 =
+    496.1 s, and IBM's live reading at the prepare was 497 s. Tier 2's whole cap fits with the
+    60 s reserve: 225 ≤ 436.1. Before the controls run, `prior_counted_s` adds main's
+    counted seconds (bookkeeping only).
+  - **Analysis (§3, unchanged).** Main's shots per arm are ordered by time block, then sub-job,
+    then pub position. A random arm's program index per step is 2 b1 + b2, the circuit's
+    feed-forward (element 1 follows b1, element 2 follows b2). The analysis's job is the time
+    block (A1).
+    - **Legs** (i), (ii) (the harmonic, return to baseline, composition), (iii) and §4.1's
+      contrast (vanish at f = 0.25 with LOJO; RS non-inferior to E00 at m = 0.20) use
+      `P.tier2_legs`, with `Tier2Rule`'s margins as pre-registered.
+      - The statistics are `phase8_hw.tier2_main_estimates`, the code the dry run ran:
+        §3.5's drift-conditional SE (`REP.arm_statistics`, block 500, 1,000 resamples,
+        seed 3601), and P(1)'s SE as the larger of the shot SE and the pub-chunk random
+        effect.
+      - The predictions are Stage 2's fixed model's.
+    - **The primary** is §3.2's held-out NLL deficit for d ≤ 4 and d ≤ 6 against the quantum
+      refit, with Holm at 0.05. It uses #34's pipeline exactly as the null calibration ran it
+      (`phase8_coherence_null.pipeline_tasks`):
+      - the parity split within each time block;
+      - d = 4 from the Klein and random starts, and d = 6 adding the octahedron and split
+        starts, at 1,500 EM steps;
+      - the refit with 600 Nelder–Mead evaluations;
+      - the block bootstrap by time block and 8-shot segment, with 1,000 resamples.
+
+      The random start is seeded by `[null] seed` 34 and source id 40
+      (`[tier2.main_live] primary_source_id`). The deficit against the fixed model is
+      reported, not used.
+    - **The call** is `P.tier2_decide` (§3.7), and the headline names the excluded class as
+      phase8-coherence.md §4.1 item 2 states it: element-wise classical models with d ≤ 6.
+    - **The secondary** (reported, never part of the call) is the register Z_8 × 2, 3, 4
+      (prism and random starts) and free d = 8 (cube and split), each against the refit and
+      the fixed model.
+
+    The code is `experiments/phase8_tier2.py` (`--part primary`, `secondary`, `decide`), on
+    the committed shots.
+  - **What the live run must reproduce, else stop and report.** `--dry-run --tier tier2_main`
+    and `--submit` refuse if:
+    - §5 picks other ancillas than [13, 50], or the floor fails;
+    - any hash or the main digest differs;
+    - the level-0 transpile changes a file or touches a qubit outside {13, 50, 59, 75};
+    - a sub-job's cost differs from the table above, or the cost breaks a limit or a cap.
+
+    `--dry-run` comes first. Then `--submit` runs the six sub-jobs in order, and a failed guard
+    stops the run. **Any rerun of a main or controls job needs a dated amendment.** A resume
+    re-fetches a submitted job by its id, so it is not a rerun.
 
 ## Reproduction
 
