@@ -1,0 +1,659 @@
+{
+  "admission": {
+    "allowance_s": 511.0,
+    "cumulative_cap_s": 225.0,
+    "cumulative_upper_s": 183.72388,
+    "estimate_s": 139.779104,
+    "fits_cap": true,
+    "fits_upper": true,
+    "hard_cap_s": 225.0,
+    "jobs": 9,
+    "problems": "",
+    "reserve_s": 60,
+    "tier": "tier2",
+    "upper_s": 183.72388
+  },
+  "analysis": {
+    "ancilla_bit_mean": {
+      "R2:b1": 0.495328,
+      "R2:b2": 0.4965,
+      "RS:b1": 0.496117,
+      "RS:b2": 0.496609
+    },
+    "burn": 16,
+    "call": "pilot gate passes: Tier 2 main may run after #35's verdict and the coordinator's review",
+    "fixed_prediction": {
+      "A2": {
+        "lag1": 0.023025,
+        "p1": 0.386081
+      },
+      "E0": {
+        "lag1": 0.154516,
+        "p1": 0.580901
+      },
+      "E00": {
+        "lag1": 0.154419,
+        "p1": 0.580827
+      },
+      "INV2": {
+        "lag1": 0.154419,
+        "p1": 0.580827
+      },
+      "P2": {
+        "lag1": 0.023198,
+        "p1": 0.15104
+      },
+      "P4": {
+        "lag1": -0.014216,
+        "p1": 0.181876
+      },
+      "R2": {
+        "lag1": 0.022987,
+        "p1": 0.385914
+      },
+      "RS": {
+        "lag1": 0.151017,
+        "p1": 0.578109
+      },
+      "baseline": {
+        "lag1": 0.154612,
+        "p1": 0.580976
+      }
+    },
+    "gate": {
+      "checks": {
+        "E00_p1_vs_baseline": true,
+        "E0_p1_vs_baseline": true,
+        "INV2_lag1_vs_E00": true,
+        "INV2_p1_vs_E00": true,
+        "P2_p1_vs_fixed": true,
+        "P4_p1_vs_fixed": true,
+        "R2_lag1_vs_A2": true,
+        "R2_p1_vs_A2": true,
+        "RS_p1_vs_baseline": true
+      },
+      "go": true
+    },
+    "rule": {
+      "alpha": 0.05,
+      "deph_lag1": 0.01,
+      "deph_p1": 0.01,
+      "deph_w0_frac": 0.1,
+      "harmonic_k": 3.0,
+      "harmonic_margin": 0.05,
+      "pilot_pair": 0.03,
+      "pilot_scan_p1": 0.1,
+      "pilot_sham_p1": 0.02,
+      "preserve_margin": 0.2,
+      "tost_lag1": 0.02,
+      "tost_p1": 0.01,
+      "vanish_fraction": 0.25,
+      "vanish_z": 1.959964
+    },
+    "shot_warnings": {},
+    "statistics": {
+      "A2": {
+        "lag1": 0.030655,
+        "p1": 0.384781,
+        "shots": 2000
+      },
+      "E0": {
+        "lag1": 0.17244,
+        "p1": 0.547948,
+        "shots": 2000
+      },
+      "E00": {
+        "lag1": 0.156532,
+        "p1": 0.54601,
+        "shots": 2000
+      },
+      "INV2": {
+        "lag1": 0.173829,
+        "p1": 0.556573,
+        "shots": 2000
+      },
+      "P2": {
+        "lag1": 0.098725,
+        "p1": 0.199229,
+        "shots": 2000
+      },
+      "P4": {
+        "lag1": 0.043658,
+        "p1": 0.198375,
+        "shots": 2000
+      },
+      "R2": {
+        "lag1": 0.028353,
+        "p1": 0.390375,
+        "shots": 2000
+      },
+      "RS": {
+        "lag1": 0.166175,
+        "p1": 0.546135,
+        "shots": 2000
+      },
+      "baseline": {
+        "lag1": 0.171684,
+        "p1": 0.543875,
+        "shots": 2000
+      }
+    },
+    "table": [
+      {
+        "arm": "E0",
+        "check": "E0_p1_vs_baseline",
+        "difference": 0.004073,
+        "margin": 0.02,
+        "pass": true,
+        "reference": "baseline",
+        "reference_value": 0.543875,
+        "statistic": "p1",
+        "value": 0.547948
+      },
+      {
+        "arm": "E00",
+        "check": "E00_p1_vs_baseline",
+        "difference": 0.002135,
+        "margin": 0.02,
+        "pass": true,
+        "reference": "baseline",
+        "reference_value": 0.543875,
+        "statistic": "p1",
+        "value": 0.54601
+      },
+      {
+        "arm": "RS",
+        "check": "RS_p1_vs_baseline",
+        "difference": 0.00226,
+        "margin": 0.02,
+        "pass": true,
+        "reference": "baseline",
+        "reference_value": 0.543875,
+        "statistic": "p1",
+        "value": 0.546135
+      },
+      {
+        "arm": "P2",
+        "check": "P2_p1_vs_fixed",
+        "difference": 0.048189,
+        "margin": 0.1,
+        "pass": true,
+        "reference": "fixed",
+        "reference_value": 0.15104,
+        "statistic": "p1",
+        "value": 0.199229
+      },
+      {
+        "arm": "P4",
+        "check": "P4_p1_vs_fixed",
+        "difference": 0.016499,
+        "margin": 0.1,
+        "pass": true,
+        "reference": "fixed",
+        "reference_value": 0.181876,
+        "statistic": "p1",
+        "value": 0.198375
+      },
+      {
+        "arm": "INV2",
+        "check": "INV2_p1_vs_E00",
+        "difference": 0.010562,
+        "margin": 0.03,
+        "pass": true,
+        "reference": "E00",
+        "reference_value": 0.54601,
+        "statistic": "p1",
+        "value": 0.556573
+      },
+      {
+        "arm": "INV2",
+        "check": "INV2_lag1_vs_E00",
+        "difference": 0.017297,
+        "margin": 0.03,
+        "pass": true,
+        "reference": "E00",
+        "reference_value": 0.156532,
+        "statistic": "lag1",
+        "value": 0.173829
+      },
+      {
+        "arm": "R2",
+        "check": "R2_p1_vs_A2",
+        "difference": 0.005594,
+        "margin": 0.03,
+        "pass": true,
+        "reference": "A2",
+        "reference_value": 0.384781,
+        "statistic": "p1",
+        "value": 0.390375
+      },
+      {
+        "arm": "R2",
+        "check": "R2_lag1_vs_A2",
+        "difference": -0.002302,
+        "margin": 0.03,
+        "pass": true,
+        "reference": "A2",
+        "reference_value": 0.030655,
+        "statistic": "lag1",
+        "value": 0.028353
+      }
+    ]
+  },
+  "approval": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+  "backend": "ibm_kingston",
+  "calibration_after": {
+    "measure_time": 2.18e-06,
+    "readout": 0.009277,
+    "reset_time": 2.212e-06,
+    "sx": 0.000100247,
+    "t1": 0.000243764,
+    "t2": 0.000123787
+  },
+  "calibration_after_qubits": {
+    "13": {
+      "measure_time": 2.18e-06,
+      "readout": 0.001953,
+      "reset_time": 2.212e-06,
+      "sx": 0.000270546,
+      "t1": 0.000412601,
+      "t2": 0.000664796
+    },
+    "50": {
+      "measure_time": 2.18e-06,
+      "readout": 0.00293,
+      "reset_time": 2.212e-06,
+      "sx": 0.000243315,
+      "t1": 0.000335385,
+      "t2": 0.000231764
+    },
+    "59": {
+      "measure_time": 2.18e-06,
+      "readout": 0.004395,
+      "reset_time": 2.212e-06,
+      "sx": 0.000176264,
+      "t1": 0.0003715,
+      "t2": 4.0536e-05
+    },
+    "75": {
+      "measure_time": 2.18e-06,
+      "readout": 0.009277,
+      "reset_time": 2.212e-06,
+      "sx": 0.000100247,
+      "t1": 0.000243764,
+      "t2": 0.000123787
+    }
+  },
+  "costs": {
+    "pilot": {
+      "estimate_s": 12.571616,
+      "live_estimate_s": 12.338592,
+      "live_upper_s": 16.42324,
+      "prereg_estimate_s": 12.571616,
+      "prereg_upper_s": 16.71452,
+      "shots": 18000,
+      "upper_s": 16.71452
+    }
+  },
+  "cz_durations": {
+    "59-75": {
+      "duration_ns": 68.0,
+      "duration_s": 6.8e-08
+    }
+  },
+  "earlier_tiers": {
+    "counted_s": 25.13531,
+    "ledgers": {
+      "results/summaries/phase8_hw/tier1/ledger.json": 15.16217,
+      "results/summaries/phase8_hw/tier1_mdi/ledger.json": 9.97314
+    },
+    "prior_counted_s": 25.2
+  },
+  "floor": {
+    "ancillas": [
+      13,
+      50
+    ],
+    "bias_bound": 0.00293,
+    "checks": {
+      "preserve": true,
+      "readout": true,
+      "vanish": true
+    },
+    "floors": {
+      "preserve": 0.8,
+      "vanish": 0.8
+    },
+    "pass": true,
+    "preserve_power": 0.984997,
+    "readout": {
+      "13": 0.001953,
+      "50": 0.00293
+    },
+    "readout_max": 0.02,
+    "vanish_power": 1.0,
+    "w0": {
+      "E00": -0.006647,
+      "R2": -3.34396e-06,
+      "R4": -2.27065e-06,
+      "RS": -0.006217
+    }
+  },
+  "hashes": {
+    "all_ok": true,
+    "n": 169,
+    "same_as_prereg": true,
+    "tier_digest": "6a3fea5abb301fd872dcfb6e5fd425e4599d10512869e13d5dbc8a97c2180cef",
+    "tier_files": 9
+  },
+  "isa": {
+    "duration_s": {
+      "A2": 0.000310496,
+      "E0": 0.00030838,
+      "E00": 0.000308444,
+      "INV2": 0.000308444,
+      "P2": 0.00030838,
+      "P4": 0.00030838,
+      "R2": 0.000379228,
+      "RS": 0.000379228,
+      "baseline": 0.000308316
+    },
+    "static": [
+      "A2",
+      "E0",
+      "E00",
+      "INV2",
+      "P2",
+      "P4",
+      "baseline"
+    ],
+    "unchanged": true
+  },
+  "ledger": {
+    "allowance_reading_s": 538,
+    "charges": [
+      {
+        "charged_s": 14.0,
+        "counted_s": 16.71452,
+        "exceeded": false,
+        "readings": {
+          "account_delta": 14.0,
+          "job_metrics": 14.0,
+          "job_usage": 14.0
+        },
+        "stage": "tier2:pilot",
+        "status": "charged",
+        "upper_s": 16.71452
+      }
+    ],
+    "counted_s": 16.71452,
+    "remaining_after_s": 496.08548
+  },
+  "plan": "open",
+  "prereg": [
+    {
+      "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+      "heading": "## 3. Tier 2: Stage 2 (#32, #34), Claim 3",
+      "sha256": "9dd639485f4e5513ec78482179f56595fd0666a64578974a03760810e8453ad7"
+    },
+    {
+      "commit": "02967c8af27f477a698a7396188d3608be87298b",
+      "heading": "## 10. Amendment log",
+      "sha256": "83208471f7164d48d16f545386860e92dc8d37020668cf8365f7890815db88b0"
+    }
+  ],
+  "read_at": "2026-11-11T04:17:21+0000",
+  "run_dir": "results/phase8_hw_live_tier2/20261111T041713Z",
+  "selection": {
+    "committed": {
+      "tier1_reference": 79,
+      "tier2_ancillas": [
+        50,
+        21
+      ],
+      "tier3_pairs": [
+        "m67_o68",
+        "m149_o148"
+      ]
+    },
+    "powers_committed_pairs": {
+      "m149_o148": 0.837,
+      "m67_o68": 0.839
+    },
+    "reproduces": {
+      "tier1_reference": false,
+      "tier2_ancillas": false,
+      "tier3_pairs": true
+    },
+    "snapshot": {
+      "backend": "ibm_kingston",
+      "date": "2026-11-11 03:46:33+00:00",
+      "sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f"
+    },
+    "tier1_reference": {
+      "candidates": [
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the output or its neighbour; path through the output",
+          "path": "75-59-55-54",
+          "qubit": 54,
+          "score": 0.543338
+        },
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the output or its neighbour; path through the output",
+          "path": "75-59-55",
+          "qubit": 55,
+          "score": 0.550273
+        },
+        {
+          "admitted": false,
+          "excluded_because": "readout",
+          "path": "75-74-73-72",
+          "qubit": 72,
+          "score": 0.537474
+        },
+        {
+          "admitted": true,
+          "excluded_because": "",
+          "path": "75-74-73",
+          "qubit": 73,
+          "score": 0.552627
+        },
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the memory; coupler to the output or its neighbour",
+          "path": "75-74",
+          "qubit": 74,
+          "score": 0.556934
+        },
+        {
+          "admitted": true,
+          "excluded_because": "",
+          "path": "75-74-73-79",
+          "qubit": 79,
+          "score": 0.548959
+        }
+      ],
+      "chosen": [
+        73
+      ]
+    },
+    "tier2_ancillas": {
+      "candidates": 70,
+      "chosen": [
+        13,
+        50
+      ],
+      "distance_to_core": 6,
+      "snapshot_sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f",
+      "top10": [
+        {
+          "measure_error": 0.001953,
+          "qubit": 13,
+          "t1": 0.000412601
+        },
+        {
+          "measure_error": 0.00293,
+          "qubit": 50,
+          "t1": 0.000335385
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 69,
+          "t1": 0.000254397
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 68,
+          "t1": 0.000189913
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 62,
+          "t1": 0.000158583
+        }
+      ]
+    },
+    "tier3_no_pieces": [
+      "m2_o1",
+      "m2_o3",
+      "m3_o16",
+      "m16_o3",
+      "m13_o14",
+      "m15_o14",
+      "m15_o19",
+      "m16_o23",
+      "m21_o20",
+      "m28_o29",
+      "m33_o34",
+      "m34_o33",
+      "m49_o38",
+      "m44_o45",
+      "m45_o44",
+      "m45_o46",
+      "m47_o46",
+      "m47_o57",
+      "m49_o50",
+      "m50_o51",
+      "m51_o52",
+      "m58_o51",
+      "m57_o67",
+      "m69_o70",
+      "m70_o69",
+      "m70_o71",
+      "m71_o70",
+      "m81_o80",
+      "m92_o91",
+      "m92_o93",
+      "m95_o94",
+      "m106_o105",
+      "m106_o107",
+      "m108_o107",
+      "m110_o111",
+      "m125_o117",
+      "m125_o124",
+      "m125_o126",
+      "m133_o132",
+      "m152_o151",
+      "m154_o155"
+    ],
+    "tier3_pairs": {
+      "candidates": 348,
+      "chosen": [
+        "m67_o68",
+        "m149_o148"
+      ],
+      "footprints": [
+        [
+          67,
+          68,
+          57
+        ],
+        [
+          149,
+          148,
+          150
+        ]
+      ],
+      "power": {
+        "m149_o148": 0.837,
+        "m67_o68": 0.839
+      },
+      "qualified": 6,
+      "screened": 95,
+      "snapshot_sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f",
+      "statement": "2 pairs qualify and are chosen"
+    }
+  },
+  "selection_gate": {
+    "changed": [],
+    "gating": []
+  },
+  "snapshot": {
+    "calibration_date": "2026-11-11 03:46:33+00:00",
+    "cz_59_75": {
+      "duration": 6.8e-08,
+      "error": 0.001938
+    },
+    "qubits": {
+      "59": {
+        "measure_time": 2.18e-06,
+        "readout": 0.004395,
+        "reset_time": 2.212e-06,
+        "sx": 0.000176264,
+        "t1": 0.0003715,
+        "t2": 4.0536e-05
+      },
+      "74": {
+        "measure_time": 2.18e-06,
+        "readout": 0.008789,
+        "reset_time": 2.212e-06,
+        "sx": 0.000222945,
+        "t1": 0.000277669,
+        "t2": 0.000174221
+      },
+      "75": {
+        "measure_time": 2.18e-06,
+        "readout": 0.009277,
+        "reset_time": 2.212e-06,
+        "sx": 0.000100247,
+        "t1": 0.000243764,
+        "t2": 0.000123787
+      }
+    },
+    "read_at": "2026-11-11T04:17:24+0000",
+    "sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f"
+  },
+  "submitted": true,
+  "tier": "tier2",
+  "tier_budget": {
+    "hard_cap_s": 30.0,
+    "jobs": [
+      {
+        "estimate_s": 12.571616,
+        "live_estimate_s": 12.338592,
+        "live_upper_s": 16.42324,
+        "prereg_estimate_s": 12.571616,
+        "prereg_upper_s": 16.71452,
+        "shots": 18000,
+        "upper_s": 16.71452
+      }
+    ],
+    "max_job_estimate_s": 20.0,
+    "problems": []
+  },
+  "usage": {
+    "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+    "usage_consumed_ru": 1.338395,
+    "usage_consumed_seconds": 89,
+    "usage_limit_reached": false,
+    "usage_limit_ru": 10,
+    "usage_limit_seconds": 600,
+    "usage_period": {
+      "end_time": "2026-11-11T04:17:21.698Z",
+      "start_time": "2026-10-14T04:17:21.698Z"
+    },
+    "usage_remaining_seconds": 511
+  }
+}

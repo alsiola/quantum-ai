@@ -267,7 +267,7 @@ def test_remaining_allowance_and_admission():
     led.add("tier1", F.job_charge("x", 15.16, {"job_usage": 3.0}))
     assert L.remaining_allowance(c, led, None) == pytest.approx(538 - 15.16)
     # earlier Phase 8 jobs (the config's ledger entry) are taken off the owner's reading
-    assert L.remaining_allowance(cfg(), P.Ledger(), {}) == pytest.approx(538 - 25.2)
+    assert L.remaining_allowance(cfg(), P.Ledger(), {}) == pytest.approx(538 - 41.9)
     assert L.remaining_allowance(cfg(allowance__remaining_s=None), led, {}) is None
     tb = {"tier1": tier1_budget(c)}
     assert L.admission(c, "tier1", tb, 538)["fits_cap"]
@@ -683,7 +683,7 @@ def test_tier2_durations_fill_the_feed_forward_arms_from_the_design():
 
 def test_tier2_admission_counts_tier1s_ledgers_and_the_whole_tier_cap(tmp_path):
     e = L.earlier_counted(cfg(), "tier2")
-    assert e["counted_s"] == pytest.approx(15.16217 + 9.97314) and e["counted_s"] <= 25.2
+    assert e["counted_s"] == pytest.approx(15.16217 + 9.97314) and e["counted_s"] <= 41.9
     with pytest.raises(F.Refused, match="prior_counted_s"):
         L.earlier_counted(cfg(allowance__prior_counted_s=20.0), "tier2")
     import phase8_hw as H

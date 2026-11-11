@@ -1,0 +1,227 @@
+{
+  "ancilla_bit_mean": {
+    "R2:b1": 0.495328,
+    "R2:b2": 0.4965,
+    "RS:b1": 0.496117,
+    "RS:b2": 0.496609
+  },
+  "burn": 16,
+  "call": "pilot gate passes: Tier 2 main may run after #35's verdict and the coordinator's review",
+  "fixed_prediction": {
+    "A2": {
+      "lag1": 0.023025,
+      "p1": 0.386081
+    },
+    "E0": {
+      "lag1": 0.154516,
+      "p1": 0.580901
+    },
+    "E00": {
+      "lag1": 0.154419,
+      "p1": 0.580827
+    },
+    "INV2": {
+      "lag1": 0.154419,
+      "p1": 0.580827
+    },
+    "P2": {
+      "lag1": 0.023198,
+      "p1": 0.15104
+    },
+    "P4": {
+      "lag1": -0.014216,
+      "p1": 0.181876
+    },
+    "R2": {
+      "lag1": 0.022987,
+      "p1": 0.385914
+    },
+    "RS": {
+      "lag1": 0.151017,
+      "p1": 0.578109
+    },
+    "baseline": {
+      "lag1": 0.154612,
+      "p1": 0.580976
+    }
+  },
+  "gate": {
+    "checks": {
+      "E00_p1_vs_baseline": true,
+      "E0_p1_vs_baseline": true,
+      "INV2_lag1_vs_E00": true,
+      "INV2_p1_vs_E00": true,
+      "P2_p1_vs_fixed": true,
+      "P4_p1_vs_fixed": true,
+      "R2_lag1_vs_A2": true,
+      "R2_p1_vs_A2": true,
+      "RS_p1_vs_baseline": true
+    },
+    "go": true
+  },
+  "rule": {
+    "alpha": 0.05,
+    "deph_lag1": 0.01,
+    "deph_p1": 0.01,
+    "deph_w0_frac": 0.1,
+    "harmonic_k": 3.0,
+    "harmonic_margin": 0.05,
+    "pilot_pair": 0.03,
+    "pilot_scan_p1": 0.1,
+    "pilot_sham_p1": 0.02,
+    "preserve_margin": 0.2,
+    "tost_lag1": 0.02,
+    "tost_p1": 0.01,
+    "vanish_fraction": 0.25,
+    "vanish_z": 1.959964
+  },
+  "shot_warnings": {},
+  "statistics": {
+    "A2": {
+      "lag1": 0.030655,
+      "p1": 0.384781,
+      "shots": 2000
+    },
+    "E0": {
+      "lag1": 0.17244,
+      "p1": 0.547948,
+      "shots": 2000
+    },
+    "E00": {
+      "lag1": 0.156532,
+      "p1": 0.54601,
+      "shots": 2000
+    },
+    "INV2": {
+      "lag1": 0.173829,
+      "p1": 0.556573,
+      "shots": 2000
+    },
+    "P2": {
+      "lag1": 0.098725,
+      "p1": 0.199229,
+      "shots": 2000
+    },
+    "P4": {
+      "lag1": 0.043658,
+      "p1": 0.198375,
+      "shots": 2000
+    },
+    "R2": {
+      "lag1": 0.028353,
+      "p1": 0.390375,
+      "shots": 2000
+    },
+    "RS": {
+      "lag1": 0.166175,
+      "p1": 0.546135,
+      "shots": 2000
+    },
+    "baseline": {
+      "lag1": 0.171684,
+      "p1": 0.543875,
+      "shots": 2000
+    }
+  },
+  "table": [
+    {
+      "arm": "E0",
+      "check": "E0_p1_vs_baseline",
+      "difference": 0.004073,
+      "margin": 0.02,
+      "pass": true,
+      "reference": "baseline",
+      "reference_value": 0.543875,
+      "statistic": "p1",
+      "value": 0.547948
+    },
+    {
+      "arm": "E00",
+      "check": "E00_p1_vs_baseline",
+      "difference": 0.002135,
+      "margin": 0.02,
+      "pass": true,
+      "reference": "baseline",
+      "reference_value": 0.543875,
+      "statistic": "p1",
+      "value": 0.54601
+    },
+    {
+      "arm": "RS",
+      "check": "RS_p1_vs_baseline",
+      "difference": 0.00226,
+      "margin": 0.02,
+      "pass": true,
+      "reference": "baseline",
+      "reference_value": 0.543875,
+      "statistic": "p1",
+      "value": 0.546135
+    },
+    {
+      "arm": "P2",
+      "check": "P2_p1_vs_fixed",
+      "difference": 0.048189,
+      "margin": 0.1,
+      "pass": true,
+      "reference": "fixed",
+      "reference_value": 0.15104,
+      "statistic": "p1",
+      "value": 0.199229
+    },
+    {
+      "arm": "P4",
+      "check": "P4_p1_vs_fixed",
+      "difference": 0.016499,
+      "margin": 0.1,
+      "pass": true,
+      "reference": "fixed",
+      "reference_value": 0.181876,
+      "statistic": "p1",
+      "value": 0.198375
+    },
+    {
+      "arm": "INV2",
+      "check": "INV2_p1_vs_E00",
+      "difference": 0.010562,
+      "margin": 0.03,
+      "pass": true,
+      "reference": "E00",
+      "reference_value": 0.54601,
+      "statistic": "p1",
+      "value": 0.556573
+    },
+    {
+      "arm": "INV2",
+      "check": "INV2_lag1_vs_E00",
+      "difference": 0.017297,
+      "margin": 0.03,
+      "pass": true,
+      "reference": "E00",
+      "reference_value": 0.156532,
+      "statistic": "lag1",
+      "value": 0.173829
+    },
+    {
+      "arm": "R2",
+      "check": "R2_p1_vs_A2",
+      "difference": 0.005594,
+      "margin": 0.03,
+      "pass": true,
+      "reference": "A2",
+      "reference_value": 0.384781,
+      "statistic": "p1",
+      "value": 0.390375
+    },
+    {
+      "arm": "R2",
+      "check": "R2_lag1_vs_A2",
+      "difference": -0.002302,
+      "margin": 0.03,
+      "pass": true,
+      "reference": "A2",
+      "reference_value": 0.030655,
+      "statistic": "lag1",
+      "value": 0.028353
+    }
+  ]
+}

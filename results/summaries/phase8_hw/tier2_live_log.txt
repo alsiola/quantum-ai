@@ -1,0 +1,7 @@
+qiskit_runtime_service._discover_account:WARNING:2026-11-11 04:17:17,765: Loading account with the given token. A saved account will not be used.
+[04:17:21] [tier2] backend ibm_kingston; plan 'open'; usage {'plan_id': '850b21a7-71de-4e53-9441-1abdd202f35d', 'usage_consumed_seconds': 89, 'usage_consumed_ru': 1.338395, 'usage_period': {'start_time': '2026-10-14T04:17:21.698Z', 'end_time': '2026-11-11T04:17:21.698Z'}, 'usage_limit_seconds': 600, 'usage_limit_ru': 10, 'usage_limit_reached': False, 'usage_remaining_seconds': 511}
+[04:20:54] [selection] #31 power of 54 screened pairs in 210 s
+[04:21:34] [tier2 pilot] done; charge Charge(stage='tier2:pilot', upper_s=16.71452, readings={'job_usage': 14.0, 'job_metrics': 14.0, 'account_delta': 14.0}, charged_s=14.0, status='charged', counted_s=16.71452, exceeded=False)
+[04:21:35] [tier2] pilot gate passes: Tier 2 main may run after #35's verdict and the coordinator's review; counted 16.71452 s
+[04:21:35] summaries in results/summaries/phase8_hw
+EXIT 0

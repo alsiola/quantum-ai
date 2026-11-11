@@ -1,0 +1,20 @@
+{
+  "allowance_reading_s": 538,
+  "charges": [
+    {
+      "charged_s": 14.0,
+      "counted_s": 16.71452,
+      "exceeded": false,
+      "readings": {
+        "account_delta": 14.0,
+        "job_metrics": 14.0,
+        "job_usage": 14.0
+      },
+      "stage": "tier2:pilot",
+      "status": "charged",
+      "upper_s": 16.71452
+    }
+  ],
+  "counted_s": 16.71452,
+  "remaining_after_s": 496.08548
+}

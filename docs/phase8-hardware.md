@@ -1,4 +1,4 @@
-# Phase 8 Stage 5: the live path and Tier 1 P&M on ibm_kingston (#37)
+# Phase 8 Stage 5: the live path, Tier 1 (#37, #38) and the Tier 2 pilot (#39) on ibm_kingston
 
 **Outcome: Claim 4 at n = 1, under trusted SPAM. One application of the trained step on q75 is
 not entanglement-breaking.** Both co-primaries reject EB, with Holm at a family-wise α of 0.05:
@@ -15,6 +15,10 @@ bound) of the 20 s cap. That leaves 531 − 12 = 519 s on IBM's own reading, or 
 **MDI sub-tier (#38, §5): Claim 4 at n = 1 also holds trusting only the input states.** The
 payoff is 0.067 ± 0.017, with a lower bound of 0.039 > 0. It cost 8 s charged and 9.97 s counted,
 so Tier 1 has counted 25.14 s of its 30 s.
+
+**Tier 2 pilot (#39, §6): the gate passes, 9 of 9.** The live ancillas are [13, 50] (amendment
+A5). It cost 14 s charged and 16.71 s counted, of the pilot's 30 s cap. Main and the controls
+wait for #35 and the coordinator.
 
 The pre-registration is [phase8-preregistration.md](phase8-preregistration.md): §2 for Tier 1,
 §5 for live re-selection, §7 for the budget, and amendments A2 and A3 in §10.
@@ -344,3 +348,51 @@ controls wait for #35's verdict on the 1 rad slot and the coordinator's review o
   reading. Tier 2's whole 225 s cap must fit in the remaining allowance less the 60 s reserve.
 - **Code.** `phase8_live.TIERS["tier2"]`, `[tier2.live]` with `stages = ["pilot"]`, so the run
   stops after the pilot by construction. The guard tests are in `tests/test_phase8_live.py`.
+
+### 6.2 Dry run, job and the pilot gate
+
+- **The dry run** (`tier2_livedry.json`, nothing submitted) read the 03:46 UTC calibration,
+  which has the same selection hash `c7aed81c…`. Every check matched A5:
+  - §3 and §10 at their commits on `main`;
+  - all 169 hashes, and the pilot digest;
+  - the pick [13, 50], and the floor (vanish 1.00, preserve 0.985);
+  - the live transpile left the circuits unchanged, and the CZ is 68 ns;
+  - live cost 12.34 s and 16.42 s, so the pre-registered 12.57 s and 16.71 s govern;
+  - admission 225 ≤ 511 − 60, and the guard would pass.
+- **The submission** re-ran the same checks at its own snapshot, with the same results.
+- **The job.** `dbpuqd8qtr0c738f1c4g` on `ibm_kingston`, submitted 2026-11-11 04:21 local: 18 pubs,
+  18,000 shots, SamplerV2, no mitigation. All three usage readings were 14 s. The ledger counts
+  **16.71 s** (the upper bound), within the pilot's 30 s cap and the Tier 2 cap of 225 s. Remaining:
+  511 − 14 = 497 s on IBM's reading, 538 − 25.2 − 16.71 = 496.1 s on the owner's.
+
+**The pilot gate (§3.6) passes: 9 of 9 checks.** Point estimates after the 16-step burn-in,
+2,000 shots per arm:
+
+| check | value | reference | difference | margin | pass |
+| --- | --- | --- | --- | --- | --- |
+| E0, P(1) vs baseline | 0.5479 | 0.5439 | +0.0041 | ±0.02 | yes |
+| E00, P(1) vs baseline | 0.5460 | 0.5439 | +0.0021 | ±0.02 | yes |
+| RS, P(1) vs baseline | 0.5461 | 0.5439 | +0.0023 | ±0.02 | yes |
+| P2, P(1) vs fixed prediction | 0.1992 | 0.1510 | +0.0482 | ±0.10 | yes |
+| P4, P(1) vs fixed prediction | 0.1984 | 0.1819 | +0.0165 | ±0.10 | yes |
+| INV2, P(1) vs E00 | 0.5566 | 0.5460 | +0.0106 | ±0.03 | yes |
+| INV2, lag 1 vs E00 | 0.1738 | 0.1565 | +0.0173 | ±0.03 | yes |
+| R2, P(1) vs A2 | 0.3904 | 0.3848 | +0.0056 | ±0.03 | yes |
+| R2, lag 1 vs A2 | 0.0284 | 0.0307 | −0.0023 | ±0.03 | yes |
+
+The ancilla bits read 1 with frequency 0.495–0.497 (RS and R2, b1 and b2). No arm raised a shot
+warning. Raw shots, the job record, the calibration before and after, the ledger and the
+decision are in `results/summaries/phase8_hw/tier2/` and `tier2_live*.json`.
+
+**For the coordinator, outside the gate.** These are reported, not part of any call:
+- The baseline's P(1) is 0.544, against the fixed model's 0.581.
+- P2 and P4 carry more lag-1 correlation than the fixed model predicts: 0.099 against 0.023,
+  and 0.044 against −0.014. E0, E00, RS and the baseline are within 0.02 of their predicted
+  lag 1.
+
+Main compares the phase scan with the fixed prediction (leg ii), so these differences bear on
+it. Tier 2's analysis rules are unchanged; any change would be a dated amendment before main.
+
+**Decision: the pilot passes.** Tier 2 main and the controls may run after #35's verdict on the
+1 rad slot and the coordinator's review. Each needs its own live stages, and the controls need
+their `bench_R2` circuits re-exported on the ancillas of their day.

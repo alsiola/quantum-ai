@@ -1,0 +1,65 @@
+{
+ "tier": "tier2",
+ "stage": "pilot",
+ "backend": "ibm_kingston",
+ "estimate_s": 12.571615999999999,
+ "upper_s": 16.71452,
+ "shots": 18000,
+ "prereg_estimate_s": 12.571615999999999,
+ "prereg_upper_s": 16.71452,
+ "live_estimate_s": 12.338591999999979,
+ "live_upper_s": 16.42323999999997,
+ "pubs": [
+  "j0_p000_R2_c1",
+  "j0_p001_baseline_c0",
+  "j0_p002_P4_c0",
+  "j0_p003_E0_c0",
+  "j0_p004_RS_c1",
+  "j0_p005_E00_c0",
+  "j0_p006_INV2_c0",
+  "j0_p007_baseline_c1",
+  "j0_p008_R2_c0",
+  "j0_p009_INV2_c1",
+  "j0_p010_A2_c0",
+  "j0_p011_E0_c1",
+  "j0_p012_P2_c1",
+  "j0_p013_P2_c0",
+  "j0_p014_A2_c1",
+  "j0_p015_RS_c0",
+  "j0_p016_E00_c1",
+  "j0_p017_P4_c1"
+ ],
+ "plan": "open",
+ "usage_before": {
+  "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+  "usage_consumed_seconds": 89,
+  "usage_consumed_ru": 1.338395,
+  "usage_period": {
+   "start_time": "2026-10-14T04:21:07.415Z",
+   "end_time": "2026-11-11T04:21:07.415Z"
+  },
+  "usage_limit_seconds": 600,
+  "usage_limit_ru": 10,
+  "usage_limit_reached": false,
+  "usage_remaining_seconds": 511
+ },
+ "remaining_s": 511.0,
+ "guarded_at": "2026-11-11T04:21:07+0000",
+ "approval_url": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+ "job_id": "dbpuqd8qtr0c738f1c4g",
+ "submitted_at": "2026-11-11T04:21:09",
+ "charge": {
+  "stage": "tier2:pilot",
+  "upper_s": 16.71452,
+  "readings": {
+   "job_usage": 14.0,
+   "job_metrics": 14.0,
+   "account_delta": 14.0
+  },
+  "charged_s": 14.0,
+  "status": "charged",
+  "counted_s": 16.71452,
+  "exceeded": false
+ },
+ "resumed": false
+}
