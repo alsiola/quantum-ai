@@ -236,12 +236,14 @@ def test_job_guard_refuses_paid_plan_unknown_allowance_over_cap_and_big_job():
 
 
 def test_remaining_allowance_and_admission():
-    c = cfg()
+    c = cfg(allowance__prior_counted_s=0.0)
     led = P.Ledger()
     assert L.remaining_allowance(c, led, {}) == 538
     assert L.remaining_allowance(c, led, {"usage_remaining_seconds": 500}) == 500
     led.add("tier1", F.job_charge("x", 15.16, {"job_usage": 3.0}))
     assert L.remaining_allowance(c, led, None) == pytest.approx(538 - 15.16)
+    # earlier Phase 8 jobs (the config's ledger entry) are taken off the owner's reading
+    assert L.remaining_allowance(cfg(), P.Ledger(), {}) == pytest.approx(538 - 15.2)
     assert L.remaining_allowance(cfg(allowance__remaining_s=None), led, {}) is None
     tb = {"tier1": tier1_budget(c)}
     assert L.admission(c, "tier1", tb, 538)["fits_cap"]

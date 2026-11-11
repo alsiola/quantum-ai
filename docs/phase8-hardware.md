@@ -1,8 +1,16 @@
 # Phase 8 Stage 5: the live path and Tier 1 P&M on ibm_kingston (#37)
 
-**Status: the live dry run passed, the coordinator accepted the live code (#37,
-issuecomment-6783342126), and the pre-data power check at the live calibration passed (§2.1).**
-This note holds the job, the gates and Claim 4's decision in §3.
+**Outcome: Claim 4 at n = 1, under trusted SPAM. One application of the trained step on q75 is
+not entanglement-breaking.** Both co-primaries reject EB, with Holm at a family-wise α of 0.05:
+- P&M at n = 1: 0.721 ± 0.004 against a threshold of 0.668. The one-sided lower bound is 0.715.
+- Record 00 at n = 2: 0.874 ± 0.008 against 0.669.
+
+Both gates pass. The n = 0 SPAM gate reads 0.987 (stop below 0.90). The EB negative control
+reads 0.577, with a lower bound of 0.567 against its threshold of 0.668.
+
+QPU time: IBM charged **12 s**, and the ledger counts **15.16 s** (max of charged and upper
+bound) of the 20 s cap. That leaves 531 − 12 = 519 s on IBM's own reading, or 538 − 15.16 =
+522.8 s on the owner's.
 
 The pre-registration is [phase8-preregistration.md](phase8-preregistration.md): §2 for Tier 1,
 §5 for live re-selection, §7 for the budget, and amendments A2 and A3 in §10.
@@ -143,5 +151,72 @@ close to Stage 4c's (139 µs).
 
 ## 3. The job
 
-Not yet submitted. It will be one job: 60 pubs and 36,000 shots in #33's seeded order, with
-an upper bound of 15.16 s.
+| item | value |
+| --- | --- |
+| job id | `dbprjt44148s739v32l0` (SamplerV2, no error mitigation), on `ibm_kingston` |
+| submitted | 2026-11-11 00:42:28 UTC |
+| executed | 01:56:42–01:56:53 UTC, on the calibration of 01:16 UTC (q59 and q75 unchanged from §2) |
+| pubs, shots | 60 circuits, 36,000 shots, in #33's seeded order |
+| cost | estimate 11.33 s, upper bound 15.16 s |
+| charge | **12 s** (metrics `qpu_charge_time_seconds` 12, account delta 12; `job.usage()` read 0); counted 15.16 s |
+| ledger | 15.16 s of the 20 s cap; `[allowance] prior_counted_s` is now 15.2 for later tiers |
+
+The session that submitted the job ended while the job was queued, after its id had been saved.
+The run was resumed with `--from-run`. That re-ran every check on the new calibration (all
+passed), re-fetched the job by id and never resubmitted it (`resumed: true` in the job record).
+Execution spans total 11.4 s, and `circuits_execution_time_ns` is 9.64 s.
+
+Raw outputs are in `results/phase8_hw_live_tier1/20261111T003800Z/` (gitignored). The committed
+copies are in `results/summaries/phase8_hw/`:
+- `tier1/pm_primary_shots.npz`: every shot. Per pub, the bits `y0..y{n-1}, m`; for `pm_neg`,
+  the mid-step `neg` as well.
+- `tier1/pm_primary_job.json`: the id, the guard's record and the charge.
+- `tier1/live_jobs.json`: usage before and after, metrics and spans.
+- `tier1/decision.json`, `tier1/ledger.json` and `tier1/log.txt`.
+- `tier1_live.json`: every pre-submission check of the resumed run.
+- The two live calibration snapshots: `tier1_live_calibration.json` (at submission) and
+  `_resume.json` (01:16).
+
+## 4. The §2 analysis, as pre-registered
+
+`P.tier1_analyse` with `Tier1Rule(alpha=0.05, secondary_alpha=0.05, spam_gate=0.90,
+min_branch_shots=500)`. The leakage-corrected thresholds are 2/3 + ℓ/3, with ℓ = 0.003 n.
+
+| test | family | estimate ± SE | threshold | shots | EB rejected |
+| --- | --- | --- | --- | --- | --- |
+| **P&M, n = 1** | co-primary | **0.7208 ± 0.0037** | 0.6677 | 12,000 | **yes** (p < 10⁻¹⁵) |
+| **record 00, n = 2** | co-primary | **0.8735 ± 0.0078** | 0.6687 | 1,795 | **yes** |
+| P&M, n = 2 | secondary | 0.5935 ± 0.0058 | 0.6687 | 6,000 | no |
+| record 0, n = 1 | secondary | 0.8877 ± 0.0037 | 0.6677 | 7,358 | yes |
+| record 1, n = 1 | secondary | 0.4561 ± 0.0073 | 0.6677 | 4,642 | no |
+| record 01, n = 2 | secondary | 0.4871 ± 0.0116 | 0.6687 | 1,854 | no |
+| record 10, n = 2 | secondary | 0.4523 ± 0.0179 | 0.6687 | 776 | no |
+| record 11, n = 2 | secondary | 0.4692 ± 0.0126 | 0.6687 | 1,575 | no |
+
+| gate or check | value | rule | result |
+| --- | --- | --- | --- |
+| n = 0 SPAM gate | 0.9873 | ≥ 0.90 | pass |
+| EB negative control (A2's step) | 0.5768 ± 0.0058, lower bound 0.5673 | lower bound ≤ 0.6677 | pass (does not falsely pass) |
+| n = 3 model check | 0.537 | below 2/3 expected | as expected |
+| shot-order χ² | 1 of 60 pubs warns (`pm_neg` c8, p = 4 × 10⁻⁴) | a warning, never an invalidation | recorded |
+
+**Decision (§2.7–2.8): Claim 4 is supported at n = 1, so EB is rejected.** The record-00 element
+M₀₀ at n = 2 is also certified not EB. That is an instrument property, as §2.1 states. The call
+holds under trusted SPAM, with #33 §5's coherent-SPAM margin (δ ≤ 0.022 per operation) as its
+stated limit. It is Claim 4 at one step, on one pair (q75, q59), on one day (§2.9). The one
+order warning is on the EB control arm, and it doesn't touch the call.
+
+**Against the pre-data predictions (§2.1):**
+
+| | live-calibration prediction | observed |
+| --- | --- | --- |
+| P&M, n = 1 | 0.711 | 0.721 |
+| record 00 | 0.861 | 0.874 |
+| n = 0 | 0.981 | 0.987 |
+| negative control | 0.578 | 0.577 |
+
+The observed P&M scores are slightly above the predictions, by 1–2.5 SE. The negative control
+matches.
+
+**MDI** stays excluded until its q74 reset is fixed by an amendment (A3). §2.7's precondition for
+it (P&M passed both gates and rejected EB at n = 1) is now met.

@@ -1,0 +1,7 @@
+[00:38:09] [tier1] backend ibm_kingston; plan 'open'; usage {'plan_id': '850b21a7-71de-4e53-9441-1abdd202f35d', 'usage_consumed_seconds': 69, 'usage_consumed_ru': 1.028869, 'usage_period': {'start_time': '2026-10-14T00:38:09.528Z', 'end_time': '2026-11-11T00:38:09.528Z'}, 'usage_limit_seconds': 600, 'usage_limit_ru': 10, 'usage_limit_reached': False, 'usage_remaining_seconds': 531}
+[00:42:22] [selection] #31 power of 54 screened pairs in 249 s
+[01:41:08] [tier1] backend ibm_kingston; plan 'open'; usage {'plan_id': '850b21a7-71de-4e53-9441-1abdd202f35d', 'usage_consumed_seconds': 69, 'usage_consumed_ru': 1.028869, 'usage_period': {'start_time': '2026-10-14T01:41:08.473Z', 'end_time': '2026-11-11T01:41:08.473Z'}, 'usage_limit_seconds': 600, 'usage_limit_ru': 10, 'usage_limit_reached': False, 'usage_remaining_seconds': 531}
+[01:44:21] [selection] #31 power of 54 screened pairs in 190 s
+[01:56:57] [tier1 pm_primary] done; charge Charge(stage='tier1:pm_primary', upper_s=15.16217, readings={'job_usage': 0.0, 'job_metrics': 12.0, 'account_delta': 12.0}, charged_s=12.0, status='charged', counted_s=15.16217, exceeded=False)
+[01:56:58] [tier1] claim 4 at n = 1 under trusted SPAM: the step channel is not EB; counted 15.16217 s
+[01:56:58] summaries in results/summaries/phase8_hw
