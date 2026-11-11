@@ -128,7 +128,7 @@ commit = "a161c1119271410dd8eae54523e51947d5fedc17"
 doc = "docs/phase8-preregistration.md"
 heading = "## 10. Amendment log"
 sha256 = "e4b8269c9dcb1b10ab3d39fec221f0c69d9f64e6589e899b1dce6acbd1fe2301"
-commit = ""                                     # A4's commit on main, filled in once it has landed
+commit = "17d213ef521d26bbf4227a87b3937990cc57c186"   # A4 on main (#38)
 amendments = ["**A4, 2026-11-11, pre-data for MDI (Tier 1; after P&M's data).**"]
 
 [tier2]                                         # Stage 2 (#32, #34): Claim 3
