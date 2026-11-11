@@ -26,6 +26,12 @@
     "pm_neg_false_pass_live_deficit_matched": 0.0,
     "pm_neg_false_pass_stage4c_live": 0.0
   },
+  "mdi_reset": {
+    "duration": 2.312e-06,
+    "excited": 0.0078125,
+    "t1": 0.00032101412958689644,
+    "t2": 0.00013850037322860528
+  },
   "meta": {
     "config": {
       "analysis": {
@@ -73,6 +79,10 @@
       "leakage": {
         "cz_per_step": 3,
         "leak_per_cz": 0.001
+      },
+      "mdi": {
+        "reset": true,
+        "reset_s": 2.312e-06
       },
       "plan": {
         "bell_shots": {
@@ -175,12 +185,12 @@
         "length": 64
       }
     },
-    "git_commit": "447b12dd99bdffbd95299dda4e85baab6b6a2ef9",
+    "git_commit": "d4a24e9b49635cb694e040b959947f9f0ec7d859",
     "git_dirty": true,
     "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
     "python": "3.13.6",
     "seed": 33,
-    "timestamp_utc": "2026-11-09T21:10:31+00:00",
+    "timestamp_utc": "2026-11-11T02:15:06+00:00",
     "torch": "2.15.0"
   },
   "noiseless_eb_from_n": 3,
@@ -326,10 +336,10 @@
     "mdi_game": {
       "costs": [
         {
-          "estimate_s": 7.132272,
-          "shot_s": 5.132272,
+          "estimate_s": 7.178512,
+          "shot_s": 5.178512,
           "shots": 20000,
-          "upper_s": 9.91534
+          "upper_s": 9.973139999999999
         }
       ],
       "jobs": [

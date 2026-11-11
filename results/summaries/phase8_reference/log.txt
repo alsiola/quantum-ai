@@ -1,5 +1,6 @@
-[21:10:29] q75 SPAM Spam(init_error=0.009828930892210874, prep_depol=0.00040098604212816184, meas_depol=0.00040098604212816184, p01=0.013671875, p10=0.00390625); deficit-matched dephasing p = 0.0671
-[21:10:29] reference candidates 6, admitted 1; pick 79
-[21:10:31] MC power: {"pm_n1_stage4c_live": 1.0, "bell_n1_stage4c_live": 0.9985, "pm_neg_false_pass_stage4c_live": 0.0, "pm_n1_live_deficit_matched": 1.0, "bell_n1_live_deficit_matched": 0.957, "pm_neg_false_pass_live_deficit_matched": 0.0}
-[21:10:31] primary: P&M n=1 score 0.7118 vs 0.6677, power 1.000; deficit-matched 0.7033, power 1.000
-[21:10:31] done in 3.7 s; outputs in /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-2cf609d0ba49e77b95b911359c9a05a6/results/phase8_reference/20261109T211028Z
+[02:15:03] q75 SPAM Spam(init_error=0.009828930892210874, prep_depol=0.00040098604212816184, meas_depol=0.00040098604212816184, p01=0.013671875, p10=0.00390625); deficit-matched dephasing p = 0.0671
+[02:15:03] reference candidates 6, admitted 1; pick 79
+[02:15:03] MDI q74 reset (A4): MdiReset(duration=2.312e-06, t1=0.00032101412958689644, t2=0.00013850037322860528, excited=0.0078125)
+[02:15:06] MC power: {"pm_n1_stage4c_live": 1.0, "bell_n1_stage4c_live": 0.9985, "pm_neg_false_pass_stage4c_live": 0.0, "pm_n1_live_deficit_matched": 1.0, "bell_n1_live_deficit_matched": 0.957, "pm_neg_false_pass_live_deficit_matched": 0.0}
+[02:15:07] primary: P&M n=1 score 0.7118 vs 0.6677, power 1.000; deficit-matched 0.7033, power 1.000
+[02:15:07] done in 4.6 s; outputs in /Users/alexyoung/.local/state/open-conduit/resources/git/workspaces/work-a82f86c0c513df3236079cbf6569bc80/results/phase8_reference/20261111T021502Z

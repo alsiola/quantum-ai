@@ -51,6 +51,15 @@ step_s = 4.852e-6             # one step on ibm_kingston (#22, from step.qasm an
 end_s = 2.4e-6                # final rotation + measurement (2.18 us readout + gates)
 mdi_steps = [0, 1]
 
+[mdi]
+# Amendment A4 (#38, docs/phase8-preregistration.md section 10): `reset q74` immediately before
+# psi_y (the coordinator's decision on #38, closing #33 section 9's open item). The 32 MDI
+# circuits are re-exported with it; q75 idles through it. reset_s: FakeKingston's q74 reset
+# time, added to the analytic MDI durations (the live path uses the larger of the plan and the
+# live target's schedule).
+reset = true
+reset_s = 2.312e-6
+
 [spam]                        # q75 from the Stage 4c snapshot; gate errors -> depolarising p = 2 r
 gates_per_prep = 2            # sx count of an axis-state preparation / measurement rotation
 bsm_cz_error_from = "74-75"   # MDI Bell measurement's CZ (device.json)

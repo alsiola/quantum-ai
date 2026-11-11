@@ -420,6 +420,70 @@ affects, with the hash guard of Phase 7 §9 (`F.amendment_check`) on the live pa
   - The allowance is the owner's reading (538 s, §7), so all three tiers are admitted, with
     the 1 rad slot too if #35 recommends it.
   - MDI (§2) is still excluded until its q74 reset is fixed by an amendment with new hashes.
+- **A4, 2026-11-11, pre-data for MDI (Tier 1; after P&M's data).** This amendment is written
+  before any MDI job. It comes *after* Tier 1's P&M data: job `dbprjt44148s739v32l0` (#37), which
+  passed both gates and rejected EB at n = 1, so §2.7's precondition for MDI holds. A4 changes
+  nothing about P&M, its analysis or its call. It fixes the MDI sub-tier (#38) as follows.
+  - **The q74 reset (§9 item 6, closed).** The coordinator decided on #38: `reset q74`
+    immediately before ψ_y. The game's soundness needs ψ_y uncorrelated with the channel's
+    environment. Without the reset, q74's initialisation error (about 1%), ZZ-coupled to q75
+    during the steps, is a known violation of that assumption.
+  - **Circuits.** The 32 `mdi_*` circuits are re-exported: `phase8_reference --export-qasm`,
+    FakeKingston, level 0, fixed layout (q59, q75, q74). The one change in each file is a
+    `reset $74;` line after the steps' barrier and before ψ_y. The 80 P&M and Bell files are
+    byte-identical (the P&M digest is still `4d17a450…`). Each circuit matches the numpy model
+    noiselessly, with a worst difference of 1.8e-15 over 112 circuits. The new SHA-256s are in
+    `phase8_reference/qasm/manifest.json` and `phase8_prereg/hashes.csv`. **The Tier 1 MDI
+    digest** (the sorted `name sha256` lines of the 32 `mdi_*` rows) is
+    `c36a119e950020da52e8635c9d5998ce06a1d980eeda3afffed1d07467102c0b`. #33's, without the
+    reset, was `33c43250…`.
+  - **Model.** `R.MdiReset`: q75 idles through q74's reset (2.312 µs on FakeKingston,
+    2.212 µs live) at q75's T1 and T2. After the reset, q74 is excited with probability equal
+    to its readout error, whatever its state before. The model is tested against a brute-force
+    density matrix of (q75, q74), with a random joint channel for the steps. Random EB
+    channels, chosen by q74's state and measured by any POVM element, never exceed payoff 0
+    with the reset in place (`tests/test_reference.py`).
+  - **Shots and cost (unchanged).** 250 per input pair at n = 0 and 1,000 per pair at n = 1,
+    so 20,000 shots in one job of 32 circuits, in #33's seeded pub order. The estimate is
+    7.18 s and the upper bound 9.97 s. That is within the 20 s per-job limit and within the
+    14.84 s left of Tier 1's 30 s cap after P&M's 15.16 s counted. The ledger counts both
+    cumulatively (`[tier1.mdi_live] prior_ledgers`).
+  - **Power at the latest live calibration** (`ibm_kingston`, calibrated 2026-11-10 23:34 UTC,
+    the snapshot of #37's submission; `phase8_hw/tier1_mdi_power_a4.json`). Payoff at n = 1
+    with the reset, and power at 16,000 shots (one-sided α = 0.05, normal / Monte Carlo):
+
+    | model | payoff | power | shots for 80% |
+    | --- | --- | --- | --- |
+    | Stage 4c pieces, committed / live | 0.055 / 0.052 | 0.94 / 0.92 | 9,596 / 10,815 |
+    | **Stage 2 fitted, committed / live** | 0.050 / **0.047** | 0.90 / **0.87** | 11,352 / 13,010 |
+    | deficit-matched, committed / live | 0.043 / 0.040 | 0.80 / 0.75 | 15,970 / 18,532 |
+
+    The reset costs 0.009 in payoff (Stage 4c: 0.064 → 0.055). The fitted model at the live
+    calibration has power 0.87 ≥ 0.80, so **the shots are not raised**. The n = 0 positive
+    control is predicted at 0.44.
+  - **Pre-data gate at the run's own calibration.** `--dry-run` and `--submit` recompute this
+    check at their own live snapshot (`[tier1.mdi_live] power_gate`,
+    `phase8_mdi_power.assess`). They refuse unless the fitted model's power at the live
+    calibration is ≥ 0.80 (normal and Monte Carlo) at these shots, and the cost fits. If the
+    gate fails, nothing is submitted. The check is repeated after each new calibration for up
+    to 48 h. If it still fails, MDI is recorded as dropped. Raising the shots would need a
+    further dated amendment before any MDI data.
+  - **Analysis (#33 §2, as fixed there).** The payoff at n = 1 is Σ ω_xy p̂(Φ⁺ | x, y), where
+    Φ⁺ reads 00 and ω = `R.mdi_weights(V_1)` with #33's committed V_1. Its SE is binomial per
+    input pair. EB is rejected iff payoff − z₀.₉₅ SE > 0 (one-sided α = 0.05; `P.mdi_analyse`).
+    - **Multiplicity:** a family of one. It sits in neither of P&M's Holm families, and it
+      cannot change P&M's call.
+    - **n = 0** is the positive control. It is reported, not a gate, because the game's
+      soundness does not rest on the measurement.
+    - **No leakage allowance** (threshold 0, as #33): the bound holds for any measurement, and
+      leakage after ψ_y is part of the untrusted measurement.
+    - **Shot-order warnings** are reported, never an invalidation (§2.6).
+  - **Calls.**
+    - The payoff rejects 0: Claim 4 at n = 1 in the MDI setting, trusting the input states
+      only. Residual assumptions: the input-state calibration (ξ_x on q75, ψ_y on q74,
+      including their leakage); the reset's residual excitation, which may depend on q74's
+      state before it; and q74's ZZ with q75 while ψ_y is prepared.
+    - The payoff does not reject 0: MDI is **inconclusive**. It does not undo the P&M result.
 
 ## Reproduction
 

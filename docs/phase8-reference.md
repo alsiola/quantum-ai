@@ -427,6 +427,13 @@ circuits, the upper bound and the cap. Before submission, also:
     state, and in a way correlated with q75's phase.
   - A `reset` of q74 just before ψ_y would remove that correlation, at the cost of 2.2 µs more
     idle for q75. It is not in the committed circuits; decide before any MDI submission.
+  - **Decided (2026-11-11, #38, amendment A4 of `docs/phase8-preregistration.md` §10):** the
+    reset is in. The 32 MDI circuits were re-exported with `reset $74` before ψ_y, and only
+    they changed. `summary.json`, `power.csv`, `sensitivity.csv`, `channel.csv` and
+    `budget.csv` now carry the MDI predictions with the reset (`[mdi]` in the config;
+    `summary.json` `mdi_reset`). At n = 1 under the Stage 4c model, the payoff falls from
+    0.064 to 0.055 and the power at 16,000 shots from 0.98 to 0.94. Deficit-matched: 0.051 →
+    0.043, power 0.91 → 0.80. The tables in §5 above are #33's, without the reset.
 - A success at n = 1 is Claim 4 at one step. It is not evidence that the emitted-symbol
   witness uses q75's coherence (Claim 3), and not a dimension advantage (Claim 5).
 

@@ -34,6 +34,7 @@ a ``device.json``-shaped live calibration snapshot, section 5's rules re-run on 
         --config experiments/configs/phase8_hw.toml --dry-run --tier tier1
     uv run --group hardware python experiments/phase8_hw.py \
         --config experiments/configs/phase8_hw.toml --submit --tier tier1 [--from-run <dir>]
+    (``--tier tier1_mdi``: Tier 1's MDI sub-tier, #38, amendment A4)
 """
 
 from __future__ import annotations
@@ -226,6 +227,7 @@ class Tier1Ctx:
         dev = self.inp["device"]
         self.spam_y = PR.device_spam(dev, lay["bridge"], rcfg["spam"]["gates_per_prep"])
         self.bsm_depol = 4 / 3 * float(dev["cz"][rcfg["spam"]["bsm_cz_error_from"]]["error"])
+        self.mdi_reset = PR.mdi_reset(rcfg, self.inp["calib"], dev)  # A4 (#38)
 
     def committed_targets_ok(self) -> float:
         """Max |V_n - committed targets_V| (the QASM compiles the committed ones)."""
@@ -884,7 +886,7 @@ def tier1_run(cfg, t1: Tier1Ctx, t2, truth: str, out: Path, tbud: P.TierBudget) 
                 n = int(p.arm[-1])
                 x, y = divmod(p.chunk, 4)
                 sup = R.n_step_map(steps, n)
-                pq = R.mdi_probabilities(sup, t1.spam, t1.spam_y, t1.bsm_depol)[x, y]
+                pq = R.mdi_probabilities(sup, t1.spam, t1.spam_y, t1.bsm_depol, t1.mdi_reset)[x, y]
                 hit = rng.random(p.shots) < pq
                 other = rng.integers(1, 4, p.shots)
                 code = np.where(hit, 0, other)

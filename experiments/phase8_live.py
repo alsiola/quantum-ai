@@ -2,7 +2,11 @@
 
 ``phase8_hw.py --dry-run`` (live target, nothing submitted) and ``--submit`` call this module.
 It is tier-generic: a tier needs a ``[<tier>.live]`` config table and an entry in ``TIERS``
-(its stages, circuits, decoding and pre-registered analysis). Only Tier 1 (P&M, #33) has one.
+(its stages, circuits, decoding and pre-registered analysis). Tier 1 has two: ``tier1`` (P&M,
+#33, run on #37) and its MDI sub-tier ``tier1_mdi`` (#38, amendment A4), whose table is
+``[tier1.mdi_live]``. A sub-tier runs on its base tier's approval, counts against the base
+tier's hard cap together with the base tier's committed ledgers (``prior_ledgers``), and
+refuses unless its ``precondition`` (a committed decision) holds.
 
 Guards, in order. Each refuses (``qmem.followup.Refused``) before anything is submitted:
 
@@ -60,11 +64,30 @@ from qmem.records import REPO_ROOT, run_metadata, save_json
 # -- config helpers --------------------------------------------------------------------------------
 
 
+def base_tier(tier: str) -> str:
+    """The tier whose approval, cap and config a (sub-)tier uses: ``tier1_mdi`` -> ``tier1``."""
+    return TIERS.get(tier, {}).get("base", tier)
+
+
+def live_table(tier: str) -> str:
+    return TIERS.get(tier, {}).get("table", "live")
+
+
 def live_cfg(cfg: dict[str, Any], tier: str) -> dict[str, Any]:
+    b, t = base_tier(tier), live_table(tier)
     try:
-        return cfg[tier]["live"]
+        return cfg[b][t]
     except KeyError:
-        raise F.Refused(f"{tier} has no [{tier}.live] table: no live path for it") from None
+        raise F.Refused(f"{tier} has no [{b}.{t}] table: no live path for it") from None
+
+
+def prior_counted(cfg: dict[str, Any], tier: str) -> float:
+    """Seconds the base tier has already counted in committed ledgers (``prior_ledgers``)."""
+    total = 0.0
+    for path in live_cfg(cfg, tier).get("prior_ledgers", []):
+        led = json.loads((REPO_ROOT / path).read_text())
+        total += float(F.usage_guard([F.Charge(**c) for c in led["charges"]]))
+    return total
 
 
 def read_env(path: Path) -> dict[str, str]:
@@ -107,8 +130,9 @@ def jsonable(x: Any) -> Any:
 def approval_guard(cfg: dict[str, Any], tier: str, submit: bool, out: Path | None) -> P.Approval:
     """``P.Approval.check`` for this tier (refuses a missing URL, another tier's approval, or no
     ``--submit``), then ``P.freeze_approval`` into the run directory."""
-    appr = P.Approval(tier, (cfg.get("approval") or {}).get(tier) or None)
-    appr.check(tier, submit)
+    b = base_tier(tier)
+    appr = P.Approval(b, (cfg.get("approval") or {}).get(b) or None)
+    appr.check(b, submit)
     return appr if out is None else P.freeze_approval(out, appr)
 
 
@@ -324,7 +348,7 @@ def admission(
     reserve (``P.budget_table``, tiers in ``[order]``)."""
     order = cfg["order"]["tiers"]
     rows = P.budget_table(
-        [budgets[t] for t in order[: order.index(tier) + 1]],
+        [budgets[t] for t in order[: order.index(base_tier(tier)) + 1]],
         remaining,
         cfg["allowance"]["reserve_s"],
     )
@@ -372,7 +396,7 @@ def job_guard(
         u = read_usage(svc)
         rem = remaining_allowance(cfg, ledger, u)
         rec.update({"plan": plan, "usage_before": u, "remaining_s": rem, "guarded_at": now()})
-        rec["approval_url"] = cfg["approval"][tier]
+        rec["approval_url"] = cfg["approval"][base_tier(tier)]
         ledger.guard(
             tbud, cost, rem, plan, cfg["allowance"]["reserve_s"], cfg["allowance"]["allowed_plans"]
         )
@@ -511,20 +535,24 @@ class LiveStage:
 
 
 def tier1_circuit_name(arm: str, chunk: int) -> str:
-    """#33's export names: circuit ``c = 2 k + b``, k over ``R.AXIS_LABELS``."""
+    """#33's export names. P&M: circuit ``c = 2 k + b``, k over ``R.AXIS_LABELS``. MDI:
+    ``c = 4 x + y`` over the tetrahedral inputs (``mdi_n{n}_x{x}_y{y}``)."""
+    if arm.startswith("mdi_"):
+        x, y = divmod(chunk, 4)
+        return f"{arm}_x{x}_y{y}"
     k, b = divmod(chunk, 2)
     ax = R.AXIS_LABELS[k].replace("+", "p").replace("-", "m")
     return f"{arm}_{ax}_b{b}"
 
 
-def tier1_stages(cfg: dict[str, Any]) -> list[LiveStage]:
+def tier1_stages(cfg: dict[str, Any], tier: str = "tier1") -> list[LiveStage]:
     """#33's plan (``phase8_reference/summary.json``): one job per stage, pubs in its seeded
     order, with its committed cost."""
     plan = json.loads((REPO_ROOT / "results/summaries/phase8_reference/summary.json").read_text())[
         "plan"
     ]
     out = []
-    for st in live_cfg(cfg, "tier1")["stages"]:
+    for st in live_cfg(cfg, tier)["stages"]:
         if len(plan[st]["jobs"]) != 1:
             raise F.Refused(f"tier1 {st}: expected one job, found {len(plan[st]['jobs'])}")
         pubs = [
@@ -541,9 +569,15 @@ def tier1_stages(cfg: dict[str, Any]) -> list[LiveStage]:
 
 def tier1_decode(pub: F.Pub, data: Any) -> dict[str, np.ndarray]:
     """P&M bits as ``phase8_hw.tier1_pm_counts`` reads them: ``(shots, n + 1)`` =
-    ``y0..y{n-1}`` then ``m``; the negative control's mid-step ``neg`` is kept separately."""
+    ``y0..y{n-1}`` then ``m``; the negative control's mid-step ``neg`` is kept separately.
+    MDI: ``(shots, n + 2)`` = ``y0..y{n-1}``, then ``m[0]`` (q75) and ``m[1]`` (q74)."""
     from phase8_hw import PM_STEPS
 
+    if pub.arm.startswith("mdi_"):
+        n = int(pub.arm.removeprefix("mdi_n"))
+        m = bits_of(data, "m")
+        cols = [bits_of(data, f"y{t}")[:, 0] for t in range(n)] + [m[:, 0], m[:, 1]]
+        return {pub.key: np.stack(cols, 1).astype(np.uint8)}
     n = PM_STEPS[pub.arm]
     cols = [bits_of(data, f"y{t}")[:, 0] for t in range(n)] + [bits_of(data, "m")[:, 0]]
     out = {pub.key: np.stack(cols, 1).astype(np.uint8)}
@@ -574,24 +608,113 @@ def tier1_analyse(cfg: dict[str, Any], stages: list[LiveStage], arrays: dict[str
     return res
 
 
-TIERS: dict[str, dict[str, Callable]] = {
+# -- Tier 1's MDI sub-tier (#38, amendment A4) -----------------------------------------------------
+
+
+def mdi_precondition(cfg: dict[str, Any]) -> dict[str, Any]:
+    """Section 2.7: the MDI sub-tier runs only if the P&M job passed both gates and rejected EB
+    at n = 1. Read from the committed decision (``[tier1.mdi_live] precondition``)."""
+    path = live_cfg(cfg, "tier1_mdi")["precondition"]
+    d = json.loads((REPO_ROOT / path).read_text())
+    ok = {
+        "spam_gate": bool(d["spam_gate"]["pass"]),
+        "negative_control": not d["negative_control"]["falsely_passes"],
+        "valid": bool(d["valid"]),
+        "pm_n1_rejects_eb": bool(d["tests"]["pm_n1"]["reject_eb"]),
+    }
+    if not all(ok.values()):
+        raise F.Refused(f"tier1_mdi: P&M's decision does not meet section 2.7: {ok}")
+    return {"decision": path, "call": d["call"], **ok}
+
+
+def tier1_mdi_stages(cfg: dict[str, Any]) -> list[LiveStage]:
+    mdi_precondition(cfg)
+    return tier1_stages(cfg, "tier1_mdi")
+
+
+def mdi_hits(st: LiveStage, arr: dict[str, np.ndarray], arm: str) -> tuple[np.ndarray, int]:
+    """Phi+ counts (both final bits 0) per input pair ``[x, y]`` of ``arm``, and the shots per
+    pair (equal by design; refuses otherwise)."""
+    hits, shots = np.zeros((4, 4), dtype=np.int64), set()
+    for p in st.pubs:
+        if p.arm != arm:
+            continue
+        x, y = divmod(p.chunk, 4)
+        b = arr[p.key]
+        hits[x, y] = int(((b[:, -2] == 0) & (b[:, -1] == 0)).sum())
+        shots.add(int(b.shape[0]))
+    if len(shots) != 1:
+        raise ValueError(f"{arm}: unequal shots per input pair {sorted(shots)}")
+    return hits, shots.pop()
+
+
+def tier1_mdi_analyse(cfg: dict[str, Any], stages: list[LiveStage], arrays: dict) -> dict:
+    """Amendment A4's analysis (#33 section 3, docs/phase8-preregistration.md section 10): the
+    payoff at n = 1 with #33's fixed V_1 in the weights, EB rejected if payoff - z SE > 0
+    (one-sided ``[tier1] mdi_alpha``, a family of one: it is not in P&M's Holm families and
+    cannot change P&M's call). n = 0 is reported as the positive control, not a gate. The
+    shot-order warnings are reported (section 2.6, never an invalidation)."""
+    v = {
+        int(n): np.array(m["re"]) + 1j * np.array(m["im"])
+        for n, m in json.loads(
+            (REPO_ROOT / "results/summaries/phase8_reference/summary.json").read_text()
+        )["targets_V"].items()
+    }
+    st = next(s for s in stages if s.stage == "mdi_game")
+    arr = arrays["mdi_game"]
+    a = cfg["tier1"]["mdi_alpha"]
+    res: dict[str, Any] = {"alpha": a, "precondition": mdi_precondition(cfg)}
+    for n in (0, 1):
+        hits, shots = mdi_hits(st, arr, f"mdi_n{n}")
+        r = P.mdi_analyse(hits, shots, R.mdi_weights(v[n]), a)
+        r["upper_bound"] = r["payoff"] + (r["payoff"] - r["lower_bound"])
+        res[f"n{n}"] = r | {"hits": hits.tolist(), "shots_per_pair": shots}
+    res["order_warnings"] = {
+        p.key: w
+        for p in st.pubs
+        if (w := P.order_warnings((arr[p.key][:, -2] | arr[p.key][:, -1]).astype(np.uint8)))["warn"]
+    }
+    if res["n1"]["reject_eb"]:
+        res["call"] = (
+            "claim 4 at n = 1 in the MDI setting (trusting the input states only): the step "
+            "channel is not EB"
+        )
+    else:
+        res["call"] = (
+            "MDI inconclusive: the payoff does not reject 0; this does not undo the P&M result"
+        )
+    return res
+
+
+TIERS: dict[str, dict[str, Any]] = {
     "tier1": {"stages": tier1_stages, "decode": tier1_decode, "analyse": tier1_analyse},
+    "tier1_mdi": {
+        "stages": tier1_mdi_stages,
+        "decode": tier1_decode,
+        "analyse": tier1_mdi_analyse,
+        "base": "tier1",
+        "table": "mdi_live",
+    },
 }
 
 
-def tier_entry(tier: str) -> dict[str, Callable]:
+def tier_entry(tier: str) -> dict[str, Any]:
     if tier not in TIERS:
         raise F.Refused(f"no live plan for {tier} yet: add its stages, decoding and analysis")
     return TIERS[tier]
 
 
 def tier_budget(cfg: dict[str, Any], tier: str, stages: list[LiveStage]) -> P.TierBudget:
-    lc = live_cfg(cfg, tier)
+    """This run's budget. Its cap is the smaller of ``[<table>] hard_cap_s`` and the base tier's
+    hard cap less what the base tier's committed ledgers already counted, so a sub-tier's spend
+    is cumulative with the base tier's (Tier 1: P&M's 15.16 s, then MDI, against 30 s)."""
+    lc, b = live_cfg(cfg, tier), base_tier(tier)
+    left = cfg[b]["hard_cap_s"] - prior_counted(cfg, tier)
     return P.TierBudget(
         tier,
         [s.cost for s in stages],
-        lc.get("hard_cap_s", cfg[tier]["hard_cap_s"]),
-        cfg[tier]["max_job_estimate_s"],
+        min(lc.get("hard_cap_s", left), left),
+        cfg[b]["max_job_estimate_s"],
         [s.stage for s in stages],
     )
 
@@ -632,6 +755,28 @@ def service(cfg: dict[str, Any]) -> Any:
 # -- the run ---------------------------------------------------------------------------------------
 
 
+def power_gate(cfg: dict[str, Any], tier: str, dev: dict[str, Any]) -> dict[str, Any]:
+    """A4's pre-data power gate at this run's own live snapshot (``phase8_mdi_power.assess``,
+    hardware group): refuse unless the fitted model's power reaches the target at the planned
+    shots and the planned cost fits the per-job limit and the cap left."""
+    if tier != "tier1_mdi":
+        raise F.Refused(f"{tier}: no power gate is defined")
+    import phase8_mdi_power as MP
+
+    r = MP.assess(cfg, dev)
+    keep = {
+        "rule": r["rule"],
+        "go": r["go"],
+        "cost_ok": r["cost_ok"],
+        "planned_cost": r["planned_cost"],
+        "tier1_cap_left_s": r["tier1_cap_left_s"],
+        "models": {k: m["n1"] for k, m in r["models"].items()},
+    }
+    if not r["go"]:
+        raise F.Refused(f"{tier}: the pre-data power gate fails at this calibration: {keep}")
+    return keep
+
+
 def checks(cfg, tier: str, svc: Any, backend: Any, out: Path, workers: int, selection) -> dict:
     """Everything before a submission that needs the live target: the calibration snapshot,
     the live re-selection (section 5), every hash, the ISA check, the live cost, admission.
@@ -642,6 +787,11 @@ def checks(cfg, tier: str, svc: Any, backend: Any, out: Path, workers: int, sele
     lc = live_cfg(cfg, tier)
     stages = ent["stages"](cfg)
     res: dict[str, Any] = {"tier": tier, "backend": backend.name, "read_at": now()}
+    if tier != base_tier(tier):
+        res["base_tier"] = base_tier(tier)
+        res["prior_counted_s"] = prior_counted(cfg, tier)
+    if tier == "tier1_mdi":
+        res["precondition"] = mdi_precondition(cfg)
     res["prereg"] = prereg_guard(cfg, tier)
     names = sorted({n for s in stages for n in s.names.values()})
     cc = circuit_check(cfg, tier, names)
@@ -665,6 +815,8 @@ def checks(cfg, tier: str, svc: Any, backend: Any, out: Path, workers: int, sele
         "qubits": {q: dev["qubits"][str(q)] for q in (59, 75, 74)},
         "cz_59_75": dev["cz"].get("59-75"),
     }
+    if lc.get("power_gate"):
+        res["power_gate"] = power_gate(cfg, tier, dev)
     sel = selection(usable_snapshot(dev), out, workers)
     res["selection"] = sel
     changed = [k for k in lc.get("gating_selections", []) if not sel["reproduces"][k]]
@@ -709,7 +861,9 @@ def run(
     tbud = tier_budget(cfg, tier, stages)
     tbud.jobs = [res["costs"][s.stage] for s in stages]  # max(pre-registered, live) per job
     prereg_budgets = H.tier_budgets(cfg, H.sub_cfgs(cfg))
-    budgets = {t: prereg_budgets[t] for t in cfg["order"]["tiers"]} | {tier: tbud}
+    budgets = {t: prereg_budgets[t] for t in cfg["order"]["tiers"]}
+    if tier == base_tier(tier):
+        budgets[tier] = tbud  # a sub-tier is admitted on its base tier's whole cap
     rem = remaining_allowance(cfg, ledger, usage0)
     res["admission"] = admission(cfg, tier, budgets, rem)
     res["tier_budget"] = {
@@ -747,13 +901,24 @@ def run(
         guard = job_guard(cfg, tier, tbud, ledger, svc, cost)
         arrays[st.stage] = P.run_stage(tier, st.stage, st.pubs, lb, out, cost, ledger, guard)
         H.log(out, f"[{tier} {st.stage}] done; charge {ledger.charges[tier][-1]}")
-    res["calibration_after"] = snapshot(backend)["qubits"]["75"]
+    after = snapshot(backend)["qubits"]
+    res["calibration_after"] = after["75"]
+    res["calibration_after_qubits"] = {str(q): after[str(q)] for q in live_cfg(cfg, tier)["qubits"]}
+    prior = prior_counted(cfg, tier)
     res["ledger"] = {
         "charges": [dataclasses.asdict(c) for c in ledger.charges.get(tier, [])],
         "counted_s": ledger.counted(tier),
         "allowance_reading_s": cfg["allowance"]["remaining_s"],
         "remaining_after_s": remaining_allowance(cfg, ledger, None),
     }
+    if tier != base_tier(tier):
+        res["ledger"] |= {
+            "base_tier": base_tier(tier),
+            "base_tier_prior_counted_s": prior,
+            "base_tier_counted_s": prior + ledger.counted(tier),
+            "base_tier_hard_cap_s": cfg[base_tier(tier)]["hard_cap_s"],
+            "prior_ledgers": live_cfg(cfg, tier).get("prior_ledgers", []),
+        }
     res["analysis"] = ent["analyse"](cfg, stages, arrays)
     res["submitted"] = True
     save_json(out / "live_run.json", res)

@@ -1,0 +1,564 @@
+{
+  "alpha": 0.05,
+  "calibration_date": "2026-11-10 23:34:16+00:00",
+  "cost_ok": true,
+  "cz_74_75": {
+    "duration": 0.0,
+    "error": 0.002602
+  },
+  "go": true,
+  "live": {
+    "59": {
+      "readout": 0.004395,
+      "reset_time": 2e-06,
+      "sx": 0.000176,
+      "t1": 0.000371,
+      "t2": 4.1e-05
+    },
+    "74": {
+      "readout": 0.008789,
+      "reset_time": 2e-06,
+      "sx": 0.000223,
+      "t1": 0.000278,
+      "t2": 0.000174
+    },
+    "75": {
+      "readout": 0.009277,
+      "reset_time": 2e-06,
+      "sx": 0.0001,
+      "t1": 0.000244,
+      "t2": 0.000124
+    }
+  },
+  "max_admissible_per_pair_n1": 1900,
+  "max_job_estimate_s": 20.0,
+  "meta": {
+    "config": {
+      "allowance": {
+        "allowed_plans": [
+          "open"
+        ],
+        "prior_counted_s": 15.2,
+        "reading_date": "2026-11-10",
+        "remaining_s": 538,
+        "reserve_s": 60,
+        "scenarios_s": [
+          600,
+          531,
+          400,
+          300,
+          200
+        ]
+      },
+      "approval": {
+        "tier1": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+        "tier2": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+        "tier3": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170"
+      },
+      "cost": {
+        "billing_round_s": 1.0,
+        "margin": 0.25,
+        "overhead_s": 2.0,
+        "rep_delay_s": 0.00025
+      },
+      "experiment": {
+        "coherence_config": "experiments/configs/phase8_coherence.toml",
+        "device": "results/summaries/phase7_spectator/device.json",
+        "name": "phase8_hw",
+        "prereg": "docs/phase8-preregistration.md",
+        "reference_config": "experiments/configs/phase8_reference.toml",
+        "replication_config": "experiments/configs/phase8_replication.toml",
+        "summary_dir": "results/summaries/phase8_prereg",
+        "workers": 2
+      },
+      "ibm": {
+        "backend": "ibm_kingston",
+        "channel": "ibm_cloud",
+        "env_file": ".env",
+        "live_summary_dir": "results/summaries/phase8_hw"
+      },
+      "order": {
+        "deferrable": [
+          "tier3"
+        ],
+        "tiers": [
+          "tier1",
+          "tier2",
+          "tier3"
+        ]
+      },
+      "reselection": {
+        "n_mc": 20000,
+        "seed": 3603,
+        "tier1_bell_power_floor": 0.8,
+        "tier2_ancilla_readout_max": 0.02,
+        "tier2_preserve_power_floor": 0.8,
+        "tier2_vanish_power_floor": 0.8,
+        "tier3_power_floor": 0.8
+      },
+      "sampler": {
+        "dynamical_decoupling": false,
+        "twirling_gates": false,
+        "twirling_measure": false
+      },
+      "tier1": {
+        "alpha": 0.05,
+        "hard_cap_s": 30.0,
+        "live": {
+          "circuit_prefix": "pm_",
+          "gating_selections": [],
+          "hard_cap_s": 20.0,
+          "prereg": [
+            {
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 2. Tier 1: Stage 3 (#33), Claim 4",
+              "sha256": "00a8ab2f2592d8f20e0b6cfcee0bbd744c103fffa8bf6080cc4b5aea6acbaa35"
+            },
+            {
+              "amendments": [
+                "**A2, 2026-11-10, pre-data (Tier 1).**",
+                "**A3, 2026-11-10, pre-data (approvals, budget).**"
+              ],
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 10. Amendment log",
+              "sha256": "d0d9ca1ad04fd5dce069a794fc98493a5bf6be7be7aff056997c4f21e20be19e"
+            }
+          ],
+          "qasm_digest": "4d17a4507e5a682f67f2ab173e1b27d53c7bdaacbd64efc80cdec76280365276",
+          "qasm_dir": "results/summaries/phase8_reference/qasm",
+          "qubits": [
+            59,
+            75
+          ],
+          "stages": [
+            "pm_primary"
+          ]
+        },
+        "max_job_estimate_s": 20.0,
+        "mdi": true,
+        "mdi_alpha": 0.05,
+        "mdi_live": {
+          "circuit_prefix": "mdi_",
+          "gating_selections": [],
+          "power_gate": true,
+          "precondition": "results/summaries/phase8_hw/tier1/decision.json",
+          "prereg": [
+            {
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 2. Tier 1: Stage 3 (#33), Claim 4",
+              "sha256": "00a8ab2f2592d8f20e0b6cfcee0bbd744c103fffa8bf6080cc4b5aea6acbaa35"
+            },
+            {
+              "amendments": [
+                "**A4, 2026-11-11, pre-data for MDI (Tier 1; after P&M's data).**"
+              ],
+              "commit": "",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 10. Amendment log",
+              "sha256": "e4b8269c9dcb1b10ab3d39fec221f0c69d9f64e6589e899b1dce6acbd1fe2301"
+            }
+          ],
+          "prior_ledgers": [
+            "results/summaries/phase8_hw/tier1/ledger.json"
+          ],
+          "qasm_digest": "c36a119e950020da52e8635c9d5998ce06a1d980eeda3afffed1d07467102c0b",
+          "qasm_dir": "results/summaries/phase8_reference/qasm",
+          "qubits": [
+            59,
+            74,
+            75
+          ],
+          "stages": [
+            "mdi_game"
+          ]
+        },
+        "min_branch_shots": 500,
+        "power_target": 0.8,
+        "secondary_alpha": 0.05,
+        "spam_gate": 0.9
+      },
+      "tier1_power": {
+        "draws": 4000,
+        "seed": 3604
+      },
+      "tier2": {
+        "controls_cap_s": 45.0,
+        "controls_subjobs": 2,
+        "dry_run": {
+          "em_iters": 300,
+          "n_boot": 200,
+          "primary_per_job": 4000,
+          "refit_evals": 200,
+          "seed": 3601,
+          "starts": {
+            "4": "klein",
+            "6": "octahedron"
+          },
+          "stat_boot": 200
+        },
+        "hard_cap_s": 225.0,
+        "main_cap_s": 150.0,
+        "main_subjobs_per_block": 3,
+        "max_job_estimate_s": 20.0,
+        "pilot_cap_s": 30.0,
+        "slot_1rad": {
+          "added_main_upper_s": 34.0,
+          "arms": 6,
+          "included": false,
+          "status": "pending #35 (open when this was written); the coordinator folds it in if #35 recommends it"
+        }
+      },
+      "tier3": {
+        "deferrable": true,
+        "dry_run": {
+          "n_boot": 200,
+          "seed": 3602
+        },
+        "hard_cap_s": 120.0,
+        "max_job_estimate_s": 12.0,
+        "option": "two_parallel"
+      }
+    },
+    "git_commit": "1361149d973214ec7d12720e00e078bec32db6f4",
+    "git_dirty": false,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 3642,
+    "timestamp_utc": "2026-11-11T02:24:22+00:00",
+    "torch": "2.15.0"
+  },
+  "min_per_pair_n1_for_target": 1000,
+  "models": {
+    "deficit-matched (committed)": {
+      "n0": {
+        "fe_fixed": 1.0,
+        "payoff": 0.44576,
+        "sd1": 1.070632
+      },
+      "n1": {
+        "fe_fixed": 0.566921,
+        "payoff": 0.04259,
+        "per_pair": 1000,
+        "power_mc": 0.801,
+        "power_normal": 0.800658,
+        "sd1": 2.16458,
+        "shots": 16000,
+        "shots_80": 15969.779622
+      }
+    },
+    "deficit-matched (live)": {
+      "n0": {
+        "fe_fixed": 1.0,
+        "payoff": 0.441101,
+        "sd1": 1.088699
+      },
+      "n1": {
+        "fe_fixed": 0.565854,
+        "payoff": 0.039569,
+        "per_pair": 1000,
+        "power_mc": 0.7395,
+        "power_normal": 0.747143,
+        "sd1": 2.166364,
+        "shots": 16000,
+        "shots_80": 18531.935809
+      }
+    },
+    "stage2 fitted (committed)": {
+      "n0": {
+        "fe_fixed": 1.0,
+        "payoff": 0.44576,
+        "sd1": 1.070632
+      },
+      "n1": {
+        "fe_fixed": 0.575316,
+        "payoff": 0.050397,
+        "per_pair": 1000,
+        "power_mc": 0.9025,
+        "power_normal": 0.904417,
+        "sd1": 2.159484,
+        "shots": 16000,
+        "shots_80": 11351.633248
+      }
+    },
+    "stage2 fitted (live)": {
+      "n0": {
+        "fe_fixed": 1.0,
+        "payoff": 0.441101,
+        "sd1": 1.088699
+      },
+      "n1": {
+        "fe_fixed": 0.574025,
+        "payoff": 0.047122,
+        "per_pair": 1000,
+        "power_mc": 0.87,
+        "power_normal": 0.867064,
+        "sd1": 2.161607,
+        "shots": 16000,
+        "shots_80": 13009.64116
+      }
+    },
+    "stage4c (committed)": {
+      "n0": {
+        "fe_fixed": 1.0,
+        "payoff": 0.44576,
+        "sd1": 1.070632
+      },
+      "n1": {
+        "fe_fixed": 0.580089,
+        "payoff": 0.054819,
+        "per_pair": 1000,
+        "power_mc": 0.9435,
+        "power_normal": 0.941299,
+        "sd1": 2.159743,
+        "shots": 16000,
+        "shots_80": 9596.433442
+      }
+    },
+    "stage4c (live)": {
+      "n0": {
+        "fe_fixed": 1.0,
+        "payoff": 0.441101,
+        "sd1": 1.088699
+      },
+      "n1": {
+        "fe_fixed": 0.57898,
+        "payoff": 0.051684,
+        "per_pair": 1000,
+        "power_mc": 0.9155,
+        "power_normal": 0.916134,
+        "sd1": 2.161606,
+        "shots": 16000,
+        "shots_80": 10814.693926
+      }
+    }
+  },
+  "planned_cost": {
+    "estimate_s": 7.178512,
+    "shot_s": 5.178512,
+    "shots": 20000,
+    "upper_s": 9.97314
+  },
+  "planned_per_pair": {
+    "mdi_n0": 250,
+    "mdi_n1": 1000
+  },
+  "read_at": "2026-11-11T00:38:12+0000",
+  "rule": "go if the MDI n = 1 power (normal and MC) >= 0.8 under 'stage2 fitted (live)' at the planned shots (#38)",
+  "search": [
+    {
+      "estimate_s": 7.178512,
+      "per_pair_n1": 1000,
+      "power deficit-matched (live)": 0.747143,
+      "power stage2 fitted (live)": 0.867064,
+      "power stage4c (live)": 0.916134,
+      "shot_s": 5.178512,
+      "shots": 20000,
+      "shots_n1": 16000,
+      "upper_s": 9.97314
+    },
+    {
+      "estimate_s": 7.386435,
+      "per_pair_n1": 1050,
+      "power deficit-matched (live)": 0.765032,
+      "power stage2 fitted (live)": 0.881142,
+      "power stage4c (live)": 0.927057,
+      "shot_s": 5.386435,
+      "shots": 20800,
+      "shots_n1": 16800,
+      "upper_s": 10.233044
+    },
+    {
+      "estimate_s": 7.594358,
+      "per_pair_n1": 1100,
+      "power deficit-matched (live)": 0.781802,
+      "power stage2 fitted (live)": 0.89384,
+      "power stage4c (live)": 0.936638,
+      "shot_s": 5.594358,
+      "shots": 21600,
+      "shots_n1": 17600,
+      "upper_s": 10.492948
+    },
+    {
+      "estimate_s": 7.802282,
+      "per_pair_n1": 1150,
+      "power deficit-matched (live)": 0.797508,
+      "power stage2 fitted (live)": 0.905275,
+      "power stage4c (live)": 0.945027,
+      "shot_s": 5.802282,
+      "shots": 22400,
+      "shots_n1": 18400,
+      "upper_s": 10.752852
+    },
+    {
+      "estimate_s": 8.010205,
+      "per_pair_n1": 1200,
+      "power deficit-matched (live)": 0.812203,
+      "power stage2 fitted (live)": 0.915559,
+      "power stage4c (live)": 0.952361,
+      "shot_s": 6.010205,
+      "shots": 23200,
+      "shots_n1": 19200,
+      "upper_s": 11.012756
+    },
+    {
+      "estimate_s": 8.218128,
+      "per_pair_n1": 1250,
+      "power deficit-matched (live)": 0.825937,
+      "power stage2 fitted (live)": 0.924797,
+      "power stage4c (live)": 0.958763,
+      "shot_s": 6.218128,
+      "shots": 24000,
+      "shots_n1": 20000,
+      "upper_s": 11.27266
+    },
+    {
+      "estimate_s": 8.426051,
+      "per_pair_n1": 1300,
+      "power deficit-matched (live)": 0.838763,
+      "power stage2 fitted (live)": 0.933083,
+      "power stage4c (live)": 0.964343,
+      "shot_s": 6.426051,
+      "shots": 24800,
+      "shots_n1": 20800,
+      "upper_s": 11.532564
+    },
+    {
+      "estimate_s": 8.633974,
+      "per_pair_n1": 1350,
+      "power deficit-matched (live)": 0.850729,
+      "power stage2 fitted (live)": 0.940507,
+      "power stage4c (live)": 0.9692,
+      "shot_s": 6.633974,
+      "shots": 25600,
+      "shots_n1": 21600,
+      "upper_s": 11.792468
+    },
+    {
+      "estimate_s": 8.841898,
+      "per_pair_n1": 1400,
+      "power deficit-matched (live)": 0.861885,
+      "power stage2 fitted (live)": 0.947151,
+      "power stage4c (live)": 0.973422,
+      "shot_s": 6.841898,
+      "shots": 26400,
+      "shots_n1": 22400,
+      "upper_s": 12.052372
+    },
+    {
+      "estimate_s": 9.049821,
+      "per_pair_n1": 1450,
+      "power deficit-matched (live)": 0.872276,
+      "power stage2 fitted (live)": 0.95309,
+      "power stage4c (live)": 0.977087,
+      "shot_s": 7.049821,
+      "shots": 27200,
+      "shots_n1": 23200,
+      "upper_s": 12.312276
+    },
+    {
+      "estimate_s": 9.257744,
+      "per_pair_n1": 1500,
+      "power deficit-matched (live)": 0.881947,
+      "power stage2 fitted (live)": 0.958394,
+      "power stage4c (live)": 0.980265,
+      "shot_s": 7.257744,
+      "shots": 28000,
+      "shots_n1": 24000,
+      "upper_s": 12.57218
+    },
+    {
+      "estimate_s": 9.465667,
+      "per_pair_n1": 1550,
+      "power deficit-matched (live)": 0.890941,
+      "power stage2 fitted (live)": 0.963126,
+      "power stage4c (live)": 0.983017,
+      "shot_s": 7.465667,
+      "shots": 28800,
+      "shots_n1": 24800,
+      "upper_s": 12.832084
+    },
+    {
+      "estimate_s": 9.67359,
+      "per_pair_n1": 1600,
+      "power deficit-matched (live)": 0.8993,
+      "power stage2 fitted (live)": 0.967343,
+      "power stage4c (live)": 0.985398,
+      "shot_s": 7.67359,
+      "shots": 29600,
+      "shots_n1": 25600,
+      "upper_s": 13.091988
+    },
+    {
+      "estimate_s": 9.881514,
+      "per_pair_n1": 1650,
+      "power deficit-matched (live)": 0.907063,
+      "power stage2 fitted (live)": 0.971098,
+      "power stage4c (live)": 0.987456,
+      "shot_s": 7.881514,
+      "shots": 30400,
+      "shots_n1": 26400,
+      "upper_s": 13.351892
+    },
+    {
+      "estimate_s": 10.089437,
+      "per_pair_n1": 1700,
+      "power deficit-matched (live)": 0.914268,
+      "power stage2 fitted (live)": 0.974439,
+      "power stage4c (live)": 0.989232,
+      "shot_s": 8.089437,
+      "shots": 31200,
+      "shots_n1": 27200,
+      "upper_s": 13.611796
+    },
+    {
+      "estimate_s": 10.29736,
+      "per_pair_n1": 1750,
+      "power deficit-matched (live)": 0.92095,
+      "power stage2 fitted (live)": 0.977408,
+      "power stage4c (live)": 0.990764,
+      "shot_s": 8.29736,
+      "shots": 32000,
+      "shots_n1": 28000,
+      "upper_s": 13.8717
+    },
+    {
+      "estimate_s": 10.505283,
+      "per_pair_n1": 1800,
+      "power deficit-matched (live)": 0.927144,
+      "power stage2 fitted (live)": 0.980045,
+      "power stage4c (live)": 0.992084,
+      "shot_s": 8.505283,
+      "shots": 32800,
+      "shots_n1": 28800,
+      "upper_s": 14.131604
+    },
+    {
+      "estimate_s": 10.713206,
+      "per_pair_n1": 1850,
+      "power deficit-matched (live)": 0.932882,
+      "power stage2 fitted (live)": 0.982385,
+      "power stage4c (live)": 0.993221,
+      "shot_s": 8.713206,
+      "shots": 33600,
+      "shots_n1": 29600,
+      "upper_s": 14.391508
+    },
+    {
+      "estimate_s": 10.92113,
+      "per_pair_n1": 1900,
+      "power deficit-matched (live)": 0.938194,
+      "power stage2 fitted (live)": 0.984461,
+      "power stage4c (live)": 0.994198,
+      "shot_s": 8.92113,
+      "shots": 34400,
+      "shots_n1": 30400,
+      "upper_s": 14.651412
+    }
+  ],
+  "snapshot": "results/summaries/phase8_hw/tier1_live_calibration.json",
+  "tier1_cap_left_s": 14.83783,
+  "tier1_prior_counted_s": 15.16217
+}

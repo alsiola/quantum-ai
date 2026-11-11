@@ -68,10 +68,12 @@ spam_gate = 0.90
 min_branch_shots = 500
 mdi = true                                      # optional sub-tier, only after P&M passes
 power_target = 0.8
+mdi_alpha = 0.05                                # MDI payoff > 0, one-sided; its own family of one (A4)
 
 [tier1.live]                                    # #37: what the live path submits for Tier 1
 # P&M only: one job of 60 circuits, 36,000 shots, in #33's seeded pub order
-# (phase8_reference/summary.json plan.pm_primary). MDI is excluded (A3: its q74 reset is undecided).
+# (phase8_reference/summary.json plan.pm_primary). Run on #37 (results/summaries/phase8_hw/tier1/).
+# MDI is the sub-tier tier1_mdi, [tier1.mdi_live] below (#38, amendment A4).
 stages = ["pm_primary"]
 hard_cap_s = 20.0                               # #28's request for this job (the tier's 30 s held MDI too)
 qubits = [59, 75]                               # nothing else may appear in a submitted circuit
@@ -97,6 +99,37 @@ heading = "## 10. Amendment log"
 sha256 = "d0d9ca1ad04fd5dce069a794fc98493a5bf6be7be7aff056997c4f21e20be19e"
 commit = "a161c1119271410dd8eae54523e51947d5fedc17"
 amendments = ["**A2, 2026-11-10, pre-data (Tier 1).**", "**A3, 2026-11-10, pre-data (approvals, budget).**"]
+
+[tier1.mdi_live]                                # #38: Tier 1's MDI sub-tier, `--tier tier1_mdi`
+# Amendment A4 (docs/phase8-preregistration.md section 10): the MDI game with `reset q74`
+# immediately before psi_y. One job of 32 circuits, 20,000 shots (16 input pairs x 250 at n = 0,
+# x 1,000 at n = 1), in #33's seeded pub order (phase8_reference/summary.json plan.mdi_game).
+# It runs on [approval] tier1 and counts against [tier1] hard_cap_s = 30 s cumulatively with
+# P&M's committed ledger (15.16 s counted), so its own cap is 30 - 15.16 = 14.84 s.
+stages = ["mdi_game"]
+qubits = [59, 74, 75]                           # nothing else may appear in a submitted circuit
+qasm_dir = "results/summaries/phase8_reference/qasm"
+circuit_prefix = "mdi_"
+# SHA-256 of the sorted "name sha256" lines (newline-terminated) of the 32 mdi_* rows of
+# results/summaries/phase8_prereg/hashes.csv, with the reset (A4); #33's, without it, was 33c43250...
+qasm_digest = "c36a119e950020da52e8635c9d5998ce06a1d980eeda3afffed1d07467102c0b"
+gating_selections = []                          # MDI uses no re-selected qubit; q74's calibration is recorded
+prior_ledgers = ["results/summaries/phase8_hw/tier1/ledger.json"]   # P&M (#37)
+precondition = "results/summaries/phase8_hw/tier1/decision.json"   # section 2.7: P&M passed, rejected EB
+power_gate = true                               # A4: refuse unless the fitted model's power >= 0.80 at this snapshot
+# The pre-registration as it governs the MDI sub-tier: section 2 (unchanged since #36/A3) and
+# section 10 with A4, each hashed at its commit on main (--submit and --dry-run refuse otherwise).
+[[tier1.mdi_live.prereg]]
+doc = "docs/phase8-preregistration.md"
+heading = "## 2. Tier 1: Stage 3 (#33), Claim 4"
+sha256 = "00a8ab2f2592d8f20e0b6cfcee0bbd744c103fffa8bf6080cc4b5aea6acbaa35"
+commit = "a161c1119271410dd8eae54523e51947d5fedc17"
+[[tier1.mdi_live.prereg]]
+doc = "docs/phase8-preregistration.md"
+heading = "## 10. Amendment log"
+sha256 = "e4b8269c9dcb1b10ab3d39fec221f0c69d9f64e6589e899b1dce6acbd1fe2301"
+commit = ""                                     # A4's commit on main, filled in once it has landed
+amendments = ["**A4, 2026-11-11, pre-data for MDI (Tier 1; after P&M's data).**"]
 
 [tier2]                                         # Stage 2 (#32, #34): Claim 3
 pilot_cap_s = 30.0

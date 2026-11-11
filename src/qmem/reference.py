@@ -660,10 +660,42 @@ _CX = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=c
 U_BSM = np.kron(_H, I2) @ _CX  # on (memory output B, trusted input Y): Phi+ -> |00>
 
 
-def mdi_probabilities(sup: np.ndarray, spam_x: Spam, spam_y: Spam, bsm_depol: float) -> np.ndarray:
+@dataclass
+class MdiReset:
+    """Amendment A4 (#38): ``reset q74`` immediately before psi_y. q74's pre-reset state (its
+    initialisation error, ZZ-coupled to q75 during the steps) is discarded; after the reset q74
+    is |1> with probability ``excited`` (the reset's error), whatever it was before. q75 idles
+    for the reset's ``duration`` s (amplitude damping and dephasing at ``t1``, ``t2``)."""
+
+    duration: float = 0.0
+    t1: float = math.inf
+    t2: float = math.inf
+    excited: float = 0.0
+
+    def idle(self) -> np.ndarray:
+        """q75's superoperator over the reset (the identity at zero duration)."""
+        if self.duration <= 0 or not math.isfinite(self.t1):
+            return np.eye(4, dtype=complex)
+        return relax_superop(self.duration, self.t1, self.t2)
+
+
+def mdi_probabilities(
+    sup: np.ndarray,
+    spam_x: Spam,
+    spam_y: Spam,
+    bsm_depol: float,
+    reset: MdiReset | None = None,
+) -> np.ndarray:
     """p[x, y] = P(read 00 | x, y): xi_x on q75 through ``sup``, psi_y on the second qubit,
     the Bell measurement (CX, H) with two-qubit depolarising ``bsm_depol`` before readout and
-    each qubit's assignment errors."""
+    each qubit's assignment errors.
+
+    ``reset`` (A4): q74 is reset before psi_y, so psi_y is prepared from
+    diag(1 - excited, excited) instead of ``spam_y.init_error``, and q75 first idles through
+    the reset (``MdiReset.idle``). Without it, the committed #33 model."""
+    if reset is not None:
+        sup = reset.idle() @ sup
+        spam_y = Spam(reset.excited, spam_y.prep_depol, spam_y.meas_depol, spam_y.p01, spam_y.p10)
 
     def prep(ket, s):
         r0 = np.diag([1 - s.init_error, s.init_error]).astype(complex)
@@ -682,15 +714,20 @@ def mdi_probabilities(sup: np.ndarray, spam_x: Spam, spam_y: Spam, bsm_depol: fl
     return out
 
 
+def mdi_payoff(omega: np.ndarray, p: np.ndarray) -> float:
+    return float((omega * p).sum())
+
+
 def mdi_sd1(omega: np.ndarray, p: np.ndarray) -> float:
     """Per-shot SD of sum omega p_hat with shots spread equally over the 16 input pairs."""
     return float(math.sqrt(16 * np.sum(omega**2 * p * (1 - p))))
 
 
-def mdi_circuit(step: Any, n: int, x: int, y: int) -> Any:
+def mdi_circuit(step: Any, n: int, x: int, y: int, reset: bool = False) -> Any:
     """MDI circuit on (q59, q75, q74) = (0, 1, 2): xi_x on q75, n steps (q74 idles in |0>, as
     in Phase 6), then psi_y on q74 and the Bell measurement CX(q75 -> q74), H(q75); Phi+ reads
-    00."""
+    00. ``reset`` (amendment A4, #38): ``reset q74`` after the steps' barrier, immediately
+    before psi_y (q75 idles through it)."""
     from qiskit import ClassicalRegister, QuantumCircuit
 
     regs = [ClassicalRegister(1, f"y{t}") for t in range(n)]
@@ -702,6 +739,8 @@ def mdi_circuit(step: Any, n: int, x: int, y: int) -> Any:
     qc.barrier()
     _steps(qc, step, n, regs, False, 1, 0, None)
     qc.barrier()
+    if reset:
+        qc.reset(2)
     _append_1q(qc, prep_unitary(TETRA_KETS[y]), 2)
     qc.cx(1, 2)
     qc.h(1)

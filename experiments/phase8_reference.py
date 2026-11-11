@@ -122,6 +122,21 @@ def device_spam(device: dict[str, Any], q: int, gates: int) -> R.Spam:
     return R.Spam(0.0, p_gate, p_gate, c["readout"], c["readout"])
 
 
+def mdi_reset(
+    cfg: dict[str, Any], calib: dict[str, Any], device: dict[str, Any]
+) -> R.MdiReset | None:
+    """Amendment A4 (#38): q74's reset before psi_y, or None (#33's circuits) if ``[mdi] reset``
+    is off. q75 idles for q74's reset time (FakeKingston's map) at the Stage 4c snapshot's T1
+    and T2; q74 is left excited with probability its readout error (the reset is a measurement
+    and a conditional X)."""
+    m = cfg.get("mdi", {})
+    if not m.get("reset"):
+        return None
+    q = {p["name"]: p["value"] for p in calib["qubits"][str(cfg["layout"]["memory"])]}
+    c = device["qubits"][str(cfg["layout"]["bridge"])]
+    return R.MdiReset(c["reset_time"], q["T1"] * 1e-6, q["T2"] * 1e-6, c["readout"])
+
+
 # -- models ----------------------------------------------------------------------------------------
 
 
@@ -190,7 +205,20 @@ def leak(cfg, n: int, extra_cz: int = 0) -> float:
     return R.leakage_bound(n, lk["cz_per_step"], lk["leak_per_cz"], extra_cz)
 
 
-def evaluate(cfg, steps, n, v, spam, rnoise, spam_y, bsm_depol, branch=None, first=None, bell_cz=0):
+def evaluate(
+    cfg,
+    steps,
+    n,
+    v,
+    spam,
+    rnoise,
+    spam_y,
+    bsm_depol,
+    branch=None,
+    first=None,
+    bell_cz=0,
+    reset: R.MdiReset | None = None,
+):
     """Every route's prediction for one model, n and (optional) branch."""
     sup = R.n_step_map(steps, n, branch, first)
     j = R.choi(sup)
@@ -215,7 +243,7 @@ def evaluate(cfg, steps, n, v, spam, rnoise, spam_y, bsm_depol, branch=None, fir
         row["_bell_par"] = par
     if spam_y is not None and branch is None:
         om = R.mdi_weights(v)
-        pq = R.mdi_probabilities(sup, spam, spam_y, bsm_depol)
+        pq = R.mdi_probabilities(sup, spam, spam_y, bsm_depol, reset)
         row |= {
             "mdi_payoff": float((om * pq).sum()),
             "mdi_sd1": R.mdi_sd1(om, pq),
@@ -279,12 +307,16 @@ def analyse(cfg: dict[str, Any], out: Path) -> dict[str, Any]:
     rnoise_bridge = ref_noise(cfg, inp["device"], bridge, spam)
     spam_y = device_spam(inp["device"], lay["bridge"], cfg["spam"]["gates_per_prep"])
     bsm_depol = 4 / 3 * float(inp["device"]["cz"][cfg["spam"]["bsm_cz_error_from"]]["error"])
+    rs = mdi_reset(cfg, inp["calib"], inp["device"])
+    log(out, f"MDI q74 reset (A4): {rs}")
 
     # -- 1. the channel against n, every model
     chan_rows, keep = [], {}
     for name, steps in ms.items():
         for n in all_n:
-            row = evaluate(cfg, steps, n, vs[n], spam, rnoise, spam_y, bsm_depol, bell_cz=bcz)
+            row = evaluate(
+                cfg, steps, n, vs[n], spam, rnoise, spam_y, bsm_depol, bell_cz=bcz, reset=rs
+            )
             keep[(name, n)] = row
             chan_rows.append(
                 {"model": name, "n": n, **{k: v for k, v in row.items() if not k.startswith("_")}}
@@ -519,6 +551,7 @@ def analyse(cfg: dict[str, Any], out: Path) -> dict[str, Any]:
             k: cfg["experiment"][k] for k in ("pieces", "phase6_pieces", "calibration", "device")
         },
         "q75_spam": vars(spam),
+        "mdi_reset": None if rs is None else vars(rs),
         "deficit_matched_dephasing_p": p_def,
         "targets_V": {str(n): mat(vs[n]) for n in all_n},
         "reference": {
@@ -577,8 +610,9 @@ def durations(cfg: dict[str, Any]) -> dict[str, float]:
         d[f"pm_n{n}"] = n * p["step_s"] + p["end_s"] + 0.1e-6
         d[f"bell_n{n}"] = n * p["step_s"] + p["end_s"] + 0.5e-6
     d["pm_neg"] = p["negative_control_n"] * p["step_s"] + p["end_s"] + 0.1e-6
+    extra = cfg.get("mdi", {}).get("reset_s", 0.0) if cfg.get("mdi", {}).get("reset") else 0.0
     for n in p["mdi_steps"]:
-        d[f"mdi_n{n}"] = n * p["step_s"] + p["end_s"] + 0.3e-6
+        d[f"mdi_n{n}"] = n * p["step_s"] + p["end_s"] + 0.3e-6 + extra
     d["q59_ctrl"] = cfg["plan"]["q59_control_steps"] * p["step_s"] + p["end_s"]
     # the longer of this estimate and FakeKingston's schedule of the exported circuits
     man = REPO_ROOT / cfg["experiment"]["summary_dir"] / "qasm" / "manifest.json"
@@ -770,13 +804,14 @@ def export_qasm(cfg: dict[str, Any], out: Path) -> None:
             float(b),
             lambda qc: float(R.noiseless_unconditional_rho(qc, [ref_idx])[1, 1].real),
         )
+    reset = bool(cfg.get("mdi", {}).get("reset"))  # A4 (#38): noiselessly, an exact |0>
     for n in p["mdi_steps"]:
         sup = R.n_step_map(s0, n)
-        pq = R.mdi_probabilities(sup, R.Spam(), R.Spam(), 0.0)
+        pq = R.mdi_probabilities(sup, R.Spam(), R.Spam(), 0.0, R.MdiReset() if reset else None)
         for x, y in itertools.product(range(4), range(4)):
             emit(
                 f"mdi_n{n}_x{x}_y{y}",
-                R.mdi_circuit(step, n, x, y),
+                R.mdi_circuit(step, n, x, y, reset),
                 [lay["output"], lay["memory"], lay["bridge"]],
                 pq[x, y],
                 lambda qc: float(R.noiseless_unconditional_rho(qc, [1, 2])[0, 0].real),

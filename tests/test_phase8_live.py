@@ -1,5 +1,7 @@
-"""Phase 8 Stage 5 (#37): the live path's guards (``experiments/phase8_live.py``), on a fake
-service and a fake sampler. No network, no Qiskit."""
+"""Phase 8 Stage 5 (#37) and 5b (#38): the live path's guards (``experiments/phase8_live.py``),
+on a fake service and a fake sampler. No network, no Qiskit. #38 adds Tier 1's MDI sub-tier
+(``tier1_mdi``): Tier 1's approval, a cap cumulative with P&M's committed ledger, the section
+2.7 precondition, A4's digest and power gate, MDI decoding and analysis."""
 
 from __future__ import annotations
 
@@ -51,7 +53,8 @@ class FakeJob:
         self.jid, self.charge = jid, charge
         self.res = []
         for _circ, _par, shots in pubs:
-            data = SimpleNamespace(**{r: Bits(rng.integers(0, 2, (shots, 1))) for r in _circ})
+            regs = [r if isinstance(r, tuple) else (r, 1) for r in _circ]
+            data = SimpleNamespace(**{r: Bits(rng.integers(0, 2, (shots, w))) for r, w in regs})
             self.res.append(SimpleNamespace(data=data, metadata={}))
 
     def job_id(self) -> str:
@@ -153,21 +156,27 @@ def test_prereg_guard_refuses_a_changed_section_and_an_unmerged_commit():
     def here(doc, commit):
         return (ROOT / doc).read_text()
 
-    assert len(L.prereg_guard(cfg(), "tier1", here)) == 2
-    c = cfg()
-    c["tier1"]["live"]["prereg"][0]["sha256"] = "0" * 64
+    assert len(L.prereg_guard(cfg(), "tier1_mdi", here)) == 2
+    # A4 appended to section 10, so P&M's recorded section 10 (#37, run and done) now refuses
     with pytest.raises(F.Refused, match="recorded hash"):
-        L.prereg_guard(c, "tier1", here)
+        L.prereg_guard(cfg(), "tier1", here)
+    c = cfg()
+    c["tier1"]["live"]["prereg"][1]["sha256"] = c["tier1"]["mdi_live"]["prereg"][1]["sha256"]
+    assert len(L.prereg_guard(c, "tier1", here)) == 2
+    c = cfg()
+    c["tier1"]["mdi_live"]["prereg"][0]["sha256"] = "0" * 64
+    with pytest.raises(F.Refused, match="recorded hash"):
+        L.prereg_guard(c, "tier1_mdi", here)
     with pytest.raises(F.Refused, match="not on main"):
-        L.prereg_guard(cfg(), "tier1", lambda d, c: None)
+        L.prereg_guard(cfg(), "tier1_mdi", lambda d, c: None)
     c = cfg()
-    c["tier1"]["live"]["prereg"][1]["amendments"] = ["**A9, 2026-11-11, pre-data.**"]
+    c["tier1"]["mdi_live"]["prereg"][1]["amendments"] = ["**A9, 2026-11-11, pre-data.**"]
     with pytest.raises(F.Refused, match="A9"):
-        L.prereg_guard(c, "tier1", here)
+        L.prereg_guard(c, "tier1_mdi", here)
     c = cfg()
-    c["tier1"]["live"]["prereg"] = []
+    c["tier1"]["mdi_live"]["prereg"] = []
     with pytest.raises(F.Refused):
-        L.prereg_guard(c, "tier1", here)
+        L.prereg_guard(c, "tier1_mdi", here)
 
 
 # -- 3. circuits -----------------------------------------------------------------------------------
@@ -335,3 +344,203 @@ def test_ibm_runtime_is_imported_inside_functions_only():
                 assert not any(m.startswith(("qiskit", "qiskit_ibm_runtime")) for m in mods), name
     text = (ROOT / "experiments/phase8_live.py").read_text()
     assert "os.environ" not in text  # credentials from .env only
+
+
+# -- #38: Tier 1's MDI sub-tier --------------------------------------------------------------------
+
+PM_COUNTED = 15.16217  # results/summaries/phase8_hw/tier1/ledger.json
+
+
+def mdi_stage(c: dict | None = None) -> L.LiveStage:
+    (st,) = L.tier1_mdi_stages(c or cfg())
+    return st
+
+
+def test_mdi_subtier_runs_on_tier1s_approval_and_config():
+    assert L.base_tier("tier1_mdi") == "tier1" and L.base_tier("tier1") == "tier1"
+    assert L.live_cfg(cfg(), "tier1_mdi") is not None
+    assert L.live_cfg(cfg(), "tier1_mdi")["circuit_prefix"] == "mdi_"
+    with pytest.raises(F.Refused):
+        L.approval_guard(cfg(approval__tier1=""), "tier1_mdi", True, None)
+    assert L.approval_guard(cfg(), "tier1_mdi", True, None).url == URL
+    # an approval for another tier does not cover it
+    c = cfg()
+    c["approval"]["tier1"] = ""
+    c["approval"]["tier2"] = URL
+    with pytest.raises(F.Refused):
+        L.approval_guard(c, "tier1_mdi", True, None)
+
+    def no_network(_cfg):
+        raise AssertionError("contacted the service")
+
+    args = SimpleNamespace(tier="tier1_mdi", submit=True, from_run=None, workers=1)
+    with pytest.raises(F.Refused):
+        L.run(cfg(approval__tier1=""), args, None, no_network)
+
+
+def test_mdi_prereg_refuses_until_a4_has_its_commit_on_main():
+    c = cfg()
+    if not c["tier1"]["mdi_live"]["prereg"][1]["commit"]:
+        with pytest.raises(F.Refused, match="not on main"):
+            L.prereg_guard(c, "tier1_mdi")
+    c["tier1"]["mdi_live"]["prereg"][1]["amendments"] = ["**A5, 2026-11-12, pre-data.**"]
+    with pytest.raises(F.Refused, match="A5"):
+        L.prereg_guard(c, "tier1_mdi", lambda d, k: (ROOT / d).read_text())
+
+
+def test_mdi_stage_is_33s_plan_with_the_reset_circuits_and_a4s_digest(tmp_path):
+    st = mdi_stage()
+    assert st.stage == "mdi_game" and len(st.pubs) == 32
+    assert sum(p.shots for p in st.pubs) == 20000
+    assert {p.arm: p.shots for p in st.pubs} == {"mdi_n0": 250, "mdi_n1": 1000}
+    assert st.cost["upper_s"] < 30 - PM_COUNTED
+    names = sorted(set(st.names.values()))
+    assert len(names) == 32 and L.tier1_circuit_name("mdi_n1", 11) == "mdi_n1_x2_y3"
+    ok = L.circuit_check(cfg(), "tier1_mdi", names)
+    assert ok["files"] == 32 and ok["digest"].startswith("c36a119e")
+    for n in names:  # A4: every MDI circuit resets q74 once, after the steps, before psi_y
+        text = ok["texts"][n]
+        assert text.count("reset $74;") == 1
+        assert text.index("reset $74;") > text.rindex("barrier")
+    c = cfg()
+    c["tier1"]["mdi_live"]["qasm_digest"] = (
+        "33c432509fd71f56d83da8a6afc8479e484d4af5fa5aa820af52f026edb91522"
+    )
+    with pytest.raises(F.Refused, match="digest"):  # #33's circuits, without the reset
+        L.circuit_check(c, "tier1_mdi", names)
+    with pytest.raises(F.Refused, match="approved set"):
+        L.circuit_check(cfg(), "tier1_mdi", names[:-1])
+
+
+def test_mdi_precondition_reads_pm_s_committed_decision(tmp_path):
+    pre = L.mdi_precondition(cfg())
+    assert pre["valid"] and pre["pm_n1_rejects_eb"] and pre["spam_gate"]
+    d = json.loads((ROOT / CFG["tier1"]["mdi_live"]["precondition"]).read_text())
+    for edit in ("gate", "neg", "reject"):
+        e = copy.deepcopy(d)
+        if edit == "gate":
+            e["spam_gate"]["pass"] = False
+        elif edit == "neg":
+            e["negative_control"]["falsely_passes"] = True
+        else:
+            e["tests"]["pm_n1"]["reject_eb"] = False
+        f = tmp_path / f"{edit}.json"
+        f.write_text(json.dumps(e))
+        c = cfg()
+        c["tier1"]["mdi_live"]["precondition"] = str(f)
+        with pytest.raises(F.Refused, match=r"2\.7"):
+            L.tier1_mdi_stages(c)
+
+
+def test_mdi_budget_is_cumulative_with_pm_against_tier1s_cap(tmp_path):
+    c = cfg()
+    st = mdi_stage(c)
+    assert L.prior_counted(c, "tier1_mdi") == pytest.approx(PM_COUNTED)
+    tb = L.tier_budget(c, "tier1_mdi", [st])
+    assert tb.hard_cap_s == pytest.approx(30 - PM_COUNTED) and tb.max_job_estimate_s == 20.0
+    assert not tb.problems()
+    L.job_guard(c, "tier1_mdi", tb, P.Ledger(), FakeService(), st.cost)({})
+    big = {"estimate_s": 12.0, "upper_s": 16.0}  # fits 20 s alone, not on top of P&M's 15.16 s
+    with pytest.raises(F.Refused, match="hard cap"):
+        L.job_guard(c, "tier1_mdi", tb, P.Ledger(), FakeService(), big)({})
+    led = P.Ledger()  # a second MDI job after this one would pass the 30 s
+    led.add("tier1_mdi", F.job_charge("tier1_mdi:mdi_game", st.cost["upper_s"], {"job_usage": 7}))
+    with pytest.raises(F.Refused, match="hard cap"):
+        L.job_guard(c, "tier1_mdi", tb, led, FakeService(), st.cost)({})
+    with pytest.raises(F.Refused, match="paid plan"):
+        L.job_guard(c, "tier1_mdi", tb, P.Ledger(), FakeService(plan="premium"), st.cost)({})
+    with pytest.raises(F.Refused, match="max_qpu_seconds"):
+        L.job_guard(
+            c, "tier1_mdi", tb, P.Ledger(), FakeService(), {"estimate_s": 20.5, "upper_s": 1}
+        )({})
+    # a larger prior ledger leaves less: the cap follows the committed charges
+    led_file = tmp_path / "ledger.json"
+    rec = json.loads((ROOT / "results/summaries/phase8_hw/tier1/ledger.json").read_text())
+    rec["charges"][0]["counted_s"] = 25.0
+    led_file.write_text(json.dumps(rec))
+    c["tier1"]["mdi_live"]["prior_ledgers"] = [str(led_file)]
+    tb2 = L.tier_budget(c, "tier1_mdi", [st])
+    assert tb2.hard_cap_s == pytest.approx(5.0) and tb2.problems()
+    # admission uses Tier 1's whole cap (30 s) in the cumulative table
+    budgets = {"tier1": tier1_budget(cfg())}
+    assert L.admission(cfg(), "tier1_mdi", budgets, 538)["fits_cap"]
+
+
+def test_mdi_power_gate_refuses_a_failing_check(monkeypatch):
+    calls = {}
+
+    def assess(c, dev):
+        calls["dev"] = dev
+        return {
+            "rule": "r",
+            "go": dev["go"],
+            "cost_ok": True,
+            "planned_cost": {},
+            "tier1_cap_left_s": 14.8,
+            "models": {"stage2 fitted (live)": {"n1": {"power_mc": 0.5}}},
+        }
+
+    monkeypatch.setitem(sys.modules, "phase8_mdi_power", SimpleNamespace(assess=assess))
+    assert L.power_gate(cfg(), "tier1_mdi", {"go": True})["go"]
+    with pytest.raises(F.Refused, match="power gate"):
+        L.power_gate(cfg(), "tier1_mdi", {"go": False})
+    with pytest.raises(F.Refused, match="no power gate"):
+        L.power_gate(cfg(), "tier1", {"go": True})
+
+
+def _mdi_backend(c, svc, out):
+    regs = {"mdi_n0": [("m", 2)], "mdi_n1": ["y0", ("m", 2)]}
+    return L.LiveBackend(
+        c, svc, svc.backend("ibm_kingston"), lambda p: regs[p.arm], L.tier1_decode, out, svc.sampler
+    )
+
+
+def test_mdi_job_submits_once_resumes_by_id_decodes_and_analyses(tmp_path):
+    c = cfg()
+    st = mdi_stage(c)
+    svc = FakeService(charge=7.0)
+    lb = _mdi_backend(c, svc, tmp_path)
+    lb.pubs = st.pubs
+    tb = L.tier_budget(c, "tier1_mdi", [st])
+    led = P.Ledger()
+    g = L.job_guard(c, "tier1_mdi", tb, led, svc, st.cost)
+    arr = P.run_stage("tier1_mdi", st.stage, st.pubs, lb, tmp_path, st.cost, led, g)
+    assert lb.submissions == 1
+    rec = json.loads((tmp_path / st.stage / "job.json").read_text())
+    assert rec["approval_url"] == URL and rec["tier"] == "tier1_mdi"
+    assert rec["charge"]["counted_s"] == pytest.approx(st.cost["upper_s"])  # max(7, upper)
+    p1 = next(p for p in st.pubs if p.arm == "mdi_n1")
+    p0 = next(p for p in st.pubs if p.arm == "mdi_n0")
+    assert arr[p1.key].shape == (1000, 3) and arr[p0.key].shape == (250, 2)
+    res = L.tier1_mdi_analyse(c, [st], {"mdi_game": arr})
+    assert not res["n1"]["reject_eb"] and res["call"].startswith("MDI inconclusive")
+    assert "does not undo the P&M result" in res["call"]
+    assert res["alpha"] == 0.05 and res["precondition"]["valid"]
+    lb2 = _mdi_backend(c, svc, tmp_path)
+    lb2.pubs = st.pubs
+    P.run_stage("tier1_mdi", st.stage, st.pubs, lb2, tmp_path, st.cost, P.Ledger(), g)
+    assert lb2.submissions == 0 and len(svc.jobs) == 1
+
+
+def test_mdi_analysis_rejects_eb_on_shots_from_a_good_channel():
+    """Phi+ counts at the target unitary V_1's probabilities (payoff 1/2): the analysis
+    rejects; at an EB channel's (full depolarising, payoff -1/4 at most 0): it does not."""
+    from qmem import reference as R
+
+    st = mdi_stage()
+    rng = np.random.default_rng(38)
+    s3 = json.loads((ROOT / "results/summaries/phase8_reference/summary.json").read_text())
+    v1 = np.array(s3["targets_V"]["1"]["re"]) + 1j * np.array(s3["targets_V"]["1"]["im"])
+    for sup, expect in ((R.superop([v1]), True), (R.depol_superop(1.0), False)):
+        pq = R.mdi_probabilities(sup, R.Spam(), R.Spam(), 0.0)
+        arr = {}
+        for p in st.pubs:
+            x, y = divmod(p.chunk, 4)
+            n = int(p.arm[-1])
+            hit = rng.random(p.shots) < pq[x, y]
+            code = np.where(hit, 0, rng.integers(1, 4, p.shots))
+            cols = [rng.integers(0, 2, p.shots)] * n + [code // 2, code % 2]
+            arr[p.key] = np.stack(cols, 1).astype(np.uint8)
+        res = L.tier1_mdi_analyse(cfg(), [st], {"mdi_game": arr})
+        assert res["n1"]["reject_eb"] is expect
+        assert res["call"].startswith("claim 4" if expect else "MDI inconclusive")

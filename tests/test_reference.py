@@ -112,6 +112,151 @@ def test_mdi_payoff_is_fe_minus_half_and_eb_safe_under_any_measurement(seed):
     assert pay <= 1e-12
 
 
+# -- amendment A4 (#38): the q74 reset before psi_y ------------------------------------------------
+
+_CX_75_74 = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=complex)
+_H1 = np.array([[1, 1], [1, -1]], dtype=complex) / math.sqrt(2)
+
+
+def _random_joint_kraus(rng, k=3):
+    """A random channel on (q75, q74): the steps with q74 coupled to q75 (ZZ and worse)."""
+    g = rng.standard_normal((4 * k, 4)) + 1j * rng.standard_normal((4 * k, 4))
+    q, _ = np.linalg.qr(g)
+    return [q[4 * i : 4 * i + 4, :] for i in range(k)]
+
+
+def _kraus_on(kraus, rho, which):
+    """Apply single-qubit Kraus operators to qubit ``which`` (0 = q75, 1 = q74) of rho."""
+    ops = [np.kron(k, np.eye(2)) if which == 0 else np.kron(np.eye(2), k) for k in kraus]
+    return sum(k @ rho @ k.conj().T for k in ops)
+
+
+def _depol1(rho, p, which):
+    paulis = [np.eye(2), R.X, R.Y, R.Z]
+    ks = [math.sqrt(1 - 3 * p / 4) * paulis[0]] + [math.sqrt(p / 4) * s for s in paulis[1:]]
+    return _kraus_on(ks, rho, which)
+
+
+def _brute_mdi(joint, e0, spam_x, spam_y, bsm, reset, povm=None):
+    """p[x, y] on the full (q75, q74) density matrix, step by step: xi_x on q75, q74 from
+    diag(1 - e0, e0), the joint steps, then (A4) reset q74 (|0><0|, |0><1|, then X with
+    probability ``reset.excited``) while q75 relaxes, psi_y, CX(q75 -> q74), H(q75),
+    depolarising, readout. ``povm``: replace the readout of 00 by this 4x4 element."""
+    from qmem.ancilla import relaxation_kraus
+
+    out = np.zeros((4, 4))
+    for x, kx in enumerate(R.TETRA_KETS):
+        u = R.prep_unitary(kx)
+        r75 = u @ np.diag([1 - spam_x.init_error, spam_x.init_error]).astype(complex) @ u.conj().T
+        rho = np.kron(r75, np.diag([1 - e0, e0]).astype(complex))
+        rho = _depol1(rho, spam_x.prep_depol, 0)
+        rho = sum(k @ rho @ k.conj().T for k in joint)
+        if reset is not None:
+            rho = _kraus_on([np.array([[1, 0], [0, 0]]), np.array([[0, 1], [0, 0]])], rho, 1)
+            rho = _kraus_on(
+                [math.sqrt(1 - reset.excited) * np.eye(2), math.sqrt(reset.excited) * R.X], rho, 1
+            )
+            rho = _kraus_on(relaxation_kraus(reset.duration, reset.t1, reset.t2), rho, 0)
+        for y, ky in enumerate(R.TETRA_KETS):
+            uy = np.kron(np.eye(2), R.prep_unitary(ky))
+            r = _depol1(uy @ rho @ uy.conj().T, spam_y.prep_depol, 1)
+            b = np.kron(_H1, np.eye(2)) @ _CX_75_74
+            r = b @ r @ b.conj().T
+            r = (1 - bsm) * r + bsm * np.eye(4) / 4
+            if povm is not None:
+                out[x, y] = float(np.trace(r @ povm).real)
+                continue
+            pz = np.real(np.diag(r))  # |q75 q74>: 00, 01, 10, 11
+            a75 = [1 - spam_x.p10, spam_x.p01]
+            a74 = [1 - spam_y.p10, spam_y.p01]
+            out[x, y] = sum(a75[i] * a74[j] * pz[2 * i + j] for i in (0, 1) for j in (0, 1))
+    return out
+
+
+def _reduced_q75_superop(joint, e0):
+    """The q75 channel the steps induce with q74 from diag(1 - e0, e0), traced over q74."""
+    sup = np.zeros((4, 4), dtype=complex)
+    for i in range(2):
+        for j in range(2):
+            e = np.zeros((2, 2), dtype=complex)
+            e[i, j] = 1
+            big = sum(k @ np.kron(e, np.diag([1 - e0, e0])) @ k.conj().T for k in joint)
+            red = big.reshape(2, 2, 2, 2).trace(axis1=1, axis2=3)
+            sup[:, i + 2 * j] = red.reshape(-1, order="F")
+    return sup
+
+
+@pytest.mark.parametrize("seed", range(6))
+def test_mdi_reset_model_matches_a_brute_force_density_matrix(seed):
+    """A4's model (``mdi_probabilities`` with ``MdiReset``) against the full (q75, q74)
+    simulation: whatever the steps do to q74 (a random joint channel, q74 starting excited
+    with probability e0), after the reset only q75's reduced channel, q75's idle and the
+    reset's excitation matter. Without the reset the two disagree."""
+    rng = np.random.default_rng(3800 + seed)
+    joint = _random_joint_kraus(rng)
+    e0 = float(rng.uniform(0.0, 0.3))
+    sx = R.Spam(*rng.uniform(0, 0.03, 5))
+    sy = R.Spam(0.0, *rng.uniform(0, 0.03, 4))
+    bsm = float(rng.uniform(0, 0.05))
+    rs = R.MdiReset(2.212e-6, float(rng.uniform(100e-6, 400e-6)), 0.0, float(rng.uniform(0, 0.02)))
+    rs.t2 = float(rng.uniform(0.3, 2.0)) * rs.t1
+    sup = _reduced_q75_superop(joint, e0)
+    got = R.mdi_probabilities(sup, sx, sy, bsm, rs)
+    assert np.abs(got - _brute_mdi(joint, e0, sx, sy, bsm, rs)).max() < 1e-12
+    # no reset: psi_y is prepared from whatever the steps left on q74, which a q75-only model
+    # cannot describe (the violation A4 removes)
+    no_reset = _brute_mdi(joint, e0, sx, sy, bsm, None)
+    assert np.abs(R.mdi_probabilities(sup, sx, sy, bsm) - no_reset).max() > 1e-4
+    # zero-duration, zero-error reset with q74 untouched by the steps = the committed model
+    sep = [np.kron(k, np.eye(2)) for k in _random_channel_kraus(rng)]
+    p0 = R.mdi_probabilities(_reduced_q75_superop(sep, 0.0), sx, sy, bsm, R.MdiReset())
+    assert (
+        np.abs(p0 - R.mdi_probabilities(_reduced_q75_superop(sep, 0.0), sx, sy, bsm)).max() < 1e-14
+    )
+
+
+@pytest.mark.parametrize("seed", range(10))
+def test_eb_channels_never_exceed_mdi_payoff_zero_with_the_reset(seed):
+    """Soundness with A4's reset in place: q75's channel EB, but chosen by q74's state (an
+    EB map controlled by q74's Z, so q74 is correlated with the channel's environment), q74
+    excited before the steps with probability e0; after the reset, q75's idle, any input
+    noise on q74 and *any* POVM element in place of the Bell measurement, the payoff is
+    <= 0."""
+    rng = np.random.default_rng(3900 + seed)
+    v = R.random_unitary(rng)
+    om = R.mdi_weights(v)
+    eb0 = R.random_eb_kraus(rng, int(rng.integers(2, 5)))
+    eb1 = R.random_eb_kraus(rng, int(rng.integers(2, 5)))
+    p0, p1 = np.diag([1.0, 0.0]), np.diag([0.0, 1.0])
+    joint = [np.kron(k, p0) for k in eb0] + [np.kron(k, p1) for k in eb1]
+    # and a random unitary on q74 afterwards, keeping its record of which map ran
+    w = R.random_unitary(rng)
+    joint = [np.kron(np.eye(2), w) @ k for k in joint]
+    e0 = float(rng.uniform(0.0, 0.5))
+    rs = R.MdiReset(2.212e-6, 250e-6, 150e-6, float(rng.uniform(0, 0.05)))
+    h = rng.standard_normal((4, 4)) + 1j * rng.standard_normal((4, 4))
+    m = h @ h.conj().T
+    m /= np.linalg.eigvalsh(m).max()
+    sx = R.Spam()
+    sy = R.Spam(0.0, float(rng.uniform(0, 0.05)), 0.0, 0.0, 0.0)
+    pay = float((om * _brute_mdi(joint, e0, sx, sy, 0.0, rs, povm=m)).sum())
+    assert pay <= 1e-12
+    # with the true Bell measurement, the model's payoff also stays <= 0
+    sup = _reduced_q75_superop(joint, e0)
+    assert R.mdi_payoff(om, R.mdi_probabilities(sup, sx, R.Spam(), 0.0, rs)) <= 1e-12
+
+
+def test_mdi_reset_idle_lowers_the_payoff_of_a_good_channel():
+    """q75's 2.2 us idle can only lower the identity's payoff (1/2 at no idle)."""
+    om = R.mdi_weights()
+    eye = np.eye(4, dtype=complex)
+    base = R.mdi_payoff(om, R.mdi_probabilities(eye, R.Spam(), R.Spam(), 0.0))
+    rs = R.MdiReset(2.212e-6, 244e-6, 124e-6, 0.0)
+    lowered = R.mdi_payoff(om, R.mdi_probabilities(eye, R.Spam(), R.Spam(), 0.0, rs))
+    assert base == pytest.approx(0.5, abs=1e-12)
+    assert 0.45 < lowered < base
+
+
 def test_identity_and_dephasing_controls():
     """Positive control: the identity gives F_e = 1, P&M 1, MDI payoff 1/2. Negative control:
     full Z dephasing is EB and sits exactly on the bounds (1/2, 2/3)."""
@@ -360,8 +505,31 @@ def test_rebuilt_qasm_matches_the_committed_files():
         "pm_n1_px_b0": (R.pm_circuit(step, 1, 2, 0, v[1]), [59, 75]),
         "pm_neg_my_b1": (R.pm_circuit(step, 1, 5, 1, v[1], negative=True), [59, 75]),
         "bell_n1_yy_f1": (R.bell_circuit(step, 1, "yy", 1, v[1], pick["swaps"]), [59, *path]),
-        "mdi_n1_x2_y3": (R.mdi_circuit(step, 1, 2, 3), [59, 75, 74]),
+        "mdi_n1_x2_y3": (R.mdi_circuit(step, 1, 2, 3, reset=True), [59, 75, 74]),  # A4
     }
     for name, (qc, lay) in cases.items():
         tq = transpile(qc, be, initial_layout=lay, optimization_level=0, seed_transpiler=0)
         assert R.sha256_text(qasm3.dumps(tq)) == man[name]["sha256"], name
+
+
+def test_mdi_circuit_reset_removes_an_excited_q74():
+    """A4 (#38) in the circuit itself: with q74 flipped to |1> before the steps, the reset
+    circuit's noiseless P(00) is unchanged; #33's circuit without the reset is not."""
+    pytest.importorskip("qiskit")
+    from qiskit import QuantumCircuit, qasm3
+
+    step = qasm3.loads((ROOT / "results/summaries/phase6/step.qasm").read_text())
+
+    def p00(qc):
+        return float(R.noiseless_unconditional_rho(qc, [1, 2])[0, 0].real)
+
+    def excited_first(qc):
+        pre = QuantumCircuit(*qc.qregs, *qc.cregs)
+        pre.x(2)
+        return pre.compose(qc)
+
+    for x, y in ((0, 0), (2, 3), (3, 1)):
+        with_reset = R.mdi_circuit(step, 1, x, y, reset=True)
+        without = R.mdi_circuit(step, 1, x, y)
+        assert p00(excited_first(with_reset)) == pytest.approx(p00(with_reset), abs=1e-12)
+        assert abs(p00(excited_first(without)) - p00(without)) > 1e-3
