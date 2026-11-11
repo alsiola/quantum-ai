@@ -51,7 +51,9 @@ exclusion robust.**
   the best free permutation (#32's Lemma) loses by 0.065–0.106 even against the other model.
 - **More shots do not help** (the gap is a per-shot bias; at 64,000 per arm, 320 s, every
   unexcluded class still wins). A second incommensurate angle is not expected to help either,
-  because the misspecification, not the angle, sets the gap. **Size check:** SIZE_HEAD
+  because the misspecification, not the angle, sets the gap. **Size check:** with a Z_24 × 2 register as the truth, the
+  refit test falsely rejected it in 0 of 4 replicates (rate 0, Clopper–Pearson 95% CI
+  0–0.60; z mean −8.8, max −7.4), so the rejections against the refit are not a size artefact.
 - **The grid was cut** to Z_8 × 3 (three variants), Z_16 × 2 and Z_24 × 2. The run took about
   22 h on the shared machine, against the issue's ~12 h.
 - §4.2 records the decision; `plan.json` is unchanged.
@@ -715,7 +717,16 @@ a projection, and a refit on more 1 rad data could move either side:
 
 **Size check** (`incommensurate.json` `null`, `incommensurate_null.csv`). The generator is the
 best-fitting exact register on the fixed generator's data (smallest held-out deficit against
-the refit, INV(1, −1) = identity): SIZE_GEN. SIZE_RESULT
+the refit, INV(1, −1) = identity): Z_24 × 2 with the nearest shift
+(`fixed_r0_z24x2_nearest_prism`, d = 48, held-out deficit 0.0129 nats per shot against the
+refit). Four replicates draw the 18 + 7 arms' shots from it and refit both the quantum
+reference and a Z_24 × 2 register. A false rejection is refit_p ≤ 0.05, i.e. the register
+that generated the data is rejected. There were **0 of 4** (rate 0, Clopper–Pearson 95% CI
+0–0.60). The statistic sits far on the register's side: z mean −8.8 (sd 1.7), max −7.4,
+refit_p = 1 in every replicate. Four replicates bound the size only loosely (the CI's upper
+end is 0.60), but with z this far from the threshold a false rejection at α = 0.05 would
+need a shift of more than 9 standard errors. The register fits stopped at the 1,500-step
+cap (`converged` false) with a last gain per symbol of 0 to the recorded precision.
 
 **Recommendation: drop the tier.** It costs 40 s of upper bound in the main tier (43 s as
 its own tier) and does not do what #34 asked of it. The register exclusion stays conditional
