@@ -203,7 +203,7 @@ commit = "a161c1119271410dd8eae54523e51947d5fedc17"   # unchanged since #36/A3
 doc = "docs/phase8-preregistration.md"
 heading = "## 10. Amendment log"
 sha256 = "b0eeca3a50502584350629ef7bc4b9160fdf36f03d61da02c1855fb3b34556ec"
-commit = ""                                     # A6 on main (#40)
+commit = "c6076bb238bab66c482c7c0fb198ae475ac328bb"   # A6 on main (#40)
 amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**", "**A6, 2026-11-11, pre-data for Tier 2 main and the controls (after the pilot's data).**"]
 
 
@@ -230,7 +230,7 @@ commit = "a161c1119271410dd8eae54523e51947d5fedc17"   # unchanged since #36/A3
 doc = "docs/phase8-preregistration.md"
 heading = "## 10. Amendment log"
 sha256 = "b0eeca3a50502584350629ef7bc4b9160fdf36f03d61da02c1855fb3b34556ec"
-commit = ""                                     # A6 on main (#40)
+commit = "c6076bb238bab66c482c7c0fb198ae475ac328bb"   # A6 on main (#40)
 amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**", "**A6, 2026-11-11, pre-data for Tier 2 main and the controls (after the pilot's data).**"]
 
 
