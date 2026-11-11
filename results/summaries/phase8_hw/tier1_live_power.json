@@ -1,0 +1,286 @@
+{
+  "calibration_date": "2026-11-10 23:34:16+00:00",
+  "go": true,
+  "live": {
+    "59": {
+      "readout": 0.004395,
+      "sx": 0.000176,
+      "t1": 0.000371,
+      "t2": 4.1e-05
+    },
+    "75": {
+      "readout": 0.009277,
+      "sx": 0.0001,
+      "t1": 0.000244,
+      "t2": 0.000124
+    }
+  },
+  "meta": {
+    "config": {
+      "allowance": {
+        "allowed_plans": [
+          "open"
+        ],
+        "prior_counted_s": 0.0,
+        "reading_date": "2026-11-10",
+        "remaining_s": 538,
+        "reserve_s": 60,
+        "scenarios_s": [
+          600,
+          531,
+          400,
+          300,
+          200
+        ]
+      },
+      "approval": {
+        "tier1": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+        "tier2": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+        "tier3": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170"
+      },
+      "cost": {
+        "billing_round_s": 1.0,
+        "margin": 0.25,
+        "overhead_s": 2.0,
+        "rep_delay_s": 0.00025
+      },
+      "experiment": {
+        "coherence_config": "experiments/configs/phase8_coherence.toml",
+        "device": "results/summaries/phase7_spectator/device.json",
+        "name": "phase8_hw",
+        "prereg": "docs/phase8-preregistration.md",
+        "reference_config": "experiments/configs/phase8_reference.toml",
+        "replication_config": "experiments/configs/phase8_replication.toml",
+        "summary_dir": "results/summaries/phase8_prereg",
+        "workers": 2
+      },
+      "ibm": {
+        "backend": "ibm_kingston",
+        "channel": "ibm_cloud",
+        "env_file": ".env",
+        "live_summary_dir": "results/summaries/phase8_hw"
+      },
+      "order": {
+        "deferrable": [
+          "tier3"
+        ],
+        "tiers": [
+          "tier1",
+          "tier2",
+          "tier3"
+        ]
+      },
+      "reselection": {
+        "n_mc": 20000,
+        "seed": 3603,
+        "tier1_bell_power_floor": 0.8,
+        "tier2_ancilla_readout_max": 0.02,
+        "tier2_preserve_power_floor": 0.8,
+        "tier2_vanish_power_floor": 0.8,
+        "tier3_power_floor": 0.8
+      },
+      "sampler": {
+        "dynamical_decoupling": false,
+        "twirling_gates": false,
+        "twirling_measure": false
+      },
+      "tier1": {
+        "alpha": 0.05,
+        "hard_cap_s": 30.0,
+        "live": {
+          "circuit_prefix": "pm_",
+          "gating_selections": [],
+          "hard_cap_s": 20.0,
+          "prereg": [
+            {
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 2. Tier 1: Stage 3 (#33), Claim 4",
+              "sha256": "00a8ab2f2592d8f20e0b6cfcee0bbd744c103fffa8bf6080cc4b5aea6acbaa35"
+            },
+            {
+              "amendments": [
+                "**A2, 2026-11-10, pre-data (Tier 1).**",
+                "**A3, 2026-11-10, pre-data (approvals, budget).**"
+              ],
+              "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+              "doc": "docs/phase8-preregistration.md",
+              "heading": "## 10. Amendment log",
+              "sha256": "d0d9ca1ad04fd5dce069a794fc98493a5bf6be7be7aff056997c4f21e20be19e"
+            }
+          ],
+          "qasm_digest": "4d17a4507e5a682f67f2ab173e1b27d53c7bdaacbd64efc80cdec76280365276",
+          "qasm_dir": "results/summaries/phase8_reference/qasm",
+          "qubits": [
+            59,
+            75
+          ],
+          "stages": [
+            "pm_primary"
+          ]
+        },
+        "max_job_estimate_s": 20.0,
+        "mdi": true,
+        "min_branch_shots": 500,
+        "power_target": 0.8,
+        "secondary_alpha": 0.05,
+        "spam_gate": 0.9
+      },
+      "tier1_power": {
+        "draws": 4000,
+        "seed": 3604
+      },
+      "tier2": {
+        "controls_cap_s": 45.0,
+        "controls_subjobs": 2,
+        "dry_run": {
+          "em_iters": 300,
+          "n_boot": 200,
+          "primary_per_job": 4000,
+          "refit_evals": 200,
+          "seed": 3601,
+          "starts": {
+            "4": "klein",
+            "6": "octahedron"
+          },
+          "stat_boot": 200
+        },
+        "hard_cap_s": 225.0,
+        "main_cap_s": 150.0,
+        "main_subjobs_per_block": 3,
+        "max_job_estimate_s": 20.0,
+        "pilot_cap_s": 30.0,
+        "slot_1rad": {
+          "added_main_upper_s": 34.0,
+          "arms": 6,
+          "included": false,
+          "status": "pending #35 (open when this was written); the coordinator folds it in if #35 recommends it"
+        }
+      },
+      "tier3": {
+        "deferrable": true,
+        "dry_run": {
+          "n_boot": 200,
+          "seed": 3602
+        },
+        "hard_cap_s": 120.0,
+        "max_job_estimate_s": 12.0,
+        "option": "two_parallel"
+      }
+    },
+    "git_commit": "c23bd8a3a04e5fd41a572b0757e389e64a0bf3f2",
+    "git_dirty": true,
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.13.6",
+    "seed": 3604,
+    "timestamp_utc": "2026-11-11T00:37:14+00:00",
+    "torch": "2.15.0"
+  },
+  "models": {
+    "live T1/T2/readout": {
+      "branch00_n2": {
+        "effect": 0.192274,
+        "expected_branch_shots": 1793.066841,
+        "planned_shots": 6000,
+        "power_mc": 1.0,
+        "power_normal": 1.0,
+        "score": 0.86094,
+        "shots_80": 85.054269,
+        "threshold": 0.668667
+      },
+      "negative_control": {
+        "score": 0.577913,
+        "threshold": 0.667667
+      },
+      "pm_n1": {
+        "effect": 0.043183,
+        "expected_branch_shots": 12000,
+        "planned_shots": 12000,
+        "power_mc": 1.0,
+        "power_normal": 1.0,
+        "score": 0.71085,
+        "shots_80": 690.883727,
+        "threshold": 0.667667
+      },
+      "spam_gate_n0": {
+        "score": 0.98069,
+        "threshold": 0.9
+      }
+    },
+    "live T1/T2/readout + CZ/sx": {
+      "branch00_n2": {
+        "effect": 0.189847,
+        "expected_branch_shots": 1793.330351,
+        "planned_shots": 6000,
+        "power_mc": 1.0,
+        "power_normal": 1.0,
+        "score": 0.858513,
+        "shots_80": 88.502605,
+        "threshold": 0.668667
+      },
+      "negative_control": {
+        "score": 0.577657,
+        "threshold": 0.667667
+      },
+      "pm_n1": {
+        "effect": 0.042488,
+        "expected_branch_shots": 12000,
+        "planned_shots": 12000,
+        "power_mc": 1.0,
+        "power_normal": 1.0,
+        "score": 0.710155,
+        "shots_80": 716.109374,
+        "threshold": 0.667667
+      },
+      "spam_gate_n0": {
+        "score": 0.98069,
+        "threshold": 0.9
+      }
+    },
+    "stage4c (committed)": {
+      "branch00_n2": {
+        "effect": 0.192969,
+        "expected_branch_shots": 1793.129145,
+        "planned_shots": 6000,
+        "power_mc": 1.0,
+        "power_normal": 1.0,
+        "score": 0.861636,
+        "shots_80": 84.084959,
+        "threshold": 0.668667
+      },
+      "negative_control": {
+        "score": 0.578294,
+        "threshold": 0.667667
+      },
+      "pm_n1": {
+        "effect": 0.044105,
+        "expected_branch_shots": 12000,
+        "planned_shots": 12000,
+        "power_mc": 1.0,
+        "power_normal": 1.0,
+        "score": 0.711771,
+        "shots_80": 661.355084,
+        "threshold": 0.667667
+      },
+      "spam_gate_n0": {
+        "score": 0.981169,
+        "threshold": 0.9
+      }
+    }
+  },
+  "rebuild_max_diff": 0.0,
+  "rule": "submit if P&M n = 1 power >= 0.8 at 12,000 shots (#37, coordinator)",
+  "snapshot": "results/summaries/phase8_hw/tier1_livedry_calibration.json",
+  "stage4c": {
+    "59": {
+      "readout": 0.005859,
+      "t1": 0.00025,
+      "t2": 0.000371
+    },
+    "75": {
+      "readout": 0.008789,
+      "t1": 0.000321,
+      "t2": 0.000139
+    }
+  }
+}

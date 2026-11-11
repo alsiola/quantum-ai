@@ -1,9 +1,8 @@
 # Phase 8 Stage 5: the live path and Tier 1 P&M on ibm_kingston (#37)
 
-**Status: the live dry run passed. Nothing has been submitted yet.** The `--submit` step for
-Tier 1 P&M waits for the coordinator's review of the live code on #28, as #28 asked ("I review
-its code before it submits"). No Phase 8 QPU time has been used. This note will hold the job,
-the gates and Claim 4's decision once the job has run.
+**Status: the live dry run passed, the coordinator accepted the live code (#37,
+issuecomment-6783342126), and the pre-data power check at the live calibration passed (§2.1).**
+This note holds the job, the gates and Claim 4's decision in §3.
 
 The pre-registration is [phase8-preregistration.md](phase8-preregistration.md): §2 for Tier 1,
 §5 for live re-selection, §7 for the budget, and amendments A2 and A3 in §10.
@@ -83,7 +82,7 @@ committed copies are `results/summaries/phase8_hw/tier1_livedry.json`, `_calibra
 | check | result |
 | --- | --- |
 | plan | `open` |
-| IBM usage | 69 s used, **531 s remaining** in the rolling 28 days (the owner's reading was 538 s; the guard uses the smaller) |
+| IBM usage | 69 s used, **531 s remaining** in the 28 days from 2026-10-14 (the owner's dashboard reading was 1.03 RU used, 538 s remaining; IBM's own seconds differ a little, and the guard uses the smaller) |
 | calibration | `ibm_kingston`, last update 2026-11-10 23:34 UTC |
 | pre-registration §2, §10 | unchanged since a161c11 (on `main`) |
 | hashes | 169 of 169 ok and identical to `hashes.csv`; Tier 1 digest `4d17a450…` ✓ (60 files) |
@@ -120,6 +119,27 @@ have refused it, but Tier 1's pre-registration has no such bound. Its protection
 n = 0 SPAM gate (0.90) and the EB negative control. A worse step channel can only lower the
 P&M score, which makes the test conservative, not anti-conservative. The coordinator may still
 prefer to wait for a better calibration.
+
+### 2.1 Pre-data power check at the live calibration (the coordinator's condition)
+
+Before any submission, #33's P&M prediction was re-computed with q59's and q75's live T1, T2
+and readout. It used the Stage 4c noise model with those six numbers replaced; the pieces were
+rebuilt as #27 built them, and the rebuild reproduces the committed pieces exactly (difference
+0). q75's readout flips were scaled to its live readout. V stays #33's fixed correction, which
+is what the QASM compiles. The rule: submit if the power of P&M at n = 1 is at least 0.8 at
+12,000 shots; otherwise wait for a new calibration, for up to 48 h. Script:
+`experiments/phase8_live_power.py` (hardware group); output
+`results/summaries/phase8_hw/tier1_live_power.json`.
+
+| model | P&M n = 1 (threshold 0.6677) | power at 12,000 (MC; Holm's 0.025) | shots for 80% | record 00, n = 2 (threshold 0.6687) | n = 0 gate (0.90) | negative control |
+| --- | --- | --- | --- | --- | --- | --- |
+| Stage 4c (committed) | 0.7118 | 1.00 | 661 | 0.862 | 0.981 | 0.578 |
+| **live T1/T2/readout** | **0.7108** | **1.00** | 691 | 0.861 | 0.981 | 0.578 |
+| live T1/T2/readout + CZ/sx errors | 0.7102 | 1.00 | 716 | 0.859 | 0.981 | 0.578 |
+
+**Go.** q59's short T2 costs about 0.001 in the score. q59 is measured and reset in every step,
+so its coherence barely enters the channel; q75's is what matters, and its live T2 (124 µs) is
+close to Stage 4c's (139 µs).
 
 ## 3. The job
 
