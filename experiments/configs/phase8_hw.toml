@@ -210,12 +210,12 @@ amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-d
 [tier2.controls_live]                           # #40: the controls, `--tier tier2_controls`, after main (A6)
 stages = ["controls0", "controls1"]
 hard_cap_s = 45.0                               # the controls' cap ([tier2] controls_cap_s)
-ancillas = [13, 50]                             # bench_R2_* use the first; a different pick on their day needs A6b
-qubits = [13, 59, 75]
-qasm_dir = "results/summaries/phase8_hw/tier2/qasm/controls"   # A6's re-exports of bench_R2_0, bench_R2_1 on q13
-ancilla_sha256 = { bench_R2_0 = "8f19e9662996facb78e76f368206b79871521e9f905cea66f692eb1e922c84ea", bench_R2_1 = "1b3e27c14792fdda674856831274bd6f16392a5b945a32c1269e72b466f9be49" }
-# SHA-256 of the sorted "name sha256" lines of the 26 controls (24 of #34's, A6's two bench_R2_*)
-qasm_digest = "9b8df9499b73b5fab758db33af230a7508dbdf9d9161998508e1b57e5c705571"
+ancillas = [64, 56]                             # A6b: section 5 on the 2026-11-11 21:32 UTC snapshot; bench_R2_* use the first
+qubits = [64, 59, 75]
+qasm_dir = "results/summaries/phase8_hw/tier2/qasm_a6b/controls"   # A6b's re-exports of bench_R2_0, bench_R2_1 on q64 (A6's on q13: tier2/qasm/controls)
+ancilla_sha256 = { bench_R2_0 = "30e7f0a64a1831020d458438c86538f71d0d7e1d3ee8cdf1df73ccddf086fb37", bench_R2_1 = "671138c9b239a3d41caf71da9ea752118dbf856c0516dc9d001bfda4dee00617" }
+# SHA-256 of the sorted "name sha256" lines of the 26 controls (24 of #34's, A6b's two bench_R2_*; A6's on q13 was 9b8df949...)
+qasm_digest = "c645561e3100ddbe115574e4ab4101cade6c26d651b3d940bcbc178718ec9a5d"
 gating_selections = []
 earlier_ledgers = ["results/summaries/phase8_hw/tier1/ledger.json", "results/summaries/phase8_hw/tier1_mdi/ledger.json", "results/summaries/phase8_hw/tier2/ledger.json", "results/summaries/phase8_hw/tier2_main/ledger.json"]
 prior_ledgers = ["results/summaries/phase8_hw/tier2/ledger.json", "results/summaries/phase8_hw/tier2_main/ledger.json"]
@@ -229,9 +229,9 @@ commit = "a161c1119271410dd8eae54523e51947d5fedc17"   # unchanged since #36/A3
 [[tier2.controls_live.prereg]]
 doc = "docs/phase8-preregistration.md"
 heading = "## 10. Amendment log"
-sha256 = "b0eeca3a50502584350629ef7bc4b9160fdf36f03d61da02c1855fb3b34556ec"
-commit = "c6076bb238bab66c482c7c0fb198ae475ac328bb"   # A6 on main (#40)
-amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**", "**A6, 2026-11-11, pre-data for Tier 2 main and the controls (after the pilot's data).**"]
+sha256 = "32f2616b99a07e3a1193c051c9e7e59a790ef6fd42435bdedd7713dff97629a5"
+commit = ""                                     # A6b on main (#40)
+amendments = ["**A1, 2026-11-10, pre-data (Tier 2).**", "**A5, 2026-11-11, pre-data for Tier 2 (after Tier 1's data).**", "**A6, 2026-11-11, pre-data for Tier 2 main and the controls (after the pilot's data).**", "**A6b, 2026-11-11, pre-data for the controls (after main's data).**"]
 
 
 [tier2.slot_1rad]                               # #35's 1 rad extension: NOT folded in

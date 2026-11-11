@@ -123,7 +123,8 @@ and keep within the plan's allowance (reserve included). Credentials live in `.e
   the live snapshot, ancilla re-selection and floor (about 6 min). `tier2_main` (#40, amendment
   A6: #35's 1 rad slot dropped, cap 225 s; `[tier2.main_live]`, A1's six sub-jobs whole and in
   order) and then `tier2_controls` (`[tier2.controls_live]`, after main's ledger is committed;
-  `bench_R2_*` re-exported on q13 with `phase8_coherence.py --export-controls --ancillas 13,50`).
+  `bench_R2_*` re-exported on the day's first ancilla with `phase8_coherence.py --export-controls
+  --ancillas <pair> --out-dir <dir>`: A6 on q13, then A6b on q64 into `tier2/qasm_a6b/`).
   Main's primary contrast, the register/d = 8 secondary and the section 3.7 call run afterwards
   on the committed shots, no QPU: `experiments/phase8_tier2.py --part primary` (about 1 h with 2
   workers), `--part secondary` (about 4 h, `--from-run` the primary's run), `--part decide`:

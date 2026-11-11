@@ -166,15 +166,14 @@ def test_prereg_guard_refuses_a_changed_section_and_an_unmerged_commit():
     def here(doc, commit):
         return (ROOT / doc).read_text()
 
-    assert len(L.prereg_guard(cfg(), "tier2_main", here)) == 2
     assert len(L.prereg_guard(cfg(), "tier2_controls", here)) == 2
-    # A4, A5, then A6, appended to section 10, so the recorded section 10 of P&M (#37), MDI
-    # (#38) and the Tier 2 pilot (#39), all run and done, now refuses
-    for t in ("tier1", "tier1_mdi", "tier2"):
+    # A4, A5, A6, then A6b, appended to section 10, so the recorded section 10 of P&M (#37), MDI
+    # (#38), the Tier 2 pilot (#39) and main (#40), all run and done, now refuses
+    for t in ("tier1", "tier1_mdi", "tier2", "tier2_main"):
         with pytest.raises(F.Refused, match="recorded hash"):
             L.prereg_guard(cfg(), t, here)
     c = cfg()
-    new10 = c["tier2"]["main_live"]["prereg"][1]["sha256"]
+    new10 = c["tier2"]["controls_live"]["prereg"][1]["sha256"]
     c["tier1"]["live"]["prereg"][1]["sha256"] = new10
     c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = new10
     assert len(L.prereg_guard(c, "tier1", here)) == 2
@@ -183,9 +182,11 @@ def test_prereg_guard_refuses_a_changed_section_and_an_unmerged_commit():
     with pytest.raises(F.Refused, match="recorded hash"):
         L.prereg_guard(c, "tier1_mdi", here)
     with pytest.raises(F.Refused, match="not on main"):
-        L.prereg_guard(cfg(), "tier2_main", lambda d, c: None)
+        L.prereg_guard(cfg(), "tier2_controls", lambda d, c: None)
     c = cfg()
-    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = c["tier2"]["main_live"]["prereg"][1]["sha256"]
+    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = c["tier2"]["controls_live"]["prereg"][1][
+        "sha256"
+    ]
     c["tier1"]["mdi_live"]["prereg"][1]["amendments"] = ["**A9, 2026-11-11, pre-data.**"]
     with pytest.raises(F.Refused, match="A9"):
         L.prereg_guard(c, "tier1_mdi", here)
@@ -400,7 +401,9 @@ def test_mdi_prereg_refuses_until_a4_has_its_commit_on_main():
     if not c["tier1"]["mdi_live"]["prereg"][1]["commit"]:
         with pytest.raises(F.Refused, match="not on main"):
             L.prereg_guard(c, "tier1_mdi")
-    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = c["tier2"]["main_live"]["prereg"][1]["sha256"]
+    c["tier1"]["mdi_live"]["prereg"][1]["sha256"] = c["tier2"]["controls_live"]["prereg"][1][
+        "sha256"
+    ]
     c["tier1"]["mdi_live"]["prereg"][1]["amendments"] = ["**A8, 2026-11-12, pre-data.**"]
     with pytest.raises(F.Refused, match="A8"):
         L.prereg_guard(c, "tier1_mdi", lambda d, k: (ROOT / d).read_text())
@@ -803,13 +806,18 @@ def test_tier2_prereg_names_a1_and_a5_and_refuses_until_a5_is_on_main():
         assert F.amendment_hash(F.amendment_section(old, secs[1]["heading"])) == secs[1]["sha256"]
     m = c["tier2"]["main_live"]["prereg"]
     assert any(a.startswith("**A6, 2026-11-11") for a in m[1]["amendments"])
-    L.prereg_guard(c, "tier2_main", lambda d, k: (ROOT / d).read_text())  # the working copy
-    if not m[1]["commit"]:
+    old = L.committed_doc(m[1]["doc"], m[1]["commit"])
+    if old is not None:  # A6 at its commit: main's record
+        assert F.amendment_hash(F.amendment_section(old, m[1]["heading"])) == m[1]["sha256"]
+    k = c["tier2"]["controls_live"]["prereg"]
+    assert any(a.startswith("**A6b, 2026-11-11") for a in k[1]["amendments"])
+    L.prereg_guard(c, "tier2_controls", lambda d, k: (ROOT / d).read_text())  # the working copy
+    if not k[1]["commit"]:
         with pytest.raises(F.Refused, match="not on main"):
-            L.prereg_guard(c, "tier2_main")
-    m[1]["amendments"] = ["**A7, 2026-11-12, pre-data.**"]
+            L.prereg_guard(c, "tier2_controls")
+    k[1]["amendments"] = ["**A7, 2026-11-12, pre-data.**"]
     with pytest.raises(F.Refused, match="A7"):
-        L.prereg_guard(c, "tier2_main", lambda d, k: (ROOT / d).read_text())
+        L.prereg_guard(c, "tier2_controls", lambda d, k: (ROOT / d).read_text())
 
 
 # -- Tier 2 main and the controls (#40, amendment A6) ----------------------------------------------
@@ -850,7 +858,7 @@ def test_tier2_main_circuits_are_a5s_and_a6s_digest():
         L.tier2_circuit_check(c, "tier2_main", names)
 
 
-def test_tier2_controls_are_34s_files_with_a6s_bench_r2_on_q13():
+def test_tier2_controls_are_34s_files_with_a6bs_bench_r2_on_q64():
     import phase8_hw as H
 
     c = cfg()
@@ -858,10 +866,10 @@ def test_tier2_controls_are_34s_files_with_a6s_bench_r2_on_q13():
     pubs = dict(tb["tier2_sched"]["stages"])
     names = sorted({p.arm for k in ("controls0", "controls1") for p in pubs[k]})
     ok = L.tier2_controls_circuit_check(c, "tier2_controls", names)
-    assert ok["files"] == 26 and ok["digest"].startswith("9b8df949")
+    assert ok["files"] == 26 and ok["digest"].startswith("c645561e")  # A6b: q64
     for n in ("bench_R2_0", "bench_R2_1"):
-        assert "$13;" in ok["texts"][n] and "$50;" not in ok["texts"][n]
-    assert all("$13;" not in t and "$50;" not in t for n, t in ok["texts"].items() if "R2" not in n)
+        assert "$64;" in ok["texts"][n] and "$50;" not in ok["texts"][n]
+    assert all("$64;" not in t and "$50;" not in t for n, t in ok["texts"].items() if "R2" not in n)
     c["tier2"]["controls_live"]["ancillas"] = [50, 21]
     with pytest.raises(F.Refused, match="manifest ancilla"):
         L.tier2_controls_circuit_check(c, "tier2_controls", names)

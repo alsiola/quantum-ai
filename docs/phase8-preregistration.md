@@ -672,6 +672,33 @@ affects, with the hash guard of Phase 7 §9 (`F.amendment_check`) on the live pa
     `--dry-run` comes first. Then `--submit` runs the six sub-jobs in order, and a failed guard
     stops the run. **Any rerun of a main or controls job needs a dated amendment.** A resume
     re-fetches a submitted job by its id, so it is not a rerun.
+- **A6b, 2026-11-11, pre-data for the controls (after main's data).** This amendment is written
+  before any controls job, as A6 requires when the controls' own snapshot picks other ancillas.
+  Main ran under A6 (#40: six sub-jobs, 18:04–18:54 UTC, 125.97 s counted). A6b changes nothing
+  about main, its analysis or any rule, and the controls stay descriptive.
+  - **The controls' snapshot.** The first `--submit --tier tier2_controls` read `ibm_kingston`'s
+    calibration of 2026-11-11 21:32:02 UTC at 22:04 UTC (snapshot hash `0d81f343…`). §5's rule
+    picks **[64, 56]**: q50's readout rose to 0.0117, and q64 and q56 read 0.0029. The live path
+    refused before any submission, as A6 says it must.
+    - The same snapshot shows q75's readout at 0.057, against 0.009 at main's. No Tier 2 rule
+      gates the controls on it. It is recorded, and it bears on the controls' read of q75 only.
+  - **Floor at that snapshot.** The bias bound is 0.0029 ≤ 0.02, the vanish power 1.00 and the
+    preserve power 0.985, both ≥ 0.80.
+  - **Re-export.** `bench_R2_0` and `bench_R2_1` use the first ancilla, so they are re-exported
+    on **q64** with `phase8_coherence --export-controls --ancillas 64,56 --out-dir
+    results/summaries/phase8_hw/tier2/qasm_a6b` (FakeKingston, level 0, fixed layout).
+    - The builder with q50 reproduces #34's hashes.
+    - Each file has #34's lines with q50 → q64, and acts only on q64 and q75.
+    - The SHA-256s are `bench_R2_0` `30e7f0a6…` and `bench_R2_1` `671138c9…`.
+    - **The controls digest** is
+      `c645561e3100ddbe115574e4ab4101cade6c26d651b3d940bcbc178718ec9a5d`.
+    - A6's q13 files stay as A6's record.
+  - **Cost and admission are unchanged.** There are 2 jobs, each with an estimate of 15.62 s and
+    an upper bound of 20.52 s, so 41.04 s against the 45 s cap. The allowance is 538 − 167.9
+    counted = 370.1 s, so 225 ≤ 310.1 with the reserve.
+  - **What the run must reproduce.** The pick [64, 56], the floor, the digest and the cost, as
+    in A6. If the pick moves again before submission, the controls stop again and a further
+    dated amendment is needed.
 
 ## Reproduction
 
