@@ -39,7 +39,7 @@ remaining_s = 538
 reading_date = "2026-11-10"
 scenarios_s = [600, 531, 400, 300, 200]
 reserve_s = 60                                  # held back from every tier (overruns, a re-pilot)
-prior_counted_s = 15.2                          # Phase 8 jobs counted: Tier 1 P&M (#37), 15.16 s (max of 12 s charged and the upper bound), rounded up
+prior_counted_s = 25.2                          # Phase 8 jobs counted: Tier 1 P&M (#37) 15.16 s + MDI (#38) 9.97 s (each max of charged and upper bound), rounded up
 allowed_plans = ["open"]
 
 [ibm]                                           # the live path only (#37)

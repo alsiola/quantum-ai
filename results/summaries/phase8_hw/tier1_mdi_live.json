@@ -1,0 +1,533 @@
+{
+  "admission": {
+    "allowance_s": 519.0,
+    "cumulative_cap_s": 30.0,
+    "cumulative_upper_s": 25.13531,
+    "estimate_s": 18.508248,
+    "fits_cap": true,
+    "fits_upper": true,
+    "hard_cap_s": 30.0,
+    "jobs": 2,
+    "problems": "",
+    "reserve_s": 60,
+    "tier": "tier1",
+    "upper_s": 25.13531
+  },
+  "analysis": {
+    "alpha": 0.05,
+    "call": "claim 4 at n = 1 in the MDI setting (trusting the input states only): the step channel is not EB",
+    "n0": {
+      "hits": [
+        [
+          91,
+          77,
+          3,
+          76
+        ],
+        [
+          86,
+          78,
+          82,
+          4
+        ],
+        [
+          3,
+          88,
+          98,
+          83
+        ],
+        [
+          92,
+          3,
+          74,
+          73
+        ]
+      ],
+      "lower_bound": 0.440703,
+      "payoff": 0.4665,
+      "reject_eb": true,
+      "se": 0.015684,
+      "shots_per_pair": 250,
+      "upper_bound": 0.492297
+    },
+    "n1": {
+      "hits": [
+        [
+          303,
+          84,
+          275,
+          330
+        ],
+        [
+          390,
+          231,
+          251,
+          182
+        ],
+        [
+          398,
+          66,
+          345,
+          193
+        ],
+        [
+          451,
+          119,
+          145,
+          314
+        ]
+      ],
+      "lower_bound": 0.039187,
+      "payoff": 0.067462,
+      "reject_eb": true,
+      "se": 0.01719,
+      "shots_per_pair": 1000,
+      "upper_bound": 0.095737
+    },
+    "order_warnings": {},
+    "precondition": {
+      "call": "claim 4 at n = 1 under trusted SPAM: the step channel is not EB",
+      "decision": "results/summaries/phase8_hw/tier1/decision.json",
+      "negative_control": true,
+      "pm_n1_rejects_eb": true,
+      "spam_gate": true,
+      "valid": true
+    }
+  },
+  "approval": "https://github.com/alsiola/quantum-ai/issues/28#issuecomment-6782262170",
+  "backend": "ibm_kingston",
+  "base_tier": "tier1",
+  "calibration_after": {
+    "measure_time": 2e-06,
+    "readout": 0.009277,
+    "reset_time": 2e-06,
+    "sx": 0.0001,
+    "t1": 0.000244,
+    "t2": 0.000124
+  },
+  "calibration_after_qubits": {
+    "59": {
+      "measure_time": 2e-06,
+      "readout": 0.004395,
+      "reset_time": 2e-06,
+      "sx": 0.000176,
+      "t1": 0.000371,
+      "t2": 4.1e-05
+    },
+    "74": {
+      "measure_time": 2e-06,
+      "readout": 0.008789,
+      "reset_time": 2e-06,
+      "sx": 0.000223,
+      "t1": 0.000278,
+      "t2": 0.000174
+    },
+    "75": {
+      "measure_time": 2e-06,
+      "readout": 0.009277,
+      "reset_time": 2e-06,
+      "sx": 0.0001,
+      "t1": 0.000244,
+      "t2": 0.000124
+    }
+  },
+  "costs": {
+    "mdi_game": {
+      "estimate_s": 7.178512,
+      "live_estimate_s": 7.170672,
+      "live_upper_s": 9.96334,
+      "prereg_estimate_s": 7.178512,
+      "prereg_upper_s": 9.97314,
+      "shots": 20000,
+      "upper_s": 9.97314
+    }
+  },
+  "hashes": {
+    "all_ok": true,
+    "n": 169,
+    "same_as_prereg": true,
+    "tier_digest": "c36a119e950020da52e8635c9d5998ce06a1d980eeda3afffed1d07467102c0b",
+    "tier_files": 32
+  },
+  "isa": {
+    "max_duration_s": 1e-05,
+    "unchanged": true
+  },
+  "ledger": {
+    "allowance_reading_s": 538,
+    "base_tier": "tier1",
+    "base_tier_counted_s": 25.13531,
+    "base_tier_hard_cap_s": 30.0,
+    "base_tier_prior_counted_s": 15.16217,
+    "charges": [
+      {
+        "charged_s": 8.0,
+        "counted_s": 9.97314,
+        "exceeded": false,
+        "readings": {
+          "account_delta": 8.0,
+          "job_metrics": 8.0,
+          "job_usage": 8.0
+        },
+        "stage": "tier1_mdi:mdi_game",
+        "status": "charged",
+        "upper_s": 9.97314
+      }
+    ],
+    "counted_s": 9.97314,
+    "prior_ledgers": [
+      "results/summaries/phase8_hw/tier1/ledger.json"
+    ],
+    "remaining_after_s": 512.82686
+  },
+  "plan": "open",
+  "power_gate": {
+    "cost_ok": true,
+    "go": true,
+    "models": {
+      "deficit-matched (committed)": {
+        "fe_fixed": 0.566921,
+        "payoff": 0.04259,
+        "per_pair": 1000,
+        "power_mc": 0.801,
+        "power_normal": 0.800658,
+        "sd1": 2.16458,
+        "shots": 16000,
+        "shots_80": 15969.779622
+      },
+      "deficit-matched (live)": {
+        "fe_fixed": 0.565854,
+        "payoff": 0.039569,
+        "per_pair": 1000,
+        "power_mc": 0.7395,
+        "power_normal": 0.747143,
+        "sd1": 2.166364,
+        "shots": 16000,
+        "shots_80": 18531.935809
+      },
+      "stage2 fitted (committed)": {
+        "fe_fixed": 0.575316,
+        "payoff": 0.050397,
+        "per_pair": 1000,
+        "power_mc": 0.9025,
+        "power_normal": 0.904417,
+        "sd1": 2.159484,
+        "shots": 16000,
+        "shots_80": 11351.633248
+      },
+      "stage2 fitted (live)": {
+        "fe_fixed": 0.574025,
+        "payoff": 0.047122,
+        "per_pair": 1000,
+        "power_mc": 0.87,
+        "power_normal": 0.867064,
+        "sd1": 2.161607,
+        "shots": 16000,
+        "shots_80": 13009.64116
+      },
+      "stage4c (committed)": {
+        "fe_fixed": 0.580089,
+        "payoff": 0.054819,
+        "per_pair": 1000,
+        "power_mc": 0.9435,
+        "power_normal": 0.941299,
+        "sd1": 2.159743,
+        "shots": 16000,
+        "shots_80": 9596.433442
+      },
+      "stage4c (live)": {
+        "fe_fixed": 0.57898,
+        "payoff": 0.051684,
+        "per_pair": 1000,
+        "power_mc": 0.9155,
+        "power_normal": 0.916134,
+        "sd1": 2.161606,
+        "shots": 16000,
+        "shots_80": 10814.693926
+      }
+    },
+    "planned_cost": {
+      "estimate_s": 7.178512,
+      "shot_s": 5.178512,
+      "shots": 20000,
+      "upper_s": 9.97314
+    },
+    "rule": "go if the MDI n = 1 power (normal and MC) >= 0.8 under 'stage2 fitted (live)' at the planned shots (#38)",
+    "tier1_cap_left_s": 14.83783
+  },
+  "precondition": {
+    "call": "claim 4 at n = 1 under trusted SPAM: the step channel is not EB",
+    "decision": "results/summaries/phase8_hw/tier1/decision.json",
+    "negative_control": true,
+    "pm_n1_rejects_eb": true,
+    "spam_gate": true,
+    "valid": true
+  },
+  "prereg": [
+    {
+      "commit": "a161c1119271410dd8eae54523e51947d5fedc17",
+      "heading": "## 2. Tier 1: Stage 3 (#33), Claim 4",
+      "sha256": "00a8ab2f2592d8f20e0b6cfcee0bbd744c103fffa8bf6080cc4b5aea6acbaa35"
+    },
+    {
+      "commit": "17d213ef521d26bbf4227a87b3937990cc57c186",
+      "heading": "## 10. Amendment log",
+      "sha256": "e4b8269c9dcb1b10ab3d39fec221f0c69d9f64e6589e899b1dce6acbd1fe2301"
+    }
+  ],
+  "prior_counted_s": 15.16217,
+  "read_at": "2026-11-11T02:43:54+0000",
+  "run_dir": "results/phase8_hw_live_tier1_mdi/20261111T024345Z",
+  "selection": {
+    "committed": {
+      "tier1_reference": 79,
+      "tier2_ancillas": [
+        50,
+        21
+      ],
+      "tier3_pairs": [
+        "m67_o68",
+        "m149_o148"
+      ]
+    },
+    "powers_committed_pairs": {
+      "m149_o148": 0.837,
+      "m67_o68": 0.839
+    },
+    "reproduces": {
+      "tier1_reference": false,
+      "tier2_ancillas": false,
+      "tier3_pairs": true
+    },
+    "snapshot": {
+      "backend": "ibm_kingston",
+      "date": "2026-11-11 02:32:31+00:00",
+      "sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f"
+    },
+    "tier1_reference": {
+      "candidates": [
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the output or its neighbour; path through the output",
+          "path": "75-59-55-54",
+          "qubit": 54,
+          "score": 0.543338
+        },
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the output or its neighbour; path through the output",
+          "path": "75-59-55",
+          "qubit": 55,
+          "score": 0.550273
+        },
+        {
+          "admitted": false,
+          "excluded_because": "readout",
+          "path": "75-74-73-72",
+          "qubit": 72,
+          "score": 0.537474
+        },
+        {
+          "admitted": true,
+          "excluded_because": "",
+          "path": "75-74-73",
+          "qubit": 73,
+          "score": 0.552627
+        },
+        {
+          "admitted": false,
+          "excluded_because": "coupler to the memory; coupler to the output or its neighbour",
+          "path": "75-74",
+          "qubit": 74,
+          "score": 0.556934
+        },
+        {
+          "admitted": true,
+          "excluded_because": "",
+          "path": "75-74-73-79",
+          "qubit": 79,
+          "score": 0.548959
+        }
+      ],
+      "chosen": [
+        73
+      ]
+    },
+    "tier2_ancillas": {
+      "candidates": 70,
+      "chosen": [
+        13,
+        50
+      ],
+      "distance_to_core": 6,
+      "snapshot_sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f",
+      "top10": [
+        {
+          "measure_error": 0.001953,
+          "qubit": 13,
+          "t1": 0.000413
+        },
+        {
+          "measure_error": 0.00293,
+          "qubit": 50,
+          "t1": 0.000335
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 69,
+          "t1": 0.000254
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 68,
+          "t1": 0.00019
+        },
+        {
+          "measure_error": 0.003418,
+          "qubit": 62,
+          "t1": 0.000159
+        }
+      ]
+    },
+    "tier3_no_pieces": [
+      "m2_o1",
+      "m2_o3",
+      "m3_o16",
+      "m16_o3",
+      "m13_o14",
+      "m15_o14",
+      "m15_o19",
+      "m16_o23",
+      "m21_o20",
+      "m28_o29",
+      "m33_o34",
+      "m34_o33",
+      "m49_o38",
+      "m44_o45",
+      "m45_o44",
+      "m45_o46",
+      "m47_o46",
+      "m47_o57",
+      "m49_o50",
+      "m50_o51",
+      "m51_o52",
+      "m58_o51",
+      "m57_o67",
+      "m69_o70",
+      "m70_o69",
+      "m70_o71",
+      "m71_o70",
+      "m81_o80",
+      "m92_o91",
+      "m92_o93",
+      "m95_o94",
+      "m106_o105",
+      "m106_o107",
+      "m108_o107",
+      "m110_o111",
+      "m125_o117",
+      "m125_o124",
+      "m125_o126",
+      "m133_o132",
+      "m152_o151",
+      "m154_o155"
+    ],
+    "tier3_pairs": {
+      "candidates": 348,
+      "chosen": [
+        "m67_o68",
+        "m149_o148"
+      ],
+      "footprints": [
+        [
+          67,
+          68,
+          57
+        ],
+        [
+          149,
+          148,
+          150
+        ]
+      ],
+      "power": {
+        "m149_o148": 0.837,
+        "m67_o68": 0.839
+      },
+      "qualified": 6,
+      "screened": 95,
+      "snapshot_sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f",
+      "statement": "2 pairs qualify and are chosen"
+    }
+  },
+  "selection_gate": {
+    "changed": [],
+    "gating": []
+  },
+  "snapshot": {
+    "calibration_date": "2026-11-11 02:32:31+00:00",
+    "cz_59_75": {
+      "duration": 0.0,
+      "error": 0.001938
+    },
+    "qubits": {
+      "59": {
+        "measure_time": 2e-06,
+        "readout": 0.004395,
+        "reset_time": 2e-06,
+        "sx": 0.000176,
+        "t1": 0.000371,
+        "t2": 4.1e-05
+      },
+      "74": {
+        "measure_time": 2e-06,
+        "readout": 0.008789,
+        "reset_time": 2e-06,
+        "sx": 0.000223,
+        "t1": 0.000278,
+        "t2": 0.000174
+      },
+      "75": {
+        "measure_time": 2e-06,
+        "readout": 0.009277,
+        "reset_time": 2e-06,
+        "sx": 0.0001,
+        "t1": 0.000244,
+        "t2": 0.000124
+      }
+    },
+    "read_at": "2026-11-11T02:43:57+0000",
+    "sha256": "c7aed81c0394ea20c5167a186cc433bb07a933b4147db3056845281bc369ff6f"
+  },
+  "submitted": true,
+  "tier": "tier1_mdi",
+  "tier_budget": {
+    "hard_cap_s": 14.83783,
+    "jobs": [
+      {
+        "estimate_s": 7.178512,
+        "live_estimate_s": 7.170672,
+        "live_upper_s": 9.96334,
+        "prereg_estimate_s": 7.178512,
+        "prereg_upper_s": 9.97314,
+        "shots": 20000,
+        "upper_s": 9.97314
+      }
+    ],
+    "max_job_estimate_s": 20.0,
+    "problems": []
+  },
+  "usage": {
+    "plan_id": "850b21a7-71de-4e53-9441-1abdd202f35d",
+    "usage_consumed_ru": 1.21983,
+    "usage_consumed_seconds": 81,
+    "usage_limit_reached": false,
+    "usage_limit_ru": 10,
+    "usage_limit_seconds": 600,
+    "usage_period": {
+      "end_time": "2026-11-11T02:43:54.326Z",
+      "start_time": "2026-10-14T02:43:54.326Z"
+    },
+    "usage_remaining_seconds": 519
+  }
+}

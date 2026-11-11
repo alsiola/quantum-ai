@@ -1,0 +1,27 @@
+{
+  "allowance_reading_s": 538,
+  "base_tier": "tier1",
+  "base_tier_counted_s": 25.13531,
+  "base_tier_hard_cap_s": 30.0,
+  "base_tier_prior_counted_s": 15.16217,
+  "charges": [
+    {
+      "charged_s": 8.0,
+      "counted_s": 9.97314,
+      "exceeded": false,
+      "readings": {
+        "account_delta": 8.0,
+        "job_metrics": 8.0,
+        "job_usage": 8.0
+      },
+      "stage": "tier1_mdi:mdi_game",
+      "status": "charged",
+      "upper_s": 9.97314
+    }
+  ],
+  "counted_s": 9.97314,
+  "prior_ledgers": [
+    "results/summaries/phase8_hw/tier1/ledger.json"
+  ],
+  "remaining_after_s": 512.82686
+}

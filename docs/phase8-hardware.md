@@ -12,6 +12,10 @@ QPU time: IBM charged **12 s**, and the ledger counts **15.16 s** (max of charge
 bound) of the 20 s cap. That leaves 531 − 12 = 519 s on IBM's own reading, or 538 − 15.16 =
 522.8 s on the owner's.
 
+**MDI sub-tier (#38, §5): Claim 4 at n = 1 also holds trusting only the input states.** The
+payoff is 0.067 ± 0.017, with a lower bound of 0.039 > 0. It cost 8 s charged and 9.97 s counted,
+so Tier 1 has counted 25.14 s of its 30 s.
+
 The pre-registration is [phase8-preregistration.md](phase8-preregistration.md): §2 for Tier 1,
 §5 for live re-selection, §7 for the budget, and amendments A2 and A3 in §10.
 
@@ -220,3 +224,88 @@ matches.
 
 **MDI** stays excluded until its q74 reset is fixed by an amendment (A3). §2.7's precondition for
 it (P&M passed both gates and rejected EB at n = 1) is now met.
+
+## 5. Stage 5b: the MDI sub-tier with a q74 reset (#38)
+
+**Outcome: Claim 4 at n = 1 in the MDI setting, trusting the input states only.** The MDI payoff
+at n = 1 is **0.067 ± 0.017**, with a one-sided 95% lower bound of **0.039 > 0** (p = 4 × 10⁻⁵).
+EB is rejected. This removes P&M's trusted-measurement assumption, and with it #33's
+coherent-SPAM margin (δ ≤ 0.022) as the stated limit. The P&M result (§4) is unchanged.
+
+QPU time: IBM charged **8 s**, and the ledger counts **9.97 s** (the upper bound). Tier 1 has now
+counted 15.16 + 9.97 = **25.14 s of its 30 s cap**. What remains is 519 − 8 = 511 s on IBM's
+reading, or 538 − 15.2 − 9.97 = 512.8 s on the owner's.
+
+The rules are amendment A4 ([phase8-preregistration.md](phase8-preregistration.md) §10),
+written and landed on `main` (`17d213e`) before any MDI job and after P&M's data.
+
+### 5.1 What A4 changed
+
+- **The reset.** `reset q74` immediately before ψ_y, the coordinator's decision on #38. It
+  removes the one known violation of the game's assumption: q74's initialisation error,
+  ZZ-coupled to q75 during the steps, would otherwise correlate ψ_y with the channel's
+  environment.
+- **Circuits.** The 32 MDI circuits were re-exported with one `reset $74;` line each. The P&M and
+  Bell files are byte-identical. The noiseless check against the numpy model is 1.8e-15. The MDI
+  digest is `c36a119e…`.
+- **Model.** `R.MdiReset`: q75 idles through the reset, and q74 is left excited with
+  probability equal to its readout error. It is tested against a brute-force (q75, q74)
+  density matrix. EB channels chosen by q74's state never beat payoff 0 with the reset, under
+  any POVM.
+- **Code.** `phase8_live.py` gains the sub-tier `tier1_mdi` (`[tier1.mdi_live]`):
+  - it runs on Tier 1's approval;
+  - its cap is Tier 1's 30 s less P&M's committed ledger, so 14.84 s;
+  - it refuses unless P&M's committed decision meets §2.7;
+  - it has a pre-data power gate at the run's own live snapshot (`phase8_mdi_power.py`).
+
+  The guard tests are in `tests/test_phase8_live.py`, on a fake service.
+
+### 5.2 Pre-data power, dry run and job
+
+| model, at the live calibration (2026-11-11 02:32 UTC) | predicted payoff, n = 1 | power at 16,000 shots |
+| --- | --- | --- |
+| Stage 4c pieces | 0.052 | 0.92 |
+| **Stage 2 fitted (the rule's model)** | **0.047** | **0.87** |
+| deficit-matched | 0.040 | 0.75 |
+
+- The reset costs 0.009 in payoff. The fitted model clears 0.80, so the shots stayed at #33's
+  20,000 (250 per input pair at n = 0, 1,000 at n = 1). q59, q74 and q75 calibrated exactly as at
+  #37's snapshot.
+- **The dry run** (`tier1_mdi_livedry.json`, nothing submitted) passed every check:
+  - A4's sections at their commits on `main`;
+  - all 169 hashes, and the MDI digest;
+  - no selection change;
+  - the live transpile left the circuits unchanged;
+  - estimate 7.18 s, upper bound 9.97 s;
+  - the power gate passed, and the guard would pass.
+- **The submission** re-ran the checks and the power gate at its own snapshot, with the same
+  results.
+- **The job.** `dbptemtt7fqc7389vmrg` on `ibm_kingston`, submitted 2026-11-11 02:47:56 local:
+  32 circuits, 20,000 shots, SamplerV2, no mitigation. The usage readings were 8 s on all three
+  (job usage, metrics, account delta).
+
+### 5.3 The analysis, as pre-registered
+
+The payoff is Σ ω_xy p̂(Φ⁺ | x, y) with #33's fixed V_n in the weights, with a binomial SE per
+input pair. The test is one-sided at α = 0.05, a family of one (`P.mdi_analyse`).
+
+| arm | payoff ± SE | one-sided 95% bound | predicted (fitted, live) | role |
+| --- | --- | --- | --- | --- |
+| **n = 1** | **0.0675 ± 0.0172** | lower **0.039** | 0.047 | the test: payoff > 0 |
+| n = 0 | 0.4665 ± 0.0157 | lower 0.441 | 0.441 | positive control, reported (not a gate) |
+
+A 90% two-sided interval for the n = 1 payoff is [0.039, 0.096]; the 95% one is [0.034, 0.101].
+The observed payoff sits 1.2 SE above the fitted model's prediction and 0.9 SE above the Stage
+4c pieces' prediction. No pub raised a shot-order warning. Raw shots, the job record, the
+calibration before and after, the ledger and the decision are in
+`results/summaries/phase8_hw/tier1_mdi/` and `tier1_mdi_live*.json`.
+
+**Decision: Claim 4 at n = 1, trusting only the input states.** One application of the trained
+step on q75 is not EB, whatever the Bell measurement on (q75, q74) actually implements. The
+residual assumptions are:
+- the input-state calibration: ξ_x on q75 and ψ_y on q74, including their leakage;
+- the reset's residual excitation, which may depend on q74's state before it;
+- q74's ZZ with q75 while ψ_y is prepared.
+
+It is still one step, on one pair, on one day. It says nothing about whether the emitted-symbol
+witness uses q75's coherence (Claim 3).

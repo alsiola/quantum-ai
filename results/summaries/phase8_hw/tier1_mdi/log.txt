@@ -1,0 +1,6 @@
+qiskit_runtime_service._discover_account:WARNING:2026-11-11 02:43:49,120: Loading account with the given token. A saved account will not be used.
+[02:43:54] [tier1_mdi] backend ibm_kingston; plan 'open'; usage {'plan_id': '850b21a7-71de-4e53-9441-1abdd202f35d', 'usage_consumed_seconds': 81, 'usage_consumed_ru': 1.21983, 'usage_period': {'start_time': '2026-10-14T02:43:54.326Z', 'end_time': '2026-11-11T02:43:54.326Z'}, 'usage_limit_seconds': 600, 'usage_limit_ru': 10, 'usage_limit_reached': False, 'usage_remaining_seconds': 519}
+[02:47:52] [selection] #31 power of 54 screened pairs in 225 s
+[02:48:11] [tier1_mdi mdi_game] done; charge Charge(stage='tier1_mdi:mdi_game', upper_s=9.973139999999999, readings={'job_usage': 8.0, 'job_metrics': 8.0, 'account_delta': 8.0}, charged_s=8.0, status='charged', counted_s=9.973139999999999, exceeded=False)
+[02:48:12] [tier1_mdi] claim 4 at n = 1 in the MDI setting (trusting the input states only): the step channel is not EB; counted 9.973139999999999 s
+[02:48:12] summaries in results/summaries/phase8_hw

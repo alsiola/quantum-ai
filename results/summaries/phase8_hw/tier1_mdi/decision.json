@@ -1,0 +1,81 @@
+{
+  "alpha": 0.05,
+  "call": "claim 4 at n = 1 in the MDI setting (trusting the input states only): the step channel is not EB",
+  "n0": {
+    "hits": [
+      [
+        91,
+        77,
+        3,
+        76
+      ],
+      [
+        86,
+        78,
+        82,
+        4
+      ],
+      [
+        3,
+        88,
+        98,
+        83
+      ],
+      [
+        92,
+        3,
+        74,
+        73
+      ]
+    ],
+    "lower_bound": 0.440703,
+    "payoff": 0.4665,
+    "reject_eb": true,
+    "se": 0.015684,
+    "shots_per_pair": 250,
+    "upper_bound": 0.492297
+  },
+  "n1": {
+    "hits": [
+      [
+        303,
+        84,
+        275,
+        330
+      ],
+      [
+        390,
+        231,
+        251,
+        182
+      ],
+      [
+        398,
+        66,
+        345,
+        193
+      ],
+      [
+        451,
+        119,
+        145,
+        314
+      ]
+    ],
+    "lower_bound": 0.039187,
+    "payoff": 0.067462,
+    "reject_eb": true,
+    "se": 0.01719,
+    "shots_per_pair": 1000,
+    "upper_bound": 0.095737
+  },
+  "order_warnings": {},
+  "precondition": {
+    "call": "claim 4 at n = 1 under trusted SPAM: the step channel is not EB",
+    "decision": "results/summaries/phase8_hw/tier1/decision.json",
+    "negative_control": true,
+    "pm_n1_rejects_eb": true,
+    "spam_gate": true,
+    "valid": true
+  }
+}
